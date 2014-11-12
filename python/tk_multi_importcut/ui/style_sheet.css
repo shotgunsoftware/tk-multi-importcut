@@ -5,3 +5,8 @@ Will have the "Do it" button on the far right
 QDialogButtonBox {
     button-layout: 3;
 }
+QLabel#drop_area_label {
+    border: 4px dashed grey;
+    font-size: 50px;
+    font-family: "Chalkduster";
+}

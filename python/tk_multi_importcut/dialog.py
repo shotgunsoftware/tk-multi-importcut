@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Shotgun Software Inc.
+# Copyright (c) 2014 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -11,19 +11,21 @@
 import sgtk
 import os
 import sys
-import threading
+import logging
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-from .ui.dialog import Ui_Dialog
-
 # Import needed Framework
 widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
-
 # Rename the drop area label to the name we chose in Designer when promoting our label
 DropAreaLabel = widgets.drop_area_label.DropAreaLabel
-#AnimatedStackedWidget = widgets.animated_stack_widget.DropAreaLabel
+AnimatedStackedWidget = widgets.animated_stacked_widget.AnimatedStackedWidget
+from .ui.dialog import Ui_Dialog
+
+from .processor import Processor
+from .logger import BundleLogHandler, get_logger
+
 
 def show_dialog(app_instance):
     """
@@ -35,7 +37,7 @@ def show_dialog(app_instance):
     
     # we pass the dialog class to this method and leave the actual construction
     # to be carried out by toolkit.
-    app_instance.engine.show_dialog("Starter Template App...", app_instance, AppDialog)
+    app_instance.engine.show_dialog("Import Cut", app_instance, AppDialog)
     
 
 
@@ -43,7 +45,6 @@ class AppDialog(QtGui.QWidget):
     """
     Main application dialog window
     """
-    
     def __init__(self):
         """
         Constructor
@@ -67,6 +68,39 @@ class AppDialog(QtGui.QWidget):
         # lastly, set up our very basic UI
         #self.ui.context.setText("Current Context: %s" % self._app.context)
         self.set_custom_style()
+        self._processor = Processor()
+        self._processor.start()
+    
+        # Let's do something when something is dropped
+        self.ui.drop_area_label.something_dropped.connect(self.process_drop)
+    
+        self.set_logger()
+
+    @QtCore.Slot(list)
+    def process_drop(self, paths):
+        """
+        Process a drop event, paths can either be
+        local filesystem paths or SG urls
+        """
+        self._logger.info( "Processing %s" % (paths ))
+
+    @QtCore.Slot(int, str)
+    def new_message(self, levelno, message):
+        print ">>>", message
+
+    @property
+    def hide_tk_title_bar(self):
+        return False
+
+    def set_logger(self, level=logging.INFO):
+        """
+        Retrieve a logger
+        """
+        self._logger = get_logger()
+        handler = BundleLogHandler(self._app)
+        handler.new_message.connect(self.new_message)
+        self._logger.addHandler(handler)
+        self._logger.setLevel(level)
 
     def set_custom_style(self):
         """
