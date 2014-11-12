@@ -18,6 +18,13 @@ import threading
 from sgtk.platform.qt import QtCore, QtGui
 from .ui.dialog import Ui_Dialog
 
+# Import needed Framework
+widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
+
+# Rename the drop area label to the name we chose in Designer when promoting our label
+DropAreaLabel = widgets.drop_area_label.DropAreaLabel
+#AnimatedStackedWidget = widgets.animated_stack_widget.DropAreaLabel
+
 def show_dialog(app_instance):
     """
     Shows the main dialog window.
@@ -58,6 +65,6 @@ class AppDialog(QtGui.QWidget):
         # - A tk API instance, via self._app.tk 
         
         # lastly, set up our very basic UI
-        self.ui.context.setText("Current Context: %s" % self._app.context)
+        #self.ui.context.setText("Current Context: %s" % self._app.context)
         
         

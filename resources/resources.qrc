@@ -1,5 +1,5 @@
 <RCC>
-  <qresource prefix="res">
+  <qresource prefix="tk_multi_importcut">
     <file>sg_logo.png</file>
   </qresource>
 </RCC>
