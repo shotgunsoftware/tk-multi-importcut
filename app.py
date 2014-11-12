@@ -26,7 +26,7 @@ class StgkStarterApp(Application):
         # that resides inside the python folder in the app. This is where the actual UI
         # and business logic of the app is kept. By using the import_module command,
         # toolkit's code reload mechanism will work properly.
-        app_payload = self.import_module("app")
+        app_payload = self.import_module("tk_multi_importcut")
 
         # now register a *command*, which is normally a menu entry of some kind on a Shotgun
         # menu (but it depends on the engine). The engine will manage this command and 
