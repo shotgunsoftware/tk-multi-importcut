@@ -66,5 +66,25 @@ class AppDialog(QtGui.QWidget):
         
         # lastly, set up our very basic UI
         #self.ui.context.setText("Current Context: %s" % self._app.context)
-        
+        self.set_custom_style()
+
+    def set_custom_style(self):
+        """
+        Append our custom style to the inherited style sheet
+        """
+        this_folder = os.path.abspath(os.path.dirname(__file__))
+        css_file = os.path.join(this_folder, "ui", "style_sheet.css")
+        if os.path.exists(css_file):
+            try:
+                # Read css file
+                f = open(css_file)
+                css_data = f.read()
+                f.close()
+                # Append our add ons to current sytle sheet at the top widget
+                # level, children will inherit from it, without us affecting
+                # other apps for this engine
+                self.setStyleSheet(css_data)
+            except Exception,e:
+                self._app.log_warning( "Unable to read style sheet %s" % css_file )
+
         

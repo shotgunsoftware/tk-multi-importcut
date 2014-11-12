@@ -1,0 +1,7 @@
+/* 
+Make sure standard dialogs and button boxes
+Will have the "Do it" button on the far right
+*/
+QDialogButtonBox {
+    button-layout: 3;
+}
