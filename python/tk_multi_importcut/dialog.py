@@ -74,15 +74,26 @@ class AppDialog(QtGui.QWidget):
         # Handle data and processong in a separate thread
         self._processor = Processor()
         self.new_edl.connect(self._processor.new_edl)
+        self._processor.step_done.connect(self.step_done)
+        self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
         self._processor.start()
         
         # Let's do something when something is dropped
         self.ui.drop_area_label.something_dropped.connect(self.process_drop)
     
-        buttons = self.ui.buttonBox.buttons()
-        # We have a single "close" button in our button box
-        self._ok_button = buttons[0]
-        self._ok_button.clicked.connect(self.close_dialog)
+        self.ui.ok_button.hide()
+        self.ui.back_button.hide()
+        self.ui.back_button.clicked.connect(self.ui.stackedWidget.prev_page)
+        self.ui.stackedWidget.first_page_reached.connect(self.reset)
+        self.ui.cancel_button.clicked.connect(self.close_dialog)
+
+    @QtCore.Slot()
+    def reset(self):
+        self.ui.back_button.hide()
+
+    @QtCore.Slot(int)
+    def step_done(self, which):
+        self.goto_step(which+1)
 
     @QtCore.Slot(list)
     def process_drop(self, paths):
@@ -114,6 +125,13 @@ class AppDialog(QtGui.QWidget):
 
     def is_busy(self):
         return False
+
+    def goto_step(self, which):
+        if which > 0:
+            self.ui.back_button.show()
+        else:
+            self.ui.back_button.hide()
+        self.ui.stackedWidget.goto_page(which)
 
     def closeEvent(self, evt):
         """

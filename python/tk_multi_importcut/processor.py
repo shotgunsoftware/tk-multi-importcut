@@ -13,22 +13,43 @@ from .logger import get_logger
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
 class Processor(QtCore.QThread):
-
+    # Pass through signals which will be redirected to
+    # instances created in the running thread, so signals
+    # will be processed in the running thread
+    new_edl = QtCore.Signal(str)
+    reset = QtCore.Signal()
+    set_busy = QtCore.Signal(bool)
+    step_done = QtCore.Signal(int)
     def __init__(self):
         super(Processor, self).__init__()
         self._logger = get_logger()
-    new_edl = QtCore.Signal(str)
-
+        self._edl_cut = None
+    
     def run(self):
         self._edl_cut = EdlCut()
         self.new_edl.connect(self._edl_cut.load_edl)
+        self.reset.connect(self._edl_cut.reset)
+        self._edl_cut.step_done.connect(self.step_done)
         self.exec_()
 
 class EdlCut(QtCore.QObject):
+
+    step_done = QtCore.Signal(int)
+
     def __init__(self):
         super(EdlCut, self).__init__()
         self._edl = None
+        self._sg_entity = None
         self._logger = get_logger()
+
+    def process_edit(self, edit, logger):
+        # Use our own logger rather than the framework one
+        edl.process_edit(edit, self._logger)
+
+    @QtCore.Slot(str)
+    def reset(self):
+        self._edl = None
+        self._logger.info("Session discarded...")
 
     @QtCore.Slot(str)
     def load_edl(self, path):
@@ -43,6 +64,7 @@ class EdlCut(QtCore.QObject):
                     self._edl.title, len(self._edl.edits)
                 )
             )
+            self.step_done.emit(0)
         except Exception, e:
             self._edl = None
             self._logger.error("Couldn't load %s : %s" % (path, str(e)))

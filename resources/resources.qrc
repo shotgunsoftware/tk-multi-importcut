@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="tk_multi_importcut">
+    <file>left_arrow.png</file>
+    <file>right_arrow.png</file>
     <file>sg_logo.png</file>
   </qresource>
 </RCC>
