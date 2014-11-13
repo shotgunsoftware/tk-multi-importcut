@@ -45,6 +45,8 @@ class AppDialog(QtGui.QWidget):
     """
     Main application dialog window
     """
+    new_edl = QtCore.Signal(str)
+
     def __init__(self):
         """
         Constructor
@@ -66,15 +68,21 @@ class AppDialog(QtGui.QWidget):
         # - A tk API instance, via self._app.tk 
         
         # lastly, set up our very basic UI
-        #self.ui.context.setText("Current Context: %s" % self._app.context)
         self.set_custom_style()
+        self.set_logger()
+        # Keep this thread for UI stuff
+        # Handle data and processong in a separate thread
         self._processor = Processor()
+        self.new_edl.connect(self._processor.new_edl)
         self._processor.start()
-    
+        
         # Let's do something when something is dropped
         self.ui.drop_area_label.something_dropped.connect(self.process_drop)
     
-        self.set_logger()
+        buttons = self.ui.buttonBox.buttons()
+        # We have a single "close" button in our button box
+        self._ok_button = buttons[0]
+        self._ok_button.clicked.connect(self.close_dialog)
 
     @QtCore.Slot(list)
     def process_drop(self, paths):
@@ -82,15 +90,51 @@ class AppDialog(QtGui.QWidget):
         Process a drop event, paths can either be
         local filesystem paths or SG urls
         """
-        self._logger.info( "Processing %s" % (paths ))
+        if len(paths) != 1:
+            QtGui.QMessageBox.warning(
+                self,
+                "Can't process drop",
+                "Please drop only on file at a time",
+            )
+            return
+        self.new_edl.emit(paths[0])
+        #self._logger.info( "Processing %s" % (paths[0] ))
 
     @QtCore.Slot(int, str)
     def new_message(self, levelno, message):
-        print ">>>", message
+        self.ui.feedback_label.setText(message)
+
+    @QtCore.Slot()
+    def close_dialog(self):
+        self.close()
 
     @property
     def hide_tk_title_bar(self):
         return False
+
+    def is_busy(self):
+        return False
+
+    def closeEvent(self, evt):
+        """
+        closeEvent handler
+
+        Warn the user if it's not safe to quit,
+        and leave the decision to him
+        """
+        if self.is_busy():
+            answer = QtGui.QMessageBox.warning(
+                self,
+                "Quit anyway ?",
+                "Busy, quit anyway ?",
+                QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
+            if answer != QtGui.QMessageBox.Ok:
+                evt.ignore() # For close event, ignore stop them to be processed
+                return
+        self._processor.quit()
+        self._processor.wait()
+        # Let the close happen
+        evt.accept()
 
     def set_logger(self, level=logging.INFO):
         """
