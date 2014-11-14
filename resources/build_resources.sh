@@ -38,6 +38,7 @@ function build_res {
 echo "building user interfaces..."
 build_ui dialog
 # add any additional .ui files you want converted here!
+build_ui sequence_card
 
 # build resources
 echo "building resources..."

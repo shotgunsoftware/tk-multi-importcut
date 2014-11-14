@@ -25,7 +25,7 @@ from .ui.dialog import Ui_Dialog
 
 from .processor import Processor
 from .logger import BundleLogHandler, get_logger
-
+from .sequence_widget import SequenceCard
 
 def show_dialog(app_instance):
     """
@@ -46,6 +46,7 @@ class AppDialog(QtGui.QWidget):
     Main application dialog window
     """
     new_edl = QtCore.Signal(str)
+    get_sequences = QtCore.Signal()
 
     def __init__(self):
         """
@@ -74,7 +75,9 @@ class AppDialog(QtGui.QWidget):
         # Handle data and processong in a separate thread
         self._processor = Processor()
         self.new_edl.connect(self._processor.new_edl)
+        self.get_sequences.connect(self._processor.retrieve_sequences)
         self._processor.step_done.connect(self.step_done)
+        self._processor.new_sg_sequence.connect(self.new_sg_sequence)
         self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
         self._processor.start()
         
@@ -90,6 +93,7 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot()
     def reset(self):
         self.ui.back_button.hide()
+        self.clear_sequence_view()
 
     @QtCore.Slot(int)
     def step_done(self, which):
@@ -132,6 +136,33 @@ class AppDialog(QtGui.QWidget):
         else:
             self.ui.back_button.hide()
         self.ui.stackedWidget.goto_page(which)
+
+        if which == 1: # Ask the processor to retrieve sequences
+            self.get_sequences.emit()
+
+    QtCore.Slot(dict)
+    def new_sg_sequence(self, sg_entity):
+        i = self.ui.sequence_grid.count() -1 # We have a stretcher
+        # Remove it
+        spacer = self.ui.sequence_grid.takeAt(i)
+        row = i / 2
+        column = i % 2
+        self._logger.info("Adding %s at %d %d %d" % ( sg_entity, i, row, column))
+        widget = SequenceCard(self, sg_entity)
+        widget.selected.connect(self.sequence_selected)
+        self.ui.sequence_grid.addWidget(widget, row, column, )
+        self.ui.sequence_grid.setRowStretch(row, 0)
+        self.ui.sequence_grid.addItem(spacer, row+1, 0, colSpan=2 )
+        self.ui.sequence_grid.setRowStretch(row+1, 1)
+
+    QtCore.Slot(dict)
+    def sequence_selected(self, sg_entity):
+        print sg_entity
+    
+    def clear_sequence_view(self):
+        count = self.ui.sequence_grid.count() -1 # We have stretcher
+        for i in range(count-1, -1, -1):
+            self.ui.sequence_grid.takeAt(i)
 
     def closeEvent(self, evt):
         """
