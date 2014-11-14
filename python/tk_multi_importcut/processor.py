@@ -22,6 +22,7 @@ class Processor(QtCore.QThread):
     step_done = QtCore.Signal(int)
     new_sg_sequence = QtCore.Signal(dict)
     retrieve_sequences = QtCore.Signal()
+    show_cut_for_sequence = QtCore.Signal(dict)
 
     def __init__(self):
         super(Processor, self).__init__()
@@ -34,6 +35,7 @@ class Processor(QtCore.QThread):
         self.new_edl.connect(self._edl_cut.load_edl)
         self.reset.connect(self._edl_cut.reset)
         self.retrieve_sequences.connect(self._edl_cut.retrieve_sequences)
+        self.show_cut_for_sequence.connect(self._edl_cut.show_cut_for_sequence)
         # Results
         self._edl_cut.step_done.connect(self.step_done)
         self._edl_cut.new_sg_sequence.connect(self.new_sg_sequence)
@@ -99,4 +101,9 @@ class EdlCut(QtCore.QObject):
         for sg_sequence in sg_sequences:
             self.new_sg_sequence.emit(sg_sequence)
         self._logger.info("Retrieved %d Sequences." % len(sg_sequences))
+
+    @QtCore.Slot(dict)
+    def show_cut_for_sequence(self, sg_entity):
+        self._logger.info("Retrieving cut information for %s" % ( sg_entity))
+        pass
 

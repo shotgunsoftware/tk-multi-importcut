@@ -13,22 +13,45 @@
 from sgtk.platform.qt import QtCore, QtGui
 
 from .ui.sequence_card import Ui_SequenceCard
+# Some standard colors
+# Used in Sgtk apps
+_COLORS = {
+    "sg_blue" : "#2C93E2",
+    "sg_red"  : "#FC6246",
+    "mid_blue"  : "#1B82D1",
+}
 
+
+_STYLES = {
+    "selected" : "border-color: %s" % _COLORS["sg_blue"],
+}
 class SequenceCard(QtGui.QFrame):
     selected = QtCore.Signal(dict)
     def __init__(self, parent, sg_sequence):
         super(SequenceCard, self).__init__(parent)
+        self._sg_sequence = sg_sequence
         self.ui = Ui_SequenceCard()
         self.ui.setupUi(self)
         self.ui.title_label.setText("<big><b>%s</b></big>" % sg_sequence["code"])
         self.ui.status_label.setText(sg_sequence["sg_status_list"])
         self.ui.details_label.setText("<small>%s</small>" % sg_sequence["description"])
+        self.ui.select_button.setVisible(False)
+        self.ui.select_button.clicked.connect(self.select)
+
+    @QtCore.Slot()
+    def select(self):
+        self.selected.emit(self._sg_sequence)
 
     def mouseDoubleClickEvent(self, event):
-        print "Double click"
-        self.selected.emit({ "type" : "Sequence", "id" : 1023})
+        self.select()
 
     def mousePressEvent(self, event):
-        print "Single click"
-        print self.property("selected")
-        self.setProperty("selected", True);
+        pass
+
+    def enterEvent(self, event):
+        self.ui.select_button.setVisible(True)
+        self.setStyleSheet( _STYLES["selected"])
+
+    def leaveEvent(self, event):
+        self.ui.select_button.setVisible(False)
+        self.setStyleSheet( "")

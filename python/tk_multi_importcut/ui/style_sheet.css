@@ -13,6 +13,7 @@ QLabel#drop_area_label {
 QFrame#SequenceCard {
     border: 4px solid black;
 }
+/*
 QFrame:focus#SequenceCard {
     border-color: blue;
 }

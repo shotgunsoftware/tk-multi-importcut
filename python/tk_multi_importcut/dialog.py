@@ -47,7 +47,7 @@ class AppDialog(QtGui.QWidget):
     """
     new_edl = QtCore.Signal(str)
     get_sequences = QtCore.Signal()
-
+    show_cut_for_sequence = QtCore.Signal(dict)
     def __init__(self):
         """
         Constructor
@@ -76,6 +76,7 @@ class AppDialog(QtGui.QWidget):
         self._processor = Processor()
         self.new_edl.connect(self._processor.new_edl)
         self.get_sequences.connect(self._processor.retrieve_sequences)
+        self.show_cut_for_sequence.connect(self._processor.show_cut_for_sequence)
         self._processor.step_done.connect(self.step_done)
         self._processor.new_sg_sequence.connect(self.new_sg_sequence)
         self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
@@ -157,13 +158,14 @@ class AppDialog(QtGui.QWidget):
 
     QtCore.Slot(dict)
     def sequence_selected(self, sg_entity):
-        print sg_entity
+        self._logger.info("Retrieving cut information for %s" % sg_entity["code"] )
+        self.show_cut_for_sequence.emit(sg_entity)
     
     def clear_sequence_view(self):
         count = self.ui.sequence_grid.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
             self.ui.sequence_grid.takeAt(i)
-
+        print self.ui.sequence_grid.count()
     def closeEvent(self, evt):
         """
         closeEvent handler
