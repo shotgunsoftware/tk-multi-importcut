@@ -27,3 +27,7 @@ QFrame:selected#SequenceCard {
     border-color: orange;
     background-color: orange;
 }
+
+#horizontalLayout_3 {
+    background-color: orange;
+}

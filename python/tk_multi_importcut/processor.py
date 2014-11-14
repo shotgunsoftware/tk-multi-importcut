@@ -10,6 +10,8 @@
 import sgtk
 from sgtk.platform.qt import QtCore
 from .logger import get_logger
+from .cut_diff import CutDiff
+
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
 class Processor(QtCore.QThread):
@@ -23,6 +25,7 @@ class Processor(QtCore.QThread):
     new_sg_sequence = QtCore.Signal(dict)
     retrieve_sequences = QtCore.Signal()
     show_cut_for_sequence = QtCore.Signal(dict)
+    new_cut_diff = QtCore.Signal(CutDiff)
 
     def __init__(self):
         super(Processor, self).__init__()
@@ -39,17 +42,20 @@ class Processor(QtCore.QThread):
         # Results
         self._edl_cut.step_done.connect(self.step_done)
         self._edl_cut.new_sg_sequence.connect(self.new_sg_sequence)
+        self._edl_cut.new_cut_diff.connect(self.new_cut_diff)
         self.exec_()
 
 class EdlCut(QtCore.QObject):
 
     step_done = QtCore.Signal(int)
     new_sg_sequence = QtCore.Signal(dict)
+    new_cut_diff = QtCore.Signal(CutDiff)
 
     def __init__(self):
         super(EdlCut, self).__init__()
         self._edl = None
         self._sg_entity = None
+        self._cut_diffs = []
         self._logger = get_logger()
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
@@ -63,6 +69,8 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(str)
     def reset(self):
         self._edl = None
+        self._sg_entity = None
+        self._cut_diffs = []
         self._logger.info("Session discarded...")
 
     @QtCore.Slot(str)
@@ -104,6 +112,16 @@ class EdlCut(QtCore.QObject):
 
     @QtCore.Slot(dict)
     def show_cut_for_sequence(self, sg_entity):
-        self._logger.info("Retrieving cut information for %s" % ( sg_entity))
-        pass
+        self._logger.info("Retrieving cut summary for %s" % ( sg_entity))
+        sg_shots = self._sg.find(
+            "Shot",
+            [["sg_sequence", "is", sg_entity]],
+            ["code", "sg_head_in", "sg_tail_out", "sg_cut_in", "sg_cut_out", "sg_cut_order", "image"],
+        )
+        for sg_shot in sg_shots:
+            cut_diff = CutDiff(sg_shot=sg_shot, sg_version=None, edit=None)
+            self._cut_diffs.append(cut_diff)
+            self.new_cut_diff.emit(cut_diff)
+        self._logger.info("Retrieved %d cut differences." % len(sg_shots))
+
 

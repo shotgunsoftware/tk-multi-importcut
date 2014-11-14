@@ -26,6 +26,8 @@ from .ui.dialog import Ui_Dialog
 from .processor import Processor
 from .logger import BundleLogHandler, get_logger
 from .sequence_widget import SequenceCard
+from .cut_diff import CutDiff
+from .cut_diff_widget import CutDiffCard
 
 def show_dialog(app_instance):
     """
@@ -79,6 +81,7 @@ class AppDialog(QtGui.QWidget):
         self.show_cut_for_sequence.connect(self._processor.show_cut_for_sequence)
         self._processor.step_done.connect(self.step_done)
         self._processor.new_sg_sequence.connect(self.new_sg_sequence)
+        self._processor.new_cut_diff.connect(self.new_cut_diff)
         self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
         self._processor.start()
         
@@ -141,14 +144,14 @@ class AppDialog(QtGui.QWidget):
         if which == 1: # Ask the processor to retrieve sequences
             self.get_sequences.emit()
 
-    QtCore.Slot(dict)
+    @QtCore.Slot(dict)
     def new_sg_sequence(self, sg_entity):
         i = self.ui.sequence_grid.count() -1 # We have a stretcher
         # Remove it
         spacer = self.ui.sequence_grid.takeAt(i)
         row = i / 2
         column = i % 2
-        self._logger.info("Adding %s at %d %d %d" % ( sg_entity, i, row, column))
+        self._logger.debug("Adding %s at %d %d %d" % ( sg_entity, i, row, column))
         widget = SequenceCard(self, sg_entity)
         widget.selected.connect(self.sequence_selected)
         self.ui.sequence_grid.addWidget(widget, row, column, )
@@ -156,16 +159,25 @@ class AppDialog(QtGui.QWidget):
         self.ui.sequence_grid.addItem(spacer, row+1, 0, colSpan=2 )
         self.ui.sequence_grid.setRowStretch(row+1, 1)
 
-    QtCore.Slot(dict)
+    @QtCore.Slot(dict)
     def sequence_selected(self, sg_entity):
         self._logger.info("Retrieving cut information for %s" % sg_entity["code"] )
         self.show_cut_for_sequence.emit(sg_entity)
-    
+        self.step_done(1)
+
+    @QtCore.Slot(CutDiff)
+    def new_cut_diff(self, cut_diff):
+        self._logger.info("Adding %s" % cut_diff._sg_shot)
+        widget = CutDiffCard(parent=self, cut_diff=cut_diff)
+        self.ui.cutsummary_list.insertWidget(self.ui.cutsummary_list.count()-1, widget)
+
     def clear_sequence_view(self):
         count = self.ui.sequence_grid.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
             self.ui.sequence_grid.takeAt(i)
-        print self.ui.sequence_grid.count()
+        # print self.ui.sequence_grid.count()
+
+
     def closeEvent(self, evt):
         """
         closeEvent handler
