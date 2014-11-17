@@ -16,6 +16,7 @@ import logging
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
+overlay_widget = sgtk.platform.import_framework("tk-framework-qtwidgets", "overlay_widget")
 # Import needed Framework
 widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
 # Rename the drop area label to the name we chose in Designer when promoting our label
@@ -73,6 +74,7 @@ class AppDialog(QtGui.QWidget):
         # lastly, set up our very basic UI
         self.set_custom_style()
         self.set_logger()
+        self._overlay_widget = overlay_widget.ShotgunOverlayWidget(parent=self.ui.stackedWidget)
         # Keep this thread for UI stuff
         # Handle data and processong in a separate thread
         self._processor = Processor()
@@ -82,6 +84,8 @@ class AppDialog(QtGui.QWidget):
         self._processor.step_done.connect(self.step_done)
         self._processor.new_sg_sequence.connect(self.new_sg_sequence)
         self._processor.new_cut_diff.connect(self.new_cut_diff)
+        self._processor.got_busy.connect(self.set_busy)
+        self._processor.got_idle.connect(self.set_idle)
         self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
         self._processor.start()
         
@@ -137,6 +141,16 @@ class AppDialog(QtGui.QWidget):
 
     def is_busy(self):
         return False
+
+    @QtCore.Slot()
+    def set_busy(self):
+        print "busy"
+        self._overlay_widget.show()
+
+    @QtCore.Slot()
+    def set_idle(self):
+        print "idle"
+#        self._overlay_widget.hide()
 
     def goto_step(self, which):
         self.set_ui_for_step(which)

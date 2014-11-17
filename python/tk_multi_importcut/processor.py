@@ -26,7 +26,8 @@ class Processor(QtCore.QThread):
     retrieve_sequences = QtCore.Signal()
     show_cut_for_sequence = QtCore.Signal(dict)
     new_cut_diff = QtCore.Signal(CutDiff)
-
+    got_busy = QtCore.Signal()
+    got_idle = QtCore.Signal()
     def __init__(self):
         super(Processor, self).__init__()
         self._logger = get_logger()
@@ -43,6 +44,8 @@ class Processor(QtCore.QThread):
         self._edl_cut.step_done.connect(self.step_done)
         self._edl_cut.new_sg_sequence.connect(self.new_sg_sequence)
         self._edl_cut.new_cut_diff.connect(self.new_cut_diff)
+        self._edl_cut.got_busy.connect(self.got_busy)
+        self._edl_cut.got_idle.connect(self.got_idle)
         self.exec_()
 
 class EdlCut(QtCore.QObject):
@@ -50,6 +53,8 @@ class EdlCut(QtCore.QObject):
     step_done = QtCore.Signal(int)
     new_sg_sequence = QtCore.Signal(dict)
     new_cut_diff = QtCore.Signal(CutDiff)
+    got_busy = QtCore.Signal()
+    got_idle = QtCore.Signal()
 
     def __init__(self):
         super(EdlCut, self).__init__()
@@ -98,6 +103,7 @@ class EdlCut(QtCore.QObject):
         Retrieve all sequences for the current project
         """
         self._logger.info("Retrieving Sequences for project %s ..." % self._ctx.project["name"])
+        self.got_busy.emit()
         sg_sequences = self._sg.find(
             "Sequence",
             [["project", "is", self._ctx.project]],
@@ -108,6 +114,7 @@ class EdlCut(QtCore.QObject):
             return
         for sg_sequence in sg_sequences:
             self.new_sg_sequence.emit(sg_sequence)
+        self.got_idle.emit()
         self._logger.info("Retrieved %d Sequences." % len(sg_sequences))
 
     @QtCore.Slot(dict)
