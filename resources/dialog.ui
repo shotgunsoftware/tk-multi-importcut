@@ -61,8 +61,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>740</width>
-            <height>322</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="sequence_grid" rowstretch="0">
@@ -103,8 +103,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>716</width>
-            <height>286</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="cutsummary_list">
@@ -176,6 +176,13 @@ EDL</string>
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="reset_button">
+       <property name="text">
+        <string>Reset</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="cancel_button">
        <property name="text">
         <string>Quit</string>
@@ -183,9 +190,16 @@ EDL</string>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="ok_button">
+      <widget class="QPushButton" name="email_button">
        <property name="text">
-        <string>Ok</string>
+        <string>Email Summary</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="submit_button">
+       <property name="text">
+        <string>Import Cut</string>
        </property>
       </widget>
      </item>

@@ -88,16 +88,20 @@ class AppDialog(QtGui.QWidget):
         # Let's do something when something is dropped
         self.ui.drop_area_label.something_dropped.connect(self.process_drop)
     
-        self.ui.ok_button.hide()
-        self.ui.back_button.hide()
+        self.set_ui_for_step(0)
         self.ui.back_button.clicked.connect(self.ui.stackedWidget.prev_page)
         self.ui.stackedWidget.first_page_reached.connect(self.reset)
+        self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
+        self.ui.reset_button.clicked.connect(self.do_reset)
+
+    @QtCore.Slot()
+    def do_reset(self):
+        self.goto_step(0)
 
     @QtCore.Slot()
     def reset(self):
-        self.ui.back_button.hide()
-        self.clear_sequence_view()
+        self.set_ui_for_step(0)
 
     @QtCore.Slot(int)
     def step_done(self, which):
@@ -135,14 +139,35 @@ class AppDialog(QtGui.QWidget):
         return False
 
     def goto_step(self, which):
-        if which > 0:
-            self.ui.back_button.show()
-        else:
-            self.ui.back_button.hide()
+        self.set_ui_for_step(which)
         self.ui.stackedWidget.goto_page(which)
 
         if which == 1: # Ask the processor to retrieve sequences
             self.get_sequences.emit()
+
+    @QtCore.Slot(int)
+    def set_ui_for_step(self, step):
+        """
+        Set the UI for the given step
+        """
+        # 0 : drag and drop
+        # 1 : sequence select
+        # 2 : cut summary
+        if step < 1:
+            self.ui.back_button.hide()
+            self.ui.reset_button.hide()
+            self.clear_sequence_view()
+        else:
+            self.ui.reset_button.show()
+            self.ui.back_button.show()
+
+        if step < 2:
+            self.clear_cut_summary_view()
+            self.ui.email_button.hide()
+            self.ui.submit_button.hide()
+        else:
+            self.ui.email_button.show()
+            self.ui.submit_button.show()
 
     @QtCore.Slot(dict)
     def new_sg_sequence(self, sg_entity):
@@ -177,6 +202,10 @@ class AppDialog(QtGui.QWidget):
             self.ui.sequence_grid.takeAt(i)
         # print self.ui.sequence_grid.count()
 
+    def clear_cut_summary_view(self):
+        count = self.ui.cutsummary_list.count() -1 # We have stretcher
+        for i in range(count-1, -1, -1):
+            self.ui.cutsummary_list.takeAt(i)
 
     def closeEvent(self, evt):
         """
