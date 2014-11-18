@@ -75,7 +75,7 @@ class AppDialog(QtGui.QWidget):
         # lastly, set up our very basic UI
         self.set_custom_style()
         self.set_logger()
-        self._overlay_widget = overlay_widget.ShotgunOverlayWidget(parent=self.ui.stackedWidget)
+        self._overlay_widget = overlay_widget.ShotgunOverlayWidget(parent=self.ui.sequence_list_page)
         # Keep this thread for UI stuff
         # Handle data and processong in a separate thread
         self._processor = Processor()
@@ -156,8 +156,8 @@ class AppDialog(QtGui.QWidget):
         self.ui.email_button.setEnabled(False)
         self.ui.submit_button.setEnabled(False)
         # Show the busy spinner
-        self._overlay_widget.start_spin()
-        self._overlay_widget.show()
+#        self._overlay_widget.start_spin()
+#        self._overlay_widget.show()
 
     @QtCore.Slot()
     def set_idle(self):
@@ -168,7 +168,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.email_button.setEnabled(True)
         self.ui.submit_button.setEnabled(True)
         # Hide the busy spinner
-        self._overlay_widget.hide()
+#        self._overlay_widget.hide()
 
     def goto_step(self, which):
         self.set_ui_for_step(which)
@@ -209,7 +209,7 @@ class AppDialog(QtGui.QWidget):
         row = i / 2
         column = i % 2
         self._logger.debug("Adding %s at %d %d %d" % ( sg_entity, i, row, column))
-        widget = SequenceCard(self, sg_entity)
+        widget = SequenceCard(None, sg_entity)
         widget.selected.connect(self.sequence_selected)
         self.ui.sequence_grid.addWidget(widget, row, column, )
         self.ui.sequence_grid.setRowStretch(row, 0)
@@ -224,20 +224,24 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(CutDiff)
     def new_cut_diff(self, cut_diff):
-        self._logger.info("Adding %s" % cut_diff._sg_shot)
-        widget = CutDiffCard(parent=self, cut_diff=cut_diff)
+        self._logger.info("Adding %s" % cut_diff.name)
+        widget = CutDiffCard(parent=None, cut_diff=cut_diff)
         self.ui.cutsummary_list.insertWidget(self.ui.cutsummary_list.count()-1, widget)
 
     def clear_sequence_view(self):
         count = self.ui.sequence_grid.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
-            self.ui.sequence_grid.takeAt(i)
+            witem = self.ui.sequence_grid.takeAt(i)
+            widget = witem.widget()
+            widget.close()
         # print self.ui.sequence_grid.count()
 
     def clear_cut_summary_view(self):
         count = self.ui.cutsummary_list.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
-            self.ui.cutsummary_list.takeAt(i)
+            witem = self.ui.cutsummary_list.takeAt(i)
+            widget = witem.widget()
+            widget.close()
 
     def closeEvent(self, evt):
         """
