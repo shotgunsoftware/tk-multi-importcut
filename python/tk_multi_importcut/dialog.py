@@ -66,6 +66,7 @@ class AppDialog(QtGui.QWidget):
         # it is often handy to keep a reference to this. You can get it via the following method:
         self._app = sgtk.platform.current_bundle()
         
+        self._busy = False
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
         # - A Shotgun API instance, via self._app.shotgun
@@ -129,6 +130,10 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(int, str)
     def new_message(self, levelno, message):
+        if levelno == logging.ERROR or levelno == logging.CRITICAL:
+            self.ui.feedback_label.setStyleSheet( "color: #FC6246")
+        else:
+            self.ui.feedback_label.setStyleSheet("")
         self.ui.feedback_label.setText(message)
 
     @QtCore.Slot()
@@ -140,17 +145,30 @@ class AppDialog(QtGui.QWidget):
         return False
 
     def is_busy(self):
-        return False
+        return self._busy
 
     @QtCore.Slot()
     def set_busy(self):
-        print "busy"
+        self._busy = True
+        # Prevent some buttons to be used
+        self.ui.back_button.setEnabled(False)
+        self.ui.reset_button.setEnabled(False)
+        self.ui.email_button.setEnabled(False)
+        self.ui.submit_button.setEnabled(False)
+        # Show the busy spinner
+        self._overlay_widget.start_spin()
         self._overlay_widget.show()
 
     @QtCore.Slot()
     def set_idle(self):
-        print "idle"
-#        self._overlay_widget.hide()
+        self._busy = False
+        # Allow all buttons to be used
+        self.ui.back_button.setEnabled(True)
+        self.ui.reset_button.setEnabled(True)
+        self.ui.email_button.setEnabled(True)
+        self.ui.submit_button.setEnabled(True)
+        # Hide the busy spinner
+        self._overlay_widget.hide()
 
     def goto_step(self, which):
         self.set_ui_for_step(which)

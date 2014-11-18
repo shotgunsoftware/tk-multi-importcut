@@ -32,7 +32,7 @@ class Processor(QtCore.QThread):
         super(Processor, self).__init__()
         self._logger = get_logger()
         self._edl_cut = None
-    
+
     def run(self):
         self._edl_cut = EdlCut()
         # Orders
@@ -69,7 +69,11 @@ class EdlCut(QtCore.QObject):
     def process_edit(self, edit, logger):
         # Use our own logger rather than the framework one
         edl.process_edit(edit, self._logger)
-
+        # Check things are right
+        # Add some lambda to retrieve properties
+        edit.get_shot_name = lambda : edit._shot_name
+        if not edit.get_shot_name():
+            raise RuntimeError("Couldn't extract a shot name")
 
     @QtCore.Slot(str)
     def reset(self):
@@ -84,13 +88,21 @@ class EdlCut(QtCore.QObject):
         try:
             self._edl = edl.EditList(
                 file_path=path,
-                visitor=edl.process_edit,
+                visitor=self.process_edit,
             )
             self._logger.info(
                 "%s loaded, %s edits" % (
                     self._edl.title, len(self._edl.edits)
                 )
             )
+            if not self._edl.edits:
+                self._logger.warning("Couldn't find any entry in %s" % (path))
+                return
+            # Review what we loaded
+            for edit in self._edl.edits:
+                if not edit.get_shot_name():
+                    raise ValueError("Couldn't retrieve shot name for %s" % edit)
+            # Can go to next step
             self.step_done.emit(0)
         except Exception, e:
             self._edl = None
@@ -120,15 +132,37 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(dict)
     def show_cut_for_sequence(self, sg_entity):
         self._logger.info("Retrieving cut summary for %s" % ( sg_entity))
+        self.got_busy.emit()
+        # Retrieve shot names from the EDL
+        shot_names = [x.shot_name() for x in self._edl.entries]
+        # Retrieve cuts linked to the sequence, pick up the latest or approved one
+        # Later, the UI will allow selecting it
+        sg_cut = self._sg.find_one(
+            "Cut",
+            [["sg_sequence", "is", sg_entity]],
+            []
+        )
+        sg_cut_items = []
+        if sg_cut:
+            sg_cut_item_entity = self._app.get_setting("sg_cut_item_entity")
+            # Retrieve all cut items linked to that cut
+            sg_cut_items = self._sg.find(sg_cut_item_entity,
+                [["sg_cut", "is", sg_cut]],
+                ["sg_cut"]
+            )
+
+        # Retrieve shots linked to the sequence
         sg_shots = self._sg.find(
             "Shot",
             [["sg_sequence", "is", sg_entity]],
             ["code", "sg_head_in", "sg_tail_out", "sg_cut_in", "sg_cut_out", "sg_cut_order", "image"],
         )
+
         for sg_shot in sg_shots:
             cut_diff = CutDiff(sg_shot=sg_shot, sg_version=None, edit=None)
             self._cut_diffs.append(cut_diff)
             self.new_cut_diff.emit(cut_diff)
         self._logger.info("Retrieved %d cut differences." % len(sg_shots))
+        self.got_idle.emit()
 
 

@@ -71,6 +71,8 @@ class Ui_Dialog(object):
         self.verticalLayout.addWidget(self.stackedWidget)
         self.feedback_label = QtGui.QLabel(Dialog)
         self.feedback_label.setText("")
+        self.feedback_label.setWordWrap(True)
+        self.feedback_label.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
         self.feedback_label.setObjectName("feedback_label")
         self.verticalLayout.addWidget(self.feedback_label)
         self.line = QtGui.QFrame(Dialog)
