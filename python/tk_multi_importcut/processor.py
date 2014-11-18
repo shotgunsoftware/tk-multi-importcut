@@ -60,7 +60,7 @@ class EdlCut(QtCore.QObject):
         super(EdlCut, self).__init__()
         self._edl = None
         self._sg_entity = None
-        self._cut_diffs = []
+        self._cut_diffs = {}
         self._logger = get_logger()
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
@@ -79,7 +79,7 @@ class EdlCut(QtCore.QObject):
     def reset(self):
         self._edl = None
         self._sg_entity = None
-        self._cut_diffs = []
+        self._cut_diffs = {}
         self._logger.info("Session discarded...")
 
     @QtCore.Slot(str)
@@ -133,36 +133,62 @@ class EdlCut(QtCore.QObject):
     def show_cut_for_sequence(self, sg_entity):
         self._logger.info("Retrieving cut summary for %s" % ( sg_entity))
         self.got_busy.emit()
-        # Retrieve shot names from the EDL
-        shot_names = [x.shot_name() for x in self._edl.entries]
-        # Retrieve cuts linked to the sequence, pick up the latest or approved one
-        # Later, the UI will allow selecting it
-        sg_cut = self._sg.find_one(
-            "Cut",
-            [["sg_sequence", "is", sg_entity]],
-            []
-        )
-        sg_cut_items = []
-        if sg_cut:
-            sg_cut_item_entity = self._app.get_setting("sg_cut_item_entity")
-            # Retrieve all cut items linked to that cut
-            sg_cut_items = self._sg.find(sg_cut_item_entity,
-                [["sg_cut", "is", sg_cut]],
-                ["sg_cut"]
+        self._cut_diffs = {}
+        try:
+            # Retrieve cuts linked to the sequence, pick up the latest or approved one
+            # Later, the UI will allow selecting it
+            sg_cut = self._sg.find_one(
+                "Cut",
+                [["sg_sequence", "is", sg_entity]],
+                []
             )
+            sg_cut_items = []
+            if sg_cut:
+                sg_cut_item_entity = self._app.get_setting("sg_cut_item_entity")
+                # Retrieve all cut items linked to that cut
+                sg_cut_items = self._sg.find(sg_cut_item_entity,
+                    [["sg_cut", "is", sg_cut]],
+                    ["sg_cut"]
+                )
 
-        # Retrieve shots linked to the sequence
-        sg_shots = self._sg.find(
-            "Shot",
-            [["sg_sequence", "is", sg_entity]],
-            ["code", "sg_head_in", "sg_tail_out", "sg_cut_in", "sg_cut_out", "sg_cut_order", "image"],
-        )
-
-        for sg_shot in sg_shots:
-            cut_diff = CutDiff(sg_shot=sg_shot, sg_version=None, edit=None)
-            self._cut_diffs.append(cut_diff)
-            self.new_cut_diff.emit(cut_diff)
-        self._logger.info("Retrieved %d cut differences." % len(sg_shots))
-        self.got_idle.emit()
+            # Retrieve shots linked to the sequence
+            sg_shots = self._sg.find(
+                "Shot",
+                [["sg_sequence", "is", sg_entity]],
+                ["code", "sg_head_in", "sg_tail_out", "sg_cut_in", "sg_cut_out", "sg_cut_order", "image"],
+            )
+            for edit in self._edl.edits:
+                shot_name = edit.get_shot_name()
+                # Is it a duplicate ?
+                if shot_name in self._cut_diffs:
+                    self._logger.info("Found duplicated shot shot %s (%s)" % (shot_name, self._cut_diffs))
+                    sg_shot = self._cut_diffs[sg_shot["code"]][0].sg_shot
+                    cut_diff = CutDiff(sg_shot=sg_shot, sg_version=None, edit=edit)
+                    self._cut_diffs[sg_shot["code"]].append(cut_diff)
+                    self.new_cut_diff.emit(cut_diff)
+                else :
+                    # Do we have a matching shot in SG ?
+                    matching_shot = None
+                    for sg_shot in sg_shots:
+                        if sg_shot["code"] == edit.get_shot_name():
+                            # yes we do
+                            self._logger.info("Found matching existing shot %s" % shot_name)
+                            matching_shot = sg_shot
+                            # Remove this entry from the list
+                            sg_shots.remove(sg_shot)
+                            break
+                    cut_diff = CutDiff(shot_name, sg_shot=matching_shot, edit=edit)
+                    self._cut_diffs[shot_name] = [cut_diff]
+                    self.new_cut_diff.emit(cut_diff)
+            # Process now all sg shots leftover
+            for sg_shot in sg_shots:
+                cut_diff = CutDiff(sg_shot["code"], sg_shot=sg_shot, sg_version=None, edit=None)
+                self._cut_diffs[sg_shot["code"]].append(cut_diff)
+                self.new_cut_diff.emit(cut_diff)
+            self._logger.info("Retrieved %d cut differences." % len(self._cut_diffs))
+        except Exception, e :
+            self._logger.exception(str(e))
+        finally:
+            self.got_idle.emit()
 
 

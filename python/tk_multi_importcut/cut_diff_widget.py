@@ -32,4 +32,4 @@ class CutDiffCard(QtGui.QFrame):
         self._cut_diff = cut_diff
         self.ui = Ui_CutDiffCard()
         self.ui.setupUi(self)
-        self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff._sg_shot["code"])
+        self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)

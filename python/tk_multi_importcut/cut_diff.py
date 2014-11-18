@@ -16,8 +16,17 @@ from sgtk.platform.qt import QtCore
 
 class CutDiff(QtCore.QObject):
 
-    def __init__(self, sg_shot, sg_version, edit):
+    def __init__(self, name, sg_shot=None, sg_version=None, edit=None):
         super(CutDiff, self).__init__()
+        self._name = name
         self._sg_shot = sg_shot
         self._sg_version = sg_version
         self._edit = edit
+
+    @property
+    def sg_shot(self):
+        return self._sg_shot
+
+    @property
+    def name(self):
+        return self._name

@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 import sgtk
 import logging
+import traceback
 from sgtk.platform.qt import QtCore
 
 def get_logger():
@@ -52,7 +53,11 @@ class BundleLogHandler(logging.StreamHandler):
         """
         Emit the given record
         """
-        self.new_message.emit(record.levelno, record.getMessage())
+        if record.exc_info is not None:
+            msg = "%s : %s" % (record.getMessage(), traceback.format_tb(record.exc_info[2]))
+            self.new_message.emit(record.levelno, msg)
+        else:
+            self.new_message.emit(record.levelno, record.getMessage())
         if self._bundle:
             # Pick up the right framework method, given the record level
             if record.levelno == logging.INFO:
@@ -61,6 +66,6 @@ class BundleLogHandler(logging.StreamHandler):
                 self._bundle.log_debug(record.getMessage())
             elif record.levelno == logging.WARNING:
                 self._bundle.log_warning(record.getMessage())
-            elif record.levelno == logging.ERROR:
+            elif record.levelno in [logging.ERROR, logging.CRITICAL]:
                 self._bundle.log_error(record.getMessage())
 
