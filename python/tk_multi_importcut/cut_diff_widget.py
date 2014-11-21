@@ -49,11 +49,20 @@ class CutDiffCard(QtGui.QFrame):
             self.ui.shot_head_in_label.setStyleSheet(
                 "%s\ncolor: %s" % (
                     self.ui.shot_head_in_label.styleSheet(),
-                    _COLORS["yellow"]
+                    _COLORS["sg_red"]
                 )
             )
         self.ui.shot_head_in_label.setText("%s" % head_in)
-        self.ui.shot_tail_out_label.setText("%s" % self._cut_diff.shot_tail_out)
+        tail_out = self._cut_diff.shot_tail_out
+        if tail_out is None:
+            tail_out = self._cut_diff.default_tail_out
+            self.ui.shot_tail_out_label.setStyleSheet(
+                "%s\ncolor: %s" % (
+                    self.ui.shot_tail_out_label.styleSheet(),
+                    _COLORS["sg_red"]
+                )
+            )
+        self.ui.shot_tail_out_label.setText("%s" % tail_out)
 
         self.ui.status_label.setText("%s" % self._cut_diff.diff_type_label)
         if self._cut_diff.diff_type in _DIFF_TYPES_STYLE:

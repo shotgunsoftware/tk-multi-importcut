@@ -16,8 +16,20 @@ configuration:
         type : shotgun_entity_type
         description : The Shotgun entity used to represent cut items
         default_value : CustomEntity09
+    default_head_in:
+        type: int
+        description: Default head in value when creating new shots
+        default_value: 1001
+    head_in_base_timecode:
+        type: str
+        description: "Base timecode corresponding to head in value"
+        default_value: "01:00:00:00"
+    default_tail_out_duration:
+        type: int
+        description: Default tail out duration when creating new shots
+        default_value: 8
 
-# this app works in all engines - it does not contain 
+# this app works in all engines - it does not contain
 # any host application specific commands
 supported_engines: 
 

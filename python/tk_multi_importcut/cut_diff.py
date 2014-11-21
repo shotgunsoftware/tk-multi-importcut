@@ -37,6 +37,9 @@ class CutDiff(QtCore.QObject):
         self._cut_item = cut_item
         self._app = sgtk.platform.current_bundle()
 
+        self._default_head_in = self._app.get_setting("default_head_in")
+        self._head_in_base = edl.frame_from_timecode(self._app.get_setting("head_in_base_timecode"))
+
         # The type of difference we are dealing with
         if not self._sg_shot:
             self._diff_type = _DIFF_TYPES.NEW
@@ -71,7 +74,21 @@ class CutDiff(QtCore.QObject):
 
     @property
     def default_head_in(self):
-        return self._app.get_setting("default_head_in") or 1001
+        return self._default_head_in
+
+    @property
+    def default_tail_out(self):
+        new_tail_duration = self.new_tail_duration
+        if new_tail_duration is None:
+            return None
+        new_cut_out = self.new_cut_out
+        if new_cut_out is None:
+            return None
+        return new_cut_out + new_tail_duration
+
+    @property
+    def head_in_base(self):
+        return self._head_in_base
 
     @property
     def shot_head_in(self):
@@ -99,7 +116,7 @@ class CutDiff(QtCore.QObject):
             offset = self.shot_head_in
             if offset is None:
                 offset = self.default_head_in
-            return offset + self._edit.source_in.to_frame()
+            return offset + self._edit.source_in.to_frame() - self.head_in_base
         return None
 
     @property
@@ -108,7 +125,7 @@ class CutDiff(QtCore.QObject):
             offset = self.shot_head_in
             if offset is None:
                 offset = self.default_head_in
-            return offset + self._edit.source_out.to_frame()
+            return offset + self._edit.source_out.to_frame() - self.head_in_base
         return None
 
     @property
@@ -124,8 +141,14 @@ class CutDiff(QtCore.QObject):
     @property
     def new_head_duration(self):
         if self._edit:
+            new_cut_in = self.new_cut_in
+            if new_cut_in is None:
+                return None
+            head_in = self.shot_head_in
+            if head_in is None:
+                head_in = self.default_head_in
             offset = self.shot_head_in or self._app.get_setting("default_head_in") or 1001
-            return self._edit.source_in.to_frame() - offset
+            return new_cut_in - head_in
         return None
 
     @property
@@ -152,9 +175,11 @@ class CutDiff(QtCore.QObject):
 
     @property
     def new_tail_duration(self):
-        if self._edit and self.shot_tail_out is not None:
-            tail_out = self.shot_tail_out
-            return tail_out - self._edit.source_out.to_frame()
+        tail_out = self.shot_tail_out
+        if tail_out is None:
+            return self._app.get_setting("default_tail_out_duration")
+        if self._edit:
+            return tail_out - self._edit.source_out.to_frame() - self.head_in_base
         return None
 
     @property
@@ -163,4 +188,4 @@ class CutDiff(QtCore.QObject):
 
     @property
     def diff_type_label(self):
-        return self.get_diff_type_label( self._diff_type)
+        return self.get_diff_type_label(self._diff_type)
