@@ -40,6 +40,7 @@ build_ui dialog
 # add any additional .ui files you want converted here!
 build_ui sequence_card
 build_ui cut_diff_card
+build_ui submit_dialog
 
 # build resources
 echo "building resources..."

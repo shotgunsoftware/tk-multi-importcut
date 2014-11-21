@@ -1,0 +1,86 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'submit_dialog.ui'
+#
+#      by: pyside-uic 0.2.13 running on PySide 1.1.1
+#
+# WARNING! All changes made in this file will be lost!
+
+from tank.platform.qt import QtCore, QtGui
+
+class Ui_Dialog(object):
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Dialog")
+        Dialog.resize(400, 300)
+        self.verticalLayout = QtGui.QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.formLayout = QtGui.QFormLayout()
+        self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.FieldsStayAtSizeHint)
+        self.formLayout.setObjectName("formLayout")
+        self.label = QtGui.QLabel(Dialog)
+        self.label.setObjectName("label")
+        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.label)
+        self.lineEdit = QtGui.QLineEdit(Dialog)
+        self.lineEdit.setObjectName("lineEdit")
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.lineEdit)
+        self.label_2 = QtGui.QLabel(Dialog)
+        self.label_2.setObjectName("label_2")
+        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_2)
+        self.label_3 = QtGui.QLabel(Dialog)
+        self.label_3.setObjectName("label_3")
+        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.label_3)
+        self.label_4 = QtGui.QLabel(Dialog)
+        self.label_4.setObjectName("label_4")
+        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_4)
+        self.lineEdit_2 = QtGui.QLineEdit(Dialog)
+        self.lineEdit_2.setObjectName("lineEdit_2")
+        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.lineEdit_2)
+        self.label_5 = QtGui.QLabel(Dialog)
+        self.label_5.setObjectName("label_5")
+        self.formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self.label_5)
+        self.textEdit = QtGui.QTextEdit(Dialog)
+        self.textEdit.setObjectName("textEdit")
+        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.textEdit)
+        self.verticalLayout.addLayout(self.formLayout)
+        self.gridLayout = QtGui.QGridLayout()
+        self.gridLayout.setObjectName("gridLayout")
+        self.label_6 = QtGui.QLabel(Dialog)
+        self.label_6.setObjectName("label_6")
+        self.gridLayout.addWidget(self.label_6, 0, 0, 1, 1)
+        self.label_7 = QtGui.QLabel(Dialog)
+        self.label_7.setObjectName("label_7")
+        self.gridLayout.addWidget(self.label_7, 1, 0, 1, 1)
+        self.label_9 = QtGui.QLabel(Dialog)
+        self.label_9.setObjectName("label_9")
+        self.gridLayout.addWidget(self.label_9, 1, 1, 1, 1)
+        self.label_12 = QtGui.QLabel(Dialog)
+        self.label_12.setObjectName("label_12")
+        self.gridLayout.addWidget(self.label_12, 1, 2, 1, 1)
+        self.label_13 = QtGui.QLabel(Dialog)
+        self.label_13.setObjectName("label_13")
+        self.gridLayout.addWidget(self.label_13, 1, 3, 1, 1)
+        self.verticalLayout.addLayout(self.gridLayout)
+        self.import_cut_button_box = QtGui.QDialogButtonBox(Dialog)
+        self.import_cut_button_box.setOrientation(QtCore.Qt.Horizontal)
+        self.import_cut_button_box.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.import_cut_button_box.setObjectName("import_cut_button_box")
+        self.verticalLayout.addWidget(self.import_cut_button_box)
+
+        self.retranslateUi(Dialog)
+        QtCore.QObject.connect(self.import_cut_button_box, QtCore.SIGNAL("accepted()"), Dialog.accept)
+        QtCore.QObject.connect(self.import_cut_button_box, QtCore.SIGNAL("rejected()"), Dialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("Dialog", "Title", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("Dialog", "From", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("Dialog", "me", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setText(QtGui.QApplication.translate("Dialog", "To", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_5.setText(QtGui.QApplication.translate("Dialog", "Description", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setText(QtGui.QApplication.translate("Dialog", "Summary", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_7.setText(QtGui.QApplication.translate("Dialog", "Total Shots", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_9.setText(QtGui.QApplication.translate("Dialog", "47", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_12.setText(QtGui.QApplication.translate("Dialog", "Cut Changes", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_13.setText(QtGui.QApplication.translate("Dialog", "2000", None, QtGui.QApplication.UnicodeUTF8))
+
