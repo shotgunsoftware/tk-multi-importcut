@@ -16,6 +16,7 @@ from sgtk.platform.qt import QtCore, QtGui
 from .ui.submit_dialog import Ui_submit_dialog
 
 class SubmitDialog(QtGui.QDialog):
+    submit = QtCore.Signal(str,str,str, str)
     def __init__(self, parent=None):
         super(SubmitDialog, self).__init__(parent)
         self.ui = Ui_submit_dialog()
@@ -24,3 +25,14 @@ class SubmitDialog(QtGui.QDialog):
         buttons = self.ui.import_cut_button_box.buttons()
         submit_button = buttons[0]
         submit_button.setText("Import Cut")
+        self.ui.import_cut_button_box.rejected.connect(self.close_dialog)
+        self.ui.import_cut_button_box.accepted.connect(self.submit_cut)
+
+    @QtCore.Slot()
+    def submit_cut(self):
+        self.submit.emit("title", "from", "to", "description")
+        self.close_dialog()
+
+    @QtCore.Slot()
+    def close_dialog(self):
+        self.close()

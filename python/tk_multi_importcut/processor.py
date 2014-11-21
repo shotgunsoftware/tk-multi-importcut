@@ -28,6 +28,7 @@ class Processor(QtCore.QThread):
     new_cut_diff = QtCore.Signal(CutDiff)
     got_busy = QtCore.Signal()
     got_idle = QtCore.Signal()
+    import_cut = QtCore.Signal(str,str,str, str)
     def __init__(self):
         super(Processor, self).__init__()
         self._logger = get_logger()
@@ -40,6 +41,7 @@ class Processor(QtCore.QThread):
         self.reset.connect(self._edl_cut.reset)
         self.retrieve_sequences.connect(self._edl_cut.retrieve_sequences)
         self.show_cut_for_sequence.connect(self._edl_cut.show_cut_for_sequence)
+        self.import_cut.connect(self._edl_cut.do_cut_import)
         # Results
         self._edl_cut.step_done.connect(self.step_done)
         self._edl_cut.new_sg_sequence.connect(self.new_sg_sequence)
@@ -192,4 +194,7 @@ class EdlCut(QtCore.QObject):
         finally:
             self.got_idle.emit()
 
+    @QtCore.Slot(str, str, str, str)
+    def do_cut_import(self, title, sender, to, description):
+        self._logger.info("Importing cut %s" % title)
 
