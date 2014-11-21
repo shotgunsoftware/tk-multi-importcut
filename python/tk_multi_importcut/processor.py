@@ -199,10 +199,45 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Importing cut %s" % title)
         self.got_busy.emit()
         try:
-            pass
+            self.create_sg_cut(title)
         except Exception, e :
             self._logger.exception(str(e))
         finally:
             self.got_idle.emit()
 
-
+    def create_sg_cut(self, title):
+        # Create a new cut
+        sg_cut = self._sg.create(
+            "Cut", {
+                "project" : self._ctx.project,
+                "code" : title,
+                "sg_sequence" : self._sg_entity,
+            },
+            ["id", "code"])
+        # Loop through all edits and create CutItems for them
+        sg_batch_data = []
+        cut_item_entity = self._app.get_setting("sg_cut_item_entity")
+        for shot_name, items in self._cut_diffs.iteritems():
+            for item in items:
+                edit = item.edit
+                if edit:
+                    tc_cut_in = edit.source_in.to_frame()
+                    sg_batch_data.append({
+                        "request_type" : "create",
+                        "entity_type" : cut_item_entity,
+                        "data" : {
+                            "project" : self._ctx.project,
+                            "sg_cut" : sg_cut,
+                            "sg_cut_order" : edit.id,
+                            "sg_timecode_cut_in" : int(edit.source_in.to_seconds() * 1000),
+                            "sg_timecode_cut_out" : int(edit.source_out.to_seconds() * 1000),
+                            "sg_timecode_edl_in" : int(edit.record_in.to_seconds() * 1000),
+                            "sg_timecode_edl_out" : int(edit.record_out.to_seconds() * 1000),
+                            "sg_cut_in" : edit.source_in.to_frame(),
+                            "sg_cut_out" : edit.source_out.to_frame(),
+                            "sg_link" : item.sg_shot,
+                            "sg_version" : None,
+                        }
+                    })
+        if sg_batch_data:
+            self._sg.batch(sg_batch_data)
