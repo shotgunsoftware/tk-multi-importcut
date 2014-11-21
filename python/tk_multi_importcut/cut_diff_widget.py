@@ -70,21 +70,30 @@ class CutDiffCard(QtGui.QFrame):
 
         value = self._cut_diff.cut_in
         new_value = self._cut_diff.new_cut_in
-        self.ui.cut_in_label.setText("%s (%s)" % (new_value, value))
+        self.display_values(self.ui.cut_in_label, new_value, value)
 
         value = self._cut_diff.cut_out
         new_value = self._cut_diff.new_cut_out
-        self.ui.cut_out_label.setText("%s (%s)" % (new_value, value))
+        self.display_values(self.ui.cut_out_label, new_value, value)
 
         value = self._cut_diff.head_duration
         new_value = self._cut_diff.new_head_duration
-        self.ui.head_duration_label.setText("%s (%s)" % (new_value, value))
+        self.display_values(self.ui.head_duration_label, new_value, value)
 
         value = self._cut_diff.duration
         new_value = self._cut_diff.new_duration
-        self.ui.cut_duration_label.setText("%s (%s)" % (new_value, value))
+        self.display_values(self.ui.cut_duration_label, new_value, value)
 
         value = self._cut_diff.tail_duration
         new_value = self._cut_diff.new_tail_duration
-        self.ui.tail_duration_label.setText("%s (%s)" % (new_value, value))
+        self.display_values(self.ui.tail_duration_label, new_value, value)
+
+    def display_values(self, widget, new_value, old_value):
+        if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
+            widget.setText("<font color=%s>%s</font>" % (_COLORS["sg_red"], new_value))
+        else:
+            if new_value != old_value:
+                widget.setText("<font color=%s>%s</font> (%s)" % (_COLORS["sg_red"], new_value, old_value))
+            else:
+                widget.setText("%s (%s)" % (new_value, old_value))
 
