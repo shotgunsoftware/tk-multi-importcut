@@ -11,17 +11,46 @@
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 
-
+import sgtk
 from sgtk.platform.qt import QtCore
+edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
+
+def diff_types(**enums):
+    return type("CutDiffType", (), enums)
+
+_DIFF_TYPES = diff_types(NEW=0, OMITTED=1, REINSTATED=2, CUT_CHANGE=3)
+_DIFF_LABELS = {
+    _DIFF_TYPES.NEW : "New",
+    _DIFF_TYPES.OMITTED : "Omitted",
+    _DIFF_TYPES.REINSTATED : "Reinstated",
+    _DIFF_TYPES.CUT_CHANGE : "Cut Change",
+}
 
 class CutDiff(QtCore.QObject):
 
-    def __init__(self, name, sg_shot=None, sg_version=None, edit=None):
+    def __init__(self, name, sg_shot=None, sg_version=None, edit=None, cut_item=None):
         super(CutDiff, self).__init__()
         self._name = name
         self._sg_shot = sg_shot
         self._sg_version = sg_version
         self._edit = edit
+        self._cut_item = cut_item
+        self._app = sgtk.platform.current_bundle()
+
+        # The type of difference we are dealing with
+        if not self._sg_shot:
+            self._diff_type = _DIFF_TYPES.NEW
+        elif not self._edit:
+            self._diff_type = _DIFF_TYPES.OMITTED
+        # We have both a shot and an edit
+        elif self._sg_shot["sg_status_list"] == "omt":
+            self._diff_type = _DIFF_TYPES.REINSTATED
+        else:
+            self._diff_type = _DIFF_TYPES.CUT_CHANGE
+
+    @classmethod
+    def get_diff_type_label(cls, diff_type):
+        return _DIFF_LABELS[diff_type]
 
     @property
     def sg_shot(self):
@@ -30,3 +59,108 @@ class CutDiff(QtCore.QObject):
     @property
     def name(self):
         return self._name
+
+    @property
+    def version_name(self):
+        if self._edit:
+            clip_name = self._edit.get_clip_name()
+            if clip_name:
+                # Can have a .mov extension
+                return clip_name.split(".")[0]
+        return None
+
+    @property
+    def default_head_in(self):
+        return self._app.get_setting("default_head_in") or 1001
+
+    @property
+    def shot_head_in(self):
+        if self._sg_shot:
+            return self._sg_shot.get("sg_head_in")
+        return None
+
+    @property
+    def shot_tail_out(self):
+        if self._sg_shot:
+            return self._sg_shot.get("sg_tail_out")
+        return None
+
+    @property
+    def cut_in(self):
+        return None
+
+    @property
+    def cut_out(self):
+        return None
+
+    @property
+    def new_cut_in(self):
+        if self._edit:
+            offset = self.shot_head_in
+            if offset is None:
+                offset = self.default_head_in
+            return offset + self._edit.source_in.to_frame()
+        return None
+
+    @property
+    def new_cut_out(self):
+        if self._edit:
+            offset = self.shot_head_in
+            if offset is None:
+                offset = self.default_head_in
+            return offset + self._edit.source_out.to_frame()
+        return None
+
+    @property
+    def head_duration(self):
+        if not self._cut_item or not self._sg_shot:
+            return None
+        cut_in = self._cut_item["sg_cut_in"]
+        head_in = self.shot_head_in
+        if cut_in is None or head_in is None:
+            return None
+        return cut_in - head_in
+
+    @property
+    def new_head_duration(self):
+        if self._edit:
+            offset = self.shot_head_in or self._app.get_setting("default_head_in") or 1001
+            return self._edit.source_in.to_frame() - offset
+        return None
+
+    @property
+    def duration(self):
+        if self._cut_item:
+            return self._cut_item["sg_cut_duration"]
+        return None
+
+    @property
+    def new_duration(self):
+        if self._edit:
+            return self._edit.source_duration
+        return None
+
+    @property
+    def tail_duration(self):
+        if not self._cut_item or not self._sg_shot:
+            return None
+        cut_out = self._cut_item["sg_cut_out"]
+        tail_out = self.shot_tail_out
+        if cut_out is None or tail_out is None:
+            return None
+        return cut_out - tail_out
+
+    @property
+    def new_tail_duration(self):
+        if self._edit and self.shot_tail_out is not None:
+            tail_out = self.shot_tail_out
+            return tail_out - self._edit.source_out.to_frame()
+        return None
+
+    @property
+    def diff_type(self):
+        return self._diff_type
+
+    @property
+    def diff_type_label(self):
+        return self.get_diff_type_label( self._diff_type)

@@ -72,8 +72,9 @@ class EdlCut(QtCore.QObject):
         # Check things are right
         # Add some lambda to retrieve properties
         edit.get_shot_name = lambda : edit._shot_name
-        if not edit.get_shot_name():
-            raise RuntimeError("Couldn't extract a shot name")
+        edit.get_clip_name = lambda : edit._clip_name
+        if not edit.get_shot_name() and not edit.get_clip_name():
+            raise RuntimeError("Couldn't extract a shot name nor a clip name, one of them is required")
 
     @QtCore.Slot(str)
     def reset(self):
@@ -155,7 +156,7 @@ class EdlCut(QtCore.QObject):
             sg_shots = self._sg.find(
                 "Shot",
                 [["sg_sequence", "is", sg_entity]],
-                ["code", "sg_head_in", "sg_tail_out", "sg_cut_in", "sg_cut_out", "sg_cut_order", "image"],
+                ["code", "sg_status_list", "sg_head_in", "sg_tail_out", "sg_cut_in", "sg_cut_out", "sg_cut_order", "image"],
             )
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>708</width>
+    <width>737</width>
     <height>82</height>
    </rect>
   </property>
@@ -50,14 +50,20 @@
           </widget>
          </item>
          <item row="0" column="0">
-          <widget class="QLabel" name="label_13">
+          <widget class="QLabel" name="shot_title_label">
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
            <property name="text">
             <string>SHOT</string>
+           </property>
+           <property name="constant_title" stdset="0">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QLabel" name="label_15">
+          <widget class="QLabel" name="version_title_label">
            <property name="text">
             <string>VERSION</string>
            </property>
@@ -74,6 +80,13 @@
           <widget class="QLabel" name="status_label">
            <property name="text">
             <string>New</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="extra_label">
+           <property name="text">
+            <string>TextLabel</string>
            </property>
           </widget>
          </item>
@@ -97,9 +110,9 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="shot_head_in_label">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(84, 84, 84);
 border-top: 1px solid black;
 border-left: 1px solid black;</string>
          </property>
@@ -112,9 +125,9 @@ border-left: 1px solid black;</string>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="cut_in_label">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(84, 84, 84);
 border-top: 1px solid black;
 </string>
          </property>
@@ -129,7 +142,7 @@ border-top: 1px solid black;
        <item>
         <widget class="QLabel" name="label_5">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(84, 84, 84);
 border-top: 1px solid black;
 </string>
          </property>
@@ -137,7 +150,7 @@ border-top: 1px solid black;
           <number>0</number>
          </property>
          <property name="text">
-          <string>125</string>
+          <string/>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -148,9 +161,9 @@ border-top: 1px solid black;
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_3">
+        <widget class="QLabel" name="cut_out_label">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(84, 84, 84);
 border-top: 1px solid black;
 </string>
          </property>
@@ -163,9 +176,9 @@ border-top: 1px solid black;
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="shot_tail_out_label">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(84, 84, 84);
 border-top: 1px solid black;
 border-right: 1px solid black;</string>
          </property>
@@ -181,16 +194,13 @@ border-right: 1px solid black;</string>
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <property name="margin">
-        <number>0</number>
-       </property>
        <property name="spacing">
         <number>0</number>
        </property>
        <item row="0" column="1">
         <widget class="QLabel" name="cut_title_label">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(74, 74, 74);
 border-top: 1px solid black;
 border-left: 1px solid black;
 </string>
@@ -209,7 +219,7 @@ border-left: 1px solid black;
        <item row="0" column="0">
         <widget class="QLabel" name="head_title_label">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(74, 74, 74);
 border-top: 1px solid black;
 border-left: 1px solid black;
 </string>
@@ -231,7 +241,7 @@ border-left: 1px solid black;
        <item row="0" column="2">
         <widget class="QLabel" name="tail_title_label">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(74, 74, 74);
 border-top: 1px solid black;
 border-left: 1px solid black;
 border-right: 1px solid black;</string>
@@ -248,9 +258,9 @@ border-right: 1px solid black;</string>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="head_label">
+        <widget class="QLabel" name="head_duration_label">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(84, 84, 84);
 border-top: 1px solid black;
 border-bottom: 1px solid black;
 border-left: 1px solid black;
@@ -268,9 +278,9 @@ border-left: 1px solid black;
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLabel" name="cut_label">
+        <widget class="QLabel" name="cut_duration_label">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(84, 84, 84);
 border-top: 1px solid black;
 border-bottom: 1px solid black;
 border-left: 1px solid black;
@@ -288,9 +298,9 @@ border-left: 1px solid black;
         </widget>
        </item>
        <item row="1" column="2">
-        <widget class="QLabel" name="tail_label">
+        <widget class="QLabel" name="tail_duration_label">
          <property name="styleSheet">
-          <string notr="true">background-color : rgb(126, 126, 126);
+          <string notr="true">background-color : rgb(84, 84, 84);
 border-top: 1px solid black;
 border-left: 1px solid black;
 border-right: 1px solid black;

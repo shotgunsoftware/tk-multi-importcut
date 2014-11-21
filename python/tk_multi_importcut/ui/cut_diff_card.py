@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_CutDiffCard(object):
     def setupUi(self, CutDiffCard):
         CutDiffCard.setObjectName("CutDiffCard")
-        CutDiffCard.resize(708, 82)
+        CutDiffCard.resize(737, 82)
         CutDiffCard.setFrameShape(QtGui.QFrame.StyledPanel)
         CutDiffCard.setFrameShadow(QtGui.QFrame.Raised)
         self.horizontalLayout_2 = QtGui.QHBoxLayout(CutDiffCard)
@@ -32,18 +32,23 @@ class Ui_CutDiffCard(object):
         self.version_name_label = QtGui.QLabel(CutDiffCard)
         self.version_name_label.setObjectName("version_name_label")
         self.gridLayout_2.addWidget(self.version_name_label, 1, 1, 1, 1)
-        self.label_13 = QtGui.QLabel(CutDiffCard)
-        self.label_13.setObjectName("label_13")
-        self.gridLayout_2.addWidget(self.label_13, 0, 0, 1, 1)
-        self.label_15 = QtGui.QLabel(CutDiffCard)
-        self.label_15.setObjectName("label_15")
-        self.gridLayout_2.addWidget(self.label_15, 1, 0, 1, 1)
+        self.shot_title_label = QtGui.QLabel(CutDiffCard)
+        self.shot_title_label.setStyleSheet("")
+        self.shot_title_label.setProperty("constant_title", True)
+        self.shot_title_label.setObjectName("shot_title_label")
+        self.gridLayout_2.addWidget(self.shot_title_label, 0, 0, 1, 1)
+        self.version_title_label = QtGui.QLabel(CutDiffCard)
+        self.version_title_label.setObjectName("version_title_label")
+        self.gridLayout_2.addWidget(self.version_title_label, 1, 0, 1, 1)
         self.shot_name_label = QtGui.QLabel(CutDiffCard)
         self.shot_name_label.setObjectName("shot_name_label")
         self.gridLayout_2.addWidget(self.shot_name_label, 0, 1, 1, 1)
         self.status_label = QtGui.QLabel(CutDiffCard)
         self.status_label.setObjectName("status_label")
         self.gridLayout_2.addWidget(self.status_label, 2, 0, 1, 1)
+        self.extra_label = QtGui.QLabel(CutDiffCard)
+        self.extra_label.setObjectName("extra_label")
+        self.gridLayout_2.addWidget(self.extra_label, 2, 1, 1, 1)
         self.horizontalLayout_4.addLayout(self.gridLayout_2)
         self.horizontalLayout_4.setStretch(1, 1)
         self.left_layout.addLayout(self.horizontalLayout_4)
@@ -55,50 +60,50 @@ class Ui_CutDiffCard(object):
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setSpacing(0)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.label_2 = QtGui.QLabel(CutDiffCard)
-        self.label_2.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.shot_head_in_label = QtGui.QLabel(CutDiffCard)
+        self.shot_head_in_label.setStyleSheet("background-color : rgb(84, 84, 84);\n"
 "border-top: 1px solid black;\n"
 "border-left: 1px solid black;")
-        self.label_2.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_2.setObjectName("label_2")
-        self.horizontalLayout_3.addWidget(self.label_2)
-        self.label_4 = QtGui.QLabel(CutDiffCard)
-        self.label_4.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.shot_head_in_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.shot_head_in_label.setObjectName("shot_head_in_label")
+        self.horizontalLayout_3.addWidget(self.shot_head_in_label)
+        self.cut_in_label = QtGui.QLabel(CutDiffCard)
+        self.cut_in_label.setStyleSheet("background-color : rgb(84, 84, 84);\n"
 "border-top: 1px solid black;\n"
 "")
-        self.label_4.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_4.setObjectName("label_4")
-        self.horizontalLayout_3.addWidget(self.label_4)
+        self.cut_in_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.cut_in_label.setObjectName("cut_in_label")
+        self.horizontalLayout_3.addWidget(self.cut_in_label)
         self.label_5 = QtGui.QLabel(CutDiffCard)
-        self.label_5.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.label_5.setStyleSheet("background-color : rgb(84, 84, 84);\n"
 "border-top: 1px solid black;\n"
 "")
         self.label_5.setLineWidth(0)
+        self.label_5.setText("")
         self.label_5.setAlignment(QtCore.Qt.AlignCenter)
         self.label_5.setIndent(0)
         self.label_5.setObjectName("label_5")
         self.horizontalLayout_3.addWidget(self.label_5)
-        self.label_3 = QtGui.QLabel(CutDiffCard)
-        self.label_3.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.cut_out_label = QtGui.QLabel(CutDiffCard)
+        self.cut_out_label.setStyleSheet("background-color : rgb(84, 84, 84);\n"
 "border-top: 1px solid black;\n"
 "")
-        self.label_3.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_3.setObjectName("label_3")
-        self.horizontalLayout_3.addWidget(self.label_3)
-        self.label = QtGui.QLabel(CutDiffCard)
-        self.label.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.cut_out_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.cut_out_label.setObjectName("cut_out_label")
+        self.horizontalLayout_3.addWidget(self.cut_out_label)
+        self.shot_tail_out_label = QtGui.QLabel(CutDiffCard)
+        self.shot_tail_out_label.setStyleSheet("background-color : rgb(84, 84, 84);\n"
 "border-top: 1px solid black;\n"
 "border-right: 1px solid black;")
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setObjectName("label")
-        self.horizontalLayout_3.addWidget(self.label)
+        self.shot_tail_out_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.shot_tail_out_label.setObjectName("shot_tail_out_label")
+        self.horizontalLayout_3.addWidget(self.shot_tail_out_label)
         self.right_layout.addLayout(self.horizontalLayout_3)
         self.gridLayout = QtGui.QGridLayout()
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setSpacing(0)
         self.gridLayout.setObjectName("gridLayout")
         self.cut_title_label = QtGui.QLabel(CutDiffCard)
-        self.cut_title_label.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.cut_title_label.setStyleSheet("background-color : rgb(74, 74, 74);\n"
 "border-top: 1px solid black;\n"
 "border-left: 1px solid black;\n"
 "")
@@ -107,7 +112,7 @@ class Ui_CutDiffCard(object):
         self.cut_title_label.setObjectName("cut_title_label")
         self.gridLayout.addWidget(self.cut_title_label, 0, 1, 1, 1)
         self.head_title_label = QtGui.QLabel(CutDiffCard)
-        self.head_title_label.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.head_title_label.setStyleSheet("background-color : rgb(74, 74, 74);\n"
 "border-top: 1px solid black;\n"
 "border-left: 1px solid black;\n"
 "")
@@ -117,7 +122,7 @@ class Ui_CutDiffCard(object):
         self.head_title_label.setObjectName("head_title_label")
         self.gridLayout.addWidget(self.head_title_label, 0, 0, 1, 1)
         self.tail_title_label = QtGui.QLabel(CutDiffCard)
-        self.tail_title_label.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.tail_title_label.setStyleSheet("background-color : rgb(74, 74, 74);\n"
 "border-top: 1px solid black;\n"
 "border-left: 1px solid black;\n"
 "border-right: 1px solid black;")
@@ -125,36 +130,36 @@ class Ui_CutDiffCard(object):
         self.tail_title_label.setAlignment(QtCore.Qt.AlignCenter)
         self.tail_title_label.setObjectName("tail_title_label")
         self.gridLayout.addWidget(self.tail_title_label, 0, 2, 1, 1)
-        self.head_label = QtGui.QLabel(CutDiffCard)
-        self.head_label.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.head_duration_label = QtGui.QLabel(CutDiffCard)
+        self.head_duration_label.setStyleSheet("background-color : rgb(84, 84, 84);\n"
 "border-top: 1px solid black;\n"
 "border-bottom: 1px solid black;\n"
 "border-left: 1px solid black;\n"
 "")
-        self.head_label.setFrameShape(QtGui.QFrame.NoFrame)
-        self.head_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.head_label.setObjectName("head_label")
-        self.gridLayout.addWidget(self.head_label, 1, 0, 1, 1)
-        self.cut_label = QtGui.QLabel(CutDiffCard)
-        self.cut_label.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.head_duration_label.setFrameShape(QtGui.QFrame.NoFrame)
+        self.head_duration_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.head_duration_label.setObjectName("head_duration_label")
+        self.gridLayout.addWidget(self.head_duration_label, 1, 0, 1, 1)
+        self.cut_duration_label = QtGui.QLabel(CutDiffCard)
+        self.cut_duration_label.setStyleSheet("background-color : rgb(84, 84, 84);\n"
 "border-top: 1px solid black;\n"
 "border-bottom: 1px solid black;\n"
 "border-left: 1px solid black;\n"
 "")
-        self.cut_label.setFrameShape(QtGui.QFrame.NoFrame)
-        self.cut_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.cut_label.setObjectName("cut_label")
-        self.gridLayout.addWidget(self.cut_label, 1, 1, 1, 1)
-        self.tail_label = QtGui.QLabel(CutDiffCard)
-        self.tail_label.setStyleSheet("background-color : rgb(126, 126, 126);\n"
+        self.cut_duration_label.setFrameShape(QtGui.QFrame.NoFrame)
+        self.cut_duration_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.cut_duration_label.setObjectName("cut_duration_label")
+        self.gridLayout.addWidget(self.cut_duration_label, 1, 1, 1, 1)
+        self.tail_duration_label = QtGui.QLabel(CutDiffCard)
+        self.tail_duration_label.setStyleSheet("background-color : rgb(84, 84, 84);\n"
 "border-top: 1px solid black;\n"
 "border-left: 1px solid black;\n"
 "border-right: 1px solid black;\n"
 "border-bottom: 1px solid black;")
-        self.tail_label.setFrameShape(QtGui.QFrame.NoFrame)
-        self.tail_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.tail_label.setObjectName("tail_label")
-        self.gridLayout.addWidget(self.tail_label, 1, 2, 1, 1)
+        self.tail_duration_label.setFrameShape(QtGui.QFrame.NoFrame)
+        self.tail_duration_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.tail_duration_label.setObjectName("tail_duration_label")
+        self.gridLayout.addWidget(self.tail_duration_label, 1, 2, 1, 1)
         self.right_layout.addLayout(self.gridLayout)
         self.right_layout.setStretch(0, 1)
         self.right_layout.setStretch(1, 2)
@@ -168,20 +173,20 @@ class Ui_CutDiffCard(object):
     def retranslateUi(self, CutDiffCard):
         CutDiffCard.setWindowTitle(QtGui.QApplication.translate("CutDiffCard", "Frame", None, QtGui.QApplication.UnicodeUTF8))
         self.version_name_label.setText(QtGui.QApplication.translate("CutDiffCard", "sh_001_001_fg_v001", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_13.setText(QtGui.QApplication.translate("CutDiffCard", "SHOT", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_15.setText(QtGui.QApplication.translate("CutDiffCard", "VERSION", None, QtGui.QApplication.UnicodeUTF8))
+        self.shot_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "SHOT", None, QtGui.QApplication.UnicodeUTF8))
+        self.version_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "VERSION", None, QtGui.QApplication.UnicodeUTF8))
         self.shot_name_label.setText(QtGui.QApplication.translate("CutDiffCard", "sh_001_001", None, QtGui.QApplication.UnicodeUTF8))
         self.status_label.setText(QtGui.QApplication.translate("CutDiffCard", "New", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("CutDiffCard", "1001", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("CutDiffCard", "1009", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("CutDiffCard", "125", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("CutDiffCard", "1028", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("CutDiffCard", "1036", None, QtGui.QApplication.UnicodeUTF8))
+        self.extra_label.setText(QtGui.QApplication.translate("CutDiffCard", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.shot_head_in_label.setText(QtGui.QApplication.translate("CutDiffCard", "1001", None, QtGui.QApplication.UnicodeUTF8))
+        self.cut_in_label.setText(QtGui.QApplication.translate("CutDiffCard", "1009", None, QtGui.QApplication.UnicodeUTF8))
+        self.cut_out_label.setText(QtGui.QApplication.translate("CutDiffCard", "1028", None, QtGui.QApplication.UnicodeUTF8))
+        self.shot_tail_out_label.setText(QtGui.QApplication.translate("CutDiffCard", "1036", None, QtGui.QApplication.UnicodeUTF8))
         self.cut_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "CUT", None, QtGui.QApplication.UnicodeUTF8))
         self.head_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "HEAD", None, QtGui.QApplication.UnicodeUTF8))
         self.tail_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "TAIL", None, QtGui.QApplication.UnicodeUTF8))
-        self.head_label.setText(QtGui.QApplication.translate("CutDiffCard", "8", None, QtGui.QApplication.UnicodeUTF8))
-        self.cut_label.setText(QtGui.QApplication.translate("CutDiffCard", "20", None, QtGui.QApplication.UnicodeUTF8))
-        self.tail_label.setText(QtGui.QApplication.translate("CutDiffCard", "8", None, QtGui.QApplication.UnicodeUTF8))
+        self.head_duration_label.setText(QtGui.QApplication.translate("CutDiffCard", "8", None, QtGui.QApplication.UnicodeUTF8))
+        self.cut_duration_label.setText(QtGui.QApplication.translate("CutDiffCard", "20", None, QtGui.QApplication.UnicodeUTF8))
+        self.tail_duration_label.setText(QtGui.QApplication.translate("CutDiffCard", "8", None, QtGui.QApplication.UnicodeUTF8))
 
 from . import resources_rc

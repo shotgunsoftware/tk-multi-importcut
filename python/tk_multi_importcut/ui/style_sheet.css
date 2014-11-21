@@ -31,3 +31,7 @@ QFrame:selected#SequenceCard {
 #horizontalLayout_3 {
     background-color: orange;
 }
+/* Titles in SG blue */
+QLabel#shot_title_label, #version_title_label, #head_title_label, #cut_title_label, #tail_title_label {
+    color: #2C93E2
+}
