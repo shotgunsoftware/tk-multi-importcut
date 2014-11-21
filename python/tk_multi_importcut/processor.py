@@ -197,4 +197,12 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(str, str, str, str)
     def do_cut_import(self, title, sender, to, description):
         self._logger.info("Importing cut %s" % title)
+        self.got_busy.emit()
+        try:
+            pass
+        except Exception, e :
+            self._logger.exception(str(e))
+        finally:
+            self.got_idle.emit()
+
 

@@ -28,6 +28,11 @@ configuration:
         type: int
         description: Default tail out duration when creating new shots
         default_value: 8
+    ensure_sg_setup_hook:
+        type: hook
+        parameters: []
+        default_value: '{self}/post_install.py'
+        description: "Hook that ensure needed entities and fields are available"
 
 # this app works in all engines - it does not contain
 # any host application specific commands

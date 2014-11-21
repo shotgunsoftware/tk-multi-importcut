@@ -21,7 +21,7 @@ class ImportCutApp(Application):
         """
         Called as the application is being initialized
         """
-        
+        self.execute_hook_method("ensure_sg_setup_hook", "ensure_sg_setup")
         # first, we use the special import_module command to access the app module
         # that resides inside the python folder in the app. This is where the actual UI
         # and business logic of the app is kept. By using the import_module command,
