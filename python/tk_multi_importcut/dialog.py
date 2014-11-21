@@ -28,7 +28,7 @@ from .logger import BundleLogHandler, get_logger
 from .sequence_widget import SequenceCard
 from .cut_diff import CutDiff
 from .cut_diff_widget import CutDiffCard
-
+from .submit_dialog import SubmitDialog
 def show_dialog(app_instance):
     """
     Shows the main dialog window.
@@ -97,6 +97,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
         self.ui.reset_button.clicked.connect(self.do_reset)
+        self.ui.submit_button.clicked.connect(self.import_cut)
 
     @QtCore.Slot()
     def do_reset(self):
@@ -235,6 +236,13 @@ class AppDialog(QtGui.QWidget):
             witem = self.ui.cutsummary_list.takeAt(i)
             widget = witem.widget()
             widget.close()
+
+    @QtCore.Slot()
+    def import_cut(self):
+        dialog = SubmitDialog(parent=self)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
 
     def closeEvent(self, evt):
         """
