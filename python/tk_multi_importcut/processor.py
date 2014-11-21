@@ -10,7 +10,7 @@
 import sgtk
 from sgtk.platform.qt import QtCore
 from .logger import get_logger
-from .cut_diff import CutDiff
+from .cut_diff import CutDiff, _DIFF_TYPES
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
@@ -135,6 +135,7 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(dict)
     def show_cut_for_sequence(self, sg_entity):
         self._logger.info("Retrieving cut summary for %s" % ( sg_entity))
+        self._sg_entity = sg_entity
         self.got_busy.emit()
         self._cut_diffs = {}
         try:
@@ -215,6 +216,34 @@ class EdlCut(QtCore.QObject):
                 "sg_sequence" : self._sg_entity,
             },
             ["id", "code"])
+        sg_batch_data = []
+        # Loop over all shots that we need to create
+        for shot_name, items in self._cut_diffs.iteritems():
+            for cut_diff in items: # FIXME : handle shot duplicates
+                if cut_diff.diff_type == _DIFF_TYPES.NEW:
+                    self._logger.info("Will create shot %s for %s" % (shot_name, self._sg_entity))
+                    sg_batch_data.append({
+                        "request_type" : "create",
+                        "entity_type" : "Shot",
+                        "data" : {
+                            "project" : self._ctx.project,
+                            "code" : shot_name,
+                            "sg_sequence" : self._sg_entity,
+                            "sg_head_in" : cut_diff.default_head_in,
+                            "sg_tail_out" : cut_diff.default_tail_out,
+                        }
+                    })
+        if sg_batch_data:
+            res = self._sg.batch(sg_batch_data)
+            self._logger.info("Created %d new shots." % len(res))
+            # Update cut_diffs with the new shots
+            for sg_shot in res:
+                shot_name = sg_shot["code"]
+                if shot_name not in self._cut_diffs:
+                    raise RuntimeError("Created shot %s, but couldn't retrieve it in our list")
+                for cut_diff in self._cut_diffs[shot_name]:
+                    # FIXME : update the diff type
+                    cut_diff._sg_shot = sg_shot
         # Loop through all edits and create CutItems for them
         sg_batch_data = []
         cut_item_entity = self._app.get_setting("sg_cut_item_entity")
