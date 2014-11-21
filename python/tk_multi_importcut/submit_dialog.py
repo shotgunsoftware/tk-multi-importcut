@@ -30,7 +30,10 @@ class SubmitDialog(QtGui.QDialog):
 
     @QtCore.Slot()
     def submit_cut(self):
-        self.submit.emit("title", "from", "to", "description")
+        title = self.ui.title_text.text()
+        to = self.ui.to_text.text()
+        description = self.ui.description_text.toPlainText()
+        self.submit.emit(title, "me", to, description)
         self.close_dialog()
 
     @QtCore.Slot()

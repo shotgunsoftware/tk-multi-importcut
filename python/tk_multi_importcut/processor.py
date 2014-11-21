@@ -204,6 +204,7 @@ class EdlCut(QtCore.QObject):
             self._logger.exception(str(e))
         finally:
             self.got_idle.emit()
+        self._logger.info("Cut %s imported" % title)
 
     def create_sg_cut(self, title):
         # Create a new cut
