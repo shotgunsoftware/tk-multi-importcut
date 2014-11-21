@@ -37,6 +37,5 @@ requires_engine_version:
 frameworks:
     - {"name": "tk-framework-wb", "version": "v2.x.x"}
     - {"name": "tk-framework-editorial", "version": "v0.x.x"}
-    - {"name": "tk-framework-qtwidgets", "version": "v1.x.x"}
 
     

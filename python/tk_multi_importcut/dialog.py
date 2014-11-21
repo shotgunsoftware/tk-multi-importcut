@@ -16,7 +16,6 @@ import logging
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-overlay_widget = sgtk.platform.import_framework("tk-framework-qtwidgets", "overlay_widget")
 # Import needed Framework
 widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
 # Rename the drop area label to the name we chose in Designer when promoting our label
@@ -75,7 +74,6 @@ class AppDialog(QtGui.QWidget):
         # lastly, set up our very basic UI
         self.set_custom_style()
         self.set_logger()
-        self._overlay_widget = overlay_widget.ShotgunOverlayWidget(parent=self.ui.sequence_list_page)
         # Keep this thread for UI stuff
         # Handle data and processong in a separate thread
         self._processor = Processor()
@@ -155,9 +153,6 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.setEnabled(False)
         self.ui.email_button.setEnabled(False)
         self.ui.submit_button.setEnabled(False)
-        # Show the busy spinner
-#        self._overlay_widget.start_spin()
-#        self._overlay_widget.show()
 
     @QtCore.Slot()
     def set_idle(self):
@@ -167,8 +162,6 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.setEnabled(True)
         self.ui.email_button.setEnabled(True)
         self.ui.submit_button.setEnabled(True)
-        # Hide the busy spinner
-#        self._overlay_widget.hide()
 
     def goto_step(self, which):
         self.set_ui_for_step(which)
