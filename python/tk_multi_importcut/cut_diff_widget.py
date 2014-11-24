@@ -41,6 +41,7 @@ class CutDiffCard(QtGui.QFrame):
         self._cut_diff = cut_diff
         self.ui = Ui_CutDiffCard()
         self.ui.setupUi(self)
+        self.ui.cut_order_label.setText("%s" % self._cut_diff.new_cut_order)
         self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)
         self.ui.version_name_label.setText(self._cut_diff.version_name)
         head_in = self._cut_diff.shot_head_in

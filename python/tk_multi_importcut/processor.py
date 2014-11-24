@@ -34,6 +34,12 @@ class Processor(QtCore.QThread):
         self._logger = get_logger()
         self._edl_cut = None
 
+    @property
+    def title(self):
+        if self._edl_cut and self._edl_cut._edl:
+            return self._edl_cut._edl.title
+        return None
+
     def run(self):
         self._edl_cut = EdlCut()
         # Orders
@@ -267,6 +273,7 @@ class EdlCut(QtCore.QObject):
                             "sg_cut_out" : edit.source_out.to_frame(),
                             "sg_link" : item.sg_shot,
                             "sg_version" : None,
+                            "sg_fps" : self._edl.fps,
                         }
                     })
         if sg_batch_data:

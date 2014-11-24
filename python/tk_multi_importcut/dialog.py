@@ -239,7 +239,7 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def import_cut(self):
-        dialog = SubmitDialog(parent=self)
+        dialog = SubmitDialog(parent=self, title=self._processor.title)
         dialog.submit.connect(self._processor.import_cut)
         dialog.show()
         dialog.raise_()

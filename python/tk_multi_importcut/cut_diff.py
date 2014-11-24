@@ -115,6 +115,18 @@ class CutDiff(QtCore.QObject):
         return None
 
     @property
+    def cut_order(self):
+        if self._sg_shot:
+            return self._sg_shot["sg_cut_order"]
+        return None
+
+    @property
+    def new_cut_order(self):
+        if self._edit:
+            return self._edit.id
+        return None
+
+    @property
     def new_cut_in(self):
         if self._edit:
             offset = self.shot_head_in

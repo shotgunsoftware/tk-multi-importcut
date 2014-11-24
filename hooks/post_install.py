@@ -59,6 +59,7 @@ class PostInstall(Hook):
             "sg_cut" : { "type" : "entity", "properties" : { "valid_types" : ["Cut"]}},
             "sg_link" : { "type" : "entity", "properties" : { "valid_types" : ["Shot"]}},
             "sg_version" : { "type" : "entity", "properties" : { "valid_types" : ["Version"]}},
+            "sg_fps" : { "type" : "number", },
         }
         for field_name, field in fields.iteritems():
             if field_name not in schema:
