@@ -28,13 +28,13 @@ _DIFF_LABELS = {
 
 class CutDiff(QtCore.QObject):
 
-    def __init__(self, name, sg_shot=None, sg_version=None, edit=None, cut_item=None):
+    def __init__(self, name, sg_shot=None, sg_version=None, edit=None, sg_cut_item=None):
         super(CutDiff, self).__init__()
         self._name = name
         self._sg_shot = sg_shot
         self._sg_version = sg_version
         self._edit = edit
-        self._cut_item = cut_item
+        self._sg_cut_item = sg_cut_item
         self._app = sgtk.platform.current_bundle()
 
         self._default_head_in = self._app.get_setting("default_head_in")
@@ -58,6 +58,14 @@ class CutDiff(QtCore.QObject):
     @property
     def sg_shot(self):
         return self._sg_shot
+
+    @property
+    def sg_cut_item(self):
+        return self._sg_cut_item
+
+    @property
+    def edit(self):
+        return self._edit
 
     @property
     def edit(self):
@@ -108,10 +116,14 @@ class CutDiff(QtCore.QObject):
 
     @property
     def cut_in(self):
+        if self._sg_cut_item:
+            return self._sg_cut_item["sg_cut_in"]
         return None
 
     @property
     def cut_out(self):
+        if self._sg_cut_item:
+            return self._sg_cut_item["sg_cut_out"]
         return None
 
     @property
@@ -141,14 +153,15 @@ class CutDiff(QtCore.QObject):
             offset = self.shot_head_in
             if offset is None:
                 offset = self.default_head_in
-            return offset + self._edit.source_out.to_frame() - self.head_in_base
+            # Timecode out are exclusive, so actual last frame is tc_out -1
+            return offset + self._edit.source_out.to_frame() -1 - self.head_in_base
         return None
 
     @property
     def head_duration(self):
-        if not self._cut_item or not self._sg_shot:
+        if not self._sg_cut_item or not self._sg_shot:
             return None
-        cut_in = self._cut_item["sg_cut_in"]
+        cut_in = self._sg_cut_item["sg_cut_in"]
         head_in = self.shot_head_in
         if cut_in is None or head_in is None:
             return None
@@ -169,8 +182,8 @@ class CutDiff(QtCore.QObject):
 
     @property
     def duration(self):
-        if self._cut_item:
-            return self._cut_item["sg_cut_duration"]
+        if self._sg_cut_item:
+            return self._sg_cut_item["sg_cut_duration"]
         return None
 
     @property
@@ -181,13 +194,13 @@ class CutDiff(QtCore.QObject):
 
     @property
     def tail_duration(self):
-        if not self._cut_item or not self._sg_shot:
+        if not self._sg_cut_item or not self._sg_shot:
             return None
-        cut_out = self._cut_item["sg_cut_out"]
+        cut_out = self._sg_cut_item["sg_cut_out"]
         tail_out = self.shot_tail_out
         if cut_out is None or tail_out is None:
             return None
-        return cut_out - tail_out
+        return  tail_out - cut_out
 
     @property
     def new_tail_duration(self):

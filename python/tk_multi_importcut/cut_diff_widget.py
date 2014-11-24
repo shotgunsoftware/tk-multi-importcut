@@ -8,12 +8,16 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
+import sgtk
+import decimal
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
+edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
 from .ui.cut_diff_card import Ui_CutDiffCard
 from .cut_diff import CutDiff, _DIFF_TYPES
+
 # Some standard colors
 # Used in Sgtk apps
 _COLORS = {
@@ -34,7 +38,14 @@ _DIFF_TYPES_STYLE = {
     _DIFF_TYPES.OMITTED : "color: %s" % _COLORS["sg_red"],
     _DIFF_TYPES.REINSTATED : "color: %s" % _COLORS["yellow"],
 }
-
+_TOOL_TIP_FORMAT = """
+Shot :
+\t%s
+Cut Item :
+\t%s
+Edit :
+\t%s
+"""
 class CutDiffCard(QtGui.QFrame):
     def __init__(self, parent, cut_diff):
         super(CutDiffCard, self).__init__(parent)
@@ -89,6 +100,8 @@ class CutDiffCard(QtGui.QFrame):
         new_value = self._cut_diff.new_tail_duration
         self.display_values(self.ui.tail_duration_label, new_value, value)
 
+        self.set_tool_tip()
+        
     def display_values(self, widget, new_value, old_value):
         if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
             widget.setText("<font color=%s>%s</font>" % (_COLORS["sg_red"], new_value))
@@ -98,3 +111,44 @@ class CutDiffCard(QtGui.QFrame):
             else:
                 widget.setText("%s (%s)" % (new_value, old_value))
 
+    def set_tool_tip(self):
+        shot_details = ""
+        if self._cut_diff.sg_shot:
+            shot_details = \
+            "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
+                self._cut_diff.sg_shot["code"],
+                self._cut_diff.sg_shot["sg_status_list"],
+                self._cut_diff.sg_shot["sg_head_in"],
+                self._cut_diff.sg_shot["sg_cut_in"],
+                self._cut_diff.sg_shot["sg_cut_out"],
+                self._cut_diff.sg_shot["sg_tail_out"],
+                self._cut_diff.sg_shot["sg_cut_order"],
+            )
+        cut_item_details = ""
+        if self._cut_diff.sg_cut_item:
+            if self._cut_diff.sg_cut_item["sg_fps"] :
+                fps = decimal.Decimal(self._cut_diff.sg_cut_item["sg_fps"])
+                tc_in = edl.timecode_from_frame(
+                    int(self._cut_diff.sg_cut_item["sg_timecode_cut_in"] * fps / 1000)
+                )
+                tc_out = edl.timecode_from_frame(
+                    int(self._cut_diff.sg_cut_item["sg_timecode_cut_out"] * fps / 1000)
+                )
+            else:
+                tc_in = "????"
+                tc_out = "????"
+            cut_item_details = \
+            "Cut Order %s, TC in %s, TC out %s, Cut In %s, Cut Out %s, Cut Duration %s" % (
+                self._cut_diff.sg_cut_item["sg_cut_order"],
+                tc_in,
+                tc_out,
+                self._cut_diff.sg_cut_item["sg_cut_in"],
+                self._cut_diff.sg_cut_item["sg_cut_out"],
+                self._cut_diff.sg_cut_item["sg_cut_duration"],
+            )
+        msg = _TOOL_TIP_FORMAT % (
+            shot_details,
+            cut_item_details,
+            self._cut_diff.edit
+        )
+        self.setToolTip(msg)

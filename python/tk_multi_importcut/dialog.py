@@ -179,6 +179,7 @@ class AppDialog(QtGui.QWidget):
         # 0 : drag and drop
         # 1 : sequence select
         # 2 : cut summary
+        # 3 : import completed
         if step < 1:
             self.ui.back_button.hide()
             self.ui.reset_button.hide()
@@ -194,6 +195,10 @@ class AppDialog(QtGui.QWidget):
         else:
             self.ui.email_button.show()
             self.ui.submit_button.show()
+
+        if step == 3:
+            self.ui.email_button.hide()
+            self.ui.submit_button.hide()
 
     @QtCore.Slot(dict)
     def new_sg_sequence(self, sg_entity):

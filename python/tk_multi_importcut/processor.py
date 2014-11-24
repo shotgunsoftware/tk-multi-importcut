@@ -150,15 +150,25 @@ class EdlCut(QtCore.QObject):
             sg_cut = self._sg.find_one(
                 "Cut",
                 [["sg_sequence", "is", sg_entity]],
-                []
+                [],
+                order=[{"field_name" : "id", "direction" : "desc"}]
             )
             sg_cut_items = []
             if sg_cut:
                 sg_cut_item_entity = self._app.get_setting("sg_cut_item_entity")
                 # Retrieve all cut items linked to that cut
                 sg_cut_items = self._sg.find(sg_cut_item_entity,
-                    [["sg_cut", "is", sg_cut]],
-                    ["sg_cut"]
+                    [["sg_cut", "is", sg_cut]], [
+                        "sg_cut",
+                        "sg_timecode_cut_in",
+                        "sg_timecode_cut_out",
+                        "sg_cut_order",
+                        "sg_cut_in",
+                        "sg_cut_out",
+                        "sg_link",
+                        "sg_cut_duration",
+                        "sg_fps"
+                    ]
                 )
 
             # Retrieve shots linked to the sequence
@@ -173,12 +183,16 @@ class EdlCut(QtCore.QObject):
                 if shot_name in self._cut_diffs:
                     self._logger.info("Found duplicated shot shot %s (%s)" % (shot_name, self._cut_diffs))
                     sg_shot = self._cut_diffs[sg_shot["code"]][0].sg_shot
-                    cut_diff = CutDiff(sg_shot=sg_shot, sg_version=None, edit=edit)
+                    cut_diff = CutDiff(
+                        sg_shot=sg_shot,
+                        edit=edit,
+                        sg_cut_item=self._cut_diffs[sg_shot["code"]][0].sg_cut_item)
                     self._cut_diffs[sg_shot["code"]].append(cut_diff)
                     self.new_cut_diff.emit(cut_diff)
                 else :
                     # Do we have a matching shot in SG ?
                     matching_shot = None
+                    matching_cut_item = None
                     for sg_shot in sg_shots:
                         if sg_shot["code"] == edit.get_shot_name():
                             # yes we do
@@ -187,12 +201,24 @@ class EdlCut(QtCore.QObject):
                             # Remove this entry from the list
                             sg_shots.remove(sg_shot)
                             break
-                    cut_diff = CutDiff(shot_name, sg_shot=matching_shot, edit=edit)
+                    # Do we have a matching cut item ?
+                    if matching_shot:
+                        matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, matching_shot)
+                    cut_diff = CutDiff(
+                        shot_name,
+                        sg_shot=matching_shot,
+                        edit=edit,
+                        sg_cut_item=matching_cut_item)
                     self._cut_diffs[shot_name] = [cut_diff]
                     self.new_cut_diff.emit(cut_diff)
             # Process now all sg shots leftover
             for sg_shot in sg_shots:
-                cut_diff = CutDiff(sg_shot["code"], sg_shot=sg_shot, sg_version=None, edit=None)
+                matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
+                cut_diff = CutDiff(
+                    sg_shot["code"],
+                    sg_shot=sg_shot,
+                    edit=None,
+                    sg_cut_item=matching_cut_item)
                 self._cut_diffs[sg_shot["code"]].append(cut_diff)
                 self.new_cut_diff.emit(cut_diff)
             self._logger.info("Retrieved %d cut differences." % len(self._cut_diffs))
@@ -201,6 +227,18 @@ class EdlCut(QtCore.QObject):
         finally:
             self.got_idle.emit()
 
+    def sg_cut_item_for_shot(self, sg_cut_items, sg_shot):
+        """
+        Return a cut item for the given shot from the given list
+        retrieved from Shotgun
+        """
+        for sg_cut_item in sg_cut_items:
+            if sg_cut_item["sg_link"] and \
+                sg_cut_item["sg_link"]["id"] == sg_shot["id"] \
+                and sg_cut_item["sg_link"]["type"] == sg_shot["type"]:
+                    return sg_cut_item
+        return None
+    
     @QtCore.Slot(str, str, str, str)
     def do_cut_import(self, title, sender, to, description):
         self._logger.info("Importing cut %s" % title)
@@ -211,6 +249,8 @@ class EdlCut(QtCore.QObject):
             self._logger.exception(str(e))
         else:
             self._logger.info("Cut %s imported" % title)
+            # Can go to next step
+            self.step_done.emit(2)
         finally:
             self.got_idle.emit()
 
@@ -277,8 +317,8 @@ class EdlCut(QtCore.QObject):
         sg_batch_data = []
         cut_item_entity = self._app.get_setting("sg_cut_item_entity")
         for shot_name, items in self._cut_diffs.iteritems():
-            for item in items:
-                edit = item.edit
+            for cut_diff in items:
+                edit = cut_diff.edit
                 if edit:
                     tc_cut_in = edit.source_in.to_frame()
                     sg_batch_data.append({
@@ -292,9 +332,10 @@ class EdlCut(QtCore.QObject):
                             "sg_timecode_cut_out" : int(edit.source_out.to_seconds() * 1000),
                             "sg_timecode_edl_in" : int(edit.record_in.to_seconds() * 1000),
                             "sg_timecode_edl_out" : int(edit.record_out.to_seconds() * 1000),
-                            "sg_cut_in" : edit.source_in.to_frame(),
-                            "sg_cut_out" : edit.source_out.to_frame(),
-                            "sg_link" : item.sg_shot,
+                            "sg_cut_in" : cut_diff.new_cut_in,
+                            "sg_cut_out" : cut_diff.new_cut_out,
+                            "sg_cut_duration" : cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
+                            "sg_link" : cut_diff.sg_shot,
                             "sg_version" : None,
                             "sg_fps" : self._edl.fps,
                         }

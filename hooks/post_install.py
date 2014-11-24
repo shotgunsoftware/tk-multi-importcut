@@ -56,6 +56,7 @@ class PostInstall(Hook):
             "sg_timecode_edl_out" : { "type" : "timecode"},
             "sg_cut_in" : { "type" : "number"},
             "sg_cut_out" : { "type" : "number"},
+            "sg_cut_duration" : { "type" : "number"},
             "sg_cut" : { "type" : "entity", "properties" : { "valid_types" : ["Cut"]}},
             "sg_link" : { "type" : "entity", "properties" : { "valid_types" : ["Shot"]}},
             "sg_version" : { "type" : "entity", "properties" : { "valid_types" : ["Version"]}},
