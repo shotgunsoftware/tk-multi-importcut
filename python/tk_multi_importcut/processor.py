@@ -209,9 +209,10 @@ class EdlCut(QtCore.QObject):
             self.create_sg_cut(title)
         except Exception, e :
             self._logger.exception(str(e))
+        else:
+            self._logger.info("Cut %s imported" % title)
         finally:
             self.got_idle.emit()
-        self._logger.info("Cut %s imported" % title)
 
     def create_sg_cut(self, title):
         # Create a new cut
@@ -237,6 +238,28 @@ class EdlCut(QtCore.QObject):
                             "sg_sequence" : self._sg_entity,
                             "sg_head_in" : cut_diff.default_head_in,
                             "sg_tail_out" : cut_diff.default_tail_out,
+                        }
+                    })
+                elif cut_diff.diff_type == _DIFF_TYPES.OMITTED:
+                    sg_batch_data.append({
+                        "request_type" : "update",
+                        "entity_type" : "Shot",
+                        "entity_id" : cut_diff._sg_shot["id"],
+                        "data" : {
+                            "sg_status_list" : "omt",
+                            # Add code in the update so it will be returned with batch results
+                            "code" : shot_name,
+                        }
+                    })
+                elif cut_diff.diff_type == _DIFF_TYPES.REINSTATED:
+                    sg_batch_data.append({
+                        "request_type" : "update",
+                        "entity_type" : "Shot",
+                        "entity_id" : cut_diff._sg_shot["id"],
+                        "data" : {
+                            "sg_status_list" : "wtg",
+                            # Add code in the update so it will be returned with batch results
+                            "code" : shot_name,
                         }
                     })
         if sg_batch_data:

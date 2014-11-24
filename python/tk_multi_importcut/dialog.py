@@ -239,6 +239,9 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def import_cut(self):
+#        Could be used to generate a report ?
+#        pixmap = QtGui.QPixmap.grabWidget(self.ui.cut_summary_widgets)
+#        pixmap.save("/tmp/cut_report.png", format="PNG")
         dialog = SubmitDialog(parent=self, title=self._processor.title)
         dialog.submit.connect(self._processor.import_cut)
         dialog.show()
