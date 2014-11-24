@@ -179,11 +179,14 @@ class CutDiff(QtCore.QObject):
 
     @property
     def new_tail_duration(self):
+        cut_out = self.new_cut_out
+        if cut_out is None:
+            return None
         tail_out = self.shot_tail_out
         if tail_out is None:
             return self._app.get_setting("default_tail_out_duration")
         if self._edit:
-            return tail_out - self._edit.source_out.to_frame() - self.head_in_base
+            return tail_out - cut_out - self.head_in_base
         return None
 
     @property
