@@ -52,7 +52,7 @@ class CutDiffCard(QtGui.QFrame):
         self._cut_diff = cut_diff
         self.ui = Ui_CutDiffCard()
         self.ui.setupUi(self)
-        self.ui.cut_order_label.setText("%s" % self._cut_diff.new_cut_order)
+        self.ui.cut_order_label.setText("%s" % (self._cut_diff.new_cut_order or self._cut_diff.cut_order or "0"))
         self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)
         self.ui.version_name_label.setText(self._cut_diff.version_name)
         head_in = self._cut_diff.shot_head_in
@@ -102,6 +102,14 @@ class CutDiffCard(QtGui.QFrame):
 
         self.set_tool_tip()
         
+    @property
+    def cut_order(self):
+        if self._cut_diff.new_cut_order is not None:
+            return int(self._cut_diff.new_cut_order)
+        if self._cut_diff.cut_order is not None:
+            return int(self._cut_diff.cut_order)
+        return -1
+
     def display_values(self, widget, new_value, old_value):
         if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
             widget.setText("<font color=%s>%s</font>" % (_COLORS["sg_red"], new_value))

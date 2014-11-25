@@ -219,7 +219,10 @@ class EdlCut(QtCore.QObject):
                     sg_shot=sg_shot,
                     edit=None,
                     sg_cut_item=matching_cut_item)
-                self._cut_diffs[sg_shot["code"]].append(cut_diff)
+                if sg_shot["code"] in self._cut_diffs:
+                    self._cut_diffs[sg_shot["code"]].append(cut_diff)
+                else:
+                    self._cut_diffs[sg_shot["code"]] = [cut_diff]
                 self.new_cut_diff.emit(cut_diff)
             self._logger.info("Retrieved %d cut differences." % len(self._cut_diffs))
         except Exception, e :

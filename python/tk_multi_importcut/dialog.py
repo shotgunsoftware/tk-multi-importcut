@@ -225,7 +225,16 @@ class AppDialog(QtGui.QWidget):
     def new_cut_diff(self, cut_diff):
         self._logger.info("Adding %s" % cut_diff.name)
         widget = CutDiffCard(parent=None, cut_diff=cut_diff)
-        self.ui.cutsummary_list.insertWidget(self.ui.cutsummary_list.count()-1, widget)
+        # Retrieve where we should insert it
+        # Last widget is a stretcher, so we stop at self.ui.cutsummary_list.count()-2
+        cut_order = widget.cut_order
+        for i in range(0, self.ui.cutsummary_list.count()-1):
+            witem = self.ui.cutsummary_list.itemAt(i)
+            if witem.widget().cut_order > cut_order:
+                self.ui.cutsummary_list.insertWidget(i, widget)
+                break
+        else:
+            self.ui.cutsummary_list.insertWidget(self.ui.cutsummary_list.count()-1, widget)
 
     def clear_sequence_view(self):
         count = self.ui.sequence_grid.count() -1 # We have stretcher
@@ -244,14 +253,35 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def import_cut(self):
-#        Could be used to generate a report ?
-#        pixmap = QtGui.QPixmap.grabWidget(self.ui.cut_summary_widgets)
-#        pixmap.save("/tmp/cut_report.png", format="PNG")
+        #self.generate_report()
         dialog = SubmitDialog(parent=self, title=self._processor.title)
         dialog.submit.connect(self._processor.import_cut)
         dialog.show()
         dialog.raise_()
         dialog.activateWindow()
+
+    def generate_report(self):
+#        Could be used to generate a report ?
+#
+#        pixmap = QtGui.QPixmap.grabWidget(self.ui.cut_summary_widgets)
+#        pixmap.save("/tmp/cut_report.png", format="PNG")
+
+        #First render the widget to a QPicture, which stores QPainter commands.
+        pic = QtGui.QPicture()
+        picPainter = QtGui.QPainter(pic)
+        self.ui.cut_summary_widgets.render(picPainter, QtCore.QPoint())
+        picPainter.end()
+     
+        # Set up the printer
+        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+        printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
+        printer.setOutputFileName("/tmp/cut_summary_report.pdf")
+     
+        # Finally, draw the QPicture to your printer
+        painter = QtGui.QPainter()
+        painter.begin(printer)
+        painter.drawPicture(QtCore.QPointF(0, 0), pic);
+        painter.end()
 
     def closeEvent(self, evt):
         """
