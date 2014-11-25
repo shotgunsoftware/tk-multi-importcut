@@ -21,11 +21,12 @@ from .cut_diff import CutDiff, _DIFF_TYPES
 # Some standard colors
 # Used in Sgtk apps
 _COLORS = {
-    "sg_blue" : "#2C93E2",
-    "sg_red"  : "#FC6246",
-    "mid_blue"  : "#1B82D1",
-    "green" : "rgb(87, 181, 16)",
-    "yellow" : "rgb(161, 165, 26)",
+    "sg_blue" :     "#2C93E2",
+    "sg_red"  :     "#FC6246",
+    "mid_blue"  :   "#1B82D1",
+    "green" :       "rgb(87, 181, 16)",
+    "yellow" :      "rgb(161, 165, 26)",
+    "lgrey" :       "#666666",
 }
 
 
@@ -38,6 +39,8 @@ _DIFF_TYPES_STYLE = {
     _DIFF_TYPES.OMITTED : "color: %s" % _COLORS["sg_red"],
     _DIFF_TYPES.REINSTATED : "color: %s" % _COLORS["yellow"],
 }
+
+# Format string for tooltips
 _TOOL_TIP_FORMAT = """
 Shot :
 \t%s
@@ -46,13 +49,24 @@ Cut Item :
 Edit :
 \t%s
 """
+
 class CutDiffCard(QtGui.QFrame):
     def __init__(self, parent, cut_diff):
         super(CutDiffCard, self).__init__(parent)
         self._cut_diff = cut_diff
         self.ui = Ui_CutDiffCard()
         self.ui.setupUi(self)
-        self.ui.cut_order_label.setText("%s" % (self._cut_diff.new_cut_order or self._cut_diff.cut_order or "0"))
+        
+        # Cut order
+        new_cut_order = self._cut_diff.new_cut_order or 0
+        old_cut_order = self._cut_diff.cut_order or 0
+        cut_order = new_cut_order or old_cut_order
+        if old_cut_order != new_cut_order:
+            font_color= _COLORS["sg_red"]
+        else:
+            font_color= _COLORS["lgrey"]
+        self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
+
         self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)
         self.ui.version_name_label.setText(self._cut_diff.version_name)
         head_in = self._cut_diff.shot_head_in

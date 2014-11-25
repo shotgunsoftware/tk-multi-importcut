@@ -132,6 +132,8 @@ class CutDiff(QtCore.QObject):
 
     @property
     def cut_order(self):
+        if self._sg_cut_item:
+            return self._sg_cut_item["sg_cut_order"]
         if self._sg_shot:
             return self._sg_shot["sg_cut_order"]
         return None
