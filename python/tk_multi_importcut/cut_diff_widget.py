@@ -26,7 +26,7 @@ _COLORS = {
     "mid_blue"  :   "#1B82D1",
     "green" :       "rgb(87, 181, 16)",
     "yellow" :      "rgb(161, 165, 26)",
-    "lgrey" :       "#666666",
+    "lgrey" :       "#A5A5A5",
 }
 
 
@@ -127,11 +127,16 @@ class CutDiffCard(QtGui.QFrame):
     def display_values(self, widget, new_value, old_value):
         if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
             widget.setText("<font color=%s>%s</font>" % (_COLORS["sg_red"], new_value))
+        elif self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
+            widget.setText("<font color=%s>(%s)</font>" % (_COLORS["lgrey"], old_value))
         else:
             if new_value != old_value:
-                widget.setText("<font color=%s>%s</font> (%s)" % (_COLORS["sg_red"], new_value, old_value))
+                widget.setText("<font color=%s>%s</font> <font color=%s>(%s)</font>" % (
+                    _COLORS["sg_red"], new_value,
+                    _COLORS["lgrey"], old_value
+                ))
             else:
-                widget.setText("%s (%s)" % (new_value, old_value))
+                widget.setText("%s" % (new_value))
 
     def set_tool_tip(self):
         shot_details = ""

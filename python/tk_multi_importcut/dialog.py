@@ -223,7 +223,7 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(CutDiff)
     def new_cut_diff(self, cut_diff):
-        self._logger.info("Adding %s" % cut_diff.name)
+        self._logger.debug("Adding %s" % cut_diff.name)
         widget = CutDiffCard(parent=None, cut_diff=cut_diff)
         # Retrieve where we should insert it
         # Last widget is a stretcher, so we stop at self.ui.cutsummary_list.count()-2
