@@ -41,6 +41,12 @@ class Processor(QtCore.QThread):
             return self._edl_cut._edl.title
         return None
 
+    @property
+    def summary(self):
+        if self._edl_cut and self._edl_cut._summary:
+            return self._edl_cut._summary
+        return None
+
     def run(self):
         self._edl_cut = EdlCut()
         # Orders

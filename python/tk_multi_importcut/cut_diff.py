@@ -68,10 +68,6 @@ class CutDiff(QtCore.QObject):
         return self._edit
 
     @property
-    def edit(self):
-        return self._edit
-
-    @property
     def name(self):
         return self._name
 

@@ -21,6 +21,7 @@ class CutSummary(QtCore.QObject):
     def __init__(self):
         super(CutSummary,self).__init__()
         self._cut_diffs = {}
+        self._counts = {}
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
@@ -41,12 +42,21 @@ class CutSummary(QtCore.QObject):
             edit=edit,
             sg_cut_item=sg_cut_item
         )
+        diff_type = cut_diff.diff_type
+        if diff_type in self._counts:
+            self._counts[diff_type] += 1
+        else:
+            self._counts[diff_type] = 1
+        
         if shot_name in self._cut_diffs:
             self._cut_diffs[shot_name].append(cut_diff)
         else:
             self._cut_diffs[shot_name] = [cut_diff]
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
+
+    def count_for_type(self, diff_type):
+        return self._counts.get(diff_type, 0)
 
     def has_shot(self, shot_name):
         """
@@ -63,7 +73,7 @@ class CutSummary(QtCore.QObject):
         return self._cut_diffs.get(shot_name)
 
     def __len__(self):
-        return len(self._cut_diffs)
+        return sum([len(self._cut_diffs[k]) for k in self._cut_diffs], 0)
 
     def __iter__(self):
         for name in self._cut_diffs.keys():
