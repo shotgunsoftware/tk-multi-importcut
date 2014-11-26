@@ -145,6 +145,7 @@ class EdlCut(QtCore.QObject):
         self._sg_entity = sg_entity
         self.got_busy.emit()
         self._summary = CutSummary()
+        self._summary.new_cut_diff.connect(self.new_cut_diff)
         try:
             # Retrieve cuts linked to the sequence, pick up the latest or approved one
             # Later, the UI will allow selecting it
@@ -190,7 +191,6 @@ class EdlCut(QtCore.QObject):
                         edit=edit,
                         sg_cut_item=existing[0].sg_cut_item
                     )
-                    self.new_cut_diff.emit(cut_diff)
                 else :
                     # Do we have a matching shot in SG ?
                     matching_shot = None
@@ -212,7 +212,6 @@ class EdlCut(QtCore.QObject):
                         edit=edit,
                         sg_cut_item=matching_cut_item
                     )
-                    self.new_cut_diff.emit(cut_diff)
             # Process now all sg shots leftover
             for sg_shot in sg_shots:
                 # Don't show omitted shots which are not this cut
@@ -224,7 +223,6 @@ class EdlCut(QtCore.QObject):
                         edit=None,
                         sg_cut_item=matching_cut_item
                     )
-                    self.new_cut_diff.emit(cut_diff)
             self._logger.info("Retrieved %d cut differences." % len(self._summary))
         except Exception, e :
             self._logger.exception(str(e))
