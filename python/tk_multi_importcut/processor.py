@@ -11,6 +11,7 @@ import sgtk
 from sgtk.platform.qt import QtCore
 from .logger import get_logger
 from .cut_diff import CutDiff, _DIFF_TYPES
+from .cut_summary import CutSummary
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
@@ -68,7 +69,7 @@ class EdlCut(QtCore.QObject):
         super(EdlCut, self).__init__()
         self._edl = None
         self._sg_entity = None
-        self._cut_diffs = {}
+        self._summary = None
         self._logger = get_logger()
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
@@ -88,7 +89,7 @@ class EdlCut(QtCore.QObject):
     def reset(self):
         self._edl = None
         self._sg_entity = None
-        self._cut_diffs = {}
+        self._summary = None
         self._logger.info("Session discarded...")
 
     @QtCore.Slot(str)
@@ -143,7 +144,7 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Retrieving cut summary for %s" % ( sg_entity))
         self._sg_entity = sg_entity
         self.got_busy.emit()
-        self._cut_diffs = {}
+        self._summary = CutSummary()
         try:
             # Retrieve cuts linked to the sequence, pick up the latest or approved one
             # Later, the UI will allow selecting it
@@ -179,15 +180,16 @@ class EdlCut(QtCore.QObject):
             )
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
+                existing = self._summary.diffs_for_shot(shot_name)
                 # Is it a duplicate ?
-                if shot_name in self._cut_diffs:
-                    self._logger.info("Found duplicated shot shot %s (%s)" % (shot_name, self._cut_diffs))
-                    sg_shot = self._cut_diffs[sg_shot["code"]][0].sg_shot
-                    cut_diff = CutDiff(
-                        sg_shot=sg_shot,
+                if existing:
+                    self._logger.info("Found duplicated shot shot %s (%s)" % (shot_name, existing))
+                    cut_diff = self._summary.add_cut_diff(
+                        shot_name,
+                        sg_shot=existing[0].sg_shot,
                         edit=edit,
-                        sg_cut_item=self._cut_diffs[sg_shot["code"]][0].sg_cut_item)
-                    self._cut_diffs[sg_shot["code"]].append(cut_diff)
+                        sg_cut_item=existing[0].sg_cut_item
+                    )
                     self.new_cut_diff.emit(cut_diff)
                 else :
                     # Do we have a matching shot in SG ?
@@ -204,27 +206,24 @@ class EdlCut(QtCore.QObject):
                     # Do we have a matching cut item ?
                     if matching_shot:
                         matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, matching_shot)
-                    cut_diff = CutDiff(
+                    cut_diff = self._summary.add_cut_diff(
                         shot_name,
                         sg_shot=matching_shot,
                         edit=edit,
-                        sg_cut_item=matching_cut_item)
-                    self._cut_diffs[shot_name] = [cut_diff]
+                        sg_cut_item=matching_cut_item
+                    )
                     self.new_cut_diff.emit(cut_diff)
             # Process now all sg shots leftover
             for sg_shot in sg_shots:
                 matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
-                cut_diff = CutDiff(
+                cut_diff = self._summary.add_cut_diff(
                     sg_shot["code"],
                     sg_shot=sg_shot,
                     edit=None,
-                    sg_cut_item=matching_cut_item)
-                if sg_shot["code"] in self._cut_diffs:
-                    self._cut_diffs[sg_shot["code"]].append(cut_diff)
-                else:
-                    self._cut_diffs[sg_shot["code"]] = [cut_diff]
+                    sg_cut_item=matching_cut_item
+                )
                 self.new_cut_diff.emit(cut_diff)
-            self._logger.info("Retrieved %d cut differences." % len(self._cut_diffs))
+            self._logger.info("Retrieved %d cut differences." % len(self._summary))
         except Exception, e :
             self._logger.exception(str(e))
         finally:
@@ -268,7 +267,7 @@ class EdlCut(QtCore.QObject):
             ["id", "code"])
         sg_batch_data = []
         # Loop over all shots that we need to create
-        for shot_name, items in self._cut_diffs.iteritems():
+        for shot_name, items in self._summary.iteritems():
             for cut_diff in items: # FIXME : handle shot duplicates
                 if cut_diff.diff_type == _DIFF_TYPES.NEW:
                     self._logger.info("Will create shot %s for %s" % (shot_name, self._sg_entity))
@@ -311,15 +310,15 @@ class EdlCut(QtCore.QObject):
             # Update cut_diffs with the new shots
             for sg_shot in res:
                 shot_name = sg_shot["code"]
-                if shot_name not in self._cut_diffs:
+                if shot_name not in self._summary:
                     raise RuntimeError("Created shot %s, but couldn't retrieve it in our list")
-                for cut_diff in self._cut_diffs[shot_name]:
+                for cut_diff in self._summary[shot_name]:
                     # FIXME : update the diff type
                     cut_diff._sg_shot = sg_shot
         # Loop through all edits and create CutItems for them
         sg_batch_data = []
         cut_item_entity = self._app.get_setting("sg_cut_item_entity")
-        for shot_name, items in self._cut_diffs.iteritems():
+        for shot_name, items in self._summary.iteritems():
             for cut_diff in items:
                 edit = cut_diff.edit
                 if edit:

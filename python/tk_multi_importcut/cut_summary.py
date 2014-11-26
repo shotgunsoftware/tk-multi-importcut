@@ -1,0 +1,79 @@
+# Copyright (c) 2014 Shotgun Software Inc.
+# 
+# CONFIDENTIAL AND PROPRIETARY
+# 
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+# Source Code License included in this distribution package. See LICENSE.
+# By accessing, using, copying or modifying this work you indicate your 
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# not expressly granted therein are reserved by Shotgun Software Inc.
+
+# by importing QT from sgtk rather than directly, we ensure that
+# the code will be compatible with both PySide and PyQt.
+
+import sgtk
+from sgtk.platform.qt import QtCore
+
+from .cut_diff import CutDiff, _DIFF_TYPES
+
+class CutSummary(QtCore.QObject):
+    new_cut_diff = QtCore.Signal(CutDiff)
+    def __init__(self):
+        super(CutSummary,self).__init__()
+        self._cut_diffs = {}
+
+    def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
+        """
+        Add a new cut difference to this summary
+        
+        :param shot_name: Shot name, as a string
+        :param sg_shot: An optional Shot, as a dictionary retrieved from Shotgun
+        :param edit: An optional CutEdit object
+        :param sg_cut_item: An optional Cut Item, as a dictionary retrieved from Shotgun
+        :return: A new CutDiff instance
+        """
+        if sg_shot is None and edit is None and sg_cut_item is None:
+            raise ValueError("At least one of the shot, edit or cut item must be speified")
+
+        cut_diff = CutDiff(
+            shot_name,
+            sg_shot=sg_shot,
+            edit=edit,
+            sg_cut_item=sg_cut_item
+        )
+        if shot_name in self._cut_diffs:
+            self._cut_diffs[shot_name].append(cut_diff)
+        else:
+            self._cut_diffs[shot_name] = [cut_diff]
+        self.new_cut_diff.emit(cut_diff)
+        return cut_diff
+
+    def has_shot(self, shot_name):
+        """
+        Return True if there is already an entry in this summary for the given shot
+        
+        :param shot_name: A shot name, as a string
+        """
+        return shot_name in self._cut_diffs
+
+    def diffs_for_shot(self, shot_name):
+        """
+        Return the CutDiff(s) list for the given shot, if any.
+        """
+        return self._cut_diffs.get(shot_name)
+
+    def __len__(self):
+        return len(self._cut_diffs)
+
+    def __iter__(self):
+        for name in self._cut_diffs.keys():
+            yield name
+
+    def __getitem__(self, key):
+        return self._cut_diffs.get(key)
+
+    def iteritems(self):
+        for name, items in self._cut_diffs.iteritems():
+            yield (name, items)
+
+

@@ -26,10 +26,6 @@ _DIFF_LABELS = {
     _DIFF_TYPES.CUT_CHANGE : "Cut Change",
 }
 
-class CutSummary(QtCore.QObject):
-    def __init__(self):
-        super(CutSummary,self).__init__()
-
 class CutDiff(QtCore.QObject):
 
     def __init__(self, name, sg_shot=None, sg_version=None, edit=None, sg_cut_item=None):
