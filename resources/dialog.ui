@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>917</width>
-    <height>439</height>
+    <width>906</width>
+    <height>440</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -91,7 +91,133 @@ EDL</string>
      <widget class="QWidget" name="cut_summary_page">
       <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0,1,0">
+         <item>
+          <widget class="QPushButton" name="total_button">
+           <property name="text">
+            <string>Total</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="new_select_button">
+           <property name="text">
+            <string>New</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="omitted_select_button">
+           <property name="text">
+            <string>Omitted</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="reinstated_select_button">
+           <property name="text">
+            <string>Reinstated</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="cut_change_select_button">
+           <property name="text">
+            <string>Cut Changes</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="rescan_select_button">
+           <property name="text">
+            <string>Rescan Needed</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="repeated_radio_button">
+           <property name="text">
+            <string>Only Repeated</string>
+           </property>
+           <property name="autoExclusive">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QScrollArea" name="scrollArea_2">
@@ -103,8 +229,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>716</width>
-            <height>286</height>
+            <width>856</width>
+            <height>250</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="cutsummary_list">

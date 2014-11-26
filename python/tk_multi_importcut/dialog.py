@@ -90,7 +90,16 @@ class AppDialog(QtGui.QWidget):
         
         # Let's do something when something is dropped
         self.ui.drop_area_label.something_dropped.connect(self.process_drop)
-    
+
+        # Cut summary view selectors
+#        new_select_button
+#        cut_change_select_button
+#        omitted_select_button
+#        reinstated_select_button
+#        rescan_select_button
+#        total_button
+#        repeated_radio_button
+
         self.set_ui_for_step(0)
         self.ui.back_button.clicked.connect(self.ui.stackedWidget.prev_page)
         self.ui.stackedWidget.first_page_reached.connect(self.reset)
@@ -98,6 +107,8 @@ class AppDialog(QtGui.QWidget):
         self.ui.cancel_button.clicked.connect(self.close_dialog)
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.submit_button.clicked.connect(self.import_cut)
+
+
 
     @QtCore.Slot()
     def do_reset(self):

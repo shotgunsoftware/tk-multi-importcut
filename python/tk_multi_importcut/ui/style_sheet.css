@@ -7,6 +7,7 @@ QDialogButtonBox {
 }
 QLabel#drop_area_label {
     border: 4px dashed grey;
+    border-radius: 4px;
     font-size: 50px;
     font-family: "Chalkduster";
 }
@@ -27,7 +28,31 @@ QFrame:selected#SequenceCard {
     border-color: orange;
     background-color: orange;
 }
-
+QAbstractButton#new_select_button:checked,
+    #cut_change_select_button:checked,
+    #omitted_select_button:checked,
+    #reinstated_select_button:checked,
+    #rescan_select_button:checked,
+    #total_button:checked {
+    color: #2C93E2;
+    border-top: 2px none #2C93E2;
+    border-bottom: 2px solid #2C93E2;
+    outline: none;
+}
+QAbstractButton#new_select_button:pressed,
+    #cut_change_select_button:pressed,
+    #omitted_select_button:pressed,
+    #reinstated_select_button:pressed,
+    #rescan_select_button:pressed,
+    #total_button:pressed {
+    color: #2C93E2;
+    border-top: 2px none #2C93E2;
+    border-bottom: 2px solid #2C93E2;
+    outline: none;
+}
+QAbstractButton#repeated_radio_button:checked {
+    color: #2C93E2;
+}
 #horizontalLayout_3 {
     background-color: orange;
 }
