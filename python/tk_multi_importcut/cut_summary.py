@@ -22,6 +22,8 @@ class CutSummary(QtCore.QObject):
         super(CutSummary,self).__init__()
         self._cut_diffs = {}
         self._counts = {}
+        self._rescans_count = 0
+        self._repeated_count = 0
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
@@ -47,13 +49,25 @@ class CutSummary(QtCore.QObject):
             self._counts[diff_type] += 1
         else:
             self._counts[diff_type] = 1
-        
+
+        if cut_diff.need_rescan:
+            self._rescans_count += 1
+
         if shot_name in self._cut_diffs:
+            self._repeated_count += 1
             self._cut_diffs[shot_name].append(cut_diff)
         else:
             self._cut_diffs[shot_name] = [cut_diff]
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
+
+    @property
+    def rescans_count(self):
+        return self._rescans_count
+
+    @property
+    def repeated_count(self):
+        return self._repeated_count
 
     def count_for_type(self, diff_type):
         return self._counts.get(diff_type, 0)

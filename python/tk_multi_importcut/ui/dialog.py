@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(766, 440)
+        Dialog.resize(917, 439)
         self.main_layout = QtGui.QVBoxLayout(Dialog)
         self.main_layout.setSpacing(-1)
         self.main_layout.setContentsMargins(-1, 12, -1, 12)

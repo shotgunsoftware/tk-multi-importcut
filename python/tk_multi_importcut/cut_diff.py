@@ -18,12 +18,13 @@ edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 def diff_types(**enums):
     return type("CutDiffType", (), enums)
 
-_DIFF_TYPES = diff_types(NEW=0, OMITTED=1, REINSTATED=2, CUT_CHANGE=3)
+_DIFF_TYPES = diff_types(NEW=0, OMITTED=1, REINSTATED=2, CUT_CHANGE=3, NO_CHANGE=4)
 _DIFF_LABELS = {
     _DIFF_TYPES.NEW : "New",
     _DIFF_TYPES.OMITTED : "Omitted",
     _DIFF_TYPES.REINSTATED : "Reinstated",
     _DIFF_TYPES.CUT_CHANGE : "Cut Change",
+    _DIFF_TYPES.NO_CHANGE : "No Change",
 }
 
 class CutDiff(QtCore.QObject):
@@ -49,7 +50,16 @@ class CutDiff(QtCore.QObject):
         elif self._sg_shot["sg_status_list"] == "omt":
             self._diff_type = _DIFF_TYPES.REINSTATED
         else:
-            self._diff_type = _DIFF_TYPES.CUT_CHANGE
+            # Check if we have a difference
+            if self.new_cut_order != self.cut_order or \
+                self.new_cut_in != self.cut_in or \
+                self.new_cut_out != self.cut_out or \
+                self.new_head_duration != self.head_duration or \
+                self.new_tail_duration != self.tail_duration or \
+                self.new_duration != self.duration :
+                self._diff_type = _DIFF_TYPES.CUT_CHANGE
+            else:
+                self._diff_type = _DIFF_TYPES.NO_CHANGE
 
     @classmethod
     def get_diff_type_label(cls, diff_type):
@@ -219,3 +229,7 @@ class CutDiff(QtCore.QObject):
     @property
     def diff_type_label(self):
         return self.get_diff_type_label(self._diff_type)
+
+    @property
+    def need_rescan(self):
+        return False

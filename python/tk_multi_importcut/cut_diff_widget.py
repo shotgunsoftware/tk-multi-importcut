@@ -38,6 +38,7 @@ _DIFF_TYPES_STYLE = {
     _DIFF_TYPES.NEW : "color: %s" % _COLORS["green"],
     _DIFF_TYPES.OMITTED : "color: %s" % _COLORS["sg_red"],
     _DIFF_TYPES.REINSTATED : "color: %s" % _COLORS["yellow"],
+    _DIFF_TYPES.NO_CHANGE : "color: %s" % _COLORS["lgrey"],
 }
 
 # Format string for tooltips
@@ -136,7 +137,7 @@ class CutDiffCard(QtGui.QFrame):
                     _COLORS["lgrey"], old_value
                 ))
             else:
-                widget.setText("%s" % (new_value))
+                widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
 
     def set_tool_tip(self):
         shot_details = ""

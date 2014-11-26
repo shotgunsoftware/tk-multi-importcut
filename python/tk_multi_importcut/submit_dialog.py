@@ -31,12 +31,12 @@ class SubmitDialog(QtGui.QDialog):
             raise ValueError("Can't import a cut without a summary")
         
         self.ui.total_shots_label.setText("%s" % len(summary))
-        #self.ui.cut_changes_label
+        self.ui.cut_changes_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
         self.ui.new_shots_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.NEW))
-        #self.ui.rescans_label
+        self.ui.rescans_label.setText("%s" % summary.rescans_count)
         self.ui.omitted_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.OMITTED))
         self.ui.reinstated_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
-        #self.ui.repeated_label
+        self.ui.repeated_label.setText("%s" % summary.repeated_count)
         self.ui.import_cut_button_box.rejected.connect(self.close_dialog)
         self.ui.import_cut_button_box.accepted.connect(self.submit_cut)
 
