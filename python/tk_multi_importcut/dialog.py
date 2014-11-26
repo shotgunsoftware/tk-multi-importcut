@@ -92,12 +92,12 @@ class AppDialog(QtGui.QWidget):
         self.ui.drop_area_label.something_dropped.connect(self.process_drop)
 
         # Cut summary view selectors
-#        new_select_button
-#        cut_change_select_button
-#        omitted_select_button
-#        reinstated_select_button
-#        rescan_select_button
-#        total_button
+        self.ui.new_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.NEW))
+        self.ui.cut_change_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.CUT_CHANGE))
+        self.ui.omitted_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.OMITTED))
+        self.ui.reinstated_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.REINSTATED))
+        self.ui.rescan_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, 100))
+        self.ui.total_button.toggled.connect( lambda x : self.set_display_summary_mode(x, -1))
 #        repeated_radio_button
 
         self.set_ui_for_step(0)
@@ -257,6 +257,10 @@ class AppDialog(QtGui.QWidget):
         self.ui.rescan_select_button.setText("Rescan Needed : %d" % summary.rescans_count)
         self.ui.total_button.setText("Total : %d" % len(summary))
 
+    def set_display_summary_mode(self, activated, mode):
+        if activated:
+            self._logger.info("Switching to %s mode" % mode)
+
     def clear_sequence_view(self):
         count = self.ui.sequence_grid.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
@@ -266,6 +270,7 @@ class AppDialog(QtGui.QWidget):
         # print self.ui.sequence_grid.count()
 
     def clear_cut_summary_view(self):
+        self.ui.total_button.setChecked(True)
         count = self.ui.cutsummary_list.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
             witem = self.ui.cutsummary_list.takeAt(i)

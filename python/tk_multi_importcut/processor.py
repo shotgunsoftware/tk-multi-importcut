@@ -190,7 +190,7 @@ class EdlCut(QtCore.QObject):
                 existing = self._summary.diffs_for_shot(shot_name)
                 # Is it a duplicate ?
                 if existing:
-                    self._logger.info("Found duplicated shot shot %s (%s)" % (shot_name, existing))
+                    self._logger.debug("Found duplicated shot shot %s (%s)" % (shot_name, existing))
                     cut_diff = self._summary.add_cut_diff(
                         shot_name,
                         sg_shot=existing[0].sg_shot,
@@ -204,7 +204,7 @@ class EdlCut(QtCore.QObject):
                     for sg_shot in sg_shots:
                         if sg_shot["code"] == edit.get_shot_name():
                             # yes we do
-                            self._logger.info("Found matching existing shot %s" % shot_name)
+                            self._logger.debug("Found matching existing shot %s" % shot_name)
                             matching_shot = sg_shot
                             # Remove this entry from the list
                             sg_shots.remove(sg_shot)
