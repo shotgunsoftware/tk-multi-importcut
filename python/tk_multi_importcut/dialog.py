@@ -26,7 +26,7 @@ from .ui.dialog import Ui_Dialog
 from .processor import Processor
 from .logger import BundleLogHandler, get_logger
 from .sequence_widget import SequenceCard
-from .cut_diff import CutDiff
+from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_diff_widget import CutDiffCard
 from .submit_dialog import SubmitDialog
 def show_dialog(app_instance):
@@ -235,6 +235,7 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(CutDiff)
     def new_cut_diff(self, cut_diff):
         self._logger.debug("Adding %s" % cut_diff.name)
+        self.set_cut_summary_view_selectors()
         widget = CutDiffCard(parent=None, cut_diff=cut_diff)
         # Retrieve where we should insert it
         # Last widget is a stretcher, so we stop at self.ui.cutsummary_list.count()-2
@@ -246,6 +247,15 @@ class AppDialog(QtGui.QWidget):
                 break
         else:
             self.ui.cutsummary_list.insertWidget(self.ui.cutsummary_list.count()-1, widget)
+
+    def set_cut_summary_view_selectors(self):
+        summary = self._processor.summary
+        self.ui.new_select_button.setText("New : %d" % summary.count_for_type(_DIFF_TYPES.NEW))
+        self.ui.cut_change_select_button.setText("Cut Changes : %d" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
+        self.ui.omitted_select_button.setText("Omitted : %d" % summary.count_for_type(_DIFF_TYPES.OMITTED))
+        self.ui.reinstated_select_button.setText("Reinstated : %d" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
+        self.ui.rescan_select_button.setText("Rescan Needed : %d" % summary.rescans_count)
+        self.ui.total_button.setText("Total : %d" % len(summary))
 
     def clear_sequence_view(self):
         count = self.ui.sequence_grid.count() -1 # We have stretcher
