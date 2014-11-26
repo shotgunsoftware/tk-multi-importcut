@@ -215,14 +215,16 @@ class EdlCut(QtCore.QObject):
                     self.new_cut_diff.emit(cut_diff)
             # Process now all sg shots leftover
             for sg_shot in sg_shots:
-                matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
-                cut_diff = self._summary.add_cut_diff(
-                    sg_shot["code"],
-                    sg_shot=sg_shot,
-                    edit=None,
-                    sg_cut_item=matching_cut_item
-                )
-                self.new_cut_diff.emit(cut_diff)
+                # Don't show omitted shots which are not this cut
+                if sg_shot["sg_status_list"] != "omt":
+                    matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
+                    cut_diff = self._summary.add_cut_diff(
+                        sg_shot["code"],
+                        sg_shot=sg_shot,
+                        edit=None,
+                        sg_cut_item=matching_cut_item
+                    )
+                    self.new_cut_diff.emit(cut_diff)
             self._logger.info("Retrieved %d cut differences." % len(self._summary))
         except Exception, e :
             self._logger.exception(str(e))
