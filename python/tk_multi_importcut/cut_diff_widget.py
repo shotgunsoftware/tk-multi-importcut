@@ -125,6 +125,12 @@ class CutDiffCard(QtGui.QFrame):
             return int(self._cut_diff.cut_order)
         return -1
 
+    def __getattr__(self, attr_name):
+        """
+        Allow access to attached cut diff
+        """
+        return getattr(self._cut_diff, attr_name)
+
     def display_values(self, widget, new_value, old_value):
         if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
             widget.setText("<font color=%s>%s</font>" % (_COLORS["sg_red"], new_value))

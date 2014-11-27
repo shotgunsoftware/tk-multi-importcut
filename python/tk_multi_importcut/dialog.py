@@ -259,7 +259,26 @@ class AppDialog(QtGui.QWidget):
 
     def set_display_summary_mode(self, activated, mode):
         if activated:
-            self._logger.info("Switching to %s mode" % mode)
+            self._logger.debug("Switching to %s mode" % mode)
+            count = self.ui.cutsummary_list.count() -1 # We have stretcher
+            if mode == -1: # Show everything
+                for i in range(0, count):
+                    witem = self.ui.cutsummary_list.itemAt(i)
+                    witem.widget().show()
+            elif mode > 99: # Show "Need Rescan"
+                for i in range(0, count):
+                    widget = self.ui.cutsummary_list.itemAt(i).widget()
+                    if widget.need_rescan:
+                        widget.show()
+                    else:
+                        widget.hide()
+            else:
+                for i in range(0, count):
+                    widget = self.ui.cutsummary_list.itemAt(i).widget()
+                    if widget.diff_type == mode:
+                        widget.show()
+                    else:
+                        widget.hide()
 
     def clear_sequence_view(self):
         count = self.ui.sequence_grid.count() -1 # We have stretcher
@@ -270,12 +289,13 @@ class AppDialog(QtGui.QWidget):
         # print self.ui.sequence_grid.count()
 
     def clear_cut_summary_view(self):
-        self.ui.total_button.setChecked(True)
         count = self.ui.cutsummary_list.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
             witem = self.ui.cutsummary_list.takeAt(i)
             widget = witem.widget()
             widget.close()
+        # Go back into "Show everything mode"
+        self.ui.total_button.setChecked(True)
 
     @QtCore.Slot()
     def import_cut(self):
