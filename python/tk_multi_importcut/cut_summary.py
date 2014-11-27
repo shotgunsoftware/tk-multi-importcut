@@ -56,7 +56,7 @@ class CutSummary(QtCore.QObject):
         if shot_name in self._cut_diffs:
             self._repeated_count += 1
             self._cut_diffs[shot_name].append(cut_diff)
-            for cdiff in self._cut_diffs:
+            for cdiff in self._cut_diffs[shot_name]:
                 cdiff.set_repeated(True)
         else:
             self._cut_diffs[shot_name] = [cut_diff]
