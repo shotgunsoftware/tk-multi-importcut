@@ -38,6 +38,8 @@ class CutDiff(QtCore.QObject):
         self._sg_cut_item = sg_cut_item
         self._app = sgtk.platform.current_bundle()
 
+        self._repeated = False
+        self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._default_head_in = self._app.get_setting("default_head_in")
         self._head_in_base = edl.frame_from_timecode(self._app.get_setting("head_in_base_timecode"))
 
@@ -233,3 +235,10 @@ class CutDiff(QtCore.QObject):
     @property
     def need_rescan(self):
         return False
+
+    @property
+    def repeated(self):
+        return self._repeated
+
+    def set_repeated(self, val):
+        self._repeated = val

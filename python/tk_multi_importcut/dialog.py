@@ -66,6 +66,8 @@ class AppDialog(QtGui.QWidget):
         self._app = sgtk.platform.current_bundle()
         
         self._busy = False
+        self._cuts_display_mode = -1
+        self._cuts_display_repeated = False
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
         # - A Shotgun API instance, via self._app.shotgun
@@ -98,7 +100,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reinstated_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.REINSTATED))
         self.ui.rescan_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, 100))
         self.ui.total_button.toggled.connect( lambda x : self.set_display_summary_mode(x, -1))
-#        repeated_radio_button
+        self.ui.repeated_radio_button.toggled.connect(self.display_repeated_cuts)
 
         self.set_ui_for_step(0)
         self.ui.back_button.clicked.connect(self.ui.stackedWidget.prev_page)
@@ -257,26 +259,33 @@ class AppDialog(QtGui.QWidget):
         self.ui.rescan_select_button.setText("Rescan Needed : %d" % summary.rescans_count)
         self.ui.total_button.setText("Total : %d" % len(summary))
 
+    @QtCore.Slot(bool)
+    def display_repeated_cuts(self, checked):
+        self._cuts_display_repeated = checked
+        self.set_display_summary_mode(True, self._cuts_display_mode)
+
     def set_display_summary_mode(self, activated, mode):
         if activated:
+            self._cuts_display_mode = mode
             self._logger.debug("Switching to %s mode" % mode)
+            show_only_repeated = self._cuts_display_repeated
             count = self.ui.cutsummary_list.count() -1 # We have stretcher
             if mode == -1: # Show everything
                 for i in range(0, count):
-                    witem = self.ui.cutsummary_list.itemAt(i)
-                    witem.widget().show()
+                    widget = self.ui.cutsummary_list.itemAt(i).widget()
+                    widget.setVisible(not show_only_repeated or widget.repeated)
             elif mode > 99: # Show "Need Rescan"
                 for i in range(0, count):
                     widget = self.ui.cutsummary_list.itemAt(i).widget()
                     if widget.need_rescan:
-                        widget.show()
+                        widget.setVisible(not show_only_repeated or widget.repeated)
                     else:
                         widget.hide()
             else:
                 for i in range(0, count):
                     widget = self.ui.cutsummary_list.itemAt(i).widget()
                     if widget.diff_type == mode:
-                        widget.show()
+                        widget.setVisible(not show_only_repeated or widget.repeated)
                     else:
                         widget.hide()
 
@@ -296,6 +305,7 @@ class AppDialog(QtGui.QWidget):
             widget.close()
         # Go back into "Show everything mode"
         self.ui.total_button.setChecked(True)
+        self.ui.repeated_radio_button.setChecked(False)
 
     @QtCore.Slot()
     def import_cut(self):
