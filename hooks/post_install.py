@@ -50,10 +50,12 @@ class PostInstall(Hook):
             )
         fields = {
             "sg_cut_order" : { "type" : "number"},
-            "sg_timecode_cut_in" : { "type" : "timecode"},
-            "sg_timecode_cut_out" : { "type" : "timecode"},
-            "sg_timecode_edl_in" : { "type" : "timecode"},
-            "sg_timecode_edl_out" : { "type" : "timecode"},
+            "sg_timecode_cut_in" : { "type" : "text"},
+            "sg_timecode_cut_out" : { "type" : "text"},
+            "sg_timecode_edl_in" : { "type" : "text"},
+            "sg_timecode_edl_out" : { "type" : "text"},
+            "sg_head_in" : { "type" : "number"},
+            "sg_tail_out" : { "type" : "number"},
             "sg_cut_in" : { "type" : "number"},
             "sg_cut_out" : { "type" : "number"},
             "sg_cut_duration" : { "type" : "number"},

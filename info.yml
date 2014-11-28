@@ -24,6 +24,10 @@ configuration:
         type: str
         description: "Base timecode corresponding to head in value"
         default_value: "01:00:00:00"
+    default_head_in_duration:
+        type: int
+        description: Default head in duration when creating new shots
+        default_value: 8
     default_tail_out_duration:
         type: int
         description: Default tail out duration when creating new shots

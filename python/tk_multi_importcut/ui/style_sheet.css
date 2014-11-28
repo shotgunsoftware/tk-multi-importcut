@@ -1,15 +1,31 @@
-/* 
+/*
+ Copyright (c) 2014 Shotgun Software Inc.
+ 
+ CONFIDENTIAL AND PROPRIETARY
+ 
+ This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+ Source Code License included in this distribution package. See LICENSE.
+ By accessing, using, copying or modifying this work you indicate your
+ agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
+ not expressly granted therein are reserved by Shotgun Software Inc.
+*/
+
+/*
 Make sure standard dialogs and button boxes
 Will have the "Do it" button on the far right
 */
 QDialogButtonBox {
     button-layout: 3;
 }
+/*
+Drop area style : big font, and a dashed outline
+*/
 QLabel#drop_area_label {
     border: 4px dashed grey;
     border-radius: 4px;
     font-size: 50px;
-    font-family: "Chalkduster";
+    font-family: "Tahoma";
+    font-style: bold;
 }
 QFrame#SequenceCard, #CutDiffCard {
     border: 2px solid black;
@@ -23,11 +39,15 @@ QFrame:!focus#SequenceCard {
     border-color: red;
 }
 */
-QFrame:selected#SequenceCard {
+QFrame#SequenceCard:selected {
     font-family: "Chalkduster";
     border-color: orange;
     background-color: orange;
 }
+/*
+Cut summary view mode buttons, add a blue underline
+when they are checked
+*/
 QAbstractButton#new_select_button:checked,
     #cut_change_select_button:checked,
     #omitted_select_button:checked,
@@ -39,6 +59,10 @@ QAbstractButton#new_select_button:checked,
     border-bottom: 2px solid #2C93E2;
     outline: none;
 }
+/*
+Cut summary view mode buttons, disable regular
+press style
+*/
 QAbstractButton#new_select_button:pressed,
     #cut_change_select_button:pressed,
     #omitted_select_button:pressed,
@@ -50,13 +74,16 @@ QAbstractButton#new_select_button:pressed,
     border-bottom: 2px solid #2C93E2;
     outline: none;
 }
+/*
+Make the radio button blue when checked
+*/
 QAbstractButton#repeated_radio_button:checked {
     color: #2C93E2;
 }
 #horizontalLayout_3 {
     background-color: orange;
 }
-/* Titles in SG blue */
+/* Titles in SG blue for cut summary cards */
 QLabel#shot_title_label, #version_title_label, #head_title_label, #cut_title_label, #tail_title_label {
     color: #2C93E2
 }

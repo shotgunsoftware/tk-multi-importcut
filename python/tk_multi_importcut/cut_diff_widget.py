@@ -70,28 +70,21 @@ class CutDiffCard(QtGui.QFrame):
 
         self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)
         self.ui.version_name_label.setText(self._cut_diff.version_name)
-        head_in = self._cut_diff.shot_head_in
-        if head_in is None:
-            head_in = self._cut_diff.default_head_in
-            self.ui.shot_head_in_label.setStyleSheet(
-                "%s\ncolor: %s" % (
-                    self.ui.shot_head_in_label.styleSheet(),
-                    _COLORS["sg_red"]
-                )
-            )
-        self.ui.shot_head_in_label.setText("%s" % head_in)
-        tail_out = self._cut_diff.shot_tail_out
-        if tail_out is None:
-            tail_out = self._cut_diff.default_tail_out
-            self.ui.shot_tail_out_label.setStyleSheet(
-                "%s\ncolor: %s" % (
-                    self.ui.shot_tail_out_label.styleSheet(),
-                    _COLORS["sg_red"]
-                )
-            )
-        self.ui.shot_tail_out_label.setText("%s" % tail_out)
 
-        self.ui.status_label.setText("%s" % self._cut_diff.diff_type_label)
+        value = self._cut_diff.head_in
+        new_value = self._cut_diff.new_head_in
+        self.display_values(self.ui.shot_head_in_label, new_value, value)
+
+        value = self._cut_diff.tail_out
+        new_value = self._cut_diff.new_tail_out
+        self.display_values(self.ui.shot_tail_out_label, new_value, value)
+
+        diff_type_label = self._cut_diff.diff_type_label
+        reasons = ", ".join(self._cut_diff.reasons)
+        if reasons:
+            self.ui.status_label.setText("%s : <small>%s</small>" % (diff_type_label, reasons))
+        else:
+            self.ui.status_label.setText("%s" % diff_type_label)
         if self._cut_diff.diff_type in _DIFF_TYPES_STYLE:
             self.ui.status_label.setStyleSheet(_DIFF_TYPES_STYLE[self._cut_diff.diff_type])
 
@@ -161,13 +154,9 @@ class CutDiffCard(QtGui.QFrame):
         cut_item_details = ""
         if self._cut_diff.sg_cut_item:
             if self._cut_diff.sg_cut_item["sg_fps"] :
-                fps = decimal.Decimal(self._cut_diff.sg_cut_item["sg_fps"])
-                tc_in = edl.timecode_from_frame(
-                    int(self._cut_diff.sg_cut_item["sg_timecode_cut_in"] * fps / 1000)
-                )
-                tc_out = edl.timecode_from_frame(
-                    int(self._cut_diff.sg_cut_item["sg_timecode_cut_out"] * fps / 1000)
-                )
+                fps = self._cut_diff.sg_cut_item["sg_fps"]
+                tc_in = edl.Timecode(self._cut_diff.sg_cut_item["sg_timecode_cut_in"], fps)
+                tc_out = edl.Timecode(self._cut_diff.sg_cut_item["sg_timecode_cut_out"], fps)
             else:
                 tc_in = "????"
                 tc_out = "????"
