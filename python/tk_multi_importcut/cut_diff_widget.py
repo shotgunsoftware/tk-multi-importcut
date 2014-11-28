@@ -80,7 +80,7 @@ class CutDiffCard(QtGui.QFrame):
         self.display_values(self.ui.shot_tail_out_label, new_value, value)
 
         diff_type_label = self._cut_diff.diff_type_label
-        reasons = ", ".join(self._cut_diff.reasons)
+        reasons = ",<br>".join(self._cut_diff.reasons)
         if reasons:
             self.ui.status_label.setText("%s : <small>%s</small>" % (diff_type_label, reasons))
         else:
