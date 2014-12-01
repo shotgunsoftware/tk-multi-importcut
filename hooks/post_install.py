@@ -49,23 +49,23 @@ class PostInstall(Hook):
                 )
             )
         fields = {
-            "sg_cut_order" : { "type" : "number"},
-            "sg_timecode_cut_in" : { "type" : "text"},
-            "sg_timecode_cut_out" : { "type" : "text"},
-            "sg_timecode_edl_in" : { "type" : "text"},
-            "sg_timecode_edl_out" : { "type" : "text"},
-            "sg_head_in" : { "type" : "number"},
-            "sg_tail_out" : { "type" : "number"},
-            "sg_cut_in" : { "type" : "number"},
-            "sg_cut_out" : { "type" : "number"},
-            "sg_cut_duration" : { "type" : "number"},
-            "sg_cut" : { "type" : "entity", "properties" : { "valid_types" : ["Cut"]}},
-            "sg_link" : { "type" : "entity", "properties" : { "valid_types" : ["Shot"]}},
-            "sg_version" : { "type" : "entity", "properties" : { "valid_types" : ["Version"]}},
-            "sg_fps" : { "type" : "number", },
+            "sg_Cut_Order" : { "type" : "number"},
+            "sg_Timecode_Cut_In" : { "type" : "text"},
+            "sg_Timecode_Cut_Out" : { "type" : "text"},
+            "sg_Timecode_EDL_In" : { "type" : "text"},
+            "sg_Timecode_EDL_Out" : { "type" : "text"},
+            "sg_Head_In" : { "type" : "number"},
+            "sg_Tail_Out" : { "type" : "number"},
+            "sg_Cut_In" : { "type" : "number"},
+            "sg_Cut_Out" : { "type" : "number"},
+            "sg_Cut_Duration" : { "type" : "number"},
+            "sg_Cut" : { "type" : "entity", "properties" : { "valid_types" : ["Cut"]}},
+            "sg_Link" : { "type" : "entity", "properties" : { "valid_types" : ["Shot"]}},
+            "sg_Version" : { "type" : "entity", "properties" : { "valid_types" : ["Version"]}},
+            "sg_FPS" : { "type" : "number", },
         }
         for field_name, field in fields.iteritems():
-            if field_name not in schema:
+            if field_name.lower() not in schema:
                 app.log_info("Creating field %s for entity %s" % (field_name, sg_cut_item_entity))
                 # Forge a display name that should give use the sg_xxxx field name we want ...
                 display_name = ' '.join( field_name.split('_')[1:]) # strip the sg_ part
@@ -74,7 +74,7 @@ class PostInstall(Hook):
                     sg_cut_item_entity, field["type"], display_name, properties
                 )
                 # Check that we got the field name we expected
-                if res != field_name:
+                if res != field_name.lower():
                     raise RuntimeError("Wanted to create a field named %s, and created %s instead" % (
                         field_name,res)
                     )
