@@ -26,7 +26,8 @@ _STYLES = {
     "selected" : "border-color: %s" % _COLORS["sg_blue"],
 }
 class SequenceCard(QtGui.QFrame):
-    selected = QtCore.Signal(dict)
+    show_sequence = QtCore.Signal(dict)
+    highlight_selected = QtCore.Signal(QtGui.QWidget)
     def __init__(self, parent, sg_sequence):
         super(SequenceCard, self).__init__(parent)
         self._sg_sequence = sg_sequence
@@ -36,22 +37,31 @@ class SequenceCard(QtGui.QFrame):
         self.ui.status_label.setText(sg_sequence["sg_status_list"])
         self.ui.details_label.setText("<small>%s</small>" % sg_sequence["description"])
         self.ui.select_button.setVisible(False)
-        self.ui.select_button.clicked.connect(self.select)
+        self.ui.select_button.clicked.connect(self.show_selected)
 
     @QtCore.Slot()
     def select(self):
-        self.selected.emit(self._sg_sequence)
+        self.ui.select_button.setVisible(True)
+        self.setStyleSheet(_STYLES["selected"])
+
+    @QtCore.Slot()
+    def unselect(self):
+        self.ui.select_button.setVisible(False)
+        self.setStyleSheet("")
+
+    @QtCore.Slot()
+    def show_selected(self):
+        self.show_sequence.emit(self._sg_sequence)
 
     def mouseDoubleClickEvent(self, event):
-        self.select()
+        self.show_selected()
 
     def mousePressEvent(self, event):
-        pass
+        self.highlight_selected.emit(self)
 
     def enterEvent(self, event):
-        self.ui.select_button.setVisible(True)
-        self.setStyleSheet( _STYLES["selected"])
-
+        pass
     def leaveEvent(self, event):
-        self.ui.select_button.setVisible(False)
-        self.setStyleSheet( "")
+        pass
+        #self.ui.select_button.setVisible(False)
+

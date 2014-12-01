@@ -39,9 +39,8 @@ QFrame:!focus#SequenceCard {
     border-color: red;
 }
 */
-QFrame#SequenceCard:selected {
-    font-family: "Chalkduster";
-    border-color: orange;
+QFrame#SequenceCard[selected="true"] {
+    border-color: #2C93E2;
     background-color: orange;
 }
 /*

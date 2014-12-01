@@ -19,6 +19,7 @@ class Ui_SequenceCard(object):
         SequenceCard.setSizePolicy(sizePolicy)
         SequenceCard.setMinimumSize(QtCore.QSize(310, 70))
         SequenceCard.setFocusPolicy(QtCore.Qt.StrongFocus)
+        SequenceCard.setStyleSheet("")
         SequenceCard.setFrameShape(QtGui.QFrame.Box)
         SequenceCard.setFrameShadow(QtGui.QFrame.Plain)
         SequenceCard.setLineWidth(2)

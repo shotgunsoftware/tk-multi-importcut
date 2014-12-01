@@ -68,6 +68,8 @@ class AppDialog(QtGui.QWidget):
         self._busy = False
         self._cuts_display_mode = -1
         self._cuts_display_repeated = False
+        self._selected_card_sequence = None
+
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
         # - A Shotgun API instance, via self._app.shotgun
@@ -222,14 +224,22 @@ class AppDialog(QtGui.QWidget):
         column = i % 2
         self._logger.debug("Adding %s at %d %d %d" % ( sg_entity, i, row, column))
         widget = SequenceCard(None, sg_entity)
-        widget.selected.connect(self.sequence_selected)
+        widget.highlight_selected.connect(self.sequence_selected)
+        widget.show_sequence.connect(self.show_sequence)
         self.ui.sequence_grid.addWidget(widget, row, column, )
         self.ui.sequence_grid.setRowStretch(row, 0)
         self.ui.sequence_grid.addItem(spacer, row+1, 0, colSpan=2 )
         self.ui.sequence_grid.setRowStretch(row+1, 1)
 
+    @QtCore.Slot(QtGui.QWidget)
+    def sequence_selected(self, card):
+        if self._selected_card_sequence:
+            self._selected_card_sequence.unselect()
+        self._selected_card_sequence = card
+        self._selected_card_sequence.select()
+
     @QtCore.Slot(dict)
-    def sequence_selected(self, sg_entity):
+    def show_sequence(self, sg_entity):
         self._logger.info("Retrieving cut information for %s" % sg_entity["code"] )
         self.show_cut_for_sequence.emit(sg_entity)
         self.step_done(1)
@@ -290,6 +300,7 @@ class AppDialog(QtGui.QWidget):
                         widget.hide()
 
     def clear_sequence_view(self):
+        self._selected_card_sequence = None
         count = self.ui.sequence_grid.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
             witem = self.ui.sequence_grid.takeAt(i)
@@ -326,19 +337,21 @@ class AppDialog(QtGui.QWidget):
 #        pixmap.save("/tmp/cut_report.png", format="PNG")
 
         #First render the widget to a QPicture, which stores QPainter commands.
-        pic = QtGui.QPicture()
+        pic = QtGui.QPicture(formatVersion=7)
         picPainter = QtGui.QPainter(pic)
         self.ui.cut_summary_widgets.render(picPainter, QtCore.QPoint())
         picPainter.end()
-     
+        pic.save("/tmp/cut_grab.pic")
         # Set up the printer
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
         printer.setOutputFileName("/tmp/cut_summary_report.pdf")
-     
+        print str(printer.printEngine())
+        print str(printer.paintEngine().type())
         # Finally, draw the QPicture to your printer
         painter = QtGui.QPainter()
         painter.begin(printer)
+        painter.setViewport(pic.boundingRect())
         painter.drawPicture(QtCore.QPointF(0, 0), pic);
         painter.end()
 

@@ -61,6 +61,7 @@ class Ui_CutDiffCard(object):
         self.shot_name_label.setObjectName("shot_name_label")
         self.gridLayout_2.addWidget(self.shot_name_label, 0, 1, 1, 1)
         self.status_label = QtGui.QLabel(CutDiffCard)
+        self.status_label.setWordWrap(True)
         self.status_label.setObjectName("status_label")
         self.gridLayout_2.addWidget(self.status_label, 2, 0, 1, 2)
         self.left_layout.addLayout(self.gridLayout_2)
