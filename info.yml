@@ -20,10 +20,6 @@ configuration:
         type: int
         description: Default head in value when creating new shots
         default_value: 1001
-    head_in_base_timecode:
-        type: str
-        description: "Base timecode corresponding to head in value"
-        default_value: "01:00:00:00"
     default_head_in_duration:
         type: int
         description: Default head in duration when creating new shots

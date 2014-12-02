@@ -46,7 +46,6 @@ class CutDiff(QtCore.QObject):
         self._cut_changes_reasons = []
         self._default_head_in = self._app.get_setting("default_head_in")
         self._default_head_in_duration = self._app.get_setting("default_head_in_duration")
-        self._head_in_base = edl.frame_from_timecode(self._app.get_setting("head_in_base_timecode"))
 
         self.check_changes()
 
@@ -92,10 +91,6 @@ class CutDiff(QtCore.QObject):
         if new_cut_out is None:
             return None
         return new_cut_out + new_tail_duration
-
-    @property
-    def head_in_base(self):
-        return self._head_in_base
 
     @property
     def shot_head_in(self):
