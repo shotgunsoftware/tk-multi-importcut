@@ -12,6 +12,7 @@ import sgtk
 import os
 import sys
 import logging
+import tempfile
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
@@ -29,6 +30,8 @@ from .sequence_widget import SequenceCard
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_diff_widget import CutDiffCard
 from .submit_dialog import SubmitDialog
+from .downloader import DownloadRunner
+
 def show_dialog(app_instance):
     """
     Shows the main dialog window.
@@ -230,7 +233,19 @@ class AppDialog(QtGui.QWidget):
         self.ui.sequence_grid.setRowStretch(row, 0)
         self.ui.sequence_grid.addItem(spacer, row+1, 0, colSpan=2 )
         self.ui.sequence_grid.setRowStretch(row+1, 1)
+        if sg_entity["image"]:
+            _, path = tempfile.mkstemp()
+            downloader = DownloadRunner(
+                sg_attachment=sg_entity["image"],
+                path=path,
+            )
+            downloader.file_downloaded.connect(lambda p : self.new_thumbnail_for_card(widget, p))
+            QtCore.QThreadPool.globalInstance().start(downloader)
 
+    def new_thumbnail_for_card(self, card, p):
+        self._logger.info("Loading %s" % p)
+        card.set_thumbnail(p)
+    
     @QtCore.Slot(QtGui.QWidget)
     def sequence_selected(self, card):
         if self._selected_card_sequence:

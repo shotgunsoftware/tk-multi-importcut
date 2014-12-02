@@ -25,6 +25,7 @@ _COLORS = {
 _STYLES = {
     "selected" : "border-color: %s" % _COLORS["sg_blue"],
 }
+
 class SequenceCard(QtGui.QFrame):
     show_sequence = QtCore.Signal(dict)
     highlight_selected = QtCore.Signal(QtGui.QWidget)
@@ -38,6 +39,13 @@ class SequenceCard(QtGui.QFrame):
         self.ui.details_label.setText("<small>%s</small>" % sg_sequence["description"])
         self.ui.select_button.setVisible(False)
         self.ui.select_button.clicked.connect(self.show_selected)
+        self.set_thumbnail(":/tk_multi_importcut/sg_logo.png")
+#        from random import randint
+#        self.set_thumbnail( [
+#            "/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/resources/no_thumbnail.png",
+#            "/Users/steph/Pictures/microsoftazurelogo.png",
+#            "/Users/steph/Pictures/IMG_4720.jpg"
+#        ][randint(0, 2)])
 
     @QtCore.Slot()
     def select(self):
@@ -63,5 +71,21 @@ class SequenceCard(QtGui.QFrame):
         pass
     def leaveEvent(self, event):
         pass
-        #self.ui.select_button.setVisible(False)
+
+    def set_thumbnail(self, thumb_path):
+        size = self.ui.icon_label.size()
+        ratio = size.width() / float(size.height())
+        pixmap = QtGui.QPixmap(thumb_path)
+        if pixmap.isNull():
+            return
+        psize = pixmap.size()
+        pratio = psize.width() / float(psize.height())
+        if pratio > ratio:
+            self.ui.icon_label.setPixmap(
+                pixmap.scaledToWidth(size.width(), mode=QtCore.Qt.SmoothTransformation)
+            )
+        else:
+            self.ui.icon_label.setPixmap(
+                pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
+            )
 

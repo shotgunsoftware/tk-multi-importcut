@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="tk_multi_importcut">
+    <file>no_thumbnail.png</file>
     <file>icon_completed.png</file>
     <file>left_arrow.png</file>
     <file>right_arrow.png</file>

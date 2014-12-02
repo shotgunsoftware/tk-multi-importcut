@@ -307,7 +307,7 @@ class EdlCut(QtCore.QObject):
                         "entity_type" : "Shot",
                         "entity_id" : cut_diff._sg_shot["id"],
                         "data" : {
-                            "sg_status_list" : "wtg",
+                            "sg_status_list" : "act",
                             # Add code in the update so it will be returned with batch results
                             "code" : shot_name,
                         }

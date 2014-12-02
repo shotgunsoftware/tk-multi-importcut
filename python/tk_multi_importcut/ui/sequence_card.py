@@ -39,6 +39,7 @@ class Ui_SequenceCard(object):
         self.icon_label.setText("")
         self.icon_label.setPixmap(QtGui.QPixmap(":/tk_multi_importcut/sg_logo.png"))
         self.icon_label.setScaledContents(False)
+        self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.icon_label.setObjectName("icon_label")
         self.horizontalLayout.addWidget(self.icon_label)
         self.verticalLayout_2 = QtGui.QVBoxLayout()
