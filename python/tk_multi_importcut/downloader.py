@@ -17,6 +17,10 @@ class DownloadRunner(QtCore.QRunnable):
     """
     """
     class _Notifier(QtCore.QObject):
+        """
+        QRunnable does not derive from QObject, so we need to have a small
+        class to be able to emit signals
+        """
         file_downloaded = QtCore.Signal(str)
 
     def __init__(self, sg_attachment, path):
@@ -39,7 +43,6 @@ class DownloadRunner(QtCore.QRunnable):
         """
         # Capture the thread we are running on
         self._thread = QtCore.QThread.currentThread()
-        print self._sg_attachment
         try :
             if isinstance(self._sg_attachment, str):
                 self._sg.download_url(self._sg_attachment, self._path)

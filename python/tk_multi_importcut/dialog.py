@@ -239,7 +239,7 @@ class AppDialog(QtGui.QWidget):
                 sg_attachment=sg_entity["image"],
                 path=path,
             )
-            downloader.file_downloaded.connect(lambda p : self.new_thumbnail_for_card(widget, p))
+            downloader.file_downloaded.connect(widget.new_thumbnail)
             QtCore.QThreadPool.globalInstance().start(downloader)
 
     def new_thumbnail_for_card(self, card, p):

@@ -61,6 +61,10 @@ class SequenceCard(QtGui.QFrame):
     def show_selected(self):
         self.show_sequence.emit(self._sg_sequence)
 
+    @QtCore.Slot(str)
+    def new_thumbnail(self, path):
+        self.set_thumbnail(path)
+
     def mouseDoubleClickEvent(self, event):
         self.show_selected()
 
