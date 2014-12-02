@@ -248,7 +248,7 @@ class CutDiff(QtCore.QObject):
         if tail_out is None:
             return self._app.get_setting("default_tail_out_duration")
         if self._edit:
-            return tail_out - cut_out - self.head_in_base
+            return tail_out - cut_out
         return None
 
     @property
