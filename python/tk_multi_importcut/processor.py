@@ -271,6 +271,8 @@ class EdlCut(QtCore.QObject):
                 "project" : self._ctx.project,
                 "code" : title,
                 "sg_sequence" : self._sg_entity,
+                "created_by" : self._ctx.user,
+                "updated_by" : self._ctx.user,
             },
             ["id", "code"])
         sg_batch_data = []
@@ -288,6 +290,7 @@ class EdlCut(QtCore.QObject):
                             "sg_sequence" : self._sg_entity,
                             "sg_head_in" : cut_diff.default_head_in,
                             "sg_tail_out" : cut_diff.default_tail_out,
+                            "updated_by" : self._ctx.user,
                         }
                     })
                 elif cut_diff.diff_type == _DIFF_TYPES.OMITTED:
@@ -299,6 +302,7 @@ class EdlCut(QtCore.QObject):
                             "sg_status_list" : "omt",
                             # Add code in the update so it will be returned with batch results
                             "code" : shot_name,
+                            "updated_by" : self._ctx.user,
                         }
                     })
                 elif cut_diff.diff_type == _DIFF_TYPES.REINSTATED:
@@ -310,6 +314,7 @@ class EdlCut(QtCore.QObject):
                             "sg_status_list" : "act",
                             # Add code in the update so it will be returned with batch results
                             "code" : shot_name,
+                            "updated_by" : self._ctx.user,
                         }
                     })
         if sg_batch_data:
@@ -351,6 +356,8 @@ class EdlCut(QtCore.QObject):
                             "sg_link" : cut_diff.sg_shot,
                             "sg_version" : None,
                             "sg_fps" : self._edl.fps,
+                            "created_by" : self._ctx.user,
+                            "updated_by" : self._ctx.user,
                         }
                     })
         if sg_batch_data:
