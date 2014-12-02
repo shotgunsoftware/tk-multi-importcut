@@ -33,6 +33,10 @@ configuration:
         parameters: []
         default_value: '{self}/post_install.py'
         description: "Hook that ensure needed entities and fields are available"
+    report_to_group:
+        type: str
+        description: "A Shotgun group, used when addressing reports"
+        default_value: "Editorial"
 
 # this app works in all engines - it does not contain
 # any host application specific commands

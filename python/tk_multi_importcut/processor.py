@@ -15,6 +15,18 @@ from .cut_summary import CutSummary
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
+_NOTE_FORMAT = """
+*Total:* %s
+*Cut Changes:* %s
+*New:* %s
+*Omitted:* %s
+*Reinstated:* %s
+*Repeated:* %s
+*Need Rescan:* %s
+*Description:*
+%s
+"""
+
 class Processor(QtCore.QThread):
     # Pass through signals which will be redirected to
     # instances created in the running thread, so signals
@@ -29,7 +41,7 @@ class Processor(QtCore.QThread):
     new_cut_diff = QtCore.Signal(CutDiff)
     got_busy = QtCore.Signal()
     got_idle = QtCore.Signal()
-    import_cut = QtCore.Signal(str,str,str, str)
+    import_cut = QtCore.Signal(str,dict,dict, str)
     def __init__(self):
         super(Processor, self).__init__()
         self._logger = get_logger()
@@ -249,12 +261,13 @@ class EdlCut(QtCore.QObject):
                     return sg_cut_item
         return None
     
-    @QtCore.Slot(str, str, str, str)
+    @QtCore.Slot(str, dict, dict, str)
     def do_cut_import(self, title, sender, to, description):
         self._logger.info("Importing cut %s" % title)
         self.got_busy.emit()
         try:
-            self.create_sg_cut(title)
+            sg_cut = self.create_sg_cut(title)
+            self.create_note(title, sender, to, description, sg_links=[sg_cut])
         except Exception, e :
             self._logger.exception(str(e))
         else:
@@ -263,6 +276,32 @@ class EdlCut(QtCore.QObject):
             self.step_done.emit(2)
         finally:
             self.got_idle.emit()
+
+    def create_note(self, title, sender, to, description, sg_links=None):
+        summary = self._summary
+        contents = _NOTE_FORMAT % (
+            len(summary),
+            summary.count_for_type(_DIFF_TYPES.CUT_CHANGE),
+            summary.count_for_type(_DIFF_TYPES.NEW),
+            summary.count_for_type(_DIFF_TYPES.OMITTED),
+            summary.count_for_type(_DIFF_TYPES.REINSTATED),
+            summary.repeated_count,
+            summary.rescans_count,
+            description
+        )
+        
+        data = {
+            "project" : self._ctx.project,
+            "subject" : title,
+            "content": contents,
+            "note_links": [self._sg_entity] + (sg_links if sg_links else []),
+            "created_by" : sender,
+            "user" : sender,
+            "addressings_to" : [to],
+        
+        }
+        self._app.shotgun.create("Note", data)
+
 
     def create_sg_cut(self, title):
         # Create a new cut
@@ -362,3 +401,4 @@ class EdlCut(QtCore.QObject):
                     })
         if sg_batch_data:
             self._sg.batch(sg_batch_data)
+        return sg_cut

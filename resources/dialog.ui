@@ -61,8 +61,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>740</width>
-            <height>322</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="sequence_grid" rowstretch="0">
@@ -233,7 +233,7 @@ EDL</string>
             <height>250</height>
            </rect>
           </property>
-          <layout class="QVBoxLayout" name="cutsummary_list">
+          <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">
            <property name="margin">
             <number>0</number>
            </property>
@@ -241,6 +241,9 @@ EDL</string>
             <spacer name="verticalSpacer_2">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Preferred</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>

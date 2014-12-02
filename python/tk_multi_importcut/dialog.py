@@ -335,7 +335,7 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def import_cut(self):
-        #self.generate_report()
+#        self.generate_report()
         dialog = SubmitDialog(
             parent=self,
             title=self._processor.title,
@@ -349,20 +349,19 @@ class AppDialog(QtGui.QWidget):
 #        Could be used to generate a report ?
 #
 #        pixmap = QtGui.QPixmap.grabWidget(self.ui.cut_summary_widgets)
-#        pixmap.save("/tmp/cut_report.png", format="PNG")
+#        pixmap.save("/tmp/cut_report.svg", format="SVG")
 
         #First render the widget to a QPicture, which stores QPainter commands.
         pic = QtGui.QPicture(formatVersion=7)
         picPainter = QtGui.QPainter(pic)
-        self.ui.cut_summary_widgets.render(picPainter, QtCore.QPoint())
+        self.ui.cut_summary_widgets.render(picPainter, QtCore.QPoint(), renderFlags=~QtGui.QWidget.DrawWindowChildren)
         picPainter.end()
         pic.save("/tmp/cut_grab.pic")
         # Set up the printer
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
         printer.setOutputFileName("/tmp/cut_summary_report.pdf")
-        print str(printer.printEngine())
-        print str(printer.paintEngine().type())
+
         # Finally, draw the QPicture to your printer
         painter = QtGui.QPainter()
         painter.begin(printer)
