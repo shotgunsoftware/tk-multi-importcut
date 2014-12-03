@@ -241,10 +241,6 @@ class AppDialog(QtGui.QWidget):
             )
             downloader.file_downloaded.connect(widget.new_thumbnail)
             QtCore.QThreadPool.globalInstance().start(downloader)
-
-    def new_thumbnail_for_card(self, card, p):
-        self._logger.info("Loading %s" % p)
-        card.set_thumbnail(p)
     
     @QtCore.Slot(QtGui.QWidget)
     def sequence_selected(self, card):

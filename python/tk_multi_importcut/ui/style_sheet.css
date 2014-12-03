@@ -31,18 +31,14 @@ QFrame#SequenceCard, #CutDiffCard {
     border: 2px solid black;
 }
 /*
-QFrame:focus#SequenceCard {
-    border-color: blue;
-}
-/*
 QFrame:!focus#SequenceCard {
     border-color: red;
 }
-*/
 QFrame#SequenceCard[selected="true"] {
     border-color: #2C93E2;
     background-color: orange;
 }
+*/
 /*
 Cut summary view mode buttons, add a blue underline
 when they are checked

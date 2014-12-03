@@ -147,7 +147,8 @@ class EdlCut(QtCore.QObject):
         sg_sequences = self._sg.find(
             "Sequence",
             [["project", "is", self._ctx.project]],
-            [ "code", "id", "sg_status_list", "image", "description"]
+            [ "code", "id", "sg_status_list", "image", "description"],
+            order=[{"field_name" : "code", "direction" : "asc"}]
         )
         if not sg_sequences:
             self._logger.warning("Couldn't retrieve any Sequence for project %s" % self._ctx.project["name"])

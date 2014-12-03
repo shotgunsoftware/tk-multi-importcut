@@ -39,7 +39,7 @@ class SequenceCard(QtGui.QFrame):
         self.ui.details_label.setText("<small>%s</small>" % sg_sequence["description"])
         self.ui.select_button.setVisible(False)
         self.ui.select_button.clicked.connect(self.show_selected)
-        self.set_thumbnail(":/tk_multi_importcut/sg_logo.png")
+        self.set_thumbnail(":/tk_multi_importcut/sg_sequence_thumbnail.png")
 #        from random import randint
 #        self.set_thumbnail( [
 #            "/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/resources/no_thumbnail.png",
@@ -49,16 +49,20 @@ class SequenceCard(QtGui.QFrame):
 
     @QtCore.Slot()
     def select(self):
+        self.setProperty("selected", True)
         self.ui.select_button.setVisible(True)
         self.setStyleSheet(_STYLES["selected"])
 
     @QtCore.Slot()
     def unselect(self):
+        self.setProperty("selected", False)
         self.ui.select_button.setVisible(False)
         self.setStyleSheet("")
 
     @QtCore.Slot()
     def show_selected(self):
+        self.highlight_selected.emit(self)
+        self.ui.select_button.setVisible(False)
         self.show_sequence.emit(self._sg_sequence)
 
     @QtCore.Slot(str)
@@ -71,11 +75,18 @@ class SequenceCard(QtGui.QFrame):
     def mousePressEvent(self, event):
         self.highlight_selected.emit(self)
 
-    def enterEvent(self, event):
-        pass
-    def leaveEvent(self, event):
-        pass
+    def focusInEvent(self, event):
+        self.ui.select_button.setVisible(True)
 
+    def focusOutEvent(self, event):
+        self.ui.select_button.setVisible(False)
+
+    def enterEvent(self, event):
+        self.ui.select_button.setVisible(True)
+
+    def leaveEvent(self, event):
+        self.ui.select_button.setVisible(False)
+    
     def set_thumbnail(self, thumb_path):
         size = self.ui.icon_label.size()
         ratio = size.width() / float(size.height())
