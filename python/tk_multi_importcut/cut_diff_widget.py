@@ -116,7 +116,8 @@ class CutDiffCard(QtGui.QFrame):
         self.display_values(self.ui.tail_duration_label, new_value, value)
 
         self.set_tool_tip()
-        
+        self.set_thumbnail(":/tk_multi_importcut/sg_shot_thumbnail.png")
+
     @property
     def cut_order(self):
         if self._cut_diff.new_cut_order is not None:
@@ -182,3 +183,21 @@ class CutDiffCard(QtGui.QFrame):
             self._cut_diff.edit
         )
         self.setToolTip(msg)
+
+    def set_thumbnail(self, thumb_path):
+        size = self.ui.icon_label.size()
+        ratio = size.width() / float(size.height())
+        pixmap = QtGui.QPixmap(thumb_path)
+        if pixmap.isNull():
+            return
+        psize = pixmap.size()
+        pratio = psize.width() / float(psize.height())
+        if pratio > ratio:
+            self.ui.icon_label.setPixmap(
+                pixmap.scaledToWidth(size.width(), mode=QtCore.Qt.SmoothTransformation)
+            )
+        else:
+            self.ui.icon_label.setPixmap(
+                pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
+            )
+
