@@ -441,10 +441,39 @@ class EdlCut(QtCore.QObject):
             for sg_shot in res:
                 shot_name = sg_shot["code"]
                 if shot_name not in self._summary:
-                    raise RuntimeError("Created shot %s, but couldn't retrieve it in our list")
+                    raise RuntimeError("Created shot %s, but couldn't retrieve it in our list" % shot_name)
                 for cut_diff in self._summary[shot_name]:
                     # FIXME : update the diff type
                     cut_diff._sg_shot = sg_shot
+        # Temporary helper to create versions in SG for initial
+        # testing. Should be commented out before going into production
+        # unless it becomes part of the specs
+        sg_batch_data = []
+        for shot_name, items in self._summary.iteritems():
+            for cut_diff in items:
+                edit = cut_diff.edit
+                if not edit.get_sg_version():
+                    sg_batch_data.append({
+                        "request_type" : "create",
+                        "entity_type" : "Version",
+                        "data" : {
+                            "project" : self._ctx.project,
+                            "code" : edit.get_version_name(),
+                            "entity": cut_diff.sg_shot,
+                            "updated_by" : self._ctx.user,
+                            "created_by" : self._ctx.user,
+                            "entity.Shot.code" : shot_name,
+                        }
+                    })
+        if sg_batch_data:
+            res = self._sg.batch(sg_batch_data)
+            self._logger.info("Created %d new versions." % len(res))
+            for shot_name, items in self._summary.iteritems():
+                for cut_diff in items:
+                    edit = cut_diff.edit
+                    if not edit.get_sg_version():
+                        # Creation order should match
+                        cut_diff.set_sg_version(res.pop(0))
         # Loop through all edits and create CutItems for them
         sg_batch_data = []
         cut_item_entity = self._app.get_setting("sg_cut_item_entity")
@@ -477,22 +506,6 @@ class EdlCut(QtCore.QObject):
                             "updated_by" : self._ctx.user,
                         }
                     })
-                    # Temporary helper to create versions in SG for initial
-                    # testing. Should be commented out before going into production
-                    # unless it becomes part of the specs
-                    if not edit.get_sg_version():
-                        sg_batch_data.append({
-                            "request_type" : "create",
-                            "entity_type" : "Version",
-                            "data" : {
-                                "project" : self._ctx.project,
-                                "code" : edit.get_version_name(),
-                                "entity": cut_diff.sg_shot,
-                                "updated_by" : self._ctx.user,
-                                "created_by" : self._ctx.user,
-                            }
-                        })
-
         if sg_batch_data:
             self._sg.batch(sg_batch_data)
         return sg_cut

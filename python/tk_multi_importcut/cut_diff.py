@@ -80,6 +80,11 @@ class CutDiff(QtCore.QObject):
             return self._edit.get_sg_version()
         return None
 
+    def set_sg_version(self, sg_version):
+        if not self._edit:
+            raise ValueError("Can't set Shotgun version without an edit entry")
+        self._edit._sg_version = sg_version
+    
     @property
     def default_head_in(self):
         return self._default_head_in
