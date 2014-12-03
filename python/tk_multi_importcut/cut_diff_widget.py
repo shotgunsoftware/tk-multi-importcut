@@ -24,8 +24,8 @@ _COLORS = {
     "sg_blue" :     "#2C93E2",
     "sg_red"  :     "#FC6246",
     "mid_blue"  :   "#1B82D1",
-    "green" :       "rgb(87, 181, 16)",
-    "yellow" :      "rgb(161, 165, 26)",
+    "green" :       "#57B510",
+    "yellow" :      "#A1A51A",
     "lgrey" :       "#A5A5A5",
 }
 
@@ -69,7 +69,14 @@ class CutDiffCard(QtGui.QFrame):
         self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
 
         self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)
-        self.ui.version_name_label.setText(self._cut_diff.version_name)
+        
+        if not self._cut_diff.sg_version:
+            self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
+                _COLORS["yellow"],
+                self._cut_diff.version_name,
+            ))
+        else:
+            self.ui.version_name_label.setText(self._cut_diff.version_name)
 
         value = self._cut_diff.head_in
         new_value = self._cut_diff.new_head_in

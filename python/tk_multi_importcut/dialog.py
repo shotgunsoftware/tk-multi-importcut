@@ -246,8 +246,10 @@ class AppDialog(QtGui.QWidget):
     def sequence_selected(self, card):
         if self._selected_card_sequence:
             self._selected_card_sequence.unselect()
+            self._logger.debug("Unselected %s" % self._selected_card_sequence)
         self._selected_card_sequence = card
         self._selected_card_sequence.select()
+        self._logger.debug("Selected %s" % self._selected_card_sequence)
 
     @QtCore.Slot(dict)
     def show_sequence(self, sg_entity):

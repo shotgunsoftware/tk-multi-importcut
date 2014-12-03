@@ -61,7 +61,6 @@ class SequenceCard(QtGui.QFrame):
 
     @QtCore.Slot()
     def show_selected(self):
-        print "Show selected for %s" % self
         self.highlight_selected.emit(self)
         self.ui.select_button.setVisible(False)
         self.show_sequence.emit(self._sg_sequence)
@@ -75,12 +74,6 @@ class SequenceCard(QtGui.QFrame):
 
     def mousePressEvent(self, event):
         self.highlight_selected.emit(self)
-
-#    def focusInEvent(self, event):
-#        self.ui.select_button.setVisible(True)
-#
-#    def focusOutEvent(self, event):
-#        self.ui.select_button.setVisible(False)
 
     def enterEvent(self, event):
         self.ui.select_button.setVisible(True)

@@ -72,10 +72,12 @@ class CutDiff(QtCore.QObject):
     @property
     def version_name(self):
         if self._edit:
-            clip_name = self._edit.get_clip_name()
-            if clip_name:
-                # Can have a .mov extension
-                return clip_name.split(".")[0]
+            return self._edit.get_version_name()
+        return None
+    @property
+    def sg_version(self):
+        if self._edit:
+            return self._edit.get_sg_version()
         return None
 
     @property

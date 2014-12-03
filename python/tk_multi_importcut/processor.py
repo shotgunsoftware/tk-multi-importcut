@@ -12,7 +12,7 @@ from sgtk.platform.qt import QtCore
 from .logger import get_logger
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
-
+import re
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
 _NOTE_FORMAT = """
@@ -61,13 +61,13 @@ class Processor(QtCore.QThread):
 
     def run(self):
         self._edl_cut = EdlCut()
-        # Orders
+        # Orders we receive
         self.new_edl.connect(self._edl_cut.load_edl)
         self.reset.connect(self._edl_cut.reset)
         self.retrieve_sequences.connect(self._edl_cut.retrieve_sequences)
         self.show_cut_for_sequence.connect(self._edl_cut.show_cut_for_sequence)
         self.import_cut.connect(self._edl_cut.do_cut_import)
-        # Results
+        # Results we send
         self._edl_cut.step_done.connect(self.step_done)
         self._edl_cut.new_sg_sequence.connect(self.new_sg_sequence)
         self._edl_cut.new_cut_diff.connect(self.new_cut_diff)
@@ -97,11 +97,19 @@ class EdlCut(QtCore.QObject):
         # Use our own logger rather than the framework one
         edl.process_edit(edit, self._logger)
         # Check things are right
+        # Add empty properties
+        edit._sg_version = None
         # Add some lambda to retrieve properties
         edit.get_shot_name = lambda : edit._shot_name
         edit.get_clip_name = lambda : edit._clip_name
-        if not edit.get_shot_name() and not edit.get_clip_name():
-            raise RuntimeError("Couldn't extract a shot name nor a clip name, one of them is required")
+        edit.get_sg_version = lambda : edit._sg_version
+        # In this app, the convention is that clip names hold version names
+        # which is not the case for other apps like tk-multi-importscan
+        # where the version name is set with locators and clip name is used
+        # for the source clip ...
+        edit.get_version_name = lambda : edit._clip_name.split(".")[0] # Strip extension, if any
+        if not edit.get_shot_name() and not edit.get_version_name():
+            raise RuntimeError("Couldn't extract a shot name nor a version name, one of them is required")
 
     @QtCore.Slot(str)
     def reset(self):
@@ -126,10 +134,58 @@ class EdlCut(QtCore.QObject):
             if not self._edl.edits:
                 self._logger.warning("Couldn't find any entry in %s" % (path))
                 return
+            # Consolidate what we loaded
+            versions_names = {}
+            for edit in self._edl.edits:
+                v_name = edit.get_version_name()
+                if v_name:
+                    # And support matching lower and upper case
+                    # with the same name being used multiple times ...
+                    for vn in [v_name, v_name.lower()]:
+                        if vn not in versions_names:
+                            versions_names[vn] = [edit]
+                        else:
+                            versions_names[vn].append(edit)
+            if versions_names:
+                sg_versions = self._sg.find(
+                    "Version", [
+                        ["project", "is", self._ctx.project],
+                        ["code", "in", versions_names.keys()],
+                    ],
+                    ["code", "entity", "entity.Shot.code"]
+                )
+                for sg_version in sg_versions:
+                    edits = versions_names.get(sg_version["code"])
+                    if not edits:
+                        # Unlikely ... but who knows ...
+                        raise RuntimeError(
+                            "Retrieved Version %s from Shotgun, but didn't ask for it ..." % sg_version["code"]
+                        )
+                    for edit in edits:
+                        edit._sg_version = sg_version
+                        if not edit.get_shot_name() and sg_version["entity.Shot.code"] :
+                            edit._shot_name = sg_version["entity.Shot.code"]
+                            
+                    
             # Review what we loaded
             for edit in self._edl.edits:
-                if not edit.get_shot_name():
-                    raise ValueError("Couldn't retrieve shot name for %s" % edit)
+                shot_name = edit.get_shot_name()
+                if not shot_name:
+                    vname = edit.get_version_name()
+                    if not vname:
+                        raise ValueError("Couldn't retrieve shot name for %s" % edit)
+                    edit._shot_name = re.sub("(_[^_]+){2}$", "", vname).lower()
+                else:
+                    sg_version = edit.get_sg_version()
+                    if sg_version:
+                        if sg_version["entity.Shot.code"] != shot_name:
+                            raise RuntimeError(
+                                "Shot mismatch for retrieved Version %s, actual : %s, expected : %s" % (
+                                    sg_version["code"],
+                                    sg_version["entity.Shot.code"],
+                                    shot_name,
+                            ))
+    
             # Can go to next step
             self.step_done.emit(0)
         except Exception, e:
@@ -144,19 +200,22 @@ class EdlCut(QtCore.QObject):
         """
         self._logger.info("Retrieving Sequences for project %s ..." % self._ctx.project["name"])
         self.got_busy.emit()
-        sg_sequences = self._sg.find(
-            "Sequence",
-            [["project", "is", self._ctx.project]],
-            [ "code", "id", "sg_status_list", "image", "description"],
-            order=[{"field_name" : "code", "direction" : "asc"}]
-        )
-        if not sg_sequences:
-            self._logger.warning("Couldn't retrieve any Sequence for project %s" % self._ctx.project["name"])
-            return
-        for sg_sequence in sg_sequences:
-            self.new_sg_sequence.emit(sg_sequence)
-        self.got_idle.emit()
-        self._logger.info("Retrieved %d Sequences." % len(sg_sequences))
+        try:
+            sg_sequences = self._sg.find(
+                "Sequence",
+                [["project", "is", self._ctx.project]],
+                [ "code", "id", "sg_status_list", "image", "description"],
+                order=[{"field_name" : "code", "direction" : "asc"}]
+            )
+            if not sg_sequences:
+                raise RuntimeWarning("Couldn't retrieve any Sequence for project %s" % self._ctx.project["name"])
+            for sg_sequence in sg_sequences:
+                self.new_sg_sequence.emit(sg_sequence)
+            self._logger.info("Retrieved %d Sequences." % len(sg_sequences))
+        except Exception, e :
+            self._logger.exception(str(e))
+        finally:
+            self.got_idle.emit()
 
     @QtCore.Slot(dict)
     def show_cut_for_sequence(self, sg_entity):
@@ -190,7 +249,8 @@ class EdlCut(QtCore.QObject):
                         "sg_cut_out",
                         "sg_link",
                         "sg_cut_duration",
-                        "sg_fps"
+                        "sg_fps",
+                        "sg_version",
                     ]
                 )
 
@@ -210,7 +270,10 @@ class EdlCut(QtCore.QObject):
                         shot_name,
                         sg_shot=existing[0].sg_shot,
                         edit=edit,
-                        sg_cut_item=existing[0].sg_cut_item
+                        sg_cut_item=self.sg_cut_item_for_shot(
+                            sg_cut_items,
+                            existing[0].sg_shot,
+                            edit.get_sg_version())
                     )
                 else :
                     # Do we have a matching shot in SG ?
@@ -226,7 +289,11 @@ class EdlCut(QtCore.QObject):
                             break
                     # Do we have a matching cut item ?
                     if matching_shot:
-                        matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, matching_shot)
+                        matching_cut_item = self.sg_cut_item_for_shot(
+                            sg_cut_items,
+                            matching_shot,
+                            edit.get_sg_version(),
+                        )
                     cut_diff = self._summary.add_cut_diff(
                         shot_name,
                         sg_shot=matching_shot,
@@ -235,7 +302,7 @@ class EdlCut(QtCore.QObject):
                     )
             # Process now all sg shots leftover
             for sg_shot in sg_shots:
-                # Don't show omitted shots which are not this cut
+                # Don't show omitted shots which are not in this cut
                 if sg_shot["sg_status_list"] != "omt":
                     matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
                     cut_diff = self._summary.add_cut_diff(
@@ -250,17 +317,29 @@ class EdlCut(QtCore.QObject):
         finally:
             self.got_idle.emit()
 
-    def sg_cut_item_for_shot(self, sg_cut_items, sg_shot):
+    def sg_cut_item_for_shot(self, sg_cut_items, sg_shot, sg_version=None):
         """
         Return a cut item for the given shot from the given list
         retrieved from Shotgun
         """
+        potential_match = None
         for sg_cut_item in sg_cut_items:
-            if sg_cut_item["sg_link"] and \
+            # Is it linked to the given shot ?
+            if sg_cut_item["sg_link"] and sg_shot and \
                 sg_cut_item["sg_link"]["id"] == sg_shot["id"] \
                 and sg_cut_item["sg_link"]["type"] == sg_shot["type"]:
-                    return sg_cut_item
-        return None
+                    # We can have multiple cut items for the same shot
+                    # use the linked version to pick the right one, if
+                    # available
+                    if not sg_version: # No particular version to match
+                        return sg_cut_item
+                    if sg_cut_item["sg_version"] and \
+                        sg_version["id"] == sg_cut_item["sg_version"]["id"]: # Perfect match
+                        return sg_cut_item
+                    # Will keep looking around but we keep a reference to cut item
+                    # linked to the same shot
+                    potential_match = sg_cut_item
+        return potential_match
     
     @QtCore.Slot(str, dict, dict, str)
     def do_cut_import(self, title, sender, to, description):
@@ -342,7 +421,6 @@ class EdlCut(QtCore.QObject):
                             "sg_status_list" : "omt",
                             # Add code in the update so it will be returned with batch results
                             "code" : shot_name,
-                            "updated_by" : self._ctx.user,
                         }
                     })
                 elif cut_diff.diff_type == _DIFF_TYPES.REINSTATED:
@@ -354,7 +432,6 @@ class EdlCut(QtCore.QObject):
                             "sg_status_list" : "act",
                             # Add code in the update so it will be returned with batch results
                             "code" : shot_name,
-                            "updated_by" : self._ctx.user,
                         }
                     })
         if sg_batch_data:
@@ -394,12 +471,28 @@ class EdlCut(QtCore.QObject):
                             "sg_tail_out" : cut_diff.new_tail_out,
                             "sg_cut_duration" : cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
                             "sg_link" : cut_diff.sg_shot,
-                            "sg_version" : None,
+                            "sg_version" : edit.get_sg_version(),
                             "sg_fps" : self._edl.fps,
                             "created_by" : self._ctx.user,
                             "updated_by" : self._ctx.user,
                         }
                     })
+                    # Temporary helper to create versions in SG for initial
+                    # testing. Should be commented out before going into production
+                    # unless it becomes part of the specs
+                    if not edit.get_sg_version():
+                        sg_batch_data.append({
+                            "request_type" : "create",
+                            "entity_type" : "Version",
+                            "data" : {
+                                "project" : self._ctx.project,
+                                "code" : edit.get_version_name(),
+                                "entity": cut_diff.sg_shot,
+                                "updated_by" : self._ctx.user,
+                                "created_by" : self._ctx.user,
+                            }
+                        })
+
         if sg_batch_data:
             self._sg.batch(sg_batch_data)
         return sg_cut
