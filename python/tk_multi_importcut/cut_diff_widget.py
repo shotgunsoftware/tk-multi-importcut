@@ -9,7 +9,8 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import sgtk
-import decimal
+import tempfile
+
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
@@ -17,6 +18,7 @@ edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
 from .ui.cut_diff_card import Ui_CutDiffCard
 from .cut_diff import CutDiff, _DIFF_TYPES
+from .downloader import DownloadRunner
 
 # Some standard colors
 # Used in Sgtk apps
@@ -58,6 +60,7 @@ class CutDiffCard(QtGui.QFrame):
         self.ui = Ui_CutDiffCard()
         self.ui.setupUi(self)
         
+        self._thumbnail_requested = False
         # Cut order
         new_cut_order = self._cut_diff.new_cut_order or 0
         old_cut_order = self._cut_diff.cut_order or 0
@@ -117,6 +120,10 @@ class CutDiffCard(QtGui.QFrame):
 
         self.set_tool_tip()
         self.set_thumbnail(":/tk_multi_importcut/sg_shot_thumbnail.png")
+
+    @QtCore.Slot(str)
+    def new_thumbnail(self, path):
+        self.set_thumbnail(path)
 
     @property
     def cut_order(self):
@@ -183,6 +190,19 @@ class CutDiffCard(QtGui.QFrame):
             self._cut_diff.edit
         )
         self.setToolTip(msg)
+
+    def showEvent(self, event):
+        if self._cut_diff.sg_shot and self._cut_diff.sg_shot["image"]:
+            _, path = tempfile.mkstemp()
+            downloader = DownloadRunner(
+                sg_attachment=self._cut_diff.sg_shot["image"],
+                path=path,
+            )
+            downloader.file_downloaded.connect(self.new_thumbnail)
+            QtCore.QThreadPool.globalInstance().start(downloader)
+
+        self._thumbnail_requested = True
+        event.ignore()
 
     def set_thumbnail(self, thumb_path):
         size = self.ui.icon_label.size()
