@@ -109,7 +109,7 @@ class Ui_Dialog(object):
         self.cutsummary_list.setSpacing(-1)
         self.cutsummary_list.setContentsMargins(0, 0, 0, 0)
         self.cutsummary_list.setObjectName("cutsummary_list")
-        spacerItem2 = QtGui.QSpacerItem(20, 283, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
+        spacerItem2 = QtGui.QSpacerItem(0, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
         self.cutsummary_list.addItem(spacerItem2)
         self.scrollArea_2.setWidget(self.cut_summary_widgets)
         self.verticalLayout_4.addWidget(self.scrollArea_2)

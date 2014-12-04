@@ -273,6 +273,7 @@ class AppDialog(QtGui.QWidget):
                 break
         else:
             self.ui.cutsummary_list.insertWidget(self.ui.cutsummary_list.count()-1, widget)
+        self.ui.cutsummary_list.setStretch(self.ui.cutsummary_list.count()-1, 1)
 
     def set_cut_summary_view_selectors(self):
         summary = self._processor.summary
