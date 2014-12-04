@@ -13,6 +13,7 @@ import tempfile
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
+from .downloader import DownloadRunner
 
 from .ui.sequence_card import Ui_SequenceCard
 # Some standard colors
@@ -64,8 +65,8 @@ class SequenceCard(QtGui.QFrame):
     @QtCore.Slot()
     def show_selected(self):
         self.highlight_selected.emit(self)
-        self.ui.select_button.setVisible(False)
         self.show_sequence.emit(self._sg_sequence)
+        self.ui.select_button.setVisible(False)
 
     @QtCore.Slot(str)
     def new_thumbnail(self, path):
@@ -82,6 +83,19 @@ class SequenceCard(QtGui.QFrame):
 
     def leaveEvent(self, event):
         self.ui.select_button.setVisible(False)
+
+    def showEvent(self, event):
+        if self._sg_sequence and self._sg_sequence["image"]:
+            _, path = tempfile.mkstemp()
+            downloader = DownloadRunner(
+                sg_attachment=self._sg_sequence["image"],
+                path=path,
+            )
+            downloader.file_downloaded.connect(self.new_thumbnail)
+            QtCore.QThreadPool.globalInstance().start(downloader)
+
+        self._thumbnail_requested = True
+        event.ignore()
     
     def set_thumbnail(self, thumb_path):
         size = self.ui.icon_label.size()

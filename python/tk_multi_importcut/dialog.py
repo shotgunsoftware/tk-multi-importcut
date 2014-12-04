@@ -242,15 +242,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.sequence_grid.setRowStretch(row, 0)
         self.ui.sequence_grid.addItem(spacer, row+1, 0, colSpan=2 )
         self.ui.sequence_grid.setRowStretch(row+1, 1)
-        if sg_entity["image"]:
-            _, path = tempfile.mkstemp()
-            downloader = DownloadRunner(
-                sg_attachment=sg_entity["image"],
-                path=path,
-            )
-            downloader.file_downloaded.connect(widget.new_thumbnail)
-            QtCore.QThreadPool.globalInstance().start(downloader)
-    
+
     @QtCore.Slot(QtGui.QWidget)
     def sequence_selected(self, card):
         if self._selected_card_sequence:
