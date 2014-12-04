@@ -192,10 +192,15 @@ class CutDiffCard(QtGui.QFrame):
         self.setToolTip(msg)
 
     def showEvent(self, event):
-        if self._cut_diff.sg_shot and self._cut_diff.sg_shot["image"]:
+        thumb_url = None
+        if self._cut_diff.sg_version and self._cut_diff.sg_version["image"]:
+            thumb_url = self._cut_diff.sg_version["image"]
+        elif self._cut_diff.sg_shot and self._cut_diff.sg_shot["image"]:
+            thumb_url = self._cut_diff.sg_shot["image"]
+        if thumb_url:
             _, path = tempfile.mkstemp()
             downloader = DownloadRunner(
-                sg_attachment=self._cut_diff.sg_shot["image"],
+                sg_attachment=thumb_url,
                 path=path,
             )
             downloader.file_downloaded.connect(self.new_thumbnail)

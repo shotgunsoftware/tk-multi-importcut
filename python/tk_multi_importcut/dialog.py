@@ -224,6 +224,7 @@ class AppDialog(QtGui.QWidget):
             self.ui.submit_button.show()
 
         if step == 3:
+            self.ui.back_button.hide()
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
 

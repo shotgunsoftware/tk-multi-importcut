@@ -156,7 +156,7 @@ class EdlCut(QtCore.QObject):
                         ["project", "is", self._ctx.project],
                         ["code", "in", versions_names.keys()],
                     ],
-                    ["code", "entity", "entity.Shot.code"]
+                    ["code", "entity", "entity.Shot.code", "image"]
                 )
                 for sg_version in sg_versions:
                     edits = versions_names.get(sg_version["code"])

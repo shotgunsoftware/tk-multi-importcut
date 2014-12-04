@@ -40,6 +40,7 @@ class Ui_CutDiffCard(object):
         self.icon_label.setStyleSheet("background-color: black;")
         self.icon_label.setText("")
         self.icon_label.setPixmap(QtGui.QPixmap(":/tk_multi_importcut/sg_logo.png"))
+        self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.icon_label.setMargin(0)
         self.icon_label.setIndent(0)
         self.icon_label.setObjectName("icon_label")
