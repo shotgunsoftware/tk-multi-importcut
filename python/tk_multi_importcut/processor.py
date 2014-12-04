@@ -39,7 +39,7 @@ class Processor(QtCore.QThread):
     retrieve_sequences = QtCore.Signal()
     show_cut_for_sequence = QtCore.Signal(dict)
     new_cut_diff = QtCore.Signal(CutDiff)
-    got_busy = QtCore.Signal()
+    got_busy = QtCore.Signal(int)
     got_idle = QtCore.Signal()
     import_cut = QtCore.Signal(str,dict,dict, str)
     def __init__(self):
@@ -80,7 +80,7 @@ class EdlCut(QtCore.QObject):
     step_done = QtCore.Signal(int)
     new_sg_sequence = QtCore.Signal(dict)
     new_cut_diff = QtCore.Signal(CutDiff)
-    got_busy = QtCore.Signal()
+    got_busy = QtCore.Signal(int)
     got_idle = QtCore.Signal()
 
     def __init__(self):
@@ -199,7 +199,7 @@ class EdlCut(QtCore.QObject):
         Retrieve all sequences for the current project
         """
         self._logger.info("Retrieving Sequences for project %s ..." % self._ctx.project["name"])
-        self.got_busy.emit()
+        self.got_busy.emit(None)
         try:
             sg_sequences = self._sg.find(
                 "Sequence",
@@ -221,7 +221,7 @@ class EdlCut(QtCore.QObject):
     def show_cut_for_sequence(self, sg_entity):
         self._logger.info("Retrieving cut summary for %s" % ( sg_entity))
         self._sg_entity = sg_entity
-        self.got_busy.emit()
+        self.got_busy.emit(None)
         self._summary = CutSummary()
         self._summary.new_cut_diff.connect(self.new_cut_diff)
         try:
@@ -344,7 +344,7 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(str, dict, dict, str)
     def do_cut_import(self, title, sender, to, description):
         self._logger.info("Importing cut %s" % title)
-        self.got_busy.emit()
+        self.got_busy.emit(10)
         try:
             sg_cut = self.create_sg_cut(title)
             self.create_note(title, sender, to, description, sg_links=[sg_cut])

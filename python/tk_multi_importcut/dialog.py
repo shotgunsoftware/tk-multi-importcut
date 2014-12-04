@@ -115,6 +115,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.submit_button.clicked.connect(self.import_cut)
 
+        self.ui.progress_bar.hide()
 
 
     @QtCore.Slot()
@@ -165,13 +166,18 @@ class AppDialog(QtGui.QWidget):
         return self._busy
 
     @QtCore.Slot()
-    def set_busy(self):
+    @QtCore.Slot(int)
+    def set_busy(self, maximum=None):
         self._busy = True
         # Prevent some buttons to be used
         self.ui.back_button.setEnabled(False)
         self.ui.reset_button.setEnabled(False)
         self.ui.email_button.setEnabled(False)
         self.ui.submit_button.setEnabled(False)
+        # Show the progress bar if a maximum was given
+        if maximum:
+            self.ui.progress_bar.setMaximum(maximum)
+            self.ui.progress_bar.show()
 
     @QtCore.Slot()
     def set_idle(self):
@@ -181,6 +187,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.setEnabled(True)
         self.ui.email_button.setEnabled(True)
         self.ui.submit_button.setEnabled(True)
+        self.ui.progress_bar.hide()
 
     def goto_step(self, which):
         self.set_ui_for_step(which)

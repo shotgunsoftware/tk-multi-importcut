@@ -17,14 +17,22 @@ Will have the "Do it" button on the far right
 QDialogButtonBox {
     button-layout: 3;
 }
+QProgressBar#progress_bar {
+     border: 1px none grey;
+     text-align: center;
+ }
+
+QProgressBar::chunk {
+    background-color: #2C93E2;
+}
+
 /*
 Drop area style : big font, and a dashed outline
 */
 QLabel#drop_area_label {
-    border: 4px dashed grey;
+    border: 2px dashed grey;
     border-radius: 4px;
     font-size: 50px;
-    font-family: "Tahoma";
     font-style: bold;
 }
 QFrame#SequenceCard, #CutDiffCard {

@@ -141,6 +141,16 @@ class Ui_Dialog(object):
         self.feedback_label.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
         self.feedback_label.setObjectName("feedback_label")
         self.main_layout.addWidget(self.feedback_label)
+        self.progress_bar = QtGui.QProgressBar(Dialog)
+        self.progress_bar.setMaximumSize(QtCore.QSize(16777215, 10))
+        self.progress_bar.setStyleSheet("::chunk {\n"
+"background-color: #2C93E2;\n"
+"}\n"
+"")
+        self.progress_bar.setProperty("value", 24)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setObjectName("progress_bar")
+        self.main_layout.addWidget(self.progress_bar)
         self.line = QtGui.QFrame(Dialog)
         self.line.setFrameShape(QtGui.QFrame.HLine)
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
