@@ -17,6 +17,9 @@ Will have the "Do it" button on the far right
 QDialogButtonBox {
     button-layout: 3;
 }
+
+/* Thin progress bar on the main window
+*/
 QProgressBar#progress_bar {
      border: 1px none grey;
      text-align: center;
@@ -48,6 +51,7 @@ QFrame#SequenceCard[selected="true"] {
     background-color: orange;
 }
 */
+
 /*
 Cut summary view mode buttons, add a blue underline
 when they are checked
@@ -77,6 +81,19 @@ QAbstractButton#new_select_button:pressed,
     border-top: 2px none #2C93E2;
     border-bottom: 2px solid #2C93E2;
     outline: none;
+}
+/*
+Cut summary view mode buttons, disable regular
+press style
+*/
+QAbstractButton#new_select_button:hover,
+    #cut_change_select_button:hover,
+    #omitted_select_button:hover,
+    #reinstated_select_button:hover,
+    #rescan_select_button:hover,
+    #total_button:hover {
+    color: #2C93E2;
+    font-style: bold;
 }
 /*
 Make the radio button blue when checked
