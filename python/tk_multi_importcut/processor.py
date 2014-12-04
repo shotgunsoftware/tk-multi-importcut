@@ -41,6 +41,8 @@ class Processor(QtCore.QThread):
     new_cut_diff = QtCore.Signal(CutDiff)
     got_busy = QtCore.Signal(int)
     got_idle = QtCore.Signal()
+    progress_changed = QtCore.Signal(int)
+
     import_cut = QtCore.Signal(str,dict,dict, str)
     def __init__(self):
         super(Processor, self).__init__()
@@ -73,6 +75,7 @@ class Processor(QtCore.QThread):
         self._edl_cut.new_cut_diff.connect(self.new_cut_diff)
         self._edl_cut.got_busy.connect(self.got_busy)
         self._edl_cut.got_idle.connect(self.got_idle)
+        self._edl_cut.progress_changed.connect(self.progress_changed)
         self.exec_()
 
 class EdlCut(QtCore.QObject):
@@ -82,6 +85,7 @@ class EdlCut(QtCore.QObject):
     new_cut_diff = QtCore.Signal(CutDiff)
     got_busy = QtCore.Signal(int)
     got_idle = QtCore.Signal()
+    progress_changed = QtCore.Signal(int)
 
     def __init__(self):
         super(EdlCut, self).__init__()
@@ -344,10 +348,12 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(str, dict, dict, str)
     def do_cut_import(self, title, sender, to, description):
         self._logger.info("Importing cut %s" % title)
-        self.got_busy.emit(10)
+        self.got_busy.emit(4)
         try:
             sg_cut = self.create_sg_cut(title)
+            self._logger.info("Creating note ...")
             self.create_note(title, sender, to, description, sg_links=[sg_cut])
+            self.progress_changed.emit(4)
         except Exception, e :
             self._logger.exception(str(e))
         else:
@@ -385,6 +391,7 @@ class EdlCut(QtCore.QObject):
 
     def create_sg_cut(self, title):
         # Create a new cut
+        self._logger.info("Creating cut %s ..." % title)
         sg_cut = self._sg.create(
             "Cut", {
                 "project" : self._ctx.project,
@@ -394,6 +401,8 @@ class EdlCut(QtCore.QObject):
                 "updated_by" : self._ctx.user,
             },
             ["id", "code"])
+
+        self._logger.info("Updating shots ...")
         sg_batch_data = []
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
@@ -445,9 +454,11 @@ class EdlCut(QtCore.QObject):
                 for cut_diff in self._summary[shot_name]:
                     # FIXME : update the diff type
                     cut_diff._sg_shot = sg_shot
+        self.progress_changed.emit(1)
         # Temporary helper to create versions in SG for initial
         # testing. Should be commented out before going into production
         # unless it becomes part of the specs
+        self._logger.info("Updating versions ...")
         sg_batch_data = []
         for shot_name, items in self._summary.iteritems():
             for cut_diff in items:
@@ -474,7 +485,9 @@ class EdlCut(QtCore.QObject):
                     if not edit.get_sg_version():
                         # Creation order should match
                         cut_diff.set_sg_version(res.pop(0))
+        self.progress_changed.emit(2)
         # Loop through all edits and create CutItems for them
+        self._logger.info("Creating cut items ...")
         sg_batch_data = []
         cut_item_entity = self._app.get_setting("sg_cut_item_entity")
         for shot_name, items in self._summary.iteritems():
@@ -508,4 +521,5 @@ class EdlCut(QtCore.QObject):
                     })
         if sg_batch_data:
             self._sg.batch(sg_batch_data)
+        self.progress_changed.emit(3)
         return sg_cut

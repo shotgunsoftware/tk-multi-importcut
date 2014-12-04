@@ -115,6 +115,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.submit_button.clicked.connect(self.import_cut)
 
+        self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
         self.ui.progress_bar.hide()
 
 
@@ -176,6 +177,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.submit_button.setEnabled(False)
         # Show the progress bar if a maximum was given
         if maximum:
+            self.ui.progress_bar.setValue(0)
             self.ui.progress_bar.setMaximum(maximum)
             self.ui.progress_bar.show()
 
