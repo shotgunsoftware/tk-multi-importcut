@@ -145,6 +145,8 @@ class EdlCut(QtCore.QObject):
                 if v_name:
                     # SG find method is case insensitive, don't have to worry
                     # about upper / lower case names match
+                    # but we use lowerkeys keys
+                    v_name = v_name.lower()
                     if v_name not in versions_names:
                         versions_names[v_name] = [edit]
                     else:
@@ -158,7 +160,7 @@ class EdlCut(QtCore.QObject):
                     ["code", "entity", "entity.Shot.code", "image"]
                 )
                 for sg_version in sg_versions:
-                    edits = versions_names.get(sg_version["code"])
+                    edits = versions_names.get(sg_version["code"].lower())
                     if not edits:
                         # Unlikely ... but who knows ...
                         raise RuntimeError(
@@ -265,6 +267,7 @@ class EdlCut(QtCore.QObject):
             )
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
+                lower_shot_name = shot_name.lower()
                 existing = self._summary.diffs_for_shot(shot_name)
                 # Is it a duplicate ?
                 if existing:
@@ -283,7 +286,7 @@ class EdlCut(QtCore.QObject):
                     matching_shot = None
                     matching_cut_item = None
                     for sg_shot in sg_shots:
-                        if sg_shot["code"] == edit.get_shot_name():
+                        if sg_shot["code"].lower() == lower_shot_name:
                             # yes we do
                             self._logger.debug("Found matching existing shot %s" % shot_name)
                             matching_shot = sg_shot
@@ -350,6 +353,12 @@ class EdlCut(QtCore.QObject):
         self.got_busy.emit(4)
         try:
             sg_cut = self.create_sg_cut(title)
+            self.update_sg_shots()
+            self.progress_changed.emit(1)
+            self.update_sg_versions()
+            self.progress_changed.emit(2)
+            self.create_sg_cut_items(sg_cut)
+            self.progress_changed.emit(3)
             self._logger.info("Creating note ...")
             self.create_note(title, sender, to, description, sg_links=[sg_cut])
             self.progress_changed.emit(4)
@@ -389,6 +398,9 @@ class EdlCut(QtCore.QObject):
 
 
     def create_sg_cut(self, title):
+        """
+        Create a Cut in Shotgun, linked to the current Sequence
+        """
         # Create a new cut
         self._logger.info("Creating cut %s ..." % title)
         sg_cut = self._sg.create(
@@ -400,7 +412,14 @@ class EdlCut(QtCore.QObject):
                 "updated_by" : self._ctx.user,
             },
             ["id", "code"])
+        return sg_cut
 
+    def update_sg_shots(self):
+        """
+        Update shots in Shotgun
+        - Create them if needed, and attach them to their respective cut entry
+        - Change their status otherwise
+        """
         self._logger.info("Updating shots ...")
         sg_batch_data = []
         # Loop over all shots that we need to create
@@ -453,7 +472,11 @@ class EdlCut(QtCore.QObject):
                 for cut_diff in self._summary[shot_name]:
                     # FIXME : update the diff type
                     cut_diff._sg_shot = sg_shot
-        self.progress_changed.emit(1)
+
+    def update_sg_versions(self):
+        """
+        Create versions in Shotgun for each shot which needs one
+        """
         # Temporary helper to create versions in SG for initial
         # testing. Should be commented out before going into production
         # unless it becomes part of the specs
@@ -484,7 +507,11 @@ class EdlCut(QtCore.QObject):
                     if not edit.get_sg_version():
                         # Creation order should match
                         cut_diff.set_sg_version(res.pop(0))
-        self.progress_changed.emit(2)
+
+    def create_sg_cut_items(self, sg_cut):
+        """
+        Create the cut items in Shotgun, linked to the given cut
+        """
         # Loop through all edits and create CutItems for them
         self._logger.info("Creating cut items ...")
         sg_batch_data = []
@@ -520,5 +547,3 @@ class EdlCut(QtCore.QObject):
                     })
         if sg_batch_data:
             self._sg.batch(sg_batch_data)
-        self.progress_changed.emit(3)
-        return sg_cut

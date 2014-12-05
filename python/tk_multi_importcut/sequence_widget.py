@@ -34,6 +34,7 @@ class SequenceCard(QtGui.QFrame):
     highlight_selected = QtCore.Signal(QtGui.QWidget)
     def __init__(self, parent, sg_sequence):
         super(SequenceCard, self).__init__(parent)
+        self._thumbnail_requested = False
         self._sg_sequence = sg_sequence
         self.ui = Ui_SequenceCard()
         self.ui.setupUi(self)
@@ -85,6 +86,10 @@ class SequenceCard(QtGui.QFrame):
         self.ui.select_button.setVisible(False)
 
     def showEvent(self, event):
+        if self._thumbnail_requested:
+            event.ignore()
+            return
+        self._thumbnail_requested = True
         if self._sg_sequence and self._sg_sequence["image"]:
             _, path = tempfile.mkstemp()
             downloader = DownloadRunner(
@@ -94,7 +99,6 @@ class SequenceCard(QtGui.QFrame):
             downloader.file_downloaded.connect(self.new_thumbnail)
             QtCore.QThreadPool.globalInstance().start(downloader)
 
-        self._thumbnail_requested = True
         event.ignore()
     
     def set_thumbnail(self, thumb_path):

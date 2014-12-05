@@ -209,10 +209,16 @@ class CutDiffCard(QtGui.QFrame):
         self.setToolTip(msg)
 
     def showEvent(self, event):
+        if self._thumbnail_requested:
+            event.ignore()
+            return
+
+        self._thumbnail_requested = True
+
         thumb_url = None
-        if self._cut_diff.sg_version and self._cut_diff.sg_version["image"]:
+        if self._cut_diff.sg_version and self._cut_diff.sg_version.get("image"):
             thumb_url = self._cut_diff.sg_version["image"]
-        elif self._cut_diff.sg_shot and self._cut_diff.sg_shot["image"]:
+        elif self._cut_diff.sg_shot and self._cut_diff.sg_shot.get("image"):
             thumb_url = self._cut_diff.sg_shot["image"]
         if thumb_url:
             _, path = tempfile.mkstemp()
@@ -223,7 +229,6 @@ class CutDiffCard(QtGui.QFrame):
             downloader.file_downloaded.connect(self.new_thumbnail)
             QtCore.QThreadPool.globalInstance().start(downloader)
 
-        self._thumbnail_requested = True
         event.ignore()
 
     def set_thumbnail(self, thumb_path):

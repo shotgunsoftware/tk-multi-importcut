@@ -52,14 +52,16 @@ class CutSummary(QtCore.QObject):
 
         if cut_diff.need_rescan:
             self._rescans_count += 1
-
-        if shot_name in self._cut_diffs:
+        # Use a lower case key, as shot names we retrieve from EDLs
+        # can be upper cases, but actual SG shots be lower cases
+        shot_key = shot_name.lower()
+        if shot_key in self._cut_diffs:
             self._repeated_count += 1
-            self._cut_diffs[shot_name].append(cut_diff)
-            for cdiff in self._cut_diffs[shot_name]:
+            self._cut_diffs[shot_key].append(cut_diff)
+            for cdiff in self._cut_diffs[shot_key]:
                 cdiff.set_repeated(True)
         else:
-            self._cut_diffs[shot_name] = [cut_diff]
+            self._cut_diffs[shot_key] = [cut_diff]
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
 
@@ -80,13 +82,13 @@ class CutSummary(QtCore.QObject):
         
         :param shot_name: A shot name, as a string
         """
-        return shot_name in self._cut_diffs
+        return shot_name.lower() in self._cut_diffs
 
     def diffs_for_shot(self, shot_name):
         """
         Return the CutDiff(s) list for the given shot, if any.
         """
-        return self._cut_diffs.get(shot_name)
+        return self._cut_diffs.get(shot_name.lower())
 
     def __len__(self):
         return sum([len(self._cut_diffs[k]) for k in self._cut_diffs], 0)
@@ -96,7 +98,7 @@ class CutSummary(QtCore.QObject):
             yield name
 
     def __getitem__(self, key):
-        return self._cut_diffs.get(key)
+        return self._cut_diffs.get(key.lower())
 
     def iteritems(self):
         for name, items in self._cut_diffs.iteritems():

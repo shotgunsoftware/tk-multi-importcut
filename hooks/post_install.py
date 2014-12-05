@@ -78,6 +78,23 @@ class PostInstall(Hook):
                     raise RuntimeError("Wanted to create a field named %s, and created %s instead" % (
                         field_name,res)
                     )
+        # Make sure shots have a "act" ( Active ) in their status list
+        schema = sg.schema_field_read("Shot", "sg_status_list")
+        valid_values = schema["sg_status_list"]["properties"]["valid_values"]["value"]
+        if "act" not in valid_values:
+            app.log_info("Enabling 'act' status to shots")
+            status = sg.find_one("Status", [["code", "is", "act"]])
+            if not status:
+                sg.create("Status", {
+                    "code" : "act",
+                    "name" : "Active",
+                    "icon": {"type": "Icon", "id": 1, "name": "Active"},
+                    "bg_color": "202,225,202",
+                    })
+            valid_values.append("act")
+            properties = { "valid_values" : valid_values}
+            sg.schema_field_update("Shot", "sg_status_list", properties)
+
         app.log_debug("SG site correctly setup !")
 
 #        # Add a "Deliveries" field to Version
