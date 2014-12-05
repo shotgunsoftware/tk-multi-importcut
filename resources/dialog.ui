@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>906</width>
-    <height>440</height>
+    <width>913</width>
+    <height>667</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -229,8 +229,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>856</width>
-            <height>236</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">

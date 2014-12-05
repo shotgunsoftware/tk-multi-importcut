@@ -47,6 +47,8 @@ _DIFF_TYPES_STYLE = {
 _TOOL_TIP_FORMAT = """
 Shot :
 \t%s
+Version :
+\t%s
 Cut Item :
 \t%s
 Edit :
@@ -73,9 +75,15 @@ class CutDiffCard(QtGui.QFrame):
 
         self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)
         
-        if not self._cut_diff.sg_version:
+        sg_version = self._cut_diff.sg_version
+        if not sg_version:
             self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
                 _COLORS["yellow"],
+                self._cut_diff.version_name,
+            ))
+        elif sg_version.get("entity.Shot.code") != self._cut_diff.name:
+            self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
+                _COLORS["sg_red"],
                 self._cut_diff.version_name,
             ))
         else:
@@ -184,8 +192,17 @@ class CutDiffCard(QtGui.QFrame):
                 self._cut_diff.sg_cut_item["sg_cut_out"],
                 self._cut_diff.sg_cut_item["sg_cut_duration"],
             )
+        version_details = ""
+        sg_version = self._cut_diff.sg_version
+        if sg_version:
+            version_details = "%s, link %s %s" % (
+            sg_version["code"],
+            sg_version["entity"]["type"] if sg_version["entity"] else "None",
+            sg_version["entity.Shot.code"] if sg_version["entity.Shot.code"] else "",
+            )
         msg = _TOOL_TIP_FORMAT % (
             shot_details,
+            version_details,
             cut_item_details,
             self._cut_diff.edit
         )

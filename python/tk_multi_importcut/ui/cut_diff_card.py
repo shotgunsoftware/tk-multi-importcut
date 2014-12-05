@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_CutDiffCard(object):
     def setupUi(self, CutDiffCard):
         CutDiffCard.setObjectName("CutDiffCard")
-        CutDiffCard.resize(706, 96)
+        CutDiffCard.resize(745, 94)
         CutDiffCard.setFrameShape(QtGui.QFrame.StyledPanel)
         CutDiffCard.setFrameShadow(QtGui.QFrame.Raised)
         self.horizontalLayout_2 = QtGui.QHBoxLayout(CutDiffCard)
@@ -65,6 +65,7 @@ class Ui_CutDiffCard(object):
         self.status_label.setWordWrap(True)
         self.status_label.setObjectName("status_label")
         self.gridLayout_2.addWidget(self.status_label, 2, 0, 1, 2)
+        self.gridLayout_2.setColumnStretch(1, 1)
         self.left_layout.addLayout(self.gridLayout_2)
         self.left_layout.setStretch(2, 1)
         self.horizontalLayout_2.addLayout(self.left_layout)

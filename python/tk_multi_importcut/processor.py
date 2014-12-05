@@ -143,13 +143,12 @@ class EdlCut(QtCore.QObject):
             for edit in self._edl.edits:
                 v_name = edit.get_version_name()
                 if v_name:
-                    # And support matching lower and upper case
-                    # with the same name being used multiple times ...
-                    for vn in [v_name, v_name.lower()]:
-                        if vn not in versions_names:
-                            versions_names[vn] = [edit]
-                        else:
-                            versions_names[vn].append(edit)
+                    # SG find method is case insensitive, don't have to worry
+                    # about upper / lower case names match
+                    if v_name not in versions_names:
+                        versions_names[v_name] = [edit]
+                    else:
+                        versions_names[v_name].append(edit)
             if versions_names:
                 sg_versions = self._sg.find(
                     "Version", [
@@ -179,17 +178,17 @@ class EdlCut(QtCore.QObject):
                     if not vname:
                         raise ValueError("Couldn't retrieve shot name for %s" % edit)
                     edit._shot_name = re.sub("(_[^_]+){2}$", "", vname).lower()
-                else:
-                    sg_version = edit.get_sg_version()
-                    if sg_version:
-                        if sg_version["entity.Shot.code"] != shot_name:
-                            raise RuntimeError(
-                                "Shot mismatch for retrieved Version %s, actual : %s, expected : %s" % (
-                                    sg_version["code"],
-                                    sg_version["entity.Shot.code"],
-                                    shot_name,
-                            ))
-    
+#                else:
+#                    sg_version = edit.get_sg_version()
+#                    if sg_version:
+#                        if sg_version["entity.Shot.code"] != shot_name:
+#                            raise RuntimeError(
+#                                "Shot mismatch for retrieved Version %s, actual : %s, expected : %s" % (
+#                                    sg_version["code"],
+#                                    sg_version["entity.Shot.code"],
+#                                    shot_name,
+#                            ))
+
             # Can go to next step
             self.step_done.emit(0)
         except Exception, e:

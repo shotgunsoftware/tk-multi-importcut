@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(906, 440)
+        Dialog.resize(913, 667)
         self.main_layout = QtGui.QVBoxLayout(Dialog)
         self.main_layout.setSpacing(-1)
         self.main_layout.setContentsMargins(-1, 12, -1, 12)
@@ -103,7 +103,7 @@ class Ui_Dialog(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollArea_2.setObjectName("scrollArea_2")
         self.cut_summary_widgets = QtGui.QWidget()
-        self.cut_summary_widgets.setGeometry(QtCore.QRect(0, 0, 856, 236))
+        self.cut_summary_widgets.setGeometry(QtCore.QRect(0, 0, 98, 28))
         self.cut_summary_widgets.setObjectName("cut_summary_widgets")
         self.cutsummary_list = QtGui.QVBoxLayout(self.cut_summary_widgets)
         self.cutsummary_list.setSpacing(-1)
