@@ -61,6 +61,12 @@ class Processor(QtCore.QThread):
             return self._edl_cut._summary
         return None
 
+    @property
+    def sg_entity(self):
+        if self._edl_cut and self._edl_cut._sg_entity:
+            return self._edl_cut._sg_entity
+        return None
+
     def run(self):
         self._edl_cut = EdlCut()
         # Orders we receive
@@ -373,20 +379,32 @@ class EdlCut(QtCore.QObject):
 
     def create_note(self, title, sender, to, description, sg_links=None):
         summary = self._summary
-        contents = _NOTE_FORMAT % (
-            len(summary),
-            summary.count_for_type(_DIFF_TYPES.CUT_CHANGE),
-            summary.count_for_type(_DIFF_TYPES.NEW),
-            summary.count_for_type(_DIFF_TYPES.OMITTED),
-            summary.count_for_type(_DIFF_TYPES.REINSTATED),
-            summary.repeated_count,
-            summary.rescans_count,
-            description
-        )
-        
+        links = ["%s/detail/%s/%s" % (
+            self._app.shotgun.base_url,
+            self._sg_entity["type"],
+            self._sg_entity["id"],
+        )]
+        if sg_links:
+            links += ["%s/detail/%s/%s" % (
+                self._app.shotgun.base_url,
+                sg_link["type"],
+                sg_link["id"],
+            ) for sg_link in sg_links]
+        subject, body = summary.get_report(title, links)
+#        contents = _NOTE_FORMAT % (
+#            len(summary),
+#            summary.count_for_type(_DIFF_TYPES.CUT_CHANGE),
+#            summary.count_for_type(_DIFF_TYPES.NEW),
+#            summary.count_for_type(_DIFF_TYPES.OMITTED),
+#            summary.count_for_type(_DIFF_TYPES.REINSTATED),
+#            summary.repeated_count,
+#            summary.rescans_count,
+#            description
+#        )
+        contents = "%s\n%s" % (description, body)
         data = {
             "project" : self._ctx.project,
-            "subject" : title,
+            "subject" : subject,
             "content": contents,
             "note_links": [self._sg_entity] + (sg_links if sg_links else []),
             "created_by" : sender,

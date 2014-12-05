@@ -59,7 +59,8 @@ class SubmitDialog(QtGui.QDialog):
             )
             return
         description = self.ui.description_text.toPlainText()
-        self.submit.emit(title, self._app.context.user, sg_group, description)
+        user = self._app.context.user or {}
+        self.submit.emit(title, user, sg_group, description)
         self.close_dialog()
 
     @QtCore.Slot()

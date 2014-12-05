@@ -113,6 +113,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
         self.ui.reset_button.clicked.connect(self.do_reset)
+        self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
 
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
@@ -346,6 +347,21 @@ class AppDialog(QtGui.QWidget):
         dialog.raise_()
         dialog.activateWindow()
 
+    @QtCore.Slot()
+    def email_cut_changes(self):
+        if not self._processor.sg_entity:
+            self._logger.warning("No selected sequence ...")
+            return
+        links = ["%s/detail/%s/%s" % (
+            self._app.shotgun.base_url,
+            self._processor.sg_entity["type"],
+            self._processor.sg_entity["id"],
+        )]
+        subject, body = self._processor.summary.get_report(self._processor.title, links)
+        mail_url = QtCore.QUrl("mailto:?subject=%s&body=%s" % (subject, body))
+        self._logger.debug("Opening up %s" % mail_url )
+        QtGui.QDesktopServices.openUrl(mail_url)
+    
     def generate_report(self):
 #        Could be used to generate a report ?
 #

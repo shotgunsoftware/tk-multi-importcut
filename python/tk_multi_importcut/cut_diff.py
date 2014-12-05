@@ -301,7 +301,7 @@ class CutDiff(QtCore.QObject):
         # Check if some rescan is needed
         if self.new_head_in < self.head_in or self.new_head_duration < 0:
             self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Head extended %d frs" % (self.new_cut_in-self.cut_in))
+            self._cut_changes_reasons.append("Head extended %d frs" % (self.cut_in-self.new_cut_in))
 
         if self.new_tail_out > self.tail_out or self.new_tail_duration < 0:
             self._diff_type = _DIFF_TYPES.RESCAN

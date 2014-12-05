@@ -16,6 +16,29 @@ from sgtk.platform.qt import QtCore
 
 from .cut_diff import CutDiff, _DIFF_TYPES
 
+_BODY_REPORT_FORMAT = """
+
+Links : %s
+
+The changes in %s are as follows:
+
+%d New Shots
+%s
+
+%d Omitted Shots
+%s
+
+%d Reinstated Shot
+%s
+
+%d Cut Changes
+%s
+
+%d Rescan Needed
+%s
+
+"""
+
 class CutSummary(QtCore.QObject):
     new_cut_diff = QtCore.Signal(CutDiff)
     def __init__(self):
@@ -76,6 +99,12 @@ class CutSummary(QtCore.QObject):
     def count_for_type(self, diff_type):
         return self._counts.get(diff_type, 0)
 
+    def edits_for_type(self, diff_type):
+        for name, items in self._cut_diffs.iteritems():
+            for item in items:
+                if item.diff_type == diff_type:
+                    yield item
+    
     def has_shot(self, shot_name):
         """
         Return True if there is already an entry in this summary for the given shot
@@ -103,5 +132,54 @@ class CutSummary(QtCore.QObject):
     def iteritems(self):
         for name, items in self._cut_diffs.iteritems():
             yield (name, items)
+
+    def get_report(self, title, sg_links):
+        """
+        """
+        # Body should look like that :
+        #The changes in {Name of Cut/EDL} are as follows:
+        #
+        #5 New Shots
+        #HT0500
+        #HT0510
+        #HT0520
+        #HT0530
+        #HT0540
+        #
+        #2 Omitted Shots
+        #HT0050
+        #HT0060
+        #
+        #1 Reinstated Shot
+        #HT0110
+        #
+        #4 Cut Changes
+        #HT0070 - Head extended 2 frs 
+        #HT0080 - Tail extended 6 frs
+        #HT0090 - Tail trimmed 5 frs
+        #HT0100 - Head extended 5 frs
+        #
+        #1 Rescan Needed
+        #HT0120 - Head extended 15 frs
+
+        subject = "Sequence Cut Summary changes on %s" % title
+
+        cut_changes_details = ["%s - %s" % ( edit.name, ",".join(edit.reasons)) for edit in self.edits_for_type(_DIFF_TYPES.CUT_CHANGE)]
+        rescan_details = ["%s - %s" % ( edit.name, ",".join(edit.reasons)) for edit in self.edits_for_type(_DIFF_TYPES.RESCAN)]
+        body = _BODY_REPORT_FORMAT % (
+            ", ".join(sg_links),
+            title,
+            self.count_for_type(_DIFF_TYPES.NEW),
+            "\n".join([edit.name for edit in self.edits_for_type(_DIFF_TYPES.NEW)]),
+            self.count_for_type(_DIFF_TYPES.OMITTED),
+            "\n".join([edit.name for edit in self.edits_for_type(_DIFF_TYPES.OMITTED)]),
+            self.count_for_type(_DIFF_TYPES.REINSTATED),
+            "\n".join([edit.name for edit in self.edits_for_type(_DIFF_TYPES.REINSTATED)]),
+            self.count_for_type(_DIFF_TYPES.CUT_CHANGE),
+            "\n".join(cut_changes_details),
+            self.count_for_type(_DIFF_TYPES.RESCAN),
+            "\n".join(rescan_details),
+        )
+        return subject, body
 
 
