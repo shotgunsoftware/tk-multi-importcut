@@ -407,8 +407,8 @@ class EdlCut(QtCore.QObject):
             "subject" : subject,
             "content": contents,
             "note_links": [self._sg_entity] + (sg_links if sg_links else []),
-            "created_by" : sender,
-            "user" : sender,
+            "created_by" : sender or None, # Ensure we send None if we got an empty dict
+            "user" : sender or None,
             "addressings_to" : [to],
         
         }
