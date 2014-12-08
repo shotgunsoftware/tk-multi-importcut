@@ -14,6 +14,7 @@ import tempfile
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
 from .downloader import DownloadRunner
+from .logger import get_logger
 
 from .ui.sequence_card import Ui_SequenceCard
 # Some standard colors
@@ -22,13 +23,23 @@ _COLORS = {
     "sg_blue" : "#2C93E2",
     "sg_red"  : "#FC6246",
     "mid_blue"  : "#1B82D1",
+    "green" :       "#57B510",
+    "yellow" :      "#A1A51A",
+    "lgrey" :       "#A5A5A5",
+    "dgrey" :       "#666666",
 }
 
 
 _STYLES = {
     "selected" : "border-color: %s" % _COLORS["sg_blue"],
 }
-
+_STATUS_COLORS = {
+    "omt" : _COLORS["sg_red"],
+    "act" : _COLORS["green"],
+    "ip" : _COLORS["sg_blue"],
+    "hld" : _COLORS["lgrey"],
+    "fin" : _COLORS["dgrey"],
+}
 class SequenceCard(QtGui.QFrame):
     show_sequence = QtCore.Signal(dict)
     highlight_selected = QtCore.Signal(QtGui.QWidget)
@@ -36,10 +47,20 @@ class SequenceCard(QtGui.QFrame):
         super(SequenceCard, self).__init__(parent)
         self._thumbnail_requested = False
         self._sg_sequence = sg_sequence
+        self._logger = get_logger()
+
         self.ui = Ui_SequenceCard()
         self.ui.setupUi(self)
         self.ui.title_label.setText("<big><b>%s</b></big>" % sg_sequence["code"])
-        self.ui.status_label.setText(sg_sequence["sg_status_list"])
+        if self._sg_sequence["_display_status"]:
+            self.ui.status_label.setText(
+                "<font color=%s>%s</font>" % (
+                    _STATUS_COLORS.get(self._sg_sequence["sg_status_list"], _COLORS["lgrey"]),
+                    self._sg_sequence["_display_status"]["name"],
+                )
+            )
+        else:
+            self.ui.status_label.setText(sg_sequence["sg_status_list"])
         self.ui.details_label.setText("<small>%s</small>" % sg_sequence["description"])
         self.ui.select_button.setVisible(False)
         self.ui.select_button.clicked.connect(self.show_selected)
@@ -71,6 +92,7 @@ class SequenceCard(QtGui.QFrame):
 
     @QtCore.Slot(str)
     def new_thumbnail(self, path):
+        self._logger.debug("Loading thumbnail %s for %s" % (path, self._sg_sequence["code"]))
         self.set_thumbnail(path)
 
     def mouseDoubleClickEvent(self, event):
@@ -91,6 +113,7 @@ class SequenceCard(QtGui.QFrame):
             return
         self._thumbnail_requested = True
         if self._sg_sequence and self._sg_sequence["image"]:
+            self._logger.debug("Requesting %s for %s" % ( self._sg_sequence["image"], self._sg_sequence["code"]))
             _, path = tempfile.mkstemp()
             downloader = DownloadRunner(
                 sg_attachment=self._sg_sequence["image"],
@@ -105,7 +128,13 @@ class SequenceCard(QtGui.QFrame):
         size = self.ui.icon_label.size()
         ratio = size.width() / float(size.height())
         pixmap = QtGui.QPixmap(thumb_path)
+        qimage = QtGui.QImage()
+        #print QtGui.QImageReader.supportedImageFormats()
         if pixmap.isNull():
+            self._logger.debug("Null pixmap %s %d %d for %s" % (
+                thumb_path,
+                pixmap.size().width(), pixmap.size().height(),
+                self._sg_sequence["code"]))
             return
         psize = pixmap.size()
         pratio = psize.width() / float(psize.height())

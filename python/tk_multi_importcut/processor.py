@@ -209,6 +209,14 @@ class EdlCut(QtCore.QObject):
         """
         Retrieve all sequences for the current project
         """
+        # Retrieve display names and colors for statuses
+        sg_statuses = self._sg.find("Status", [], ["code", "name", "icon", "bg_color"])
+        status_dict = {}
+        for sg_status in sg_statuses:
+            if sg_status["bg_color"]:
+                r, g, b = sg_status["bg_color"].split(",")
+                sg_status["_bg_hex_color"] = "#%02x%02x%02x" % (int(r), int(g), int(b))
+            status_dict[sg_status["code"]] = sg_status
         self._logger.info("Retrieving Sequences for project %s ..." % self._ctx.project["name"])
         self.got_busy.emit(None)
         try:
@@ -221,6 +229,8 @@ class EdlCut(QtCore.QObject):
             if not sg_sequences:
                 raise RuntimeWarning("Couldn't retrieve any Sequence for project %s" % self._ctx.project["name"])
             for sg_sequence in sg_sequences:
+                if sg_sequence["sg_status_list"] in status_dict:
+                    sg_sequence["_display_status"] = status_dict[sg_sequence["sg_status_list"]]
                 self.new_sg_sequence.emit(sg_sequence)
             self._logger.info("Retrieved %d Sequences." % len(sg_sequences))
         except Exception, e :
