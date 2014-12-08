@@ -15,6 +15,7 @@ import sgtk
 from .safe_shotgun import ThreadSafeShotgun
 class DownloadRunner(QtCore.QRunnable):
     """
+    A runner to download things from Shotgun
     """
     class _Notifier(QtCore.QObject):
         """
@@ -25,8 +26,13 @@ class DownloadRunner(QtCore.QRunnable):
 
     def __init__(self, sg_attachment, path):
         """
+        Instantiate a new download runner
+        
+        :param sg_attachment: Either a Shotgun URL or an attachment dictionary
+        :param path: Full file path to save the downloaded data
         """
         super(DownloadRunner, self).__init__()
+        # Build a thread safe Shotgun handle from the Toolkit one
         self._sg = ThreadSafeShotgun(sgtk.platform.current_bundle().shotgun)
         self._sg_attachment = sg_attachment
         self._path = path
@@ -35,6 +41,9 @@ class DownloadRunner(QtCore.QRunnable):
 
     @property
     def file_downloaded(self):
+        """
+        Return the signal from the _notifier worker instance
+        """
         return self._notifier.file_downloaded
 
     def run(self):

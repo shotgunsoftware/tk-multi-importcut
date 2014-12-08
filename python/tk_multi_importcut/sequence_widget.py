@@ -41,9 +41,19 @@ _STATUS_COLORS = {
     "fin" : _COLORS["dgrey"],
 }
 class SequenceCard(QtGui.QFrame):
+    """
+    Widget displaying a Shotgun Sequence
+    """
+    # Emitted when cut changes for the attached Sequence should be displayed
     show_sequence = QtCore.Signal(dict)
+    # Emitted when this card wants to be selected
     highlight_selected = QtCore.Signal(QtGui.QWidget)
     def __init__(self, parent, sg_sequence):
+        """
+        Instantiate a new SequenceCard for the given Shotgun Sequence
+        :param parent: A parent QWidget
+        :param sg_sequence: A Shotgun sequence, as a dictionary, to display
+        """
         super(SequenceCard, self).__init__(parent)
         self._thumbnail_requested = False
         self._sg_sequence = sg_sequence
@@ -74,40 +84,68 @@ class SequenceCard(QtGui.QFrame):
 
     @QtCore.Slot()
     def select(self):
+        """
+        Set this card UI to selected mode
+        """
         self.setProperty("selected", True)
         self.ui.select_button.setVisible(True)
         self.setStyleSheet(_STYLES["selected"])
 
     @QtCore.Slot()
     def unselect(self):
+        """
+        Set this card UI to unselected mode
+        """
         self.setProperty("selected", False)
         self.ui.select_button.setVisible(False)
         self.setStyleSheet("")
 
     @QtCore.Slot()
     def show_selected(self):
+        """
+        Gently ask to show cut summary for the attached Shotgun sequence
+        """
         self.highlight_selected.emit(self)
         self.show_sequence.emit(self._sg_sequence)
         self.ui.select_button.setVisible(False)
 
     @QtCore.Slot(str)
     def new_thumbnail(self, path):
+        """
+        Called when a new thumbnail is available for this card
+        """
         self._logger.debug("Loading thumbnail %s for %s" % (path, self._sg_sequence["code"]))
         self.set_thumbnail(path)
 
     def mouseDoubleClickEvent(self, event):
+        """
+        Handle double clicks : show cut changes for the attached sequence
+        """
         self.show_selected()
 
     def mousePressEvent(self, event):
+        """
+        Handle single click events : select this card
+        """
         self.highlight_selected.emit(self)
 
     def enterEvent(self, event):
+        """
+        Display a "chevron" button when the mouse enter the widget
+        """
         self.ui.select_button.setVisible(True)
 
     def leaveEvent(self, event):
+        """
+        Hide the "chevron" button when the mouse leave the widget
+        """
         self.ui.select_button.setVisible(False)
 
     def showEvent(self, event):
+        """
+        Request an async thumbnail download on first expose, if a thumbnail is 
+        avalaible in SG.
+        """
         if self._thumbnail_requested:
             event.ignore()
             return
@@ -125,6 +163,10 @@ class SequenceCard(QtGui.QFrame):
         event.ignore()
     
     def set_thumbnail(self, thumb_path):
+        """
+        Build a pixmap from the given file path and use it as icon, resizing it to 
+        fit into the widget icon size
+        """
         size = self.ui.icon_label.size()
         ratio = size.width() / float(size.height())
         pixmap = QtGui.QPixmap(thumb_path)

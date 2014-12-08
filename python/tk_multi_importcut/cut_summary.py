@@ -40,8 +40,14 @@ The changes in %s are as follows:
 """
 
 class CutSummary(QtCore.QObject):
+    """
+    A list of cut differences, stored in CutDiff instances
+    """
     new_cut_diff = QtCore.Signal(CutDiff)
     def __init__(self):
+        """
+        Create a new empty CutSummary
+        """
         super(CutSummary,self).__init__()
         self._cut_diffs = {}
         self._counts = {}
@@ -90,16 +96,32 @@ class CutSummary(QtCore.QObject):
 
     @property
     def rescans_count(self):
+        """
+        Return the number of entries needing a rescan
+        """
         return self._rescans_count
 
     @property
     def repeated_count(self):
+        """
+        Return the number of entries which share their shot with another entry
+        """
         return self._repeated_count
 
     def count_for_type(self, diff_type):
+        """
+        Return the number of entries for the given CutDiffType
+        
+        :param diff_type: A CutDiffType
+        """
         return self._counts.get(diff_type, 0)
 
     def edits_for_type(self, diff_type):
+        """
+        Return the CutDiff instances for the given CutDiffType
+
+        :param diff_type: A CutDiffType
+        """
         for name, items in self._cut_diffs.iteritems():
             for item in items:
                 if item.diff_type == diff_type:
@@ -120,21 +142,39 @@ class CutSummary(QtCore.QObject):
         return self._cut_diffs.get(shot_name.lower())
 
     def __len__(self):
+        """
+        Return the total number of entries in this summary
+        """
         return sum([len(self._cut_diffs[k]) for k in self._cut_diffs], 0)
 
     def __iter__(self):
+        """
+        Iterate other shots for this summary
+        """
         for name in self._cut_diffs.keys():
             yield name
 
     def __getitem__(self, key):
+        """
+        Return CutDiffs list for a given shot
+        """
         return self._cut_diffs.get(key.lower())
 
     def iteritems(self):
+        """
+        Iterate over shot names for this summary, yielding (name, CutDiffs list )
+        tuple
+        """
         for name, items in self._cut_diffs.iteritems():
             yield (name, items)
 
     def get_report(self, title, sg_links):
         """
+        Build a text report for this summary, highlighting changes
+        
+        :param title: A title for the report
+        :param sg_links: Shotgun URLs to display in the report as links
+        :return: A subject, body tuple, as strings
         """
         # Body should look like that :
         #The changes in {Name of Cut/EDL} are as follows:

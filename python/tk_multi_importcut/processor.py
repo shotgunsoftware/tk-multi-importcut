@@ -28,46 +28,69 @@ _NOTE_FORMAT = """
 """
 
 class Processor(QtCore.QThread):
+    """
+    Processing thread. A worker instance is created at runtime, and is the owner
+    of all the data.
+    """
     # Pass through signals which will be redirected to
-    # instances created in the running thread, so signals
+    # the worker instance created in the running thread, so signals
     # will be processed in the running thread
-    new_edl = QtCore.Signal(str)
-    reset = QtCore.Signal()
-    set_busy = QtCore.Signal(bool)
-    step_done = QtCore.Signal(int)
-    new_sg_sequence = QtCore.Signal(dict)
-    retrieve_sequences = QtCore.Signal()
-    show_cut_for_sequence = QtCore.Signal(dict)
-    new_cut_diff = QtCore.Signal(CutDiff)
-    got_busy = QtCore.Signal(int)
-    got_idle = QtCore.Signal()
-    progress_changed = QtCore.Signal(int)
+    new_edl                 = QtCore.Signal(str)
+    reset                   = QtCore.Signal()
+    set_busy                = QtCore.Signal(bool)
+    step_done               = QtCore.Signal(int)
+    new_sg_sequence         = QtCore.Signal(dict)
+    retrieve_sequences      = QtCore.Signal()
+    show_cut_for_sequence   = QtCore.Signal(dict)
+    new_cut_diff            = QtCore.Signal(CutDiff)
+    got_busy                = QtCore.Signal(int)
+    got_idle                = QtCore.Signal()
+    progress_changed        = QtCore.Signal(int)
+    import_cut              = QtCore.Signal(str,dict,dict, str)
 
-    import_cut = QtCore.Signal(str,dict,dict, str)
     def __init__(self):
+        """
+        Instantiate a new Processor
+        """
         super(Processor, self).__init__()
         self._logger = get_logger()
         self._edl_cut = None
 
     @property
     def title(self):
+        """
+        Return a title, retrieved from the loaded EDL, if any
+        """
         if self._edl_cut and self._edl_cut._edl:
             return self._edl_cut._edl.title
         return None
 
     @property
     def summary(self):
+        """
+        Return the current CutSummary instance
+        """
         if self._edl_cut and self._edl_cut._summary:
             return self._edl_cut._summary
         return None
 
     @property
     def sg_entity(self):
+        """
+        Return the current Shotgun entity ( Sequence ) we are displaying cut 
+        changes for
+        """
         if self._edl_cut and self._edl_cut._sg_entity:
             return self._edl_cut._sg_entity
         return None
 
     def run(self):
+        """
+        Run the processor
+        - Create a EdlCut worker instance
+        - Connect this processor signals to worker's ones
+        - Then wait for events to process
+        """
         self._edl_cut = EdlCut()
         # Orders we receive
         self.new_edl.connect(self._edl_cut.load_edl)
@@ -85,7 +108,9 @@ class Processor(QtCore.QThread):
         self.exec_()
 
 class EdlCut(QtCore.QObject):
-
+    """
+    Worker which handles all data
+    """
     step_done = QtCore.Signal(int)
     new_sg_sequence = QtCore.Signal(dict)
     new_cut_diff = QtCore.Signal(CutDiff)
@@ -94,6 +119,9 @@ class EdlCut(QtCore.QObject):
     progress_changed = QtCore.Signal(int)
 
     def __init__(self):
+        """
+        Instantiate a new empty worker
+        """
         super(EdlCut, self).__init__()
         self._edl = None
         self._sg_entity = None
@@ -104,6 +132,12 @@ class EdlCut(QtCore.QObject):
         self._ctx = self._app.context
 
     def process_edit(self, edit, logger):
+        """
+        Visitor used when parsing an EDL file
+        
+        :param edit: Current EditEvent being parsed
+        :param logger: Editorial framework logger, not used
+        """
         # Use our own logger rather than the framework one
         edl.process_edit(edit, self._logger)
         # Check things are right
@@ -123,6 +157,9 @@ class EdlCut(QtCore.QObject):
 
     @QtCore.Slot(str)
     def reset(self):
+        """
+        Clear this worker, discarding all data
+        """
         self._edl = None
         self._sg_entity = None
         self._summary = None
@@ -130,6 +167,11 @@ class EdlCut(QtCore.QObject):
 
     @QtCore.Slot(str)
     def load_edl(self, path):
+        """
+        Load an EDL file
+        
+        :param path: Full path to the EDL file
+        """
         self._logger.info("Loading %s ..." % path)
         try:
             self._edl = edl.EditList(
@@ -186,17 +228,6 @@ class EdlCut(QtCore.QObject):
                     if not vname:
                         raise ValueError("Couldn't retrieve shot name for %s" % edit)
                     edit._shot_name = re.sub("(_[^_]+){2}$", "", vname).lower()
-#                else:
-#                    sg_version = edit.get_sg_version()
-#                    if sg_version:
-#                        if sg_version["entity.Shot.code"] != shot_name:
-#                            raise RuntimeError(
-#                                "Shot mismatch for retrieved Version %s, actual : %s, expected : %s" % (
-#                                    sg_version["code"],
-#                                    sg_version["entity.Shot.code"],
-#                                    shot_name,
-#                            ))
-
             # Can go to next step
             self.step_done.emit(0)
         except Exception, e:
@@ -240,6 +271,15 @@ class EdlCut(QtCore.QObject):
 
     @QtCore.Slot(dict)
     def show_cut_for_sequence(self, sg_entity):
+        """
+        Build a cut summary for the given Shotgun entity ( Sequence )
+        - Retrieve all shots linked to the Shotgun entity
+        - Retrieve all cut items linked to these shots
+        - Reconciliate them with the current edit list previously loaded
+        
+        :param sg_entity: A Shotgun entity disctionary retrieved from Shotgun, 
+                          typically a Sequence
+        """
         self._logger.info("Retrieving cut summary for %s" % ( sg_entity))
         self._sg_entity = sg_entity
         self.got_busy.emit(None)
@@ -365,6 +405,9 @@ class EdlCut(QtCore.QObject):
     
     @QtCore.Slot(str, dict, dict, str)
     def do_cut_import(self, title, sender, to, description):
+        """
+        Import the cut changes in Shotgun
+        """
         self._logger.info("Importing cut %s" % title)
         self.got_busy.emit(4)
         try:
@@ -388,6 +431,16 @@ class EdlCut(QtCore.QObject):
             self.got_idle.emit()
 
     def create_note(self, title, sender, to, description, sg_links=None):
+        """
+        Create a note in Shotgun, linked to the current Shotgun entity, and
+        optionally linked to the list of sg_links
+        
+        :param title: A title for the note
+        :param sender: A Shotgun user dictionary
+        :param sender: A Shotgun group dictionary
+        :param description: Some comments which will be added to the note
+        :param sg_linkgs: A list of Shotgun entity dictionaries to link the note to
+        """
         summary = self._summary
         links = ["%s/detail/%s/%s" % (
             self._app.shotgun.base_url,

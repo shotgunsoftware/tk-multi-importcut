@@ -31,11 +31,7 @@ _COLORS = {
     "lgrey" :       "#A5A5A5",
 }
 
-
-_STYLES = {
-    "selected" : "border-color: %s" % _COLORS["sg_blue"],
-}
-
+# Some colors for the different CuDiffType
 _DIFF_TYPES_STYLE = {
     _DIFF_TYPES.NEW : "color: %s" % _COLORS["green"],
     _DIFF_TYPES.OMITTED : "color: %s" % _COLORS["sg_red"],
@@ -56,7 +52,15 @@ Edit :
 """
 
 class CutDiffCard(QtGui.QFrame):
+    """
+    A widget showing cut differences
+    """
     def __init__(self, parent, cut_diff):
+        """
+        Instantiate a new cut diff card for the given CutDiff instance
+        :param parent: A parent QWidget for this widget
+        :param cut_diff: A CutDiff instance
+        """
         super(CutDiffCard, self).__init__(parent)
         self._cut_diff = cut_diff
         self.ui = Ui_CutDiffCard()
@@ -127,14 +131,21 @@ class CutDiffCard(QtGui.QFrame):
         self.display_values(self.ui.tail_duration_label, new_value, value)
 
         self.set_tool_tip()
+        
         self.set_thumbnail(":/tk_multi_importcut/sg_shot_thumbnail.png")
 
     @QtCore.Slot(str)
     def new_thumbnail(self, path):
+        """
+        Called when a new thumbnail is available for this card
+        """
         self.set_thumbnail(path)
 
     @property
     def cut_order(self):
+        """
+        Return a cut order that can be used to sort cards together
+        """
         if self._cut_diff.new_cut_order is not None:
             return int(self._cut_diff.new_cut_order)
         if self._cut_diff.cut_order is not None:
@@ -148,6 +159,11 @@ class CutDiffCard(QtGui.QFrame):
         return getattr(self._cut_diff, attr_name)
 
     def display_values(self, widget, new_value, old_value):
+        """
+        Format the text for the given widget ( typically a QLabel ), comparing
+        the old value to the new one, displaying only one of them if the two values
+        are equal, coloring them otherwise
+        """
         if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
             widget.setText("<font color=%s>%s</font>" % (_COLORS["sg_red"], new_value))
         elif self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
@@ -162,6 +178,9 @@ class CutDiffCard(QtGui.QFrame):
                 widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
 
     def set_tool_tip(self):
+        """
+        Build a toolitp displaying details about this cut difference
+        """
         shot_details = ""
         if self._cut_diff.sg_shot:
             shot_details = \
@@ -209,6 +228,10 @@ class CutDiffCard(QtGui.QFrame):
         self.setToolTip(msg)
 
     def showEvent(self, event):
+        """
+        Request an async thumbnail download on first expose, if a thumbnail is 
+        avalaible in SG.
+        """
         if self._thumbnail_requested:
             event.ignore()
             return
@@ -232,6 +255,10 @@ class CutDiffCard(QtGui.QFrame):
         event.ignore()
 
     def set_thumbnail(self, thumb_path):
+        """
+        Build a pixmap from the given file path and use it as icon, resizing it to 
+        fit into the widget icon size
+        """
         size = self.ui.icon_label.size()
         ratio = size.width() / float(size.height())
         pixmap = QtGui.QPixmap(thumb_path)

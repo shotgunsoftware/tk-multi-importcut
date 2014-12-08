@@ -122,14 +122,23 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def do_reset(self):
+        """
+        Reset callback, going back to the first page
+        """
         self.goto_step(0)
 
     @QtCore.Slot()
     def reset(self):
+        """
+        Called when the first page is reached
+        """
         self.set_ui_for_step(0)
 
     @QtCore.Slot(int)
     def step_done(self, which):
+        """
+        Called when a step is done, and next page can be displayed
+        """
         self.goto_step(which+1)
 
     @QtCore.Slot(list)
@@ -150,6 +159,9 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(int, str)
     def new_message(self, levelno, message):
+        """
+        Display a new message in the feedback widget
+        """
         if levelno == logging.ERROR or levelno == logging.CRITICAL:
             self.ui.feedback_label.setStyleSheet( "color: #FC6246")
         else:
@@ -158,6 +170,9 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def close_dialog(self):
+        """
+        Close this app
+        """
         self.close()
 
     @property
@@ -165,11 +180,19 @@ class AppDialog(QtGui.QWidget):
         return False
 
     def is_busy(self):
+        """
+        Return True if the app is busy doing something,
+        False if idle
+        """
         return self._busy
 
     @QtCore.Slot()
     @QtCore.Slot(int)
     def set_busy(self, maximum=None):
+        """
+        Set the app as busy, disabling some widgets
+        Display a progress bar if a maximum is given
+        """
         self._busy = True
         # Prevent some buttons to be used
         self.ui.back_button.setEnabled(False)
@@ -184,6 +207,10 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def set_idle(self):
+        """
+        Set the app as idle, hide the progress bar if shown,
+        enable back some widgets.
+        """
         self._busy = False
         # Allow all buttons to be used
         self.ui.back_button.setEnabled(True)
@@ -193,6 +220,9 @@ class AppDialog(QtGui.QWidget):
         self.ui.progress_bar.hide()
 
     def goto_step(self, which):
+        """
+        Go to a particular step
+        """
         self.set_ui_for_step(which)
         self.ui.stackedWidget.goto_page(which)
 
@@ -231,6 +261,10 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(dict)
     def new_sg_sequence(self, sg_entity):
+        """
+        Called when a new sequence card widget needs to be added to the list
+        of retrieved sequences
+        """
         i = self.ui.sequence_grid.count() -1 # We have a stretcher
         # Remove it
         spacer = self.ui.sequence_grid.takeAt(i)
@@ -247,6 +281,10 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(QtGui.QWidget)
     def sequence_selected(self, card):
+        """
+        Called when a sequence card is selected, ensure only one is selected at
+        a time
+        """
         if self._selected_card_sequence:
             self._selected_card_sequence.unselect()
             self._logger.debug("Unselected %s" % self._selected_card_sequence)
@@ -256,12 +294,19 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(dict)
     def show_sequence(self, sg_entity):
+        """
+        Called when cut changes needs to be shown for a particular sequence
+        """
         self._logger.info("Retrieving cut information for %s" % sg_entity["code"] )
         self.show_cut_for_sequence.emit(sg_entity)
         self.step_done(1)
 
     @QtCore.Slot(CutDiff)
     def new_cut_diff(self, cut_diff):
+        """
+        Called when a new cut diff card widget needs to be added to the list of retrieved
+        changes
+        """
         self._logger.debug("Adding %s" % cut_diff.name)
         self.set_cut_summary_view_selectors()
         widget = CutDiffCard(parent=None, cut_diff=cut_diff)
@@ -278,6 +323,10 @@ class AppDialog(QtGui.QWidget):
         self.ui.cutsummary_list.setStretch(self.ui.cutsummary_list.count()-1, 1)
 
     def set_cut_summary_view_selectors(self):
+        """
+        Set labels on top views selectors in Cut summary view, from the current 
+        cut summary
+        """
         summary = self._processor.summary
         self.ui.new_select_button.setText("New : %d" % summary.count_for_type(_DIFF_TYPES.NEW))
         self.ui.cut_change_select_button.setText("Cut Changes : %d" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
@@ -288,10 +337,17 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(bool)
     def display_repeated_cuts(self, checked):
+        """
+        Only display cut diff cards widget affecting the same shot(s)
+        """
         self._cuts_display_repeated = checked
         self.set_display_summary_mode(True, self._cuts_display_mode)
 
     def set_display_summary_mode(self, activated, mode):
+        """
+        Called when the user click on the top views selectors in the cut summary
+        page
+        """
         if activated:
             self._cuts_display_mode = mode
             self._logger.debug("Switching to %s mode" % mode)
@@ -317,6 +373,9 @@ class AppDialog(QtGui.QWidget):
                         widget.hide()
 
     def clear_sequence_view(self):
+        """
+        Reset the page displaying available sequences
+        """
         self._selected_card_sequence = None
         count = self.ui.sequence_grid.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
@@ -326,6 +385,9 @@ class AppDialog(QtGui.QWidget):
         # print self.ui.sequence_grid.count()
 
     def clear_cut_summary_view(self):
+        """
+        Reset the cut summary view page
+        """
         count = self.ui.cutsummary_list.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
             witem = self.ui.cutsummary_list.takeAt(i)
@@ -337,6 +399,10 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def import_cut(self):
+        """
+        Called when a the cut needs to be imported in Shotgun. Show a dialog where the
+        user can review changes before importing the cut.
+        """
 #        self.generate_report()
         dialog = SubmitDialog(
             parent=self,
@@ -349,6 +415,10 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def email_cut_changes(self):
+        """
+        Called when the user click on the "Email Summary" button. Forge a mailto:
+        url and open it up.
+        """
         if not self._processor.sg_entity:
             self._logger.warning("No selected sequence ...")
             return

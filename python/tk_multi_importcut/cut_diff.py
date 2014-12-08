@@ -13,14 +13,15 @@
 
 import sgtk
 from sgtk.platform.qt import QtCore
+# Import the EDL framework
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
-import decimal
-
+# Define difference types as enums
 def diff_types(**enums):
     return type("CutDiffType", (), enums)
-
+# Values for cut diff types
 _DIFF_TYPES = diff_types(NEW=0, OMITTED=1, REINSTATED=2, RESCAN=3, CUT_CHANGE=4, NO_CHANGE=5)
+# Display names for cut diff types
 _DIFF_LABELS = {
     _DIFF_TYPES.NEW : "New",
     _DIFF_TYPES.OMITTED : "Omitted",
@@ -31,8 +32,24 @@ _DIFF_LABELS = {
 }
 
 class CutDiff(QtCore.QObject):
-
+    """
+    A cut difference is based on :
+    - An EDL entry
+    - A Shotgun cut item
+    - A Shotgun shot
+    At least one of them needs to be set
+    A Shotgun Version can be given, for reference purpose
+    """
     def __init__(self, name, sg_shot=None, sg_version=None, edit=None, sg_cut_item=None):
+        """
+        Instantiate a new cut difference
+        
+        :param name: A name for this cut difference, usually the shot name
+        :param sg_shot: An optional shot dictionary, as retrieved from Shotgun
+        :param sg_version: An optional version dictionary, as retrieved from Shotgun
+        :param edit: An optional EditEvent instance, retrieved from an EDL
+        :param sg_cut_item: An optional cut item dictionary, as retrieved from Shotgun
+        """
         super(CutDiff, self).__init__()
         self._name = name
         self._sg_shot = sg_shot
@@ -47,50 +64,84 @@ class CutDiff(QtCore.QObject):
         self._default_head_in = self._app.get_setting("default_head_in")
         self._default_head_in_duration = self._app.get_setting("default_head_in_duration")
 
+        # Retrieve the cut diff type from the given params
         self.check_changes()
 
     @classmethod
     def get_diff_type_label(cls, diff_type):
+        """
+        Return a display name for the given cut diff type
+        :param diff_type: A _DIFF_TYPES entry
+        """
         return _DIFF_LABELS[diff_type]
 
     @property
     def sg_shot(self):
+        """
+        Return the Shotgun shot for this diff, if any
+        """
         return self._sg_shot
 
     @property
     def sg_cut_item(self):
+        """
+        Return the Shotgun cut item for this diff, if any
+        """
         return self._sg_cut_item
 
     @property
     def edit(self):
+        """
+        Return the EditEntry for this diff, if any
+        """
         return self._edit
 
     @property
     def name(self):
+        """
+        Return the name of this diff
+        """
         return self._name
 
     @property
     def version_name(self):
+        """
+        Return the version name for this diff, if any
+        """
         if self._edit:
             return self._edit.get_version_name()
         return None
+
     @property
     def sg_version(self):
+        """
+        Return the Shotgun version for this diff, if any
+        """
         if self._edit:
             return self._edit.get_sg_version()
         return None
 
     def set_sg_version(self, sg_version):
+        """
+        Set the Shotgun version associated with this diff
+        :raises: ValueError if no EditEvent is associated to this diff
+        """
         if not self._edit:
             raise ValueError("Can't set Shotgun version without an edit entry")
         self._edit._sg_version = sg_version
     
     @property
     def default_head_in(self):
+        """
+        Return the default head in value, e.g. 1001
+        """
         return self._default_head_in
 
     @property
     def default_tail_out(self):
+        """
+        Return the default tail out value, computed from new cut values, or None
+        """
         new_tail_duration = self.new_tail_duration
         if new_tail_duration is None:
             return None
@@ -101,24 +152,36 @@ class CutDiff(QtCore.QObject):
 
     @property
     def shot_head_in(self):
+        """
+        Return the head in value from associated shot, or None
+        """
         if self._sg_shot:
             return self._sg_shot.get("sg_head_in")
         return None
 
     @property
     def shot_tail_out(self):
+        """
+        Return the tail out value from associated shot, or None
+        """
         if self._sg_shot:
             return self._sg_shot.get("sg_tail_out")
         return None
 
     @property
     def head_in(self):
+        """
+        Return the current head in from the associated cut item, or None
+        """
         if self._sg_cut_item:
             return self._sg_cut_item.get("sg_head_in")
         return None
 
     @property
     def new_head_in(self):
+        """
+        Return the new head in value
+        """
         nh = self.shot_head_in
         if nh is None:
             nh = self.default_head_in
@@ -126,12 +189,18 @@ class CutDiff(QtCore.QObject):
 
     @property
     def tail_out(self):
+        """
+        Return the current tail out value from the associated cut item, or None
+        """
         if self._sg_cut_item:
             return self._sg_cut_item.get("sg_tail_out")
         return None
 
     @property
     def new_tail_out(self):
+        """
+        Return the new tail out value
+        """
         nt = self.shot_tail_out
         if nt is None:
             nt = self.default_tail_out
@@ -139,18 +208,28 @@ class CutDiff(QtCore.QObject):
 
     @property
     def cut_in(self):
+        """
+        Return the current cut in value from the associated cut item, or None
+        """
         if self._sg_cut_item:
             return self._sg_cut_item["sg_cut_in"]
         return None
 
     @property
     def cut_out(self):
+        """
+        Return the current cut out value from the associated cut item, or None
+        """
         if self._sg_cut_item:
             return self._sg_cut_item["sg_cut_out"]
         return None
 
     @property
     def cut_order(self):
+        """
+        Return the current cut order value from the associated cut item, 
+        or associated shot, or None
+        """
         if self._sg_cut_item:
             return self._sg_cut_item["sg_cut_order"]
         if self._sg_shot:
@@ -159,12 +238,18 @@ class CutDiff(QtCore.QObject):
 
     @property
     def new_cut_order(self):
+        """
+        Return the new cut order value from the associated EditEvent, or None
+        """
         if self._edit:
             return self._edit.id
         return None
 
     @property
     def new_cut_in(self):
+        """
+        Return the new cut in value, or None
+        """
         if not self._edit:
             return None
         new_head_in = self.shot_head_in
@@ -186,6 +271,9 @@ class CutDiff(QtCore.QObject):
 
     @property
     def new_cut_out(self):
+        """
+        Return the new cut out value, or None
+        """
         cut_in = self.new_cut_in
         if cut_in is None:
             return None
@@ -198,6 +286,9 @@ class CutDiff(QtCore.QObject):
 
     @property
     def head_duration(self):
+        """
+        Return the current head duration, or None
+        """
         if not self._sg_cut_item or not self._sg_shot:
             return None
         cut_in = self._sg_cut_item["sg_cut_in"]
@@ -208,6 +299,9 @@ class CutDiff(QtCore.QObject):
 
     @property
     def new_head_duration(self):
+        """
+        Return the new head duration, or None
+        """
         if self._edit:
             new_cut_in = self.new_cut_in
             if new_cut_in is None:
@@ -221,18 +315,27 @@ class CutDiff(QtCore.QObject):
 
     @property
     def duration(self):
+        """
+        Return the current duration from the associated cut item, or None
+        """
         if self._sg_cut_item:
             return self._sg_cut_item["sg_cut_duration"]
         return None
 
     @property
     def new_duration(self):
+        """
+        Return the new duration, or None
+        """
         if self._edit:
             return self._edit.source_duration
         return None
 
     @property
     def tail_duration(self):
+        """
+        Return the current tail duration, or None
+        """
         if not self._sg_cut_item or not self._sg_shot:
             return None
         cut_out = self._sg_cut_item["sg_cut_out"]
@@ -243,6 +346,9 @@ class CutDiff(QtCore.QObject):
 
     @property
     def new_tail_duration(self):
+        """
+        Return the new tail duration, or None
+        """
         cut_out = self.new_cut_out
         if cut_out is None:
             return None
@@ -255,25 +361,46 @@ class CutDiff(QtCore.QObject):
 
     @property
     def diff_type(self):
+        """
+        Return the CutDiff type of this cut difference
+        """
         return self._diff_type
 
     @property
     def diff_type_label(self):
+        """
+        Return a display string for the CutDiff type of this cut difference
+        """
         return self.get_diff_type_label(self._diff_type)
 
     @property
     def reasons(self):
+        """
+        Return a list of reasons strings for this cut difference.
+        Return an empty list for any difference which is not
+        a CUT_CHANGE or a RESCAN
+        """
         return self._cut_changes_reasons
 
     @property
     def need_rescan(self):
+        """
+        Return true if this cut change implies a rescan
+        """
         return self._diff_type == _DIFF_TYPES.RESCAN
 
     @property
     def repeated(self):
+        """
+        Return true if the associated shot appears more than once in the 
+        cut summary
+        """
         return self._repeated
 
     def check_changes(self):
+        """
+        Set the cut difference type for this cut difference
+        """
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
         # The type of difference we are dealing with
@@ -325,4 +452,7 @@ class CutDiff(QtCore.QObject):
                     self._cut_changes_reasons.append("Tail trimmed %d frs" % -diff)
     
     def set_repeated(self, val):
+        """
+        Set this cut difference as repeated
+        """
         self._repeated = val

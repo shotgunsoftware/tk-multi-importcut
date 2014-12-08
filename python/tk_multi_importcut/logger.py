@@ -13,6 +13,9 @@ import traceback
 from sgtk.platform.qt import QtCore
 
 def get_logger():
+    """
+    Return a logger for this app
+    """
     logger_parts = __name__.split(".")
     if len(logger_parts) > 1:
         # Remove the last part which should be this file
