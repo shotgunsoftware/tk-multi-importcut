@@ -403,7 +403,7 @@ class AppDialog(QtGui.QWidget):
         Called when a the cut needs to be imported in Shotgun. Show a dialog where the
         user can review changes before importing the cut.
         """
-#        self.generate_report()
+        #self.generate_report()
         dialog = SubmitDialog(
             parent=self,
             title=self._processor.title,
@@ -440,21 +440,37 @@ class AppDialog(QtGui.QWidget):
 
         #First render the widget to a QPicture, which stores QPainter commands.
         pic = QtGui.QPicture(formatVersion=7)
-        picPainter = QtGui.QPainter(pic)
-        self.ui.cut_summary_widgets.render(picPainter, QtCore.QPoint(), renderFlags=~QtGui.QWidget.DrawWindowChildren)
+        picPainter = QtGui.QPainter()
+        picPainter.begin(pic)
+        for i in range(0, self.ui.cutsummary_list.count()-1):
+            witem = self.ui.cutsummary_list.itemAt(i)
+            widget = witem.widget()
+            widget.ui.icon_label.render(picPainter, QtCore.QPoint())
+            #picPainter.drawText(QtCore.QPoint(), widget.ui.shot_name_label.text())
         picPainter.end()
-        pic.save("/tmp/cut_grab.pic")
+        #pic.save("/tmp/cut_grab.pic")
+        pic_size = pic.boundingRect()
         # Set up the printer
-        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
-        printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
+        printer = QtGui.QPrinter(QtGui.QPrinter.ScreenResolution)
+        #printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
         printer.setOutputFileName("/tmp/cut_summary_report.pdf")
-
-        # Finally, draw the QPicture to your printer
-        painter = QtGui.QPainter()
-        painter.begin(printer)
-        painter.setViewport(pic.boundingRect())
-        painter.drawPicture(QtCore.QPointF(0, 0), pic);
-        painter.end()
+        printer.setOutputFormat(QtGui.QPrinter.NativeFormat)
+        #printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
+        page_rect = printer.pageRect()
+        printer.newPage()
+        print_size = printer.pageRect(QtGui.QPrinter.DevicePixel)
+        try:
+            # Finally, draw the QPicture to your printer
+            painter = QtGui.QPainter()
+            painter.begin(printer)
+            
+#            painter.scale(
+#                print_size.width()/float(pic_size.width()), print_size.width()/float(pic_size.width())
+#                )
+            painter.drawPicture(QtCore.QPointF(0, 0), pic);
+            #painter.drawText(0,0, "HELLO WORLD")
+        finally:
+            painter.end()
 
     def closeEvent(self, evt):
         """

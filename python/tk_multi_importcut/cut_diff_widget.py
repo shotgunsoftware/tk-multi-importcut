@@ -258,6 +258,8 @@ class CutDiffCard(QtGui.QFrame):
         """
         Build a pixmap from the given file path and use it as icon, resizing it to 
         fit into the widget icon size
+
+        :param thumb_path: Full path to an image to use as thumbnail
         """
         size = self.ui.icon_label.size()
         ratio = size.width() / float(size.height())

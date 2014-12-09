@@ -227,7 +227,7 @@ class EdlCut(QtCore.QObject):
                     vname = edit.get_version_name()
                     if not vname:
                         raise ValueError("Couldn't retrieve shot name for %s" % edit)
-                    edit._shot_name = re.sub("(_[^_]+){2}$", "", vname).lower()
+                    edit._shot_name = re.sub("(_[^_]+){2}$", "", vname)
             # Can go to next step
             self.step_done.emit(0)
         except Exception, e:
@@ -513,7 +513,7 @@ class EdlCut(QtCore.QObject):
                         "entity_type" : "Shot",
                         "data" : {
                             "project" : self._ctx.project,
-                            "code" : shot_name,
+                            "code" : cut_diff.name,
                             "sg_sequence" : self._sg_entity,
                             "sg_head_in" : cut_diff.default_head_in,
                             "sg_tail_out" : cut_diff.default_tail_out,
@@ -528,7 +528,7 @@ class EdlCut(QtCore.QObject):
                         "data" : {
                             "sg_status_list" : "omt",
                             # Add code in the update so it will be returned with batch results
-                            "code" : shot_name,
+                            "code" : cut_diff._sg_shot["code"],
                         }
                     })
                 elif cut_diff.diff_type == _DIFF_TYPES.REINSTATED:
@@ -539,7 +539,7 @@ class EdlCut(QtCore.QObject):
                         "data" : {
                             "sg_status_list" : "act",
                             # Add code in the update so it will be returned with batch results
-                            "code" : shot_name,
+                            "code" : cut_diff._sg_shot["code"],
                         }
                     })
         if sg_batch_data:
@@ -547,7 +547,7 @@ class EdlCut(QtCore.QObject):
             self._logger.info("Created %d new shots." % len(res))
             # Update cut_diffs with the new shots
             for sg_shot in res:
-                shot_name = sg_shot["code"]
+                shot_name = sg_shot["code"].lower()
                 if shot_name not in self._summary:
                     raise RuntimeError("Created shot %s, but couldn't retrieve it in our list" % shot_name)
                 for cut_diff in self._summary[shot_name]:
