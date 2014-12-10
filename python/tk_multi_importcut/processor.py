@@ -319,7 +319,20 @@ class EdlCut(QtCore.QObject):
             sg_shots = self._sg.find(
                 "Shot",
                 [["sg_sequence", "is", sg_entity]],
-                ["code", "sg_status_list", "sg_head_in", "sg_tail_out", "sg_cut_in", "sg_cut_out", "sg_cut_order", "image"],
+                [
+                    "code",
+                    "sg_status_list",
+                    "sg_head_in",
+                    "sg_tail_out",
+                    "sg_cut_in",
+                    "sg_cut_out",
+                    "smart_head_in",
+                    "smart_tail_out",
+                    "smart_cut_in",
+                    "smart_cut_out",
+                    "sg_cut_order",
+                    "image"
+                ],
             )
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
@@ -504,6 +517,7 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Updating shots ...")
         sg_batch_data = []
         reinstate_status = self._app.get_setting("reinstate_status")
+        omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
             for cut_diff in items: # FIXME : handle shot duplicates
@@ -527,7 +541,7 @@ class EdlCut(QtCore.QObject):
                         "entity_type" : "Shot",
                         "entity_id" : cut_diff._sg_shot["id"],
                         "data" : {
-                            "sg_status_list" : "omt",
+                            "sg_status_list" : omit_statuses[-1], # Arbitrarily pick the last one
                             # Add code in the update so it will be returned with batch results
                             "code" : cut_diff._sg_shot["code"],
                         }

@@ -63,6 +63,7 @@ class CutDiff(QtCore.QObject):
         self._cut_changes_reasons = []
         self._default_head_in = self._app.get_setting("default_head_in")
         self._default_head_in_duration = self._app.get_setting("default_head_in_duration")
+        self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
 
         # Retrieve the cut diff type from the given params
         self.check_changes()
@@ -156,6 +157,8 @@ class CutDiff(QtCore.QObject):
         Return the head in value from associated shot, or None
         """
         if self._sg_shot:
+            if self._use_smart_fields:
+                return self._sg_shot.get("smart_head_in")
             return self._sg_shot.get("sg_head_in")
         return None
 
@@ -165,6 +168,8 @@ class CutDiff(QtCore.QObject):
         Return the tail out value from associated shot, or None
         """
         if self._sg_shot:
+            if self._use_smart_fields:
+                return self._sg_shot.get("smart_tail_out")
             return self._sg_shot.get("sg_tail_out")
         return None
 
@@ -289,7 +294,7 @@ class CutDiff(QtCore.QObject):
         """
         Return the current head duration, or None
         """
-        if not self._sg_cut_item or not self._sg_shot:
+        if not self._sg_cut_item:
             return None
         cut_in = self._sg_cut_item["sg_cut_in"]
         head_in = self._sg_cut_item["sg_head_in"]
@@ -336,7 +341,7 @@ class CutDiff(QtCore.QObject):
         """
         Return the current tail duration, or None
         """
-        if not self._sg_cut_item or not self._sg_shot:
+        if not self._sg_cut_item:
             return None
         cut_out = self._sg_cut_item["sg_cut_out"]
         tail_out = self._sg_cut_item["sg_tail_out"]

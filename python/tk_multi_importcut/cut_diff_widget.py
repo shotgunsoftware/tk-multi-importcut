@@ -67,6 +67,8 @@ class CutDiffCard(QtGui.QFrame):
         self.ui.setupUi(self)
         
         self._thumbnail_requested = False
+        app = sgtk.platform.current_bundle()
+        self._use_smart_fields = app.get_setting("use_smart_fields") or False
         # Cut order
         new_cut_order = self._cut_diff.new_cut_order or 0
         old_cut_order = self._cut_diff.cut_order or 0
@@ -183,16 +185,28 @@ class CutDiffCard(QtGui.QFrame):
         """
         shot_details = ""
         if self._cut_diff.sg_shot:
-            shot_details = \
-            "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
-                self._cut_diff.sg_shot["code"],
-                self._cut_diff.sg_shot["sg_status_list"],
-                self._cut_diff.sg_shot["sg_head_in"],
-                self._cut_diff.sg_shot["sg_cut_in"],
-                self._cut_diff.sg_shot["sg_cut_out"],
-                self._cut_diff.sg_shot["sg_tail_out"],
-                self._cut_diff.sg_shot["sg_cut_order"],
-            )
+            if self._use_smart_fields:
+                shot_details = \
+                "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
+                    self._cut_diff.sg_shot["code"],
+                    self._cut_diff.sg_shot["sg_status_list"],
+                    self._cut_diff.sg_shot["smart_head_in"],
+                    self._cut_diff.sg_shot["smart_cut_in"],
+                    self._cut_diff.sg_shot["smart_cut_out"],
+                    self._cut_diff.sg_shot["smart_tail_out"],
+                    self._cut_diff.sg_shot["sg_cut_order"],
+                )
+            else:
+                shot_details = \
+                "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
+                    self._cut_diff.sg_shot["code"],
+                    self._cut_diff.sg_shot["sg_status_list"],
+                    self._cut_diff.sg_shot["sg_head_in"],
+                    self._cut_diff.sg_shot["sg_cut_in"],
+                    self._cut_diff.sg_shot["sg_cut_out"],
+                    self._cut_diff.sg_shot["sg_tail_out"],
+                    self._cut_diff.sg_shot["sg_cut_order"],
+                )
         cut_item_details = ""
         if self._cut_diff.sg_cut_item:
             if self._cut_diff.sg_cut_item["sg_fps"] :

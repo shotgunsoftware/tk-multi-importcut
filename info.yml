@@ -47,6 +47,10 @@ configuration:
         type: str
         default_value: act
         description: Status used when reinstating shots
+    use_smart_fields:
+        type: bool
+        default_value: true
+        description: Should smart or regular fields be used to store cut values
 # this app works in all engines - it does not contain
 # any host application specific commands
 supported_engines: 
