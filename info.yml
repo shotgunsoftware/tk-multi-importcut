@@ -43,6 +43,10 @@ configuration:
             type: str
         default_value: [inac, omt]
         description: "List of statuses causing a shot to reinstated"
+    reinstate_status:
+        type: str
+        default_value: act
+        description: Status used when reinstating shots
 # this app works in all engines - it does not contain
 # any host application specific commands
 supported_engines: 

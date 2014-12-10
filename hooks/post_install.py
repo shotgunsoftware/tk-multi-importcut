@@ -78,20 +78,21 @@ class PostInstall(Hook):
                     raise RuntimeError("Wanted to create a field named %s, and created %s instead" % (
                         field_name,res)
                     )
-        # Make sure shots have a "act" ( Active ) in their status list
+        # Make sure shots have the reinstate status in their status list
+        reinstate_status = app.get_setting("reinstate_status")
         schema = sg.schema_field_read("Shot", "sg_status_list")
         valid_values = schema["sg_status_list"]["properties"]["valid_values"]["value"]
-        if "act" not in valid_values:
-            app.log_info("Enabling 'act' status to shots")
-            status = sg.find_one("Status", [["code", "is", "act"]])
+        if reinstate_status not in valid_values:
+            app.log_info("Enabling %s status for shots" % reinstate_status)
+            status = sg.find_one("Status", [["code", "is", reinstate_status]])
             if not status:
                 sg.create("Status", {
-                    "code" : "act",
-                    "name" : "Active",
+                    "code" : reinstate_status,
+                    "name" : reinstate_status.capitalize(),
                     "icon": {"type": "Icon", "id": 1, "name": "Active"},
                     "bg_color": "202,225,202",
                     })
-            valid_values.append("act")
+            valid_values.append(reinstate_status)
             properties = { "valid_values" : valid_values}
             sg.schema_field_update("Shot", "sg_status_list", properties)
 
