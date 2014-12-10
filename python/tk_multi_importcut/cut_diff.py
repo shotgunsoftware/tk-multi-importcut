@@ -263,7 +263,7 @@ class CutDiff(QtCore.QObject):
                 offset = self._edit.source_in.to_frame() - tc_cut_in.to_frame()
                 offset += new_head_in - head_in
                 return cut_in + offset
-
+# new_cut_in = cut_item.cut_in + ( shot_head_in or default head_in ) - cut_item.head_in + edl.tc_cut_in - cut_item.tc_cut_in
         head_in = self.shot_head_in
         if head_in is None:
             head_in = self.default_head_in
@@ -411,7 +411,8 @@ class CutDiff(QtCore.QObject):
             self._diff_type = _DIFF_TYPES.OMITTED
             return
         # We have both a shot and an edit
-        if self._sg_shot["sg_status_list"] == "omt":
+        omit_statuses = self._app.get_setting("omit_statuses") or []
+        if self._sg_shot["sg_status_list"] in omit_statuses:
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
         # Check if we have a difference
