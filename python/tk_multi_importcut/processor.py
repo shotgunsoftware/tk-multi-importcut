@@ -130,6 +130,7 @@ class EdlCut(QtCore.QObject):
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
+        self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
 
     def process_edit(self, edit, logger):
         """
@@ -523,17 +524,30 @@ class EdlCut(QtCore.QObject):
             for cut_diff in items: # FIXME : handle shot duplicates
                 if cut_diff.diff_type == _DIFF_TYPES.NEW:
                     self._logger.info("Will create shot %s for %s" % (shot_name, self._sg_entity))
+                    data = {
+                        "project" : self._ctx.project,
+                        "code" : cut_diff.name,
+                        "sg_sequence" : self._sg_entity,
+                        "updated_by" : self._ctx.user,
+                    }
+                    if self._use_smart_fields:
+                        data.update({
+                            "smart_head_in" : cut_diff.default_head_in,
+                            "smart_tail_out" : cut_diff.default_tail_out,
+                            "smart_cut_in" : cut_diff.new_cut_in,
+                            "smart_cut_out" : cut_diff.new_cut_out,
+                        })
+                    else:
+                        data.update({
+                            "sg_head_in" : cut_diff.default_head_in,
+                            "sg_tail_out" : cut_diff.default_tail_out,
+                            "sg_cut_in" : cut_diff.new_cut_in,
+                            "sg_cut_out" : cut_diff.new_cut_out,
+                        })
                     sg_batch_data.append({
                         "request_type" : "create",
                         "entity_type" : "Shot",
-                        "data" : {
-                            "project" : self._ctx.project,
-                            "code" : cut_diff.name,
-                            "sg_sequence" : self._sg_entity,
-                            "sg_head_in" : cut_diff.default_head_in,
-                            "sg_tail_out" : cut_diff.default_tail_out,
-                            "updated_by" : self._ctx.user,
-                        }
+                        "data" : data
                     })
                 elif cut_diff.diff_type == _DIFF_TYPES.OMITTED:
                     sg_batch_data.append({
@@ -547,15 +561,48 @@ class EdlCut(QtCore.QObject):
                         }
                     })
                 elif cut_diff.diff_type == _DIFF_TYPES.REINSTATED:
+                    data = {
+                        "sg_status_list" : reinstate_status,
+                        # Add code in the update so it will be returned with batch results
+                        "code" : cut_diff._sg_shot["code"],
+                    }
+                    if self._use_smart_fields:
+                        data.update({
+                            "smart_cut_in" : cut_diff.new_cut_in,
+                            "smart_cut_out" : cut_diff.new_cut_out,
+                        })
+                    else:
+                        data.update({
+                            "sg_cut_in" : cut_diff.new_cut_in,
+                            "sg_cut_out" : cut_diff.new_cut_out,
+                        })
                     sg_batch_data.append({
                         "request_type" : "update",
                         "entity_type" : "Shot",
                         "entity_id" : cut_diff._sg_shot["id"],
-                        "data" : {
-                            "sg_status_list" : reinstate_status,
-                            # Add code in the update so it will be returned with batch results
-                            "code" : cut_diff._sg_shot["code"],
-                        }
+                        "data" : data
+                    })
+                else: # Cut change or rescan or no change
+                    data = {
+                        "sg_status_list" : reinstate_status,
+                        # Add code in the update so it will be returned with batch results
+                        "code" : cut_diff._sg_shot["code"],
+                    }
+                    if self._use_smart_fields:
+                        data.update({
+                            "smart_cut_in" : cut_diff.new_cut_in,
+                            "smart_cut_out" : cut_diff.new_cut_out,
+                        })
+                    else:
+                        data.update({
+                            "sg_cut_in" : cut_diff.new_cut_in,
+                            "sg_cut_out" : cut_diff.new_cut_out,
+                        })
+                    sg_batch_data.append({
+                        "request_type" : "update",
+                        "entity_type" : "Shot",
+                        "entity_id" : cut_diff._sg_shot["id"],
+                        "data" : data
                     })
         if sg_batch_data:
             res = self._sg.batch(sg_batch_data)

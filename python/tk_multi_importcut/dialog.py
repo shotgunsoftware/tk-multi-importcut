@@ -310,16 +310,31 @@ class AppDialog(QtGui.QWidget):
         self._logger.debug("Adding %s" % cut_diff.name)
         self.set_cut_summary_view_selectors()
         widget = CutDiffCard(parent=None, cut_diff=cut_diff)
+        cut_order = widget.cut_order
+        count = self.ui.cutsummary_list.count()
+        # Shortcut : instead of looping over all entries, check if we can simply
+        # insert it at the end
+        if count > 1: # A widget + the stretcher
+            witem = self.ui.cutsummary_list.itemAt(count-2)
+            if cut_order > witem.widget().cut_order:
+                self.ui.cutsummary_list.insertWidget(count-1, widget)
+                self.ui.cutsummary_list.setStretch(self.ui.cutsummary_list.count()-1, 1)
+                return
         # Retrieve where we should insert it
         # Last widget is a stretcher, so we stop at self.ui.cutsummary_list.count()-2
-        cut_order = widget.cut_order
-        for i in range(0, self.ui.cutsummary_list.count()-1):
+        for i in range(0, count-1):
             witem = self.ui.cutsummary_list.itemAt(i)
-            if witem.widget().cut_order > cut_order:
+            if witem.widget().cut_order == cut_order:
+                if cut_diff.diff_type == _DIFF_TYPES.OMITTED:
+                    self.ui.cutsummary_list.insertWidget(i, widget)
+                else:
+                    self.ui.cutsummary_list.insertWidget(i+1, widget)
+                break
+            elif witem.widget().cut_order > cut_order: # Insert before next widget
                 self.ui.cutsummary_list.insertWidget(i, widget)
                 break
         else:
-            self.ui.cutsummary_list.insertWidget(self.ui.cutsummary_list.count()-1, widget)
+            self.ui.cutsummary_list.insertWidget(count-1, widget)
         self.ui.cutsummary_list.setStretch(self.ui.cutsummary_list.count()-1, 1)
 
     def set_cut_summary_view_selectors(self):

@@ -77,8 +77,11 @@ class CutDiffCard(QtGui.QFrame):
             font_color= _COLORS["sg_red"]
         else:
             font_color= _COLORS["lgrey"]
-        self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
-
+        
+        if self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
+            self.ui.cut_order_label.setText("<s><font color=%s>%03d</font></s>" % (font_color, cut_order))
+        else:
+            self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
         self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)
         
         sg_version = self._cut_diff.sg_version
