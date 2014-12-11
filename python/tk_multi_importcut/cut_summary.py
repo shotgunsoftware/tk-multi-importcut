@@ -207,7 +207,7 @@ class CutSummary(QtCore.QObject):
         cut_changes_details = ["%s - %s" % ( edit.name, ",".join(edit.reasons)) for edit in self.edits_for_type(_DIFF_TYPES.CUT_CHANGE)]
         rescan_details = ["%s - %s" % ( edit.name, ",".join(edit.reasons)) for edit in self.edits_for_type(_DIFF_TYPES.RESCAN)]
         body = _BODY_REPORT_FORMAT % (
-            ", ".join(sg_links),
+            " , ".join(sg_links),
             title,
             self.count_for_type(_DIFF_TYPES.NEW),
             "\n".join([edit.name for edit in self.edits_for_type(_DIFF_TYPES.NEW)]),
