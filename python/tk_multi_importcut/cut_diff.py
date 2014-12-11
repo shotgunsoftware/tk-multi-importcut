@@ -265,10 +265,12 @@ class CutDiff(QtCore.QObject):
             cut_in = self._sg_cut_item["sg_cut_in"]
             tc_cut_in = edl.Timecode(self._sg_cut_item["sg_timecode_cut_in"], self._sg_cut_item["sg_fps"])
             if cut_in is not None and tc_cut_in is not None:
+                # Calculate the cut offset
                 offset = self._edit.source_in.to_frame() - tc_cut_in.to_frame()
-                offset += new_head_in - head_in
+                # Calculate the head offset
+                #offset += new_head_in - head_in
+                # new_cut_in = previous cut in + cut offset
                 return cut_in + offset
-# new_cut_in = cut_item.cut_in + ( shot_head_in or default head_in ) - cut_item.head_in + edl.tc_cut_in - cut_item.tc_cut_in
         head_in = self.shot_head_in
         if head_in is None:
             head_in = self.default_head_in
@@ -283,9 +285,6 @@ class CutDiff(QtCore.QObject):
         if cut_in is None:
             return None
         if self._edit:
-            offset = self.shot_head_in
-            if offset is None:
-                offset = self.default_head_in
             return cut_in + self._edit.source_duration -1
         return None
 
@@ -311,10 +310,9 @@ class CutDiff(QtCore.QObject):
             new_cut_in = self.new_cut_in
             if new_cut_in is None:
                 return None
-            head_in = self.shot_head_in
+            head_in = self.new_head_in
             if head_in is None:
-                head_in = self.default_head_in
-            offset = self.shot_head_in or self._app.get_setting("default_head_in") or 1001
+                return None
             return new_cut_in - head_in
         return None
 
