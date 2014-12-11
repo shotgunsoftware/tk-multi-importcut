@@ -111,6 +111,8 @@ class CutDiff(QtCore.QObject):
         """
         if self._edit:
             return self._edit.get_version_name()
+        if self._sg_cut_item and self._sg_cut_item["sg_version.Version.code"]:
+            return self._sg_cut_item["sg_version.Version.code"]
         return None
 
     @property
@@ -120,6 +122,8 @@ class CutDiff(QtCore.QObject):
         """
         if self._edit:
             return self._edit.get_sg_version()
+        if self._sg_cut_item and self._sg_cut_item["sg_version"]:
+            return self._sg_cut_item["sg_version"]
         return None
 
     def set_sg_version(self, sg_version):

@@ -313,9 +313,20 @@ class EdlCut(QtCore.QObject):
                         "sg_cut_duration",
                         "sg_fps",
                         "sg_version",
+                        "sg_version.Version.code",
+                        "sg_version.Version.entity",
+                        "sg_version.Version.entity.Shot.code",
+                        "sg_version.Version.image",
                     ]
                 )
-
+                # Consolidate versions retrieved from cut items
+                # We match fields that we retrieve with a sg.find("Version", ... )
+                for sg_cut_item in sg_cut_items:
+                    if sg_cut_item["sg_version"]:
+                        sg_cut_item["sg_version"]["code"] = sg_cut_item["sg_version.Version.code"]
+                        sg_cut_item["sg_version"]["entity"] = sg_cut_item["sg_version.Version.entity"]
+                        sg_cut_item["sg_version"]["entity.Shot.code"] = sg_cut_item["sg_version.Version.entity.Shot.code"]
+                        sg_cut_item["sg_version"]["image"] = sg_cut_item["sg_version.Version.image"]
             # Retrieve shots linked to the sequence
             sg_shots = self._sg.find(
                 "Shot",
@@ -512,8 +523,9 @@ class EdlCut(QtCore.QObject):
     def update_sg_shots(self):
         """
         Update shots in Shotgun
-        - Create them if needed, and attach them to their respective cut entry
-        - Change their status otherwise
+        - Create them if needed
+        - Change their status
+        - Update cut in, cut out values
         """
         self._logger.info("Updating shots ...")
         sg_batch_data = []
@@ -556,16 +568,16 @@ class EdlCut(QtCore.QObject):
                 if self._use_smart_fields:
                     data.update({
                         "smart_head_in" : cut_diff.default_head_in,
-                        "smart_tail_out" : cut_diff.default_tail_out,
                         "smart_cut_in" : min_cut_in,
                         "smart_cut_out" : max_cut_out,
+                        "smart_tail_out" : cut_diff.default_tail_out,
                     })
                 else:
                     data.update({
                         "sg_head_in" : cut_diff.default_head_in,
-                        "sg_tail_out" : cut_diff.default_tail_out,
                         "sg_cut_in" : min_cut_in,
                         "sg_cut_out" : max_cut_out,
+                        "sg_tail_out" : cut_diff.default_tail_out,
                     })
                 sg_batch_data.append({
                     "request_type" : "create",
@@ -658,7 +670,7 @@ class EdlCut(QtCore.QObject):
         for shot_name, items in self._summary.iteritems():
             for cut_diff in items:
                 edit = cut_diff.edit
-                if not edit.get_sg_version():
+                if edit and not edit.get_sg_version() and edit.get_version_name():
                     sg_batch_data.append({
                         "request_type" : "create",
                         "entity_type" : "Version",
