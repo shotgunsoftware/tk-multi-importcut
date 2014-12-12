@@ -108,3 +108,8 @@ QAbstractButton#repeated_radio_button:checked {
 QLabel#shot_title_label, #version_title_label, #head_title_label, #cut_title_label, #tail_title_label {
     color: #2C93E2
 }
+/* Success window */
+QFrame#success_frame {
+    color: #2C93E2;
+    border: 1px solid #555555;
+}

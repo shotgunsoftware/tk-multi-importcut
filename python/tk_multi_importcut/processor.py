@@ -83,6 +83,24 @@ class Processor(QtCore.QThread):
         if self._edl_cut and self._edl_cut._sg_entity:
             return self._edl_cut._sg_entity
         return None
+    @property
+    def sg_new_cut(self):
+        """
+        Return the cut created in Shotgun
+        """
+        if self._edl_cut:
+            return self._edl_cut._sg_new_cut
+        return None
+    @property
+    def sg_new_cut_url(self):
+        sg_new_cut = self.sg_new_cut
+        if not sg_new_cut:
+            return None
+        return "%s/detail/%s/%s" % (
+            self._edl_cut._app.shotgun.base_url,
+            sg_new_cut["type"],
+            sg_new_cut["id"],
+        )
 
     def run(self):
         """
@@ -131,6 +149,7 @@ class EdlCut(QtCore.QObject):
         self._sg = self._app.shotgun
         self._ctx = self._app.context
         self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
+        self._sg_new_cut = None
 
     def process_edit(self, edit, logger):
         """
@@ -164,6 +183,7 @@ class EdlCut(QtCore.QObject):
         self._edl = None
         self._sg_entity = None
         self._summary = None
+        self._sg_new_cut = None
         self._logger.info("Session discarded...")
 
     @QtCore.Slot(str)
@@ -436,15 +456,15 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Importing cut %s" % title)
         self.got_busy.emit(4)
         try:
-            sg_cut = self.create_sg_cut(title)
+            self._sg_new_cut = self.create_sg_cut(title)
             self.update_sg_shots()
             self.progress_changed.emit(1)
             self.update_sg_versions()
             self.progress_changed.emit(2)
-            self.create_sg_cut_items(sg_cut)
+            self.create_sg_cut_items(self._sg_new_cut)
             self.progress_changed.emit(3)
             self._logger.info("Creating note ...")
-            self.create_note(title, sender, to, description, sg_links=[sg_cut])
+            self.create_note(title, sender, to, description, sg_links=[self._sg_new_cut])
             self.progress_changed.emit(4)
         except Exception, e :
             self._logger.exception(str(e))

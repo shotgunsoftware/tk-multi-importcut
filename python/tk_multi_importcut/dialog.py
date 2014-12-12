@@ -115,6 +115,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
+        self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
 
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
         self.ui.progress_bar.hide()
@@ -255,6 +256,9 @@ class AppDialog(QtGui.QWidget):
             self.ui.submit_button.show()
 
         if step == 3:
+            self.ui.success_label.setText(
+                "<big>Cut %s successfully imported</big>" % self._processor.sg_new_cut["code"]
+            )
             self.ui.back_button.hide()
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
@@ -446,7 +450,13 @@ class AppDialog(QtGui.QWidget):
         mail_url = QtCore.QUrl("mailto:?subject=%s&body=%s" % (subject, body))
         self._logger.debug("Opening up %s" % mail_url )
         QtGui.QDesktopServices.openUrl(mail_url)
-    
+
+    @QtCore.Slot()
+    def show_in_shotgun(self):
+        sg_url = QtCore.QUrl(self._processor.sg_new_cut_url)
+        QtGui.QDesktopServices.openUrl(sg_url)
+        self.close()
+
     def generate_report(self):
 #        Could be used to generate a report ?
 #
