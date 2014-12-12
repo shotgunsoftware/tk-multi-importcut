@@ -61,8 +61,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>887</width>
+            <height>535</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="sequence_grid" rowstretch="0">
@@ -229,8 +229,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>59</width>
-            <height>16</height>
+            <width>863</width>
+            <height>463</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">
