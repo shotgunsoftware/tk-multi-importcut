@@ -434,13 +434,21 @@ class CutDiff(QtCore.QObject):
             self._cut_changes_reasons.append("Cut order changed from %d to %d" % (self.cut_order, self.new_cut_order))
 
         # Check if some rescan is needed
-        if self.new_head_in < self.head_in or self.new_head_duration < 0:
+        if self.new_head_in < self.head_in:
             self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Head extended %d frs" % (self.cut_in-self.new_cut_in))
+            self._cut_changes_reasons.append("Head extended %d frs" % (self.head_in-self.new_head_in))
 
-        if self.new_tail_out > self.tail_out or self.new_tail_duration < 0:
+        if self.new_head_duration < 0:
             self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Tail extended %d frs" % (self.new_cut_out-self.cut_out))
+            self._cut_changes_reasons.append("Head extended %d frs" % (-self.new_head_duration+self.head_duration))
+
+        if self.new_tail_out > self.tail_out:
+            self._diff_type = _DIFF_TYPES.RESCAN
+            self._cut_changes_reasons.append("Tail extended %d frs" % (self.new_tail_out-self.tail_out))
+
+        if self.new_tail_duration < 0:
+            self._diff_type = _DIFF_TYPES.RESCAN
+            self._cut_changes_reasons.append("Tail extended %d frs" % (-self.new_tail_duration+self.tail_duration))
 
         # Cut changes which does not imply a rescan
         if self._diff_type != _DIFF_TYPES.RESCAN:
@@ -448,16 +456,16 @@ class CutDiff(QtCore.QObject):
                 self._diff_type = _DIFF_TYPES.CUT_CHANGE
                 diff = self.new_head_duration-self.head_duration
                 if diff > 0:
-                    self._cut_changes_reasons.append("Head extended %d frs" % diff)
+                    self._cut_changes_reasons.append("Head trimmed %d frs" % diff)
                 else:
-                    self._cut_changes_reasons.append("Head trimmed %d frs" % -diff)
+                    self._cut_changes_reasons.append("Head extended %d frs" % -diff)
             if self.new_tail_duration != self.tail_duration:
                 self._diff_type = _DIFF_TYPES.CUT_CHANGE
                 diff = self.new_tail_duration-self.tail_duration
                 if diff > 0:
-                    self._cut_changes_reasons.append("Tail extended %d frs" % diff)
+                    self._cut_changes_reasons.append("Tail trimmed %d frs" % diff)
                 else:
-                    self._cut_changes_reasons.append("Tail trimmed %d frs" % -diff)
+                    self._cut_changes_reasons.append("Tail extended %d frs" % -diff)
     
     def set_repeated(self, val):
         """

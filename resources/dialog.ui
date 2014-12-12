@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>913</width>
+    <width>1105</width>
     <height>667</height>
    </rect>
   </property>
@@ -56,7 +56,7 @@ EDL</string>
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="scrollAreaContent">
+         <widget class="QWidget" name="sequence_area">
           <property name="geometry">
            <rect>
             <x>0</x>
@@ -64,6 +64,9 @@ EDL</string>
             <width>887</width>
             <height>535</height>
            </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
           </property>
           <layout class="QGridLayout" name="sequence_grid" rowstretch="0">
            <property name="margin">

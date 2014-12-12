@@ -170,17 +170,17 @@ class CutDiffCard(QtGui.QFrame):
         are equal, coloring them otherwise
         """
         if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
-            widget.setText("<font color=%s>%s</font>" % (_COLORS["sg_red"], new_value))
+            widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["sg_red"], new_value))
         elif self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
-            widget.setText("<font color=%s>(%s)</font>" % (_COLORS["lgrey"], old_value))
+            widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["lgrey"], old_value))
         else:
             if new_value != old_value:
-                widget.setText("<font color=%s>%s</font> <font color=%s>(%s)</font>" % (
+                widget.setText("<big><font color=%s>%s</font> <font color=%s>(%s)</font></big>" % (
                     _COLORS["sg_red"], new_value,
                     _COLORS["lgrey"], old_value
                 ))
             else:
-                widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
+                widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["lgrey"], new_value))
 
     def set_tool_tip(self):
         """
