@@ -171,7 +171,10 @@ class EdlCut(QtCore.QObject):
         # which is not the case for other apps like tk-multi-importscan
         # where the version name is set with locators and clip name is used
         # for the source clip ...
-        edit.get_version_name = lambda : edit._clip_name.split(".")[0] # Strip extension, if any
+        if edit._clip_name:
+            edit.get_version_name = lambda : edit._clip_name.split(".")[0] # Strip extension, if any
+        else:
+            edit.get_version_name = lambda : None
         if not edit.get_shot_name() and not edit.get_version_name():
             raise RuntimeError("Couldn't extract a shot name nor a version name, one of them is required")
 
