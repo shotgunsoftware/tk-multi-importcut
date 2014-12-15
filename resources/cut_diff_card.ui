@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>745</width>
-    <height>94</height>
+    <width>764</width>
+    <height>101</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
   <property name="frameShadow">
    <enum>QFrame::Raised</enum>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="9,10">
+  <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,2">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -174,7 +174,7 @@ border-right: 1px solid black;</string>
           <enum>QFrame::NoFrame</enum>
          </property>
          <property name="text">
-          <string>&lt;small&gt;TAIL&lt;/small&gt;</string>
+          <string>&lt;b&gt;TAIL&lt;/b&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -193,7 +193,7 @@ border-left: 1px solid black;
           <enum>QFrame::NoFrame</enum>
          </property>
          <property name="text">
-          <string>&lt;small&gt;HEAD&lt;/small&gt;</string>
+          <string>&lt;b&gt;HEAD&lt;/b&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -242,7 +242,7 @@ border-left: 1px solid black;
           <enum>QFrame::NoFrame</enum>
          </property>
          <property name="text">
-          <string>&lt;small&gt;CUT&lt;/small&gt;</string>
+          <string>&lt;b&gt;CUT&lt;/b&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

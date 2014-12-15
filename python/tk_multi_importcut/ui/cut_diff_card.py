@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_CutDiffCard(object):
     def setupUi(self, CutDiffCard):
         CutDiffCard.setObjectName("CutDiffCard")
-        CutDiffCard.resize(745, 94)
+        CutDiffCard.resize(764, 101)
         CutDiffCard.setFrameShape(QtGui.QFrame.StyledPanel)
         CutDiffCard.setFrameShadow(QtGui.QFrame.Raised)
         self.horizontalLayout_2 = QtGui.QHBoxLayout(CutDiffCard)
@@ -175,8 +175,8 @@ class Ui_CutDiffCard(object):
         self.right_layout.addLayout(self.gridLayout)
         self.right_layout.setStretch(0, 2)
         self.horizontalLayout_2.addLayout(self.right_layout)
-        self.horizontalLayout_2.setStretch(0, 9)
-        self.horizontalLayout_2.setStretch(1, 10)
+        self.horizontalLayout_2.setStretch(0, 3)
+        self.horizontalLayout_2.setStretch(1, 2)
 
         self.retranslateUi(CutDiffCard)
         QtCore.QMetaObject.connectSlotsByName(CutDiffCard)
@@ -189,10 +189,10 @@ class Ui_CutDiffCard(object):
         self.version_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "VERSION", None, QtGui.QApplication.UnicodeUTF8))
         self.shot_name_label.setText(QtGui.QApplication.translate("CutDiffCard", "sh_001_001", None, QtGui.QApplication.UnicodeUTF8))
         self.status_label.setText(QtGui.QApplication.translate("CutDiffCard", "New", None, QtGui.QApplication.UnicodeUTF8))
-        self.tail_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "<small>TAIL</small>", None, QtGui.QApplication.UnicodeUTF8))
-        self.head_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "<small>HEAD</small>", None, QtGui.QApplication.UnicodeUTF8))
+        self.tail_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "<b>TAIL</b>", None, QtGui.QApplication.UnicodeUTF8))
+        self.head_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "<b>HEAD</b>", None, QtGui.QApplication.UnicodeUTF8))
         self.cut_out_label.setText(QtGui.QApplication.translate("CutDiffCard", "1028", None, QtGui.QApplication.UnicodeUTF8))
-        self.cut_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "<small>CUT</small>", None, QtGui.QApplication.UnicodeUTF8))
+        self.cut_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "<b>CUT</b>", None, QtGui.QApplication.UnicodeUTF8))
         self.cut_in_label.setText(QtGui.QApplication.translate("CutDiffCard", "1009", None, QtGui.QApplication.UnicodeUTF8))
         self.shot_head_in_label.setText(QtGui.QApplication.translate("CutDiffCard", "1001", None, QtGui.QApplication.UnicodeUTF8))
         self.shot_tail_out_label.setText(QtGui.QApplication.translate("CutDiffCard", "1036", None, QtGui.QApplication.UnicodeUTF8))
