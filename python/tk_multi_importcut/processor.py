@@ -712,7 +712,7 @@ class EdlCut(QtCore.QObject):
             for shot_name, items in self._summary.iteritems():
                 for cut_diff in items:
                     edit = cut_diff.edit
-                    if not edit.get_sg_version():
+                    if edit and not edit.get_sg_version():
                         # Creation order should match
                         cut_diff.set_sg_version(res.pop(0))
 
