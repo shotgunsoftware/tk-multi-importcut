@@ -338,18 +338,36 @@ class EdlCut(QtCore.QObject):
                         "sg_version",
                         "sg_version.Version.code",
                         "sg_version.Version.entity",
-                        "sg_version.Version.entity.Shot.code",
                         "sg_version.Version.image",
                     ]
                 )
                 # Consolidate versions retrieved from cut items
-                # We match fields that we retrieve with a sg.find("Version", ... )
+                # Because of a bug in the Shotgun API, we can't use two levels of
+                # redirection, with "sg_version.Version.entity.Shot.code",
+                # to retrieve the Shot linked to the Version, a CRUD
+                # error will happen if one of the CutItem does not have version linked
+                sg_cut_item_version_ids = [ x["sg_version"]["id"] for x in sg_cut_items if x["sg_version"]]
+                sg_cut_item_versions = {}
+                if sg_cut_item_version_ids:
+                    sg_cut_item_versions_list = self._sg.find(
+                        "Version",
+                        [["id", "in", sg_cut_item_version_ids]],
+                        ["entity", "entity.Shot.code"],
+                    )
+                    # Index results with their SG id
+                    for item_version in sg_cut_item_versions_list:
+                        sg_cut_item_versions[item_version["id"]] = item_version
+                # We match fields that we would have retrieved with a sg.find("Version", ... )
                 for sg_cut_item in sg_cut_items:
                     if sg_cut_item["sg_version"]:
                         sg_cut_item["sg_version"]["code"] = sg_cut_item["sg_version.Version.code"]
                         sg_cut_item["sg_version"]["entity"] = sg_cut_item["sg_version.Version.entity"]
-                        sg_cut_item["sg_version"]["entity.Shot.code"] = sg_cut_item["sg_version.Version.entity.Shot.code"]
                         sg_cut_item["sg_version"]["image"] = sg_cut_item["sg_version.Version.image"]
+                        item_version = sg_cut_item_versions.get(sg_cut_item["sg_version"]["id"])
+                        if item_version:
+                            sg_cut_item["sg_version"]["entity.Shot.code"] = item_version["entity.Shot.code"]
+                        else:
+                            sg_cut_item["sg_version"]["entity.Shot.code"] = None
             # Retrieve shots linked to the sequence
             sg_shots = self._sg.find(
                 "Shot",
