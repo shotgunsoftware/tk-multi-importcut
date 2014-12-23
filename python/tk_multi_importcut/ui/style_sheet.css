@@ -40,7 +40,7 @@ QLabel#drop_area_label {
     background-color: #2B2B2B;
 }
 
-QFrame#SequenceCard, #CutDiffCard {
+QFrame#SequenceCard, #CutCard, #CutDiffCard {
     border: 2px solid black;
 }
 

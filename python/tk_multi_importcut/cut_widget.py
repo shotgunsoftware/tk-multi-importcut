@@ -103,7 +103,7 @@ class CutCard(QtGui.QFrame):
     @QtCore.Slot()
     def show_selected(self):
         """
-        Gently ask to show cut summary for the attached Shotgun sequence
+        Gently ask to show cut summary for the attached Shotgun sequence/cut
         """
         self.highlight_selected.emit(self)
         self.show_sequence.emit(self._sg_cut)

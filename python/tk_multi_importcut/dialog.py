@@ -253,6 +253,9 @@ class AppDialog(QtGui.QWidget):
             self.ui.reset_button.show()
             self.ui.back_button.show()
 
+        if step < 2:
+            self.clear_cuts_view()
+
         if step < 3:
             self.clear_cut_summary_view()
             self.ui.email_button.hide()
@@ -450,6 +453,17 @@ class AppDialog(QtGui.QWidget):
             widget = witem.widget()
             widget.close()
         # print self.ui.sequence_grid.count()
+
+    def clear_cuts_view(self):
+        """
+        Reset the page displaying available cuts
+        """
+        self._selected_card_cut = None
+        count = self.ui.cuts_grid.count() -1 # We have stretcher
+        for i in range(count-1, -1, -1):
+            witem = self.ui.cuts_grid.takeAt(i)
+            widget = witem.widget()
+            widget.close()
 
     def clear_cut_summary_view(self):
         """
