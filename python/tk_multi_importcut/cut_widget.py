@@ -106,7 +106,7 @@ class CutCard(QtGui.QFrame):
         Gently ask to show cut summary for the attached Shotgun sequence/cut
         """
         self.highlight_selected.emit(self)
-        self.show_sequence.emit(self._sg_cut)
+        self.show_cut.emit(self._sg_cut)
         self.ui.select_button.setVisible(False)
 
     @QtCore.Slot(str)

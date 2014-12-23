@@ -54,7 +54,7 @@ class AppDialog(QtGui.QWidget):
     new_edl = QtCore.Signal(str)
     get_sequences = QtCore.Signal()
     show_cuts_for_sequence = QtCore.Signal(dict)
-    show_cut_diff_for_sequence = QtCore.Signal(dict)
+    show_cut_diff = QtCore.Signal(dict)
     def __init__(self):
         """
         Constructor
@@ -90,7 +90,7 @@ class AppDialog(QtGui.QWidget):
         self.new_edl.connect(self._processor.new_edl)
         self.get_sequences.connect(self._processor.retrieve_sequences)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
-        self.show_cut_diff_for_sequence.connect(self._processor.show_cut_diff_for_sequence)
+        self.show_cut_diff.connect(self._processor.show_cut_diff)
         self._processor.step_done.connect(self.step_done)
         self._processor.new_sg_sequence.connect(self.new_sg_sequence)
         self._processor.new_sg_cut.connect(self.new_sg_cut)
@@ -348,12 +348,12 @@ class AppDialog(QtGui.QWidget):
         self._logger.debug("Selected %s" % self._selected_card_cut)
 
     @QtCore.Slot(dict)
-    def show_cut(self, sg_entity):
+    def show_cut(self, sg_cut):
         """
         Called when cut changes needs to be shown for a particular sequence/cut
         """
-        self._logger.info("Retrieving cut information for %s" % sg_entity["code"] )
-        self.show_cut_diff_for_sequence.emit(sg_entity)
+        self._logger.info("Retrieving cut information for %s" % sg_cut["code"] )
+        self.show_cut_diff.emit(sg_cut)
         self.step_done(2)
 
     @QtCore.Slot(CutDiff)

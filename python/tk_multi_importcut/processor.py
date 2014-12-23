@@ -43,7 +43,7 @@ class Processor(QtCore.QThread):
     new_sg_cut              = QtCore.Signal(dict)
     retrieve_sequences      = QtCore.Signal()
     retrieve_cuts           = QtCore.Signal(dict)
-    show_cut_diff_for_sequence   = QtCore.Signal(dict)
+    show_cut_diff           = QtCore.Signal(dict)
     new_cut_diff            = QtCore.Signal(CutDiff)
     got_busy                = QtCore.Signal(int)
     got_idle                = QtCore.Signal()
@@ -117,7 +117,7 @@ class Processor(QtCore.QThread):
         self.reset.connect(self._edl_cut.reset)
         self.retrieve_sequences.connect(self._edl_cut.retrieve_sequences)
         self.retrieve_cuts.connect(self._edl_cut.retrieve_cuts)
-        self.show_cut_diff_for_sequence.connect(self._edl_cut.show_cut_diff_for_sequence)
+        self.show_cut_diff.connect(self._edl_cut.show_cut_diff)
         self.import_cut.connect(self._edl_cut.do_cut_import)
         # Results we send
         self._edl_cut.step_done.connect(self.step_done)
@@ -338,7 +338,7 @@ class EdlCut(QtCore.QObject):
             self.got_idle.emit()
 
     @QtCore.Slot(dict)
-    def show_cut_diff_for_sequence(self, sg_entity):
+    def show_cut_diff(self, sg_cut):
         """
         Build a cut summary for the given Shotgun entity ( Sequence )
         - Retrieve all shots linked to the Shotgun entity
@@ -348,20 +348,22 @@ class EdlCut(QtCore.QObject):
         :param sg_entity: A Shotgun entity disctionary retrieved from Shotgun, 
                           typically a Sequence
         """
-        self._logger.info("Retrieving cut summary for %s" % ( sg_entity))
-        self._sg_entity = sg_entity
+        self._logger.info("Retrieving cut summary for %s" % ( self._sg_entity))
         self.got_busy.emit(None)
         self._summary = CutSummary()
         self._summary.new_cut_diff.connect(self.new_cut_diff)
         try:
-            # Retrieve cuts linked to the sequence, pick up the latest or approved one
-            # Later, the UI will allow selecting it
-            sg_cut = self._sg.find_one(
-                "Cut",
-                [["sg_sequence", "is", sg_entity]],
-                [],
-                order=[{"field_name" : "id", "direction" : "desc"}]
-            )
+            # Handle the case where we don't have any cut specified
+            # Grab the latest one ...
+            if not sg_cut:
+                # Retrieve cuts linked to the sequence, pick up the latest or approved one
+                # Later, the UI will allow selecting it
+                sg_cut = self._sg.find_one(
+                    "Cut",
+                    [["sg_sequence", "is", self._sg_entity]],
+                    [],
+                    order=[{"field_name" : "id", "direction" : "desc"}]
+                )
             sg_cut_items = []
             if sg_cut:
                 sg_cut_item_entity = self._app.get_setting("sg_cut_item_entity")
@@ -415,7 +417,7 @@ class EdlCut(QtCore.QObject):
             # Retrieve shots linked to the sequence
             sg_shots = self._sg.find(
                 "Shot",
-                [["sg_sequence", "is", sg_entity]],
+                [["sg_sequence", "is", self._sg_entity]],
                 [
                     "code",
                     "sg_status_list",
