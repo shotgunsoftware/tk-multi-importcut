@@ -96,6 +96,29 @@ class PostInstall(Hook):
             properties = { "valid_values" : valid_values}
             sg.schema_field_update("Shot", "sg_status_list", properties)
 
+        # Make sure we have a sg_status_list field on Cut
+        field_name = "sg_status_list"
+        schema = sg.schema_field_read("Cut")
+        if field_name.lower() not in schema:
+            display_name = ' '.join( field_name.split('_')[1:]) # strip the sg_ part
+            properties = {
+                "valid_values" : [
+                    "apr", "fin", "new", "omt", "hld", "rdy",
+                ],
+                "default_value" : "new",
+            }
+            res = sg.schema_field_create(
+                "Cut", "status_list", display_name, properties
+            )
+            # Check that we got the field name we expected
+            if res != field_name.lower():
+                raise RuntimeError("Wanted to create a field named %s, and created %s instead" % (
+                    field_name, res)
+                )
+            sg.schema_field_update("Cut", field_name, {
+                "name" : "Status",
+            })
+
         app.log_debug("SG site correctly setup !")
 
 #        # Add a "Deliveries" field to Version
