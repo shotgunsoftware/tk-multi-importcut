@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="tk_multi_importcut">
+    <file>clear_search.png</file>
+    <file>clear_search_hover.png</file>
+    <file>search.png</file>
     <file>sg_sequence_thumbnail.png</file>
     <file>sg_shot_thumbnail.png</file>
     <file>sg_version_thumbnail.png</file>

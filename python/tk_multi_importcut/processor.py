@@ -320,8 +320,18 @@ class EdlCut(QtCore.QObject):
             sg_cuts = self._sg.find(
                 "Cut",
                 [["sg_sequence", "is", sg_entity]],
-                [ "code", "id", "sg_status_list", "image", "description"],
-                order=[{"field_name" : "code", "direction" : "asc"}]
+                [
+                    "code",
+                    "id",
+                    "sg_status_list",
+                    "image",
+                    "description",
+                    "created_by",
+                    "updated_by",
+                    "updated_at",
+                    "created_at",
+                ],
+                order=[{"field_name" : "id", "direction" : "desc"}]
             )
             if not sg_cuts:
                 raise RuntimeWarning("Couldn't retrieve any Sequence for project %s" % self._ctx.project["name"])

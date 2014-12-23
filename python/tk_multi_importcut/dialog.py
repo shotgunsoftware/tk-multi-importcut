@@ -22,6 +22,9 @@ widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
 # Rename the drop area label to the name we chose in Designer when promoting our label
 DropAreaLabel = widgets.drop_area_label.DropAreaLabel
 AnimatedStackedWidget = widgets.animated_stacked_widget.AnimatedStackedWidget
+from .search_widget import SearchWidget
+
+# Custom widgets must be imported before importing the UI
 from .ui.dialog import Ui_Dialog
 
 from .processor import Processor
@@ -125,7 +128,8 @@ class AppDialog(QtGui.QWidget):
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
         self.ui.progress_bar.hide()
 
-
+        self.build_cuts_sort_menu()
+    
     @QtCore.Slot()
     def do_reset(self):
         """
@@ -579,6 +583,20 @@ class AppDialog(QtGui.QWidget):
         self._processor.wait()
         # Let the close happen
         evt.accept()
+
+    def build_cuts_sort_menu(self):
+        self._cuts_sort_menu = QtGui.QMenu()
+        self.ui.cuts_sort_button.setMenu(self._cuts_sort_menu)
+        action_group =  QtGui.QActionGroup(self)
+        for s in ["Sort by Date", "Sort by Name", "Sort by Status"]:
+            sort_action = QtGui.QAction(
+                s,
+                action_group,)
+            sort_action.setCheckable(True)
+            self._cuts_sort_menu.addAction(sort_action)
+        action = action_group.actions()[0]
+        action.setChecked(True)
+        self.ui.cuts_sort_button.setText(action.text())
 
     def set_logger(self, level=logging.INFO):
         """

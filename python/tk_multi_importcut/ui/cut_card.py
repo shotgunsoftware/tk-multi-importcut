@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_CutCard(object):
     def setupUi(self, CutCard):
         CutCard.setObjectName("CutCard")
-        CutCard.resize(358, 70)
+        CutCard.resize(441, 100)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -47,7 +47,17 @@ class Ui_CutCard(object):
         self.title_label = QtGui.QLabel(CutCard)
         self.title_label.setObjectName("title_label")
         self.verticalLayout_2.addWidget(self.title_label)
+        self.date_label = QtGui.QLabel(CutCard)
+        self.date_label.setWordWrap(True)
+        self.date_label.setObjectName("date_label")
+        self.verticalLayout_2.addWidget(self.date_label)
         self.status_label = QtGui.QLabel(CutCard)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.status_label.sizePolicy().hasHeightForWidth())
+        self.status_label.setSizePolicy(sizePolicy)
+        self.status_label.setWordWrap(True)
         self.status_label.setObjectName("status_label")
         self.verticalLayout_2.addWidget(self.status_label)
         self.details_label = QtGui.QLabel(CutCard)
@@ -79,6 +89,7 @@ class Ui_CutCard(object):
     def retranslateUi(self, CutCard):
         CutCard.setWindowTitle(QtGui.QApplication.translate("CutCard", "Frame", None, QtGui.QApplication.UnicodeUTF8))
         self.title_label.setText(QtGui.QApplication.translate("CutCard", "<big><b>Name</b></big>", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_label.setText(QtGui.QApplication.translate("CutCard", "12/23/14 02:38 PM", None, QtGui.QApplication.UnicodeUTF8))
         self.status_label.setText(QtGui.QApplication.translate("CutCard", "Status", None, QtGui.QApplication.UnicodeUTF8))
         self.details_label.setText(QtGui.QApplication.translate("CutCard", "<small>details</small>", None, QtGui.QApplication.UnicodeUTF8))
 

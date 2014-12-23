@@ -15,6 +15,7 @@ import tempfile
 from sgtk.platform.qt import QtCore, QtGui
 from .downloader import DownloadRunner
 from .logger import get_logger
+from datetime import datetime
 
 from .ui.cut_card import Ui_CutCard
 # Some standard colors
@@ -36,7 +37,9 @@ _STYLES = {
 _STATUS_COLORS = {
     "omt" : _COLORS["sg_red"],
     "act" : _COLORS["green"],
+    "apr" : _COLORS["green"],
     "ip" : _COLORS["sg_blue"],
+    "new" : _COLORS["sg_blue"],
     "hld" : _COLORS["lgrey"],
     "fin" : _COLORS["dgrey"],
 }
@@ -71,7 +74,12 @@ class CutCard(QtGui.QFrame):
             )
         else:
             self.ui.status_label.setText(sg_cut["sg_status_list"])
-        self.ui.details_label.setText("<small>%s</small>" % sg_cut["description"])
+
+        self.ui.date_label.setText(sg_cut["created_at"].strftime("%m/%d/%y %I:%M %p"))
+        #self.ui.details_label.setText("<small>%s</small>" % sg_cut["description"])
+        if sg_cut["description"]:
+            self.setToolTip(sg_cut["description"])
+        self.ui.details_label.setVisible(False)
         self.ui.select_button.setVisible(False)
         self.ui.select_button.clicked.connect(self.show_selected)
         self.set_thumbnail(":/tk_multi_importcut/sg_sequence_thumbnail.png")
