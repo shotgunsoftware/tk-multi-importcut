@@ -39,6 +39,7 @@ echo "building user interfaces..."
 build_ui dialog
 # add any additional .ui files you want converted here!
 build_ui sequence_card
+build_ui cut_card
 build_ui cut_diff_card
 build_ui submit_dialog
 

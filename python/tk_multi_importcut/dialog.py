@@ -27,6 +27,7 @@ from .ui.dialog import Ui_Dialog
 from .processor import Processor
 from .logger import BundleLogHandler, get_logger
 from .sequence_widget import SequenceCard
+from .cut_widget import CutCard
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_diff_widget import CutDiffCard
 from .submit_dialog import SubmitDialog
@@ -52,7 +53,8 @@ class AppDialog(QtGui.QWidget):
     """
     new_edl = QtCore.Signal(str)
     get_sequences = QtCore.Signal()
-    show_cut_for_sequence = QtCore.Signal(dict)
+    show_cuts_for_sequence = QtCore.Signal(dict)
+    show_cut_diff_for_sequence = QtCore.Signal(dict)
     def __init__(self):
         """
         Constructor
@@ -72,6 +74,7 @@ class AppDialog(QtGui.QWidget):
         self._cuts_display_mode = -1
         self._cuts_display_repeated = False
         self._selected_card_sequence = None
+        self._selected_card_cut = None
 
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
@@ -86,9 +89,11 @@ class AppDialog(QtGui.QWidget):
         self._processor = Processor()
         self.new_edl.connect(self._processor.new_edl)
         self.get_sequences.connect(self._processor.retrieve_sequences)
-        self.show_cut_for_sequence.connect(self._processor.show_cut_for_sequence)
+        self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
+        self.show_cut_diff_for_sequence.connect(self._processor.show_cut_diff_for_sequence)
         self._processor.step_done.connect(self.step_done)
         self._processor.new_sg_sequence.connect(self.new_sg_sequence)
+        self._processor.new_sg_cut.connect(self.new_sg_cut)
         self._processor.new_cut_diff.connect(self.new_cut_diff)
         self._processor.got_busy.connect(self.set_busy)
         self._processor.got_idle.connect(self.set_idle)
@@ -237,8 +242,9 @@ class AppDialog(QtGui.QWidget):
         """
         # 0 : drag and drop
         # 1 : sequence select
-        # 2 : cut summary
-        # 3 : import completed
+        # 2 : cut select
+        # 3 : cut summary
+        # 4 : import completed
         if step < 1:
             self.ui.back_button.hide()
             self.ui.reset_button.hide()
@@ -247,7 +253,7 @@ class AppDialog(QtGui.QWidget):
             self.ui.reset_button.show()
             self.ui.back_button.show()
 
-        if step < 2:
+        if step < 3:
             self.clear_cut_summary_view()
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
@@ -255,7 +261,7 @@ class AppDialog(QtGui.QWidget):
             self.ui.email_button.show()
             self.ui.submit_button.show()
 
-        if step == 3:
+        if step == 4:
             self.ui.success_label.setText(
                 "<big>Cut %s successfully imported</big>" % self._processor.sg_new_cut["code"]
             )
@@ -299,11 +305,53 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(dict)
     def show_sequence(self, sg_entity):
         """
-        Called when cut changes needs to be shown for a particular sequence
+        Called when cuts needs to be shown for a particular sequence
+        """
+        self._logger.info("Retrieving cuts for %s" % sg_entity["code"] )
+        self.show_cuts_for_sequence.emit(sg_entity)
+        self.step_done(1)
+
+    @QtCore.Slot(dict)
+    def new_sg_cut(self, sg_entity):
+        """
+        Called when a new cut card widget needs to be added to the list
+        of retrieved cuts
+        """
+        i = self.ui.cuts_grid.count() -1 # We have a stretcher
+        # Remove it
+        spacer = self.ui.cuts_grid.takeAt(i)
+        row = i / 2
+        column = i % 2
+        self._logger.debug("Adding %s at %d %d %d" % ( sg_entity, i, row, column))
+        widget = CutCard(None, sg_entity)
+        widget.highlight_selected.connect(self.cut_selected)
+        widget.show_cut.connect(self.show_cut)
+        self.ui.cuts_grid.addWidget(widget, row, column, )
+        self.ui.cuts_grid.setRowStretch(row, 0)
+        self.ui.cuts_grid.addItem(spacer, row+1, 0, colSpan=2 )
+        self.ui.cuts_grid.setRowStretch(row+1, 1)
+
+    @QtCore.Slot(QtGui.QWidget)
+    def cut_selected(self, card):
+        """
+        Called when a sequence card is selected, ensure only one is selected at
+        a time
+        """
+        if self._selected_card_cut:
+            self._selected_card_cut.unselect()
+            self._logger.debug("Unselected %s" % self._selected_card_cut)
+        self._selected_card_cut = card
+        self._selected_card_cut.select()
+        self._logger.debug("Selected %s" % self._selected_card_cut)
+
+    @QtCore.Slot(dict)
+    def show_cut(self, sg_entity):
+        """
+        Called when cut changes needs to be shown for a particular sequence/cut
         """
         self._logger.info("Retrieving cut information for %s" % sg_entity["code"] )
-        self.show_cut_for_sequence.emit(sg_entity)
-        self.step_done(1)
+        self.show_cut_diff_for_sequence.emit(sg_entity)
+        self.step_done(2)
 
     @QtCore.Slot(CutDiff)
     def new_cut_diff(self, cut_diff):

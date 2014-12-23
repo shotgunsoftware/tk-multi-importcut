@@ -40,8 +40,10 @@ class Processor(QtCore.QThread):
     set_busy                = QtCore.Signal(bool)
     step_done               = QtCore.Signal(int)
     new_sg_sequence         = QtCore.Signal(dict)
+    new_sg_cut              = QtCore.Signal(dict)
     retrieve_sequences      = QtCore.Signal()
-    show_cut_for_sequence   = QtCore.Signal(dict)
+    retrieve_cuts           = QtCore.Signal(dict)
+    show_cut_diff_for_sequence   = QtCore.Signal(dict)
     new_cut_diff            = QtCore.Signal(CutDiff)
     got_busy                = QtCore.Signal(int)
     got_idle                = QtCore.Signal()
@@ -114,11 +116,13 @@ class Processor(QtCore.QThread):
         self.new_edl.connect(self._edl_cut.load_edl)
         self.reset.connect(self._edl_cut.reset)
         self.retrieve_sequences.connect(self._edl_cut.retrieve_sequences)
-        self.show_cut_for_sequence.connect(self._edl_cut.show_cut_for_sequence)
+        self.retrieve_cuts.connect(self._edl_cut.retrieve_cuts)
+        self.show_cut_diff_for_sequence.connect(self._edl_cut.show_cut_diff_for_sequence)
         self.import_cut.connect(self._edl_cut.do_cut_import)
         # Results we send
         self._edl_cut.step_done.connect(self.step_done)
         self._edl_cut.new_sg_sequence.connect(self.new_sg_sequence)
+        self._edl_cut.new_sg_cut.connect(self.new_sg_cut)
         self._edl_cut.new_cut_diff.connect(self.new_cut_diff)
         self._edl_cut.got_busy.connect(self.got_busy)
         self._edl_cut.got_idle.connect(self.got_idle)
@@ -131,6 +135,7 @@ class EdlCut(QtCore.QObject):
     """
     step_done = QtCore.Signal(int)
     new_sg_sequence = QtCore.Signal(dict)
+    new_sg_cut = QtCore.Signal(dict)
     new_cut_diff = QtCore.Signal(CutDiff)
     got_busy = QtCore.Signal(int)
     got_idle = QtCore.Signal()
@@ -286,6 +291,8 @@ class EdlCut(QtCore.QObject):
             for sg_sequence in sg_sequences:
                 if sg_sequence["sg_status_list"] in status_dict:
                     sg_sequence["_display_status"] = status_dict[sg_sequence["sg_status_list"]]
+                else:
+                    sg_sequence["_display_status"] = sg_sequence["sg_status_list"]
                 self.new_sg_sequence.emit(sg_sequence)
             self._logger.info("Retrieved %d Sequences." % len(sg_sequences))
         except Exception, e :
@@ -294,7 +301,44 @@ class EdlCut(QtCore.QObject):
             self.got_idle.emit()
 
     @QtCore.Slot(dict)
-    def show_cut_for_sequence(self, sg_entity):
+    def retrieve_cuts(self, sg_entity):
+        """
+        Retrieve all sequences for the current project
+        """
+        self._sg_entity = sg_entity
+        # Retrieve display names and colors for statuses
+        sg_statuses = self._sg.find("Status", [], ["code", "name", "icon", "bg_color"])
+        status_dict = {}
+        for sg_status in sg_statuses:
+            if sg_status["bg_color"]:
+                r, g, b = sg_status["bg_color"].split(",")
+                sg_status["_bg_hex_color"] = "#%02x%02x%02x" % (int(r), int(g), int(b))
+            status_dict[sg_status["code"]] = sg_status
+        self._logger.info("Retrieving Sequences for project %s ..." % self._ctx.project["name"])
+        self.got_busy.emit(None)
+        try:
+            sg_cuts = self._sg.find(
+                "Cut",
+                [["sg_sequence", "is", sg_entity]],
+                [ "code", "id", "sg_status_list", "image", "description"],
+                order=[{"field_name" : "code", "direction" : "asc"}]
+            )
+            if not sg_cuts:
+                raise RuntimeWarning("Couldn't retrieve any Sequence for project %s" % self._ctx.project["name"])
+            for sg_cut in sg_cuts:
+                if sg_cut["sg_status_list"] in status_dict:
+                    sg_cut["_display_status"] = status_dict[sg_cut["sg_status_list"]]
+                else:
+                    sg_cut["_display_status"] = sg_cut["sg_status_list"]
+                self.new_sg_cut.emit(sg_cut)
+            self._logger.info("Retrieved %d Cuts." % len(sg_cuts))
+        except Exception, e :
+            self._logger.exception(str(e))
+        finally:
+            self.got_idle.emit()
+
+    @QtCore.Slot(dict)
+    def show_cut_diff_for_sequence(self, sg_entity):
         """
         Build a cut summary for the given Shotgun entity ( Sequence )
         - Retrieve all shots linked to the Shotgun entity

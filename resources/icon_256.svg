@@ -14,7 +14,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.5 r10040"
-   inkscape:export-filename="/Users/steph/devs/sg/sgtk/apps/tk-multi-importscan/icon_256.png"
+   inkscape:export-filename="/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/icon_256.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    sodipodi:docname="icon_256.svg">
@@ -46,7 +46,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
