@@ -80,6 +80,8 @@ class AppDialog(QtGui.QWidget):
         self._selected_card_sequence = None
         self._selected_card_cut = None
 
+        self._no_cut_for_sequence = False
+
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
         # - A Shotgun API instance, via self._app.shotgun
@@ -239,10 +241,10 @@ class AppDialog(QtGui.QWidget):
         Go to a particular step
         """
         self.set_ui_for_step(which)
-        self.ui.stackedWidget.goto_page(which)
-
         if which == 1: # Ask the processor to retrieve sequences
             self.get_sequences.emit()
+        self.ui.stackedWidget.goto_page(which)
+
 
     @QtCore.Slot(int)
     def set_ui_for_step(self, step):
@@ -320,8 +322,15 @@ class AppDialog(QtGui.QWidget):
         Called when cuts needs to be shown for a particular sequence
         """
         self._logger.info("Retrieving cuts for %s" % sg_entity["code"] )
-        self.show_cuts_for_sequence.emit(sg_entity)
-        self.step_done(1)
+        # Check if we have a least one cut linked to this sequence
+        if self._app.shotgun.find_one("Cut", [["sg_sequence", "is", sg_entity]]) :
+            self.show_cuts_for_sequence.emit(sg_entity)
+            self._no_cut_for_sequence = False
+            self.step_done(1)
+        else:
+            self._no_cut_for_sequence = True
+            self.show_cut_diff.emit({})
+            self.step_done(2)
 
     @QtCore.Slot(dict)
     def show_cut(self, sg_cut):
