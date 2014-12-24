@@ -124,7 +124,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.repeated_radio_button.toggled.connect(self.display_repeated_cuts)
 
         self.set_ui_for_step(0)
-        self.ui.back_button.clicked.connect(self.ui.stackedWidget.prev_page)
+        self.ui.back_button.clicked.connect(self.previous_page)
         self.ui.stackedWidget.first_page_reached.connect(self.reset)
         self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
@@ -196,6 +196,7 @@ class AppDialog(QtGui.QWidget):
     def hide_tk_title_bar(self):
         return False
 
+
     def is_busy(self):
         """
         Return True if the app is busy doing something,
@@ -245,6 +246,17 @@ class AppDialog(QtGui.QWidget):
             self.get_sequences.emit()
         self.ui.stackedWidget.goto_page(which)
 
+    @QtCore.Slot()
+    def previous_page(self):
+        """
+        Go back to previous page
+        Skip the cuts view page if needed
+        """
+        current_page = self.ui.stackedWidget.currentIndex()
+        if current_page == 3 and self._no_cut_for_sequence:
+            self.ui.stackedWidget.goto_page(1)
+        else:
+            self.ui.stackedWidget.prev_page()
 
     @QtCore.Slot(int)
     def set_ui_for_step(self, step):
