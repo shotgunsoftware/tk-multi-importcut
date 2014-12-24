@@ -278,6 +278,7 @@ class AppDialog(QtGui.QWidget):
 
         if step < 2:
             self.clear_cuts_view()
+            self.ui.search_line_edit.clear()
 
         if step < 3:
             self.clear_cut_summary_view()

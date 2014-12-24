@@ -26,6 +26,7 @@ class CutsView(QtCore.QObject):
         self._grid_widget = grid_widget
         self._sort_menu_button = sort_menu_button
         self._selected_card_cut = None
+        self._action_group = None
         self._logger = get_logger()
         self.build_cuts_sort_menu()
 
@@ -125,17 +126,17 @@ class CutsView(QtCore.QObject):
         """
         self._cuts_sort_menu = QtGui.QMenu()
         self._sort_menu_button.setMenu(self._cuts_sort_menu)
-        action_group =  QtGui.QActionGroup(self)
-        action_group.triggered.connect(self.sort_changed)
+        self._action_group =  QtGui.QActionGroup(self)
+        self._action_group.triggered.connect(self.sort_changed)
         for s in _SORT_METHODS:
             sort_action = QtGui.QAction(
                 s,
-                action_group,
+                self._action_group,
             )
             sort_action.setCheckable(True)
             sort_action.setData(_SORT_METHODS.index(s))
             self._cuts_sort_menu.addAction(sort_action)
-        action = action_group.actions()[0]
+        action = self._action_group.actions()[0]
         action.setChecked(True)
         self._sort_menu_button.setText(action.text())
 
@@ -149,5 +150,8 @@ class CutsView(QtCore.QObject):
             witem = self._grid_widget.takeAt(i)
             widget = witem.widget()
             widget.close()
+        action = self._action_group.actions()[0]
+        action.setChecked(True)
+        self._sort_menu_button.setText(action.text())
 
 
