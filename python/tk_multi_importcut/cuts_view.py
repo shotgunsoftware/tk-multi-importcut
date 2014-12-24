@@ -13,6 +13,8 @@ from .logger import get_logger
 
 from .cut_widget import CutCard
 
+_SORT_METHODS = ["Sort by Date", "Sort by Name", "Sort by Status"]
+
 class CutsView(QtCore.QObject):
     """
     Cuts view page handler
@@ -22,9 +24,10 @@ class CutsView(QtCore.QObject):
     def __init__(self, grid_widget, sort_menu_button):
         super(CutsView, self).__init__()
         self._grid_widget = grid_widget
+        self._sort_menu_button = sort_menu_button
         self._selected_card_cut = None
         self._logger = get_logger()
-        self.build_cuts_sort_menu(sort_menu_button)
+        self.build_cuts_sort_menu()
 
     @QtCore.Slot(dict)
     def new_sg_cut(self, sg_entity):
@@ -64,23 +67,65 @@ class CutsView(QtCore.QObject):
         """
         Called when cut changes needs to be shown for a particular sequence/cut
         """
-        self._logger.info("Retrieving cut information for %s" % sg_cut["code"] )
+        self._logger.info("%s selected for cut summary" % sg_cut["code"] )
         self.show_cut_diff.emit(sg_cut)
-        #self.step_done(2)
 
-    def build_cuts_sort_menu(self, button):
+    @QtCore.Slot(QtGui.QAction)
+    def sort_changed(self, action):
+        """
+        Called when sorting method is changed
+        """
+        method = action.data()
+        count = self._grid_widget.count() -1 # We have stretcher
+        if count < 2: # Not a lot of things that we can do ...
+            return
+        # Remove the stretcher
+        spacer = self._grid_widget.takeAt(count)
+        # Retrieve all cut cards
+        widgets = []
+        for i in range(count-1, -1, -1):
+            witem = self._grid_widget.takeAt(i)
+            widgets.append(witem.widget())
+        # Sort them by prepending a primary field to our usual sort
+        # order
+        field = ["created_at", "code", "sg_status_list"][method]
+        widgets.sort(
+            key=lambda x: (x._sg_cut[field], x._sg_cut["created_at"], x._sg_cut["code"], x._sg_cut["sg_status_list"]), reverse=True
+        )
+        # Put them back into the grid layout
+        for i in range(len(widgets)):
+            row = i / 2
+            column = i % 2
+            widget = widgets[i]
+            self._grid_widget.addWidget(widget, row, column, )
+            self._grid_widget.setRowStretch(row, 0)
+
+        # Put back the stretcher
+        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2 )
+        self._grid_widget.setRowStretch(row+1, 1)
+        # And update the menu label
+        self._sort_menu_button.setText(action.text())
+
+    def build_cuts_sort_menu(self):
+        """
+        Build the popup menu with different sort methods
+        Attach it to the given button
+        """
         self._cuts_sort_menu = QtGui.QMenu()
-        button.setMenu(self._cuts_sort_menu)
+        self._sort_menu_button.setMenu(self._cuts_sort_menu)
         action_group =  QtGui.QActionGroup(self)
-        for s in ["Sort by Date", "Sort by Name", "Sort by Status"]:
+        action_group.triggered.connect(self.sort_changed)
+        for s in _SORT_METHODS:
             sort_action = QtGui.QAction(
                 s,
-                action_group,)
+                action_group,
+            )
             sort_action.setCheckable(True)
+            sort_action.setData(_SORT_METHODS.index(s))
             self._cuts_sort_menu.addAction(sort_action)
         action = action_group.actions()[0]
         action.setChecked(True)
-        button.setText(action.text())
+        self._sort_menu_button.setText(action.text())
 
     def clear(self):
         """

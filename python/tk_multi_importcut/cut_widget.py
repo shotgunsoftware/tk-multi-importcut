@@ -43,6 +43,7 @@ _STATUS_COLORS = {
     "hld" : _COLORS["lgrey"],
     "fin" : _COLORS["dgrey"],
 }
+
 class CutCard(QtGui.QFrame):
     """
     Widget displaying a Shotgun Cut

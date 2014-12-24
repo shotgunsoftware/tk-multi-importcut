@@ -44,6 +44,10 @@ QPushButton::hover {
 
 class SearchWidget(QtGui.QLineEdit):
     """
+    A search widget based on a QLineEdit
+    - Add a search icon
+    - Add a clear search button
+    - Expose some signals
     """
     
     search_edited = QtCore.Signal(str)
@@ -51,7 +55,7 @@ class SearchWidget(QtGui.QLineEdit):
     
     def __init__(self, parent=None):
         """
-        Construction
+        Instantiate a new search widget
         """
         super(SearchWidget, self).__init__(parent)
         self.setStyleSheet(_LINE_EDIT_STYLE)
@@ -76,7 +80,7 @@ class SearchWidget(QtGui.QLineEdit):
         # hook up the signals:
         self.textEdited.connect(self._on_text_edited)
         self.returnPressed.connect(self._on_return_pressed)
-        self._clear_btn.clicked.connect(self._on_clear_clicked)
+        self._clear_btn.clicked.connect(self.clear)
                 
     # @property
     def _get_search_text(self):
@@ -89,25 +93,31 @@ class SearchWidget(QtGui.QLineEdit):
 
     def set_placeholder_text(self, text):
         """
+        Small wrapper to follow our camel case naming conventions
         """
         self.setPlaceholderText(text)
                 
-    def _on_clear_clicked(self):
+    @QtCore.Slot()
+    def clear(self):
         """
+        Clear text
         """
         self.setText("")
         self.search_changed.emit("")
         self._clear_btn.hide()
                 
-    def _on_text_edited(self):
+    @QtCore.Slot(unicode)
+    def _on_text_edited(self, text):
         """
+        Called when the text is manually edited
         """
-        text = self._safe_get_text()
         self._clear_btn.setVisible(bool(text))
         self.search_edited.emit(text)
         
+    @QtCore.Slot()
     def _on_return_pressed(self):
         """
+        Called when the return key is pressed
         """
         self.search_changed.emit(self._safe_get_text())
         
