@@ -110,7 +110,8 @@ class AppDialog(QtGui.QWidget):
         self._cuts_view = CutsView(self.ui.cuts_grid, self.ui.cuts_sort_button)
         self._cuts_view.show_cut_diff.connect(self.show_cut)
         self._processor.new_sg_cut.connect(self._cuts_view.new_sg_cut)
-
+        self.ui.search_line_edit.search_edited.connect(self._cuts_view.search)
+        self.ui.search_line_edit.search_changed.connect(self._cuts_view.search)
         # Cut summary view selectors
         self.ui.new_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.NEW))
         self.ui.cut_change_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.CUT_CHANGE))

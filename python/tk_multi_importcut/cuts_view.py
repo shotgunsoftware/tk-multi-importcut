@@ -49,6 +49,18 @@ class CutsView(QtCore.QObject):
         self._grid_widget.addItem(spacer, row+1, 0, colSpan=2 )
         self._grid_widget.setRowStretch(row+1, 1)
 
+    @QtCore.Slot(unicode)
+    def search(self, text):
+        self._logger.debug("Searching for %s" % text)
+        count = self._grid_widget.count() -1 # We have stretcher
+        for i in range(count-1, -1, -1):
+            witem = self._grid_widget.itemAt(i)
+            widget = witem.widget()
+            if text:
+                widget.setVisible(text in widget._sg_cut["code"])
+            else:
+                widget.setVisible(True)
+
     @QtCore.Slot(QtGui.QWidget)
     def cut_selected(self, card):
         """
