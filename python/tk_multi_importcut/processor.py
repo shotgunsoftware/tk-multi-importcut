@@ -548,7 +548,7 @@ class EdlCut(QtCore.QObject):
         else:
             self._logger.info("Cut %s imported" % title)
             # Can go to next step
-            self.step_done.emit(2)
+            self.step_done.emit(3)
         finally:
             self.got_idle.emit()
 

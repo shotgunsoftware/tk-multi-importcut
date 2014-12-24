@@ -335,6 +335,7 @@ class AppDialog(QtGui.QWidget):
         Called when cuts needs to be shown for a particular sequence
         """
         self._logger.info("Retrieving cuts for %s" % sg_entity["code"] )
+        self.ui.selected_sequence_label.setText("Showing cuts for Sequence <big><b>%s</big></b>" % sg_entity["code"] )
         # Check if we have a least one cut linked to this sequence
         if self._app.shotgun.find_one("Cut", [["sg_sequence", "is", sg_entity]]) :
             self.show_cuts_for_sequence.emit(sg_entity)
