@@ -204,17 +204,46 @@ class CutSummary(QtCore.QObject):
 
         subject = "Sequence Cut Summary changes on %s" % title
 
-        cut_changes_details = ["%s - %s" % ( edit.name, ",".join(edit.reasons)) for edit in self.edits_for_type(_DIFF_TYPES.CUT_CHANGE)]
-        rescan_details = ["%s - %s" % ( edit.name, ",".join(edit.reasons)) for edit in self.edits_for_type(_DIFF_TYPES.RESCAN)]
+        cut_changes_details = [
+            "%s - %s" % (
+                edit.name, ",".join(edit.reasons)
+            ) for edit in sorted(
+                self.edits_for_type(_DIFF_TYPES.CUT_CHANGE),
+                key=lambda x : x.new_cut_order
+            )
+        ]
+        rescan_details = [
+            "%s - %s" % (
+                edit.name, ",".join(edit.reasons)
+            ) for edit in sorted(
+                self.edits_for_type(_DIFF_TYPES.RESCAN),
+                key=lambda x : x.new_cut_order
+            )
+        ]
         body = _BODY_REPORT_FORMAT % (
             " , ".join(sg_links),
             title,
             self.count_for_type(_DIFF_TYPES.NEW),
-            "\n".join([edit.name for edit in self.edits_for_type(_DIFF_TYPES.NEW)]),
+            "\n".join([
+                edit.name for edit in sorted(
+                    self.edits_for_type(_DIFF_TYPES.NEW),
+                    key=lambda x : x.new_cut_order
+                )
+            ]),
             self.count_for_type(_DIFF_TYPES.OMITTED),
-            "\n".join([edit.name for edit in self.edits_for_type(_DIFF_TYPES.OMITTED)]),
+            "\n".join([
+                edit.name for edit in sorted(
+                    self.edits_for_type(_DIFF_TYPES.OMITTED),
+                    key=lambda x : x.cut_order or -1
+                )
+            ]),
             self.count_for_type(_DIFF_TYPES.REINSTATED),
-            "\n".join([edit.name for edit in self.edits_for_type(_DIFF_TYPES.REINSTATED)]),
+            "\n".join([
+                edit.name for edit in sorted(
+                    self.edits_for_type(_DIFF_TYPES.REINSTATED),
+                    key=lambda x : x.new_cut_order
+                )
+            ]),
             self.count_for_type(_DIFF_TYPES.CUT_CHANGE),
             "\n".join(cut_changes_details),
             self.count_for_type(_DIFF_TYPES.RESCAN),
