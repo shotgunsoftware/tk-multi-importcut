@@ -79,8 +79,6 @@ class AppDialog(QtGui.QWidget):
         self._selected_card_sequence = None
         self._selected_card_cut = None
 
-        self._no_cut_for_sequence = False
-
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
         # - A Shotgun API instance, via self._app.shotgun
@@ -142,6 +140,9 @@ class AppDialog(QtGui.QWidget):
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
         self.ui.progress_bar.hide()
 
+    @property
+    def no_cut_for_sequence(self):
+        return self._processor.no_cut_for_sequence
 
     @QtCore.Slot()
     def do_reset(self):
@@ -258,7 +259,7 @@ class AppDialog(QtGui.QWidget):
         Skip the cuts view page if needed
         """
         current_page = self.ui.stackedWidget.currentIndex()
-        if current_page == 3 and self._no_cut_for_sequence:
+        if current_page == 3 and self.no_cut_for_sequence:
             self.ui.stackedWidget.goto_page(1)
         else:
             self.ui.stackedWidget.prev_page()
@@ -310,13 +311,7 @@ class AppDialog(QtGui.QWidget):
         """
         self._logger.info("Retrieving cuts for %s" % sg_entity["code"] )
         self.ui.selected_sequence_label.setText("Showing cuts for Sequence <big><b>%s</big></b>" % sg_entity["code"] )
-        # Check if we have a least one cut linked to this sequence
-        if self._app.shotgun.find_one("Cut", [["sg_sequence", "is", sg_entity]]) :
-            self.show_cuts_for_sequence.emit(sg_entity)
-            self._no_cut_for_sequence = False
-        else:
-            self._no_cut_for_sequence = True
-            self.show_cut_diff.emit({})
+        self.show_cuts_for_sequence.emit(sg_entity)
 
     @QtCore.Slot(dict)
     def show_cut(self, sg_cut):
@@ -388,29 +383,37 @@ class AppDialog(QtGui.QWidget):
         Called when the user click on the top views selectors in the cut summary
         page
         """
-        if activated:
-            self._cuts_display_mode = mode
-            self._logger.debug("Switching to %s mode" % mode)
-            show_only_repeated = self._cuts_display_repeated
-            count = self.ui.cutsummary_list.count() -1 # We have stretcher
-            if mode == -1: # Show everything
-                for i in range(0, count):
-                    widget = self.ui.cutsummary_list.itemAt(i).widget()
+        if not activated:
+            return
+        self._cuts_display_mode = mode
+        self._logger.debug("Switching to %s mode" % mode)
+        show_only_repeated = self._cuts_display_repeated
+        count = self.ui.cutsummary_list.count() -1 # We have stretcher
+        if mode == -1: # Show everything
+            for i in range(0, count):
+                widget = self.ui.cutsummary_list.itemAt(i).widget()
+                widget.setVisible(not show_only_repeated or widget.repeated)
+        elif mode > 99: # Show "Need Rescan"
+            for i in range(0, count):
+                widget = self.ui.cutsummary_list.itemAt(i).widget()
+                if widget.need_rescan:
                     widget.setVisible(not show_only_repeated or widget.repeated)
-            elif mode > 99: # Show "Need Rescan"
-                for i in range(0, count):
-                    widget = self.ui.cutsummary_list.itemAt(i).widget()
-                    if widget.need_rescan:
-                        widget.setVisible(not show_only_repeated or widget.repeated)
-                    else:
-                        widget.hide()
-            else:
-                for i in range(0, count):
-                    widget = self.ui.cutsummary_list.itemAt(i).widget()
-                    if widget.diff_type == mode:
-                        widget.setVisible(not show_only_repeated or widget.repeated)
-                    else:
-                        widget.hide()
+                else:
+                    widget.hide()
+        else:
+            for i in range(0, count):
+                widget = self.ui.cutsummary_list.itemAt(i).widget()
+                if widget.diff_type == mode:
+                    widget.setVisible(not show_only_repeated or widget.repeated)
+                else:
+                    widget.hide()
+        if count > 1:
+            # Avoid flashes and jittering by resizing the grid widget to a size
+            # suitable to hold all cards
+            wsize = self.ui.cutsummary_list.itemAt(0).widget().size()
+            self.ui.cutsummary_list.parentWidget().resize(
+                self.ui.cutsummary_list.parentWidget().size().width(),
+                wsize.height()* count)
 
     def clear_sequence_view(self):
         """

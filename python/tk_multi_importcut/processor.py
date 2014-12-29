@@ -104,6 +104,10 @@ class Processor(QtCore.QThread):
             sg_new_cut["id"],
         )
 
+    @property
+    def no_cut_for_sequence(self):
+        return self._edl_cut._no_cut_for_sequence
+
     def run(self):
         """
         Run the processor
@@ -155,6 +159,7 @@ class EdlCut(QtCore.QObject):
         self._ctx = self._app.context
         self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
         self._sg_new_cut = None
+        self._no_cut_for_sequence = False
 
     def process_edit(self, edit, logger):
         """
@@ -334,8 +339,14 @@ class EdlCut(QtCore.QObject):
                 ],
                 order=[{"field_name" : "id", "direction" : "desc"}]
             )
+            # If no cut, go directly to next step
             if not sg_cuts:
-                raise RuntimeWarning("Couldn't retrieve any Sequence for project %s" % self._ctx.project["name"])
+                self.show_cut_diff({})
+                self.step_done.emit(2)
+                self._no_cut_for_sequence = True
+                return
+
+            self._no_cut_for_sequence = False
             for sg_cut in sg_cuts:
                 if sg_cut["sg_status_list"] in status_dict:
                     sg_cut["_display_status"] = status_dict[sg_cut["sg_status_list"]]
