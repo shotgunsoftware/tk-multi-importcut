@@ -101,6 +101,7 @@ class SequencesView(QtCore.QObject):
                 x._sg_sequence[field],
             ), reverse=False
         )
+        row_count = len(widgets) / 2
         # Put them back into the grid layout
         for i in range(len(widgets)):
             row = i / 2
@@ -112,6 +113,12 @@ class SequencesView(QtCore.QObject):
         # Put back the stretcher
         self._grid_widget.addItem(spacer, row+1, 0, colSpan=2 )
         self._grid_widget.setRowStretch(row+1, 1)
+        # Avoid flashes and jittering by resizing the grid widget to a size
+        # suitable to hold all cards
+        wsize = widgets[0].size()
+        self._grid_widget.parentWidget().resize(
+            self._grid_widget.parentWidget().size().width(),
+            wsize.height()* row_count)
 
 
     def clear(self):

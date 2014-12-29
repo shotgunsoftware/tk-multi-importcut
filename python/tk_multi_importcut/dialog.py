@@ -178,6 +178,7 @@ class AppDialog(QtGui.QWidget):
             )
             return
         self.new_edl.emit(paths[0])
+        self.ui.sequences_label.setText("Importing %s" % os.path.basename(paths[0]))
         #self._logger.info( "Processing %s" % (paths[0] ))
 
     @QtCore.Slot(int, str)
@@ -541,20 +542,6 @@ class AppDialog(QtGui.QWidget):
         self._processor.wait()
         # Let the close happen
         evt.accept()
-
-    def build_cuts_sort_menu(self):
-        self._cuts_sort_menu = QtGui.QMenu()
-        self.ui.cuts_sort_button.setMenu(self._cuts_sort_menu)
-        action_group =  QtGui.QActionGroup(self)
-        for s in ["Sort by Date", "Sort by Name", "Sort by Status"]:
-            sort_action = QtGui.QAction(
-                s,
-                action_group,)
-            sort_action.setCheckable(True)
-            self._cuts_sort_menu.addAction(sort_action)
-        action = action_group.actions()[0]
-        action.setChecked(True)
-        self.ui.cuts_sort_button.setText(action.text())
 
     def set_logger(self, level=logging.INFO):
         """
