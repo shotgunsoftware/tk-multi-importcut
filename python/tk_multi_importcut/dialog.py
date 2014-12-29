@@ -29,8 +29,7 @@ from .ui.dialog import Ui_Dialog
 
 from .processor import Processor
 from .logger import BundleLogHandler, get_logger
-from .sequence_widget import SequenceCard
-from .cut_widget import CutCard
+from .sequences_view import SequencesView
 from .cuts_view import CutsView
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_diff_widget import CutDiffCard
@@ -98,7 +97,6 @@ class AppDialog(QtGui.QWidget):
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
         self._processor.step_done.connect(self.step_done)
-        self._processor.new_sg_sequence.connect(self.new_sg_sequence)
         self._processor.new_cut_diff.connect(self.new_cut_diff)
         self._processor.got_busy.connect(self.set_busy)
         self._processor.got_idle.connect(self.set_idle)
@@ -108,12 +106,20 @@ class AppDialog(QtGui.QWidget):
         # Let's do something when something is dropped
         self.ui.drop_area_label.something_dropped.connect(self.process_drop)
 
-        # Instantiate a cust view handler
+        # Instantiate a sequences view handler
+        self._sequences_view = SequencesView(self.ui.sequence_grid)
+        self._sequences_view.sequence_chosen.connect(self.show_sequence)
+        self._processor.new_sg_sequence.connect(self._sequences_view.new_sg_sequence)
+        self.ui.sequences_search_line_edit.search_edited.connect(self._sequences_view.search)
+        self.ui.sequences_search_line_edit.search_changed.connect(self._sequences_view.search)
+
+        # Instantiate a cuts view handler
         self._cuts_view = CutsView(self.ui.cuts_grid, self.ui.cuts_sort_button)
         self._cuts_view.show_cut_diff.connect(self.show_cut)
         self._processor.new_sg_cut.connect(self._cuts_view.new_sg_cut)
         self.ui.search_line_edit.search_edited.connect(self._cuts_view.search)
         self.ui.search_line_edit.search_changed.connect(self._cuts_view.search)
+
         # Cut summary view selectors
         self.ui.new_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.NEW))
         self.ui.cut_change_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.CUT_CHANGE))
@@ -296,38 +302,6 @@ class AppDialog(QtGui.QWidget):
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
 
-    @QtCore.Slot(dict)
-    def new_sg_sequence(self, sg_entity):
-        """
-        Called when a new sequence card widget needs to be added to the list
-        of retrieved sequences
-        """
-        i = self.ui.sequence_grid.count() -1 # We have a stretcher
-        # Remove it
-        spacer = self.ui.sequence_grid.takeAt(i)
-        row = i / 2
-        column = i % 2
-        self._logger.debug("Adding %s at %d %d %d" % ( sg_entity, i, row, column))
-        widget = SequenceCard(None, sg_entity)
-        widget.highlight_selected.connect(self.sequence_selected)
-        widget.show_sequence.connect(self.show_sequence)
-        self.ui.sequence_grid.addWidget(widget, row, column, )
-        self.ui.sequence_grid.setRowStretch(row, 0)
-        self.ui.sequence_grid.addItem(spacer, row+1, 0, colSpan=2 )
-        self.ui.sequence_grid.setRowStretch(row+1, 1)
-
-    @QtCore.Slot(QtGui.QWidget)
-    def sequence_selected(self, card):
-        """
-        Called when a sequence card is selected, ensure only one is selected at
-        a time
-        """
-        if self._selected_card_sequence:
-            self._selected_card_sequence.unselect()
-            self._logger.debug("Unselected %s" % self._selected_card_sequence)
-        self._selected_card_sequence = card
-        self._selected_card_sequence.select()
-        self._logger.debug("Selected %s" % self._selected_card_sequence)
 
     @QtCore.Slot(dict)
     def show_sequence(self, sg_entity):
@@ -445,13 +419,7 @@ class AppDialog(QtGui.QWidget):
         """
         Reset the page displaying available sequences
         """
-        self._selected_card_sequence = None
-        count = self.ui.sequence_grid.count() -1 # We have stretcher
-        for i in range(count-1, -1, -1):
-            witem = self.ui.sequence_grid.takeAt(i)
-            widget = witem.widget()
-            widget.close()
-        # print self.ui.sequence_grid.count()
+        self._sequences_view.clear()
 
     def clear_cuts_view(self):
         """
