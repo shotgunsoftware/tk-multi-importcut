@@ -55,7 +55,7 @@ class CutsView(QtCore.QObject):
         """
         Display only cuts whose name matches the given text,
         display all of them if text is empty
-        
+
         :param text: A string to match
         """
         self._logger.debug("Searching for %s" % text)
@@ -76,6 +76,8 @@ class CutsView(QtCore.QObject):
         """
         Called when a cut card is selected, ensure only one is selected at
         a time
+
+        :param card: The CutCard widget to select
         """
         if self._selected_card_cut:
             self._selected_card_cut.unselect()
@@ -88,6 +90,8 @@ class CutsView(QtCore.QObject):
     def show_cut(self, sg_cut):
         """
         Called when cut changes needs to be shown for a particular sequence/cut
+
+        :param sg_cut: A Shotgun cut dictionary, as retrieved from a find
         """
         self._logger.info("%s selected for cut summary" % sg_cut["code"] )
         self.show_cut_diff.emit(sg_cut)
@@ -96,6 +100,8 @@ class CutsView(QtCore.QObject):
     def sort_changed(self, action):
         """
         Called when sorting method is changed
+
+        :param action: The QAction to activate
         """
         method = action.data()
         count = self._grid_widget.count() -1 # We have stretcher
