@@ -52,6 +52,12 @@ class CutsView(QtCore.QObject):
 
     @QtCore.Slot(unicode)
     def search(self, text):
+        """
+        Display only cuts whose name matches the given text,
+        display all of them if text is empty
+        
+        :param text: A string to match
+        """
         self._logger.debug("Searching for %s" % text)
         count = self._grid_widget.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
@@ -61,6 +67,9 @@ class CutsView(QtCore.QObject):
                 widget.setVisible(text in widget._sg_cut["code"])
             else:
                 widget.setVisible(True)
+        # Sort widgets so visible ones will be first, with rows
+        # distribution re-arranged
+        self.sort_changed(self._action_group.checkedAction())
 
     @QtCore.Slot(QtGui.QWidget)
     def cut_selected(self, card):
@@ -103,7 +112,13 @@ class CutsView(QtCore.QObject):
         # order
         field = ["created_at", "code", "sg_status_list"][method]
         widgets.sort(
-            key=lambda x: (x._sg_cut[field], x._sg_cut["created_at"], x._sg_cut["code"], x._sg_cut["sg_status_list"]), reverse=True
+            key=lambda x: (
+                x.isVisible(),
+                x._sg_cut[field],
+                x._sg_cut["created_at"],
+                x._sg_cut["code"],
+                x._sg_cut["sg_status_list"],
+            ), reverse=True
         )
         # Put them back into the grid layout
         for i in range(len(widgets)):
