@@ -314,11 +314,9 @@ class AppDialog(QtGui.QWidget):
         if self._app.shotgun.find_one("Cut", [["sg_sequence", "is", sg_entity]]) :
             self.show_cuts_for_sequence.emit(sg_entity)
             self._no_cut_for_sequence = False
-            self.step_done(1)
         else:
             self._no_cut_for_sequence = True
             self.show_cut_diff.emit({})
-            self.step_done(2)
 
     @QtCore.Slot(dict)
     def show_cut(self, sg_cut):
@@ -327,7 +325,6 @@ class AppDialog(QtGui.QWidget):
         """
         self._logger.info("Retrieving cut information for %s" % sg_cut["code"] )
         self.show_cut_diff.emit(sg_cut)
-        self.step_done(2)
 
     @QtCore.Slot(CutDiff)
     def new_cut_diff(self, cut_diff):

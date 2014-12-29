@@ -343,6 +343,7 @@ class EdlCut(QtCore.QObject):
                     sg_cut["_display_status"] = sg_cut["sg_status_list"]
                 self.new_sg_cut.emit(sg_cut)
             self._logger.info("Retrieved %d Cuts." % len(sg_cuts))
+            self.step_done.emit(1)
         except Exception, e :
             self._logger.exception(str(e))
         finally:
@@ -359,7 +360,7 @@ class EdlCut(QtCore.QObject):
         :param sg_entity: A Shotgun entity disctionary retrieved from Shotgun, 
                           typically a Sequence
         """
-        self._logger.info("Retrieving cut summary for %s" % ( self._sg_entity))
+        self._logger.info("Retrieving cut summary for %s" % ( self._sg_entity["code"]))
         self.got_busy.emit(None)
         self._summary = CutSummary()
         self._summary.new_cut_diff.connect(self.new_cut_diff)
@@ -496,6 +497,7 @@ class EdlCut(QtCore.QObject):
                         edit=None,
                         sg_cut_item=matching_cut_item
                     )
+            self.step_done.emit(2)
             self._logger.info("Retrieved %d cut differences." % len(self._summary))
         except Exception, e :
             self._logger.exception(str(e))
