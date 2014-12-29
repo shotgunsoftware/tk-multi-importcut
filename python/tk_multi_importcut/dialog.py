@@ -276,6 +276,7 @@ class AppDialog(QtGui.QWidget):
         if step < 1:
             self.ui.back_button.hide()
             self.ui.reset_button.hide()
+            self.ui.sequences_search_line_edit.clear()
             self.clear_sequence_view()
         else:
             self.ui.reset_button.show()
