@@ -257,6 +257,7 @@ class EdlCut(QtCore.QObject):
                     if not vname:
                         raise ValueError("Couldn't retrieve shot name for %s" % edit)
                     edit._shot_name = re.sub("(_[^_]+){2}$", "", vname)
+            self.retrieve_sequences()
             # Can go to next step
             self.step_done.emit(0)
         except Exception, e:

@@ -249,8 +249,6 @@ class AppDialog(QtGui.QWidget):
         Go to a particular step
         """
         self.set_ui_for_step(which)
-        if which == 1: # Ask the processor to retrieve sequences
-            self.get_sequences.emit()
         self.ui.stackedWidget.goto_page(which)
 
     @QtCore.Slot()
