@@ -434,7 +434,9 @@ class AppDialog(QtGui.QWidget):
             widget = witem.widget()
             widget.close()
         # Go back into "Show everything mode"
+        wsize = self.ui.total_button.size()
         self.ui.total_button.setChecked(True)
+        self.ui.total_button.resize(wsize.width(), 100)
         self.ui.repeated_radio_button.setChecked(False)
 
     @QtCore.Slot()

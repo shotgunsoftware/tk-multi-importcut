@@ -170,7 +170,7 @@ EDL</string>
              <property name="sizeHint" stdset="0">
               <size>
                <width>20</width>
-               <height>40</height>
+               <height>0</height>
               </size>
              </property>
             </spacer>
@@ -318,13 +318,62 @@ EDL</string>
       </layout>
      </widget>
      <widget class="QWidget" name="cut_summary_page">
-      <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,1">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0,1,0">
          <item>
           <widget class="QPushButton" name="total_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>70</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>0</width>
+             <height>70</height>
+            </size>
+           </property>
            <property name="text">
             <string>Total</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="new_select_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>0</width>
+             <height>70</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>New</string>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -341,26 +390,19 @@ EDL</string>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="new_select_button">
-           <property name="text">
-            <string>New</string>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-           <property name="autoExclusive">
-            <bool>true</bool>
-           </property>
-           <property name="flat">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="omitted_select_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>0</width>
+             <height>70</height>
+            </size>
+           </property>
            <property name="text">
             <string>Omitted</string>
            </property>
@@ -377,6 +419,18 @@ EDL</string>
          </item>
          <item>
           <widget class="QPushButton" name="reinstated_select_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>0</width>
+             <height>70</height>
+            </size>
+           </property>
            <property name="text">
             <string>Reinstated</string>
            </property>
@@ -393,6 +447,18 @@ EDL</string>
          </item>
          <item>
           <widget class="QPushButton" name="cut_change_select_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>0</width>
+             <height>70</height>
+            </size>
+           </property>
            <property name="text">
             <string>Cut Changes</string>
            </property>
@@ -409,6 +475,18 @@ EDL</string>
          </item>
          <item>
           <widget class="QPushButton" name="rescan_select_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>0</width>
+             <height>70</height>
+            </size>
+           </property>
            <property name="text">
             <string>Rescan Needed</string>
            </property>
@@ -458,8 +536,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>954</width>
+            <height>505</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">
