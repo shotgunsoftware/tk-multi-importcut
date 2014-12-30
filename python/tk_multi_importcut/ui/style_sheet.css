@@ -100,7 +100,7 @@ QAbstractButton#new_select_button:hover,
 /*
 Make the radio button blue when checked
 */
-QAbstractButton#repeated_radio_button:checked {
+QAbstractButton#only_repeated_check_box:checked {
     color: #2C93E2;
 }
 #horizontalLayout_3 {

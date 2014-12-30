@@ -24,6 +24,7 @@ class CutDiffsView(QtCore.QObject):
         self._list_widget = list_widget
         self._logger = get_logger()
         self._cuts_display_repeated = False
+        self._cuts_display_mode = -1
 
     @QtCore.Slot(CutDiff)
     def new_cut_diff(self, cut_diff):

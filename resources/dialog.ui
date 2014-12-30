@@ -515,12 +515,9 @@ EDL</string>
           </spacer>
          </item>
          <item>
-          <widget class="QRadioButton" name="repeated_radio_button">
+          <widget class="QCheckBox" name="only_repeated_check_box">
            <property name="text">
             <string>Only Repeated</string>
-           </property>
-           <property name="autoExclusive">
-            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -537,7 +534,7 @@ EDL</string>
             <x>0</x>
             <y>0</y>
             <width>954</width>
-            <height>505</height>
+            <height>504</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">
