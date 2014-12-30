@@ -101,10 +101,20 @@ class PostInstall(Hook):
         schema = sg.schema_field_read("Cut")
         if field_name.lower() not in schema:
             display_name = ' '.join( field_name.split('_')[1:]) # strip the sg_ part
+            statuses = ["apr", "fin", "new", "omt", "hld", "rdy",]
+            existing_statuses = sg.find("Status", [["code", "in", statuses]], ["code"])
+            if len(statuses) != len(existing_statuses):
+                for status in statuses:
+                    if status not in [ x["code"] for x in existing_statuses]:
+                        app.log_info("Enabling %s status for Cuts" % status)
+                        sg.create("Status", {
+                            "code" : status,
+                            "name" : status.capitalize(),
+                            "icon": {"type": "Icon", "id": 1, "name": "Active"},
+                            "bg_color": "202,225,202",
+                            })
             properties = {
-                "valid_values" : [
-                    "apr", "fin", "new", "omt", "hld", "rdy",
-                ],
+                "valid_values" : statuses,
                 "default_value" : "new",
             }
             res = sg.schema_field_create(
