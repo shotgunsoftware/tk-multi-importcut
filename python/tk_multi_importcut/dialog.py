@@ -31,8 +31,8 @@ from .processor import Processor
 from .logger import BundleLogHandler, get_logger
 from .sequences_view import SequencesView
 from .cuts_view import CutsView
-from .cut_diff import CutDiff, _DIFF_TYPES
-from .cut_diff_widget import CutDiffCard
+from .cut_diff import _DIFF_TYPES
+from .cut_diffs_view import CutDiffsView
 from .submit_dialog import SubmitDialog
 from .downloader import DownloadRunner
 
@@ -76,8 +76,6 @@ class AppDialog(QtGui.QWidget):
         self._busy = False
         self._cuts_display_mode = -1
         self._cuts_display_repeated = False
-        self._selected_card_sequence = None
-        self._selected_card_cut = None
 
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
@@ -95,7 +93,6 @@ class AppDialog(QtGui.QWidget):
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
         self._processor.step_done.connect(self.step_done)
-        self._processor.new_cut_diff.connect(self.new_cut_diff)
         self._processor.got_busy.connect(self.set_busy)
         self._processor.got_idle.connect(self.set_idle)
         self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
@@ -118,14 +115,19 @@ class AppDialog(QtGui.QWidget):
         self.ui.search_line_edit.search_edited.connect(self._cuts_view.search)
         self.ui.search_line_edit.search_changed.connect(self._cuts_view.search)
 
+        # Instantiate a cut differences view handler
+        self._cut_diffs_view = CutDiffsView(self.ui.cutsummary_list)
+        self._cut_diffs_view.totals_changed.connect(self.set_cut_summary_view_selectors)
+        self._processor.new_cut_diff.connect(self._cut_diffs_view.new_cut_diff)
+
         # Cut summary view selectors
-        self.ui.new_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.NEW))
-        self.ui.cut_change_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.CUT_CHANGE))
-        self.ui.omitted_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.OMITTED))
-        self.ui.reinstated_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, _DIFF_TYPES.REINSTATED))
-        self.ui.rescan_select_button.toggled.connect( lambda x : self.set_display_summary_mode(x, 100))
-        self.ui.total_button.toggled.connect( lambda x : self.set_display_summary_mode(x, -1))
-        self.ui.repeated_radio_button.toggled.connect(self.display_repeated_cuts)
+        self.ui.new_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.NEW))
+        self.ui.cut_change_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.CUT_CHANGE))
+        self.ui.omitted_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.OMITTED))
+        self.ui.reinstated_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.REINSTATED))
+        self.ui.rescan_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, 100))
+        self.ui.total_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, -1))
+        self.ui.repeated_radio_button.toggled.connect(self._cut_diffs_view.display_repeated_cuts)
 
         self.set_ui_for_step(0)
         self.ui.back_button.clicked.connect(self.previous_page)
@@ -321,42 +323,8 @@ class AppDialog(QtGui.QWidget):
         self._logger.info("Retrieving cut information for %s" % sg_cut["code"] )
         self.show_cut_diff.emit(sg_cut)
 
-    @QtCore.Slot(CutDiff)
-    def new_cut_diff(self, cut_diff):
-        """
-        Called when a new cut diff card widget needs to be added to the list of retrieved
-        changes
-        """
-        self._logger.debug("Adding %s" % cut_diff.name)
-        self.set_cut_summary_view_selectors()
-        widget = CutDiffCard(parent=None, cut_diff=cut_diff)
-        cut_order = widget.cut_order
-        count = self.ui.cutsummary_list.count()
-        # Shortcut : instead of looping over all entries, check if we can simply
-        # insert it at the end
-        if count > 1: # A widget + the stretcher
-            witem = self.ui.cutsummary_list.itemAt(count-2)
-            if cut_order > witem.widget().cut_order:
-                self.ui.cutsummary_list.insertWidget(count-1, widget)
-                self.ui.cutsummary_list.setStretch(self.ui.cutsummary_list.count()-1, 1)
-                return
-        # Retrieve where we should insert it
-        # Last widget is a stretcher, so we stop at self.ui.cutsummary_list.count()-2
-        for i in range(0, count-1):
-            witem = self.ui.cutsummary_list.itemAt(i)
-            if witem.widget().cut_order == cut_order:
-                if cut_diff.diff_type == _DIFF_TYPES.OMITTED:
-                    self.ui.cutsummary_list.insertWidget(i, widget)
-                else:
-                    self.ui.cutsummary_list.insertWidget(i+1, widget)
-                break
-            elif witem.widget().cut_order > cut_order: # Insert before next widget
-                self.ui.cutsummary_list.insertWidget(i, widget)
-                break
-        else:
-            self.ui.cutsummary_list.insertWidget(count-1, widget)
-        self.ui.cutsummary_list.setStretch(self.ui.cutsummary_list.count()-1, 1)
 
+    @QtCore.Slot()
     def set_cut_summary_view_selectors(self):
         """
         Set labels on top views selectors in Cut summary view, from the current 
@@ -369,51 +337,6 @@ class AppDialog(QtGui.QWidget):
         self.ui.reinstated_select_button.setText("Reinstated : %d" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
         self.ui.rescan_select_button.setText("Rescan Needed : %d" % summary.rescans_count)
         self.ui.total_button.setText("Total : %d" % len(summary))
-
-    @QtCore.Slot(bool)
-    def display_repeated_cuts(self, checked):
-        """
-        Only display cut diff cards widget affecting the same shot(s)
-        """
-        self._cuts_display_repeated = checked
-        self.set_display_summary_mode(True, self._cuts_display_mode)
-
-    def set_display_summary_mode(self, activated, mode):
-        """
-        Called when the user click on the top views selectors in the cut summary
-        page
-        """
-        if not activated:
-            return
-        self._cuts_display_mode = mode
-        self._logger.debug("Switching to %s mode" % mode)
-        show_only_repeated = self._cuts_display_repeated
-        count = self.ui.cutsummary_list.count() -1 # We have stretcher
-        if mode == -1: # Show everything
-            for i in range(0, count):
-                widget = self.ui.cutsummary_list.itemAt(i).widget()
-                widget.setVisible(not show_only_repeated or widget.repeated)
-        elif mode > 99: # Show "Need Rescan"
-            for i in range(0, count):
-                widget = self.ui.cutsummary_list.itemAt(i).widget()
-                if widget.need_rescan:
-                    widget.setVisible(not show_only_repeated or widget.repeated)
-                else:
-                    widget.hide()
-        else:
-            for i in range(0, count):
-                widget = self.ui.cutsummary_list.itemAt(i).widget()
-                if widget.diff_type == mode:
-                    widget.setVisible(not show_only_repeated or widget.repeated)
-                else:
-                    widget.hide()
-        if count > 1:
-            # Avoid flashes and jittering by resizing the grid widget to a size
-            # suitable to hold all cards
-            wsize = self.ui.cutsummary_list.itemAt(0).widget().size()
-            self.ui.cutsummary_list.parentWidget().resize(
-                self.ui.cutsummary_list.parentWidget().size().width(),
-                wsize.height()* count)
 
     def clear_sequence_view(self):
         """
@@ -431,11 +354,7 @@ class AppDialog(QtGui.QWidget):
         """
         Reset the cut summary view page
         """
-        count = self.ui.cutsummary_list.count() -1 # We have stretcher
-        for i in range(count-1, -1, -1):
-            witem = self.ui.cutsummary_list.takeAt(i)
-            widget = witem.widget()
-            widget.close()
+        self._cut_diffs_view.clear()
         # Go back into "Show everything mode"
         wsize = self.ui.total_button.size()
         self.ui.total_button.setChecked(True)
