@@ -17,7 +17,7 @@ from sgtk.platform.qt import QtCore
 from .cut_diff import CutDiff, _DIFF_TYPES
 
 _BODY_REPORT_FORMAT = """
-
+%s
 Links : %s
 
 The changes in %s are as follows:
@@ -83,7 +83,7 @@ class CutSummary(QtCore.QObject):
             self._rescans_count += 1
         # Use a lower case key, as shot names we retrieve from EDLs
         # can be upper cases, but actual SG shots be lower cases
-        shot_key = shot_name.lower()
+        shot_key = shot_name.lower() if shot_name else "_no_shot_name_"
         if shot_key in self._cut_diffs:
             self._repeated_count += 1
             self._cut_diffs[shot_key].append(cut_diff)
@@ -220,9 +220,22 @@ class CutSummary(QtCore.QObject):
                 key=lambda x : x.new_cut_order
             )
         ]
+        no_link_details = [
+            edit.version_name for edit in sorted(
+                self.edits_for_type(_DIFF_TYPES.NO_LINK),
+                key=lambda x : x.new_cut_order
+            )
+        ]
         body = _BODY_REPORT_FORMAT % (
+            # Let the user know that something is potentially wrong 
+            "WARNING, following edits couldn't be linked to any shot :\n%s\n" % (
+                "\n".join(no_link_details)
+            ) if no_link_details else "",
+            # Urls
             " , ".join(sg_links),
+            # Title
             title,
+            # And then counts and lists per type of changes
             self.count_for_type(_DIFF_TYPES.NEW),
             "\n".join([
                 edit.name for edit in sorted(

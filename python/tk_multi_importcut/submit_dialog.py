@@ -41,6 +41,12 @@ class SubmitDialog(QtGui.QDialog):
         self.ui.omitted_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.OMITTED))
         self.ui.reinstated_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
         self.ui.repeated_label.setText("%s" % summary.repeated_count)
+        no_link_count=summary.count_for_type(_DIFF_TYPES.NO_LINK)
+        if no_link_count:
+            self.ui.no_link_label.setText("%s" % no_link_count)
+        else:
+            self.ui.no_link_label.hide()
+            self.ui.no_link_title_label.hide()
         self.ui.import_cut_button_box.rejected.connect(self.close_dialog)
         self.ui.import_cut_button_box.accepted.connect(self.submit_cut)
 
