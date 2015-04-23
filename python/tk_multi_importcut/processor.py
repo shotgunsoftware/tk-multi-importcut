@@ -174,7 +174,6 @@ class EdlCut(QtCore.QObject):
         # Add empty properties
         edit._sg_version = None
         # Add some lambda to retrieve properties
-        print str(edit), str(edit._shot_name)
         edit.get_shot_name = lambda : edit._shot_name
         edit.get_clip_name = lambda : edit._clip_name
         edit.get_sg_version = lambda : edit._sg_version
@@ -186,6 +185,30 @@ class EdlCut(QtCore.QObject):
             edit.get_version_name = lambda : edit._clip_name.split(".")[0] # Strip extension, if any
         else:
             edit.get_version_name = lambda : None
+        if not edit._shot_name:
+            # Shot name was not retrieved from standard approach
+            # try to extract it from comments which don't include any
+            # known keywords
+            prefered_match=None
+            match=None
+            for comment in edit.pure_comments:
+                # Match :
+                # * COMMENT : shot-name_001
+                # * shot-name_001
+                # Most recent patterns are cached by Python so we don't need
+                # to worry about compiling it ourself for performances consideration
+                m=re.match(r"\*(\s*COMMENT\s*:)?\s*([a-z0-9A-Z_-]+)$", comment)
+                if m:
+                    if m.group(1):
+                        # Priority is given to matches from line beginning with
+                        # * COMMENT
+                        prefered_match=m.group(2)
+                    else:
+                        match=m.group(2)
+                if prefered_match:
+                    edit._shot_name=prefered_match
+                elif match:
+                    edit._shot_name=match
         if not edit.get_shot_name() and not edit.get_version_name():
             raise RuntimeError("Couldn't extract a shot name nor a version name, one of them is required")
 
@@ -256,16 +279,6 @@ class EdlCut(QtCore.QObject):
                         edit._sg_version = sg_version
                         if not edit.get_shot_name() and sg_version["entity.Shot.code"] :
                             edit._shot_name = sg_version["entity.Shot.code"]
-                            
-                    
-            # Review what we loaded
-#            for edit in self._edl.edits:
-#                shot_name = edit.get_shot_name()
-#                if not shot_name:
-#                    vname = edit.get_version_name()
-#                    if not vname:
-#                        raise ValueError("Couldn't retrieve shot name for %s" % edit)
-#                    edit._shot_name = re.sub("(_[^_]+){2}$", "", vname)
             self.retrieve_sequences()
             # Can go to next step
             self.step_done.emit(0)

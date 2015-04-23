@@ -37,6 +37,7 @@ _DIFF_TYPES_STYLE = {
     _DIFF_TYPES.OMITTED : "color: %s" % _COLORS["sg_red"],
     _DIFF_TYPES.REINSTATED : "color: %s" % _COLORS["yellow"],
     _DIFF_TYPES.NO_CHANGE : "color: %s" % _COLORS["lgrey"],
+    _DIFF_TYPES.NO_LINK : "color: %s" % _COLORS["sg_red"],
 }
 
 # Format string for tooltips
