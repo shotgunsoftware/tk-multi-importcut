@@ -277,7 +277,7 @@ class EdlCut(QtCore.QObject):
                         )
                     for edit in edits:
                         edit._sg_version = sg_version
-                        if not edit.get_shot_name() and sg_version["entity.Shot.code"] :
+                        if not edit.get_shot_name() and sg_version["entity.Shot.code"]:
                             edit._shot_name = sg_version["entity.Shot.code"]
             self.retrieve_sequences()
             # Can go to next step
