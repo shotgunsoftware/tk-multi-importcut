@@ -185,10 +185,13 @@ class CutDiffCard(QtGui.QFrame):
             widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["lgrey"], old_value))
         else:
             if new_value != old_value:
-                widget.setText("<big><font color=%s>%s</font> <font color=%s>(%s)</font></big>" % (
-                    _COLORS["sg_red"], new_value,
-                    _COLORS["lgrey"], old_value
-                ))
+                if old_value is not None:
+                    widget.setText("<big><font color=%s>%s</font> <font color=%s>(%s)</font></big>" % (
+                        _COLORS["sg_red"], new_value,
+                        _COLORS["lgrey"], old_value
+                    ))
+                else:
+                    widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["sg_red"], new_value))
             else:
                 widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["lgrey"], new_value))
 
