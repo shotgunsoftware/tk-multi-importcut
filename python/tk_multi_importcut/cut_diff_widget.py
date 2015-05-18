@@ -37,6 +37,7 @@ _DIFF_TYPES_STYLE = {
     _DIFF_TYPES.OMITTED : "color: %s" % _COLORS["sg_red"],
     _DIFF_TYPES.REINSTATED : "color: %s" % _COLORS["yellow"],
     _DIFF_TYPES.NO_CHANGE : "color: %s" % _COLORS["lgrey"],
+    _DIFF_TYPES.NO_LINK : "color: %s" % _COLORS["sg_red"],
 }
 
 # Format string for tooltips
@@ -82,8 +83,17 @@ class CutDiffCard(QtGui.QFrame):
             self.ui.cut_order_label.setText("<s><font color=%s>%03d</font></s>" % (font_color, cut_order))
         else:
             self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
-        self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)
-        
+
+        if self._cut_diff.name:
+            self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)
+        else:
+            self.ui.shot_name_label.setText(
+                "<big><i><font color=%s>%s</font></i></big>" % (
+                    _COLORS["sg_red"],
+                    "No Link"
+                )
+            )
+
         sg_version = self._cut_diff.sg_version
         if not sg_version:
             self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
@@ -175,10 +185,13 @@ class CutDiffCard(QtGui.QFrame):
             widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["lgrey"], old_value))
         else:
             if new_value != old_value:
-                widget.setText("<big><font color=%s>%s</font> <font color=%s>(%s)</font></big>" % (
-                    _COLORS["sg_red"], new_value,
-                    _COLORS["lgrey"], old_value
-                ))
+                if old_value is not None:
+                    widget.setText("<big><font color=%s>%s</font> <font color=%s>(%s)</font></big>" % (
+                        _COLORS["sg_red"], new_value,
+                        _COLORS["lgrey"], old_value
+                    ))
+                else:
+                    widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["sg_red"], new_value))
             else:
                 widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["lgrey"], new_value))
 

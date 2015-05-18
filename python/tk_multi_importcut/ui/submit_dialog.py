@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'submit_dialog.ui'
 #
-#      by: pyside-uic 0.2.13 running on PySide 1.1.1
+#      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -159,6 +159,15 @@ class Ui_submit_dialog(object):
         self.label_10.setStyleSheet("")
         self.label_10.setObjectName("label_10")
         self.gridLayout.addWidget(self.label_10, 6, 2, 1, 1)
+        self.no_link_title_label = QtGui.QLabel(submit_dialog)
+        self.no_link_title_label.setEnabled(True)
+        self.no_link_title_label.setObjectName("no_link_title_label")
+        self.gridLayout.addWidget(self.no_link_title_label, 8, 2, 1, 1)
+        self.no_link_label = QtGui.QLabel(submit_dialog)
+        self.no_link_label.setText("")
+        self.no_link_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.no_link_label.setObjectName("no_link_label")
+        self.gridLayout.addWidget(self.no_link_label, 8, 3, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
         self.import_cut_button_box = QtGui.QDialogButtonBox(submit_dialog)
         self.import_cut_button_box.setOrientation(QtCore.Qt.Horizontal)
@@ -184,4 +193,5 @@ class Ui_submit_dialog(object):
         self.label_11.setText(QtGui.QApplication.translate("submit_dialog", "Reinstated", None, QtGui.QApplication.UnicodeUTF8))
         self.label_12.setText(QtGui.QApplication.translate("submit_dialog", "Cut Changes", None, QtGui.QApplication.UnicodeUTF8))
         self.label_10.setText(QtGui.QApplication.translate("submit_dialog", "Repeated", None, QtGui.QApplication.UnicodeUTF8))
+        self.no_link_title_label.setText(QtGui.QApplication.translate("submit_dialog", "No Link", None, QtGui.QApplication.UnicodeUTF8))
 

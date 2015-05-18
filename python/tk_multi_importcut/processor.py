@@ -185,6 +185,30 @@ class EdlCut(QtCore.QObject):
             edit.get_version_name = lambda : edit._clip_name.split(".")[0] # Strip extension, if any
         else:
             edit.get_version_name = lambda : None
+        if not edit._shot_name:
+            # Shot name was not retrieved from standard approach
+            # try to extract it from comments which don't include any
+            # known keywords
+            prefered_match=None
+            match=None
+            for comment in edit.pure_comments:
+                # Match :
+                # * COMMENT : shot-name_001
+                # * shot-name_001
+                # Most recent patterns are cached by Python so we don't need
+                # to worry about compiling it ourself for performances consideration
+                m=re.match(r"\*(\s*COMMENT\s*:)?\s*([a-z0-9A-Z_-]+)$", comment)
+                if m:
+                    if m.group(1):
+                        # Priority is given to matches from line beginning with
+                        # * COMMENT
+                        prefered_match=m.group(2)
+                    else:
+                        match=m.group(2)
+                if prefered_match:
+                    edit._shot_name=prefered_match
+                elif match:
+                    edit._shot_name=match
         if not edit.get_shot_name() and not edit.get_version_name():
             raise RuntimeError("Couldn't extract a shot name nor a version name, one of them is required")
 
@@ -221,6 +245,7 @@ class EdlCut(QtCore.QObject):
                 self._logger.warning("Couldn't find any entry in %s" % (path))
                 return
             # Consolidate what we loaded
+            # Build a dictionary using versions names as keys
             versions_names = {}
             for edit in self._edl.edits:
                 v_name = edit.get_version_name()
@@ -233,6 +258,7 @@ class EdlCut(QtCore.QObject):
                         versions_names[v_name] = [edit]
                     else:
                         versions_names[v_name].append(edit)
+            # Retrieve actual versions from SG
             if versions_names:
                 sg_versions = self._sg.find(
                     "Version", [
@@ -241,6 +267,7 @@ class EdlCut(QtCore.QObject):
                     ],
                     ["code", "entity", "entity.Shot.code", "image"]
                 )
+                # And update edits with the SG versions retrieved
                 for sg_version in sg_versions:
                     edits = versions_names.get(sg_version["code"].lower())
                     if not edits:
@@ -250,18 +277,8 @@ class EdlCut(QtCore.QObject):
                         )
                     for edit in edits:
                         edit._sg_version = sg_version
-                        if not edit.get_shot_name() and sg_version["entity.Shot.code"] :
+                        if not edit.get_shot_name() and sg_version["entity.Shot.code"]:
                             edit._shot_name = sg_version["entity.Shot.code"]
-                            
-                    
-            # Review what we loaded
-            for edit in self._edl.edits:
-                shot_name = edit.get_shot_name()
-                if not shot_name:
-                    vname = edit.get_version_name()
-                    if not vname:
-                        raise ValueError("Couldn't retrieve shot name for %s" % edit)
-                    edit._shot_name = re.sub("(_[^_]+){2}$", "", vname)
             self.retrieve_sequences()
             # Can go to next step
             self.step_done.emit(0)
@@ -458,45 +475,53 @@ class EdlCut(QtCore.QObject):
             )
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
-                lower_shot_name = shot_name.lower()
-                existing = self._summary.diffs_for_shot(shot_name)
-                # Is it a duplicate ?
-                if existing:
-                    self._logger.debug("Found duplicated shot shot %s (%s)" % (shot_name, existing))
+                if not shot_name:
                     cut_diff = self._summary.add_cut_diff(
-                        shot_name,
-                        sg_shot=existing[0].sg_shot,
+                        None,
+                        sg_shot=None,
                         edit=edit,
-                        sg_cut_item=self.sg_cut_item_for_shot(
-                            sg_cut_items,
-                            existing[0].sg_shot,
-                            edit.get_sg_version())
+                        sg_cut_item=None
                     )
-                else :
-                    # Do we have a matching shot in SG ?
-                    matching_shot = None
-                    matching_cut_item = None
-                    for sg_shot in sg_shots:
-                        if sg_shot["code"].lower() == lower_shot_name:
-                            # yes we do
-                            self._logger.debug("Found matching existing shot %s" % shot_name)
-                            matching_shot = sg_shot
-                            # Remove this entry from the list
-                            sg_shots.remove(sg_shot)
-                            break
-                    # Do we have a matching cut item ?
-                    if matching_shot:
-                        matching_cut_item = self.sg_cut_item_for_shot(
-                            sg_cut_items,
-                            matching_shot,
-                            edit.get_sg_version(),
+                else:
+                    lower_shot_name = shot_name.lower()
+                    existing = self._summary.diffs_for_shot(shot_name)
+                    # Is it a duplicate ?
+                    if existing:
+                        self._logger.debug("Found duplicated shot shot %s (%s)" % (shot_name, existing))
+                        cut_diff = self._summary.add_cut_diff(
+                            shot_name,
+                            sg_shot=existing[0].sg_shot,
+                            edit=edit,
+                            sg_cut_item=self.sg_cut_item_for_shot(
+                                sg_cut_items,
+                                existing[0].sg_shot,
+                                edit.get_sg_version())
                         )
-                    cut_diff = self._summary.add_cut_diff(
-                        shot_name,
-                        sg_shot=matching_shot,
-                        edit=edit,
-                        sg_cut_item=matching_cut_item
-                    )
+                    else :
+                        # Do we have a matching shot in SG ?
+                        matching_shot = None
+                        matching_cut_item = None
+                        for sg_shot in sg_shots:
+                            if sg_shot["code"].lower() == lower_shot_name:
+                                # yes we do
+                                self._logger.debug("Found matching existing shot %s" % shot_name)
+                                matching_shot = sg_shot
+                                # Remove this entry from the list
+                                sg_shots.remove(sg_shot)
+                                break
+                        # Do we have a matching cut item ?
+                        if matching_shot:
+                            matching_cut_item = self.sg_cut_item_for_shot(
+                                sg_cut_items,
+                                matching_shot,
+                                edit.get_sg_version(),
+                            )
+                        cut_diff = self._summary.add_cut_diff(
+                            shot_name,
+                            sg_shot=matching_shot,
+                            edit=edit,
+                            sg_cut_item=matching_cut_item
+                        )
             # Process now all sg shots leftover
             for sg_shot in sg_shots:
                 # Don't show omitted shots which are not in this cut
@@ -667,7 +692,11 @@ class EdlCut(QtCore.QObject):
             # rescan / cut change, but we do the same thing in both cases, so it does not
             # matter, so arbitrarily use the first entry
             cut_diff = items[0]
-            if cut_diff.diff_type == _DIFF_TYPES.NEW:
+
+            # Skip entries where the shot name couldn't be retrieved
+            if cut_diff.diff_type == _DIFF_TYPES.NO_LINK:
+                pass
+            elif cut_diff.diff_type == _DIFF_TYPES.NEW:
                 self._logger.info("Will create shot %s for %s" % (shot_name, self._sg_entity))
                 data = {
                     "project" : self._ctx.project,
@@ -791,8 +820,11 @@ class EdlCut(QtCore.QObject):
                             "entity": cut_diff.sg_shot,
                             "updated_by" : self._ctx.user,
                             "created_by" : self._ctx.user,
-                            "entity.Shot.code" : shot_name,
-                        }
+                            "entity" : cut_diff.sg_shot,
+                        },
+                        "return_fields" : [
+                            "entity.Shot.code",
+                        ]
                     })
         if sg_batch_data:
             res = self._sg.batch(sg_batch_data)

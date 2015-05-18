@@ -20,7 +20,15 @@ edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 def diff_types(**enums):
     return type("CutDiffType", (), enums)
 # Values for cut diff types
-_DIFF_TYPES = diff_types(NEW=0, OMITTED=1, REINSTATED=2, RESCAN=3, CUT_CHANGE=4, NO_CHANGE=5)
+_DIFF_TYPES = diff_types(
+    NEW=0,              # A new shot will be created
+    OMITTED=1,          # The shot is not part of the cut anymore
+    REINSTATED=2,       # The shot is back in the cut
+    RESCAN=3,           # A rescan will be needed with the new in / out points
+    CUT_CHANGE=4,       # Some values changed, but don't fall in previous categories
+    NO_CHANGE=5,        # Values are identical to previous ones
+    NO_LINK=6,          # Related shot name couldn't be found
+)
 # Display names for cut diff types
 _DIFF_LABELS = {
     _DIFF_TYPES.NEW : "New",
@@ -29,6 +37,7 @@ _DIFF_LABELS = {
     _DIFF_TYPES.RESCAN : "Rescan Needed",
     _DIFF_TYPES.CUT_CHANGE : "Cut Change",
     _DIFF_TYPES.NO_CHANGE : "No Change",
+    _DIFF_TYPES.NO_LINK : "No Link",
 }
 
 class CutDiff(QtCore.QObject):
@@ -411,6 +420,9 @@ class CutDiff(QtCore.QObject):
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
         # The type of difference we are dealing with
+        if not self.name:
+            self._diff_type = _DIFF_TYPES.NO_LINK
+            return
         if not self._sg_shot:
             self._diff_type = _DIFF_TYPES.NEW
             return
