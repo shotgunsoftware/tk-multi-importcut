@@ -24,6 +24,7 @@ class CutDiffsView(QtCore.QObject):
         self._list_widget = list_widget
         self._logger = get_logger()
         self._cuts_display_repeated = False
+        self._vfx_shots_only=False
         self._cuts_display_mode = -1
 
     @QtCore.Slot(CutDiff)
@@ -70,6 +71,14 @@ class CutDiffsView(QtCore.QObject):
         self._cuts_display_repeated = checked
         self.set_display_summary_mode(True, self._cuts_display_mode)
 
+    @QtCore.Slot(bool)
+    def display_vfx_cuts(self, checked):
+        """
+        Only display cut diff cards for VFX shots
+        """
+        self._vfx_shots_only = checked
+        self.set_display_summary_mode(True, self._cuts_display_mode)
+
     def set_display_summary_mode(self, activated, mode):
         """
         Called when the user click on the top views selectors in the cut summary
@@ -80,23 +89,24 @@ class CutDiffsView(QtCore.QObject):
         self._cuts_display_mode = mode
         self._logger.debug("Switching to %s mode" % mode)
         show_only_repeated = self._cuts_display_repeated
+        show_only_vfx=self._vfx_shots_only
         count = self._list_widget.count() -1 # We have stretcher
         if mode == -1: # Show everything
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
-                widget.setVisible(not show_only_repeated or widget.repeated)
+                widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
         elif mode > 99: # Show "Need Rescan"
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 if widget.need_rescan:
-                    widget.setVisible(not show_only_repeated or widget.repeated)
+                    widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
                 else:
                     widget.hide()
         else:
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 if widget.diff_type == mode:
-                    widget.setVisible(not show_only_repeated or widget.repeated)
+                    widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
                 else:
                     widget.hide()
         if count > 1:

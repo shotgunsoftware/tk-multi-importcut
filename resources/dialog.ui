@@ -151,8 +151,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>978</width>
-            <height>545</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -287,8 +287,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>978</width>
-            <height>537</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="cuts_grid">
@@ -515,9 +515,9 @@ EDL</string>
           </spacer>
          </item>
          <item>
-          <widget class="QCheckBox" name="only_repeated_check_box">
+          <widget class="QCheckBox" name="only_vfx_check_box">
            <property name="text">
-            <string>Only Repeated</string>
+            <string>Hide Non-VFX Shots</string>
            </property>
           </widget>
          </item>
