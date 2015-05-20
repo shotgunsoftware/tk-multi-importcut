@@ -413,6 +413,24 @@ class CutDiff(QtCore.QObject):
         """
         return self._repeated
 
+    @property
+    def is_vfx_shot(self):
+        """
+        Return True if this item is linked to a VFX shot
+        """
+        # Non vfx shots are not handled in SG by our current clients
+        # so, for the time being, just check if the item is linked to
+        # a shot : if not, then this is not a VFX shot entry
+        if self._sg_shot:
+            # Later we might want to do additional checks on the linked shot
+            return True
+        if not self._edit:
+            # If we don't have an edit entry we should always have a sg_shot
+            # coming from the Sequence
+            return True
+        # Return True if the edit has a shot name
+        return bool(self._edit.get_shot_name())
+
     def check_changes(self):
         """
         Set the cut difference type for this cut difference

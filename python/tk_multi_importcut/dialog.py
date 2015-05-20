@@ -125,7 +125,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reinstated_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.REINSTATED))
         self.ui.rescan_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, 100))
         self.ui.total_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, -1))
-        self.ui.only_repeated_check_box.toggled.connect(self._cut_diffs_view.display_repeated_cuts)
+        self.ui.only_vfx_check_box.toggled.connect(self._cut_diffs_view.display_vfx_cuts)
 
         self.set_ui_for_step(0)
         self.ui.back_button.clicked.connect(self.previous_page)
@@ -357,7 +357,7 @@ class AppDialog(QtGui.QWidget):
         wsize = self.ui.total_button.size()
         self.ui.total_button.setChecked(True)
         self.ui.total_button.resize(wsize.width(), 100)
-        self.ui.only_repeated_check_box.setChecked(False)
+        self.ui.only_vfx_check_box.setChecked(False)
 
     @QtCore.Slot()
     def import_cut(self):
