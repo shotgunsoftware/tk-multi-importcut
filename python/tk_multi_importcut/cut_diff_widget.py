@@ -85,14 +85,11 @@ class CutDiffCard(QtGui.QFrame):
             self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
 
         if self._cut_diff.name:
-            self.ui.shot_name_line.setText("<big><b>%s</b></big>" % self._cut_diff.name)
+            self.set_widget_property(self.ui.shot_name_line, "valid", True)
+            self.ui.shot_name_line.setText("%s" % self._cut_diff.name)
         else:
-            self.ui.shot_name_line.setText(
-                "<big><i><font color=%s>%s</font></i></big>" % (
-                    _COLORS["sg_red"],
-                    "No Link"
-                )
-            )
+            self.set_widget_property(self.ui.shot_name_line, "valid", False)
+            self.ui.shot_name_line.setText("")
 
         sg_version = self._cut_diff.sg_version
         if not sg_version:
@@ -256,6 +253,20 @@ class CutDiffCard(QtGui.QFrame):
             self._cut_diff.edit
         )
         self.setToolTip(msg)
+
+    def set_widget_property(self, widget, name, value):
+        """
+        Set the given property to the given value
+        :param widget: A Qt widget
+        :param name: A property name
+        :param value: The value to set
+        """
+        widget.setProperty(name, value)
+        # We are using a custom property in style sheets
+        # we need to force a style sheet re-computation with
+        # unpolish / polish
+        self.style().unpolish(widget);
+        self.style().polish(widget);
 
     def showEvent(self, event):
         """

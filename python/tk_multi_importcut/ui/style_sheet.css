@@ -21,13 +21,30 @@ QDialogButtonBox {
 EntityLineWidget {
     border: none;
     background: #424242;
+    font: bold large
 }
 
 /* QLineEdit style when in edit mode */
 EntityLineWidget:focus {
+    color: white;
     border: 2px solid #2C93E2;
     border-radius: 2px;
-    background: #565656;
+    background: none;
+}
+
+EntityLineWidget[valid="false"] {
+    color: #FC6246;
+    font: bold italic large
+}
+EntityLineWidget[valid="true"] {
+    font: bold large
+}
+
+EntityLineWidget:focus {
+    color: white;
+    border: 2px solid #2C93E2;
+    border-radius: 2px;
+    background: none;
 }
 
 /* Thin progress bar on the main window

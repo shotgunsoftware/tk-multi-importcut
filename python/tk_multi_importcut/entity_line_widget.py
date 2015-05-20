@@ -42,6 +42,7 @@ class EntityLineWidget(QtGui.QLineEdit):
     def __init__(self, *args, **kwargs):
         super(EntityLineWidget, self).__init__(*args, **kwargs)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setPlaceholderText("No Link")
         completer = QtGui.QCompleter(self.__known_list, self)
         completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.setCompleter(completer)
