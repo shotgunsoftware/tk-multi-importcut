@@ -11,9 +11,27 @@
 import sgtk
 from sgtk.platform.qt import QtCore, QtGui
 
-class EntityLineEdit(QtGui.QLabel):
+class EntityLineWidget(QtGui.QLineEdit):
     """
-    A Widget allowing to edit SG entity names with some helpers
+    A custom line edit used to edit the value
     """
+    __matching_list = ["one", "two", "001_001"]
+
     def __init__(self, *args, **kwargs):
-        super(EntityLineEdit, self).__init__(*args, **kwargs)
+        super(EntityLineWidget, self).__init__(*args, **kwargs)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        completer = QtGui.QCompleter(self.__matching_list, self)
+        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.setCompleter(completer)
+
+
+#    def mousePressEvent(self, event):
+#        """
+#        Handle single click events : select this card
+#        """
+#        self.setReadOnly(False)
+#        print "Click !"
+#
+#    def focusOutEvent(self, event):
+#        self.setReadOnly(True)
+#        print "Out !"

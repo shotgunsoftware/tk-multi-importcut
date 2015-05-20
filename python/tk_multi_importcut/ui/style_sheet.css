@@ -18,6 +18,17 @@ QDialogButtonBox {
     button-layout: 3;
 }
 
+EntityLineWidget {
+    border: none;
+    background: #424242;
+}
+
+EntityLineWidget:focus {
+    border: 2px solid #2C93E2;
+    border-radius: 2px;
+    background: #565656;
+}
+
 /* Thin progress bar on the main window
 */
 QProgressBar#progress_bar {

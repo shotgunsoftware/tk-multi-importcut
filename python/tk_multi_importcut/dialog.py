@@ -23,7 +23,7 @@ widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
 DropAreaLabel = widgets.drop_area_label.DropAreaLabel
 AnimatedStackedWidget = widgets.animated_stacked_widget.AnimatedStackedWidget
 from .search_widget import SearchWidget
-from .entity_line_widget import EntityLineEdit
+from .entity_line_widget import EntityLineWidget
 
 # Custom widgets must be imported before importing the UI
 from .ui.dialog import Ui_Dialog
