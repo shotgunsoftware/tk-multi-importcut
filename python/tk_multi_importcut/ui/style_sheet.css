@@ -17,12 +17,13 @@ Will have the "Do it" button on the far right
 QDialogButtonBox {
     button-layout: 3;
 }
-
+/* Make the line edit looks like a QLabel when not in edit mode */
 EntityLineWidget {
     border: none;
     background: #424242;
 }
 
+/* QLineEdit style when in edit mode */
 EntityLineWidget:focus {
     border: 2px solid #2C93E2;
     border-radius: 2px;

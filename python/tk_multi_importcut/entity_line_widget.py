@@ -13,14 +13,36 @@ from sgtk.platform.qt import QtCore, QtGui
 
 class EntityLineWidget(QtGui.QLineEdit):
     """
-    A custom line edit used to edit the value
+    A custom line edit with a completer. Using a custom widget allows easy
+    style sheet styling with the class name, e.g. 
+
+    /* Make the line edit looks like a QLabel when not in edit mode */
+    EntityLineWidget {
+        border: none;
+        background: #424242;
+    }
+
+    /* QLineEdit style when in edit mode */
+    EntityLineWidget:focus {
+        border: 2px solid #2C93E2;
+        border-radius: 2px;
+        background: #565656;
+    }
+
     """
-    __matching_list = ["one", "two", "001_001"]
+    __known_list = []
+
+    @classmethod
+    def set_known_list(cls, known_list):
+        """
+        Define the list of known names for the completer
+        """
+        cls.__known_list=known_list
 
     def __init__(self, *args, **kwargs):
         super(EntityLineWidget, self).__init__(*args, **kwargs)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        completer = QtGui.QCompleter(self.__matching_list, self)
+        completer = QtGui.QCompleter(self.__known_list, self)
         completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.setCompleter(completer)
 

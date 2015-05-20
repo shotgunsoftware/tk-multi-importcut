@@ -137,7 +137,10 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>sh_001_001</string>
+          <string/>
+         </property>
+         <property name="placeholderText">
+          <string>No Link</string>
          </property>
         </widget>
        </item>
