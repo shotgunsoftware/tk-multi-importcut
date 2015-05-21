@@ -32,6 +32,10 @@ class EntityLineWidget(QtGui.QLineEdit):
     """
     __known_list = []
 
+    def __init__(self, *args, **kwargs):
+        super(EntityLineWidget, self).__init__(*args, **kwargs)
+        self.set_property("valid", True)
+
     @classmethod
     def set_known_list(cls, known_list):
         """
@@ -47,6 +51,22 @@ class EntityLineWidget(QtGui.QLineEdit):
         completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.setCompleter(completer)
 
+    def set_property(self, name, value):
+        """
+        Set the given property to the given value
+        :param name: A property name
+        :param value: The value to set
+        """
+        self.setProperty(name, value)
+        # We are using a custom property in style sheets
+        # we need to force a style sheet re-computation with
+        # unpolish / polish
+        self.style().unpolish(self);
+        self.style().polish(self);
+
+    def focusInEvent(self, event):
+        self.set_property("valid", True)
+        super(EntityLineWidget,self).focusInEvent(event)
 
 #    def mousePressEvent(self, event):
 #        """
