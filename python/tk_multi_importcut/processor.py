@@ -12,6 +12,8 @@ from sgtk.platform.qt import QtCore
 from .logger import get_logger
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
+from .entity_line_widget import EntityLineWidget
+
 import re
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
@@ -473,6 +475,8 @@ class EdlCut(QtCore.QObject):
                     "image"
                 ],
             )
+            # Record the list of shots for completion purpose
+            EntityLineWidget.set_known_list([x["code"] for x in sg_shots if x["code"]])
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
                 if not shot_name:

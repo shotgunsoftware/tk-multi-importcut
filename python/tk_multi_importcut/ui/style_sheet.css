@@ -17,35 +17,38 @@ Will have the "Do it" button on the far right
 QDialogButtonBox {
     button-layout: 3;
 }
-/* Make the line edit looks like a QLabel when not in edit mode */
+
+/*
+Make the line edit looks like a QLabel 
+when not in edit mode 
+*/
 EntityLineWidget {
     border: none;
     background: #424242;
-    font: bold large
+    font-style: normal;
+    font-weight: bold;
 }
 
-/* QLineEdit style when in edit mode */
+/*
+In edit mode, show it is a QLineEdit
+*/
 EntityLineWidget:focus {
-    color: white;
     border: 2px solid #2C93E2;
     border-radius: 2px;
     background: none;
+    font-style: normal;
+    font-weight: normal;
 }
 
-EntityLineWidget[valid="false"] {
+/*
+When not in edit and the value is empty or not valid
+Make it SG red
+*/
+EntityLineWidget:!focus[valid="false"] {
     color: #FC6246;
-    font: bold italic large
-}
-EntityLineWidget[valid="true"] {
-    font: bold large
+    font-style: italic;
 }
 
-EntityLineWidget:focus {
-    color: white;
-    border: 2px solid #2C93E2;
-    border-radius: 2px;
-    background: none;
-}
 
 /* Thin progress bar on the main window
 */
