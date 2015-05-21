@@ -84,12 +84,15 @@ class CutDiffCard(QtGui.QFrame):
         else:
             self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
 
+        # Shot name widget
         if self._cut_diff.name:
             self.ui.shot_name_line.set_property("valid", True)
             self.ui.shot_name_line.setText("%s" % self._cut_diff.name)
         else:
             self.ui.shot_name_line.set_property("valid", False)
             self.ui.shot_name_line.setText("")
+        self.ui.shot_name_line.value_changed.connect(self.shot_name_edited)
+        self.ui.shot_name_line.setReadOnly(not self._cut_diff.is_name_editable)
 
         sg_version = self._cut_diff.sg_version
         if not sg_version:
@@ -152,6 +155,17 @@ class CutDiffCard(QtGui.QFrame):
         Called when a new thumbnail is available for this card
         """
         self.set_thumbnail(path)
+
+    @QtCore.Slot(str)
+    def shot_name_edited(self, value):
+        """
+        Called when the shot name was edited
+        :param value: The value from the widget
+        """
+        if value != self._cut_diff.name:
+            self._cut_diff.set_name(value)
+        if not self._cut_diff.name:
+            self.ui.shot_name_line.set_property("valid", False)
 
     @property
     def cut_order(self):

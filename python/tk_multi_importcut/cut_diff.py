@@ -112,6 +112,19 @@ class CutDiff(QtCore.QObject):
         Return the name of this diff
         """
         return self._name
+    @property
+    def is_name_editable(self):
+        """
+        Return True if the name for this instance can be changed
+        """
+        # When can only change names coming from
+        # an edit entry
+        if not self._edit:
+            return False
+        return True
+
+    def set_name(self, name):
+        self._name=name
 
     @property
     def version_name(self):

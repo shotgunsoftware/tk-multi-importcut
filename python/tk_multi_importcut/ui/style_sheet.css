@@ -30,9 +30,9 @@ EntityLineWidget {
 }
 
 /*
-In edit mode, show it is a QLineEdit
+In edit mode, show it is a QLineEdit if it is not read only
 */
-EntityLineWidget:focus {
+EntityLineWidget:focus:!read-only {
     border: 2px solid #2C93E2;
     border-radius: 2px;
     background: none;

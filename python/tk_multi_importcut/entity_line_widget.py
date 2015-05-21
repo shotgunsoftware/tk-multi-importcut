@@ -32,24 +32,34 @@ class EntityLineWidget(QtGui.QLineEdit):
     """
     __known_list = []
 
+    # Our own signal to emit new values as provided ones didn't work in our case
+    value_changed=QtCore.Signal(str)
+
     def __init__(self, *args, **kwargs):
+        """
+        Instantiate a new EntityLineWidget
+        """
         super(EntityLineWidget, self).__init__(*args, **kwargs)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setPlaceholderText("No Link")
+        # Add our known list as a completer
+        completer = QtGui.QCompleter(self.__known_list, self)
+        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.setCompleter(completer)
+        # Only allow alpha numeric characters, _ and -
+        rx = QtCore.QRegExp("[a-zA-Z0-9_-]*")
+        self.setValidator(QtGui.QRegExpValidator(rx, self))
         self.set_property("valid", True)
+        # Just a way to be warned when the value was edited
+        self.editingFinished.connect(self.edited)
 
     @classmethod
     def set_known_list(cls, known_list):
         """
         Define the list of known names for the completer
+        :param known_list: A list of possible values
         """
         cls.__known_list=known_list
-
-    def __init__(self, *args, **kwargs):
-        super(EntityLineWidget, self).__init__(*args, **kwargs)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.setPlaceholderText("No Link")
-        completer = QtGui.QCompleter(self.__known_list, self)
-        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.setCompleter(completer)
 
     def set_property(self, name, value):
         """
@@ -65,16 +75,22 @@ class EntityLineWidget(QtGui.QLineEdit):
         self.style().polish(self);
 
     def focusInEvent(self, event):
+        """
+        When entering editing, clear the invalid state, and
+        call the QLineEdit base class focusInEvent
+
+        :param event: A standard Qt event
+        """
         self.set_property("valid", True)
         super(EntityLineWidget,self).focusInEvent(event)
 
-#    def mousePressEvent(self, event):
-#        """
-#        Handle single click events : select this card
-#        """
-#        self.setReadOnly(False)
-#        print "Click !"
-#
-#    def focusOutEvent(self, event):
-#        self.setReadOnly(True)
-#        print "Out !"
+    QtCore.Slot()
+    def edited(self):
+        """
+        Called when editingFinished is emitted
+        Clear the focus for this widget and emit a signal with
+        the current value.
+        """
+        value=self.text()
+        self.clearFocus()
+        self.value_changed.emit(value)
