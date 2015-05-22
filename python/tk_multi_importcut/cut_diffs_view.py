@@ -36,6 +36,7 @@ class CutDiffsView(QtCore.QObject):
         self._logger.debug("Adding %s" % cut_diff.name)
         self.totals_changed.emit()
         widget = CutDiffCard(parent=None, cut_diff=cut_diff)
+
         cut_order = widget.cut_order
         count = self._list_widget.count()
         # Shortcut : instead of looping over all entries, check if we can simply

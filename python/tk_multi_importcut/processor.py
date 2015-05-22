@@ -51,6 +51,7 @@ class Processor(QtCore.QThread):
     got_idle                = QtCore.Signal()
     progress_changed        = QtCore.Signal(int)
     import_cut              = QtCore.Signal(str,dict,dict, str)
+    totals_changed          = QtCore.Signal()
 
     def __init__(self):
         """
@@ -133,6 +134,7 @@ class Processor(QtCore.QThread):
         self._edl_cut.got_busy.connect(self.got_busy)
         self._edl_cut.got_idle.connect(self.got_idle)
         self._edl_cut.progress_changed.connect(self.progress_changed)
+        self._edl_cut.totals_changed.connect(self.totals_changed)
         self.exec_()
 
 class EdlCut(QtCore.QObject):
@@ -146,6 +148,7 @@ class EdlCut(QtCore.QObject):
     got_busy = QtCore.Signal(int)
     got_idle = QtCore.Signal()
     progress_changed = QtCore.Signal(int)
+    totals_changed = QtCore.Signal()
 
     def __init__(self):
         """
@@ -394,6 +397,7 @@ class EdlCut(QtCore.QObject):
         self.got_busy.emit(None)
         self._summary = CutSummary()
         self._summary.new_cut_diff.connect(self.new_cut_diff)
+        self._summary.totals_changed.connect(self.totals_changed)
         try:
             # Handle the case where we don't have any cut specified
             # Grab the latest one ...

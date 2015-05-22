@@ -117,6 +117,7 @@ class AppDialog(QtGui.QWidget):
         # Instantiate a cut differences view handler
         self._cut_diffs_view = CutDiffsView(self.ui.cutsummary_list)
         self._cut_diffs_view.totals_changed.connect(self.set_cut_summary_view_selectors)
+        self._processor.totals_changed.connect(self.set_cut_summary_view_selectors)
         self._processor.new_cut_diff.connect(self._cut_diffs_view.new_cut_diff)
 
         # Cut summary view selectors

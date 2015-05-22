@@ -44,6 +44,8 @@ class CutSummary(QtCore.QObject):
     A list of cut differences, stored in CutDiff instances
     """
     new_cut_diff = QtCore.Signal(CutDiff)
+    totals_changed = QtCore.Signal()
+
     def __init__(self):
         """
         Create a new empty CutSummary
@@ -73,6 +75,8 @@ class CutSummary(QtCore.QObject):
             edit=edit,
             sg_cut_item=sg_cut_item
         )
+        cut_diff.name_changed.connect(self.cut_diff_name_changed)
+        cut_diff.type_changed.connect(self.cut_diff_type_changed)
         diff_type = cut_diff.diff_type
         if diff_type in self._counts:
             self._counts[diff_type] += 1
@@ -93,6 +97,53 @@ class CutSummary(QtCore.QObject):
             self._cut_diffs[shot_key] = [cut_diff]
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
+    
+    @QtCore.Slot(CutDiff, str, str)
+    def cut_diff_name_changed(self, cut_diff, old_name, new_name):
+        """
+        Handle cut diff (shot) name changes
+        """
+        new_shot_key=new_name.lower() if new_name else "_no_shot_name_"
+        old_shot_key=old_name.lower() if old_name else "_no_shot_name_"
+        if new_shot_key == old_shot_key:
+            return
+
+        # Remove it from our internal shot / cut_diff dictionary
+        if old_shot_key not in self._cut_diffs:
+            raise RuntimeError("Can't retrieve shot %s in internal list" % old_shot_key)
+        self._cut_diffs[old_shot_key].remove(cut_diff)
+        count=len(self._cut_diffs[old_shot_key])
+        if count==0:
+            del self._cut_diffs[old_shot_key]
+        elif count==1:
+            self._cut_diffs[old_shot_key][0].set_repeated(False)
+        if cut_diff.repeated:
+            self._repeated_count -= 1
+            cut_diff.set_repeated(False)
+
+        # And add it back with the new name
+        if new_shot_key in self._cut_diffs:
+            self._repeated_count += 1
+            self._cut_diffs[new_shot_key].append(cut_diff)
+            for cdiff in self._cut_diffs[new_shot_key]:
+                cdiff.set_repeated(True)
+        else:
+            self._cut_diffs[new_shot_key] = [cut_diff]
+
+    @QtCore.Slot(CutDiff, int, int)
+    def cut_diff_type_changed(self, cut_diff, old_type, new_type):
+        if old_type==new_type:
+            return
+        if old_type not in self._counts:
+            raise RuntimeError("Couldn't retrieve cut diff type %s in counts" % old_type)
+        self._counts[old_type] -= 1
+        if self._counts[old_type]==0:
+            del self._counts[old_type]
+        if new_type in self._counts:
+            self._counts[new_type] += 1
+        else:
+            self._counts[new_type] = 1
+        self.totals_changed.emit()
 
     @property
     def rescans_count(self):

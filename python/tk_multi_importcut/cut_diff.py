@@ -49,6 +49,9 @@ class CutDiff(QtCore.QObject):
     At least one of them needs to be set
     A Shotgun Version can be given, for reference purpose
     """
+    # Emitted when the (shot) name for this item is changed
+    name_changed=QtCore.Signal(QtCore.QObject, str, str)
+    type_changed=QtCore.Signal(QtCore.QObject, int, int)
     def __init__(self, name, sg_shot=None, sg_version=None, edit=None, sg_cut_item=None):
         """
         Instantiate a new cut difference
@@ -112,6 +115,7 @@ class CutDiff(QtCore.QObject):
         Return the name of this diff
         """
         return self._name
+
     @property
     def is_name_editable(self):
         """
@@ -124,7 +128,23 @@ class CutDiff(QtCore.QObject):
         return True
 
     def set_name(self, name):
+        """
+        Set a new name for this cut diff
+        """
+        if name==self._name:
+            return
+        if not self.is_name_editable:
+            raise RuntimeErrror("Attempting to change a read only name")
+        # if we changed the shot name, it means that we :
+        # - need to check the sg_shot we are linked to
+        # - need to check the sg_cutitem we are linked to
+        # - need to check the new diff type
+        self.name_changed.emit(self, self._name, name)
         self._name=name
+        old_type=self._diff_type
+        self.check_changes()
+        if old_type != self._diff_type:
+            self.type_changed.emit(self, old_type, self._diff_type)
 
     @property
     def version_name(self):

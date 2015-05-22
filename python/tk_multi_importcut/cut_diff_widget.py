@@ -56,6 +56,7 @@ class CutDiffCard(QtGui.QFrame):
     """
     A widget showing cut differences
     """
+    type_changed=QtCore.Signal()
     def __init__(self, parent, cut_diff):
         """
         Instantiate a new cut diff card for the given CutDiff instance
@@ -70,19 +71,7 @@ class CutDiffCard(QtGui.QFrame):
         self._thumbnail_requested = False
         app = sgtk.platform.current_bundle()
         self._use_smart_fields = app.get_setting("use_smart_fields") or False
-        # Cut order
-        new_cut_order = self._cut_diff.new_cut_order or 0
-        old_cut_order = self._cut_diff.cut_order or 0
-        cut_order = new_cut_order or old_cut_order
-        if old_cut_order != new_cut_order:
-            font_color= _COLORS["sg_red"]
-        else:
-            font_color= _COLORS["lgrey"]
-        
-        if self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
-            self.ui.cut_order_label.setText("<s><font color=%s>%03d</font></s>" % (font_color, cut_order))
-        else:
-            self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
+        cut_diff.type_changed.connect(self.diff_type_changed)
 
         # Shot name widget
         if self._cut_diff.name:
@@ -116,14 +105,6 @@ class CutDiffCard(QtGui.QFrame):
         new_value = self._cut_diff.new_tail_out
         self.display_values(self.ui.shot_tail_out_label, new_value, value)
 
-        diff_type_label = self._cut_diff.diff_type_label
-        reasons = ",<br>".join(self._cut_diff.reasons)
-        if reasons:
-            self.ui.status_label.setText("%s : <small>%s</small>" % (diff_type_label, reasons))
-        else:
-            self.ui.status_label.setText("%s" % diff_type_label)
-        if self._cut_diff.diff_type in _DIFF_TYPES_STYLE:
-            self.ui.status_label.setStyleSheet(_DIFF_TYPES_STYLE[self._cut_diff.diff_type])
 
         value = self._cut_diff.cut_in
         new_value = self._cut_diff.new_cut_in
@@ -146,6 +127,7 @@ class CutDiffCard(QtGui.QFrame):
         self.display_values(self.ui.tail_duration_label, new_value, value)
 
         self.set_tool_tip()
+        self.set_for_type()
         
         self.set_thumbnail(":/tk_multi_importcut/sg_shot_thumbnail.png")
 
@@ -155,6 +137,14 @@ class CutDiffCard(QtGui.QFrame):
         Called when a new thumbnail is available for this card
         """
         self.set_thumbnail(path)
+
+    @QtCore.Slot(CutDiff, int, int)
+    def diff_type_changed(self, cut_diff, old_type, new_type):
+        """
+        Called when the diff type changed for the CutDiff being displayed
+        """
+        self.set_for_type()
+        self.type_changed.emit()
 
     @QtCore.Slot(str)
     def shot_name_edited(self, value):
@@ -183,6 +173,33 @@ class CutDiffCard(QtGui.QFrame):
         Allow access to attached cut diff
         """
         return getattr(self._cut_diff, attr_name)
+
+    def set_for_type(self):
+        """
+        Set display values based on the given diff type
+        """
+        # Cut order
+        new_cut_order = self._cut_diff.new_cut_order or 0
+        old_cut_order = self._cut_diff.cut_order or 0
+        cut_order = new_cut_order or old_cut_order
+        if old_cut_order != new_cut_order:
+            font_color= _COLORS["sg_red"]
+        else:
+            font_color= _COLORS["lgrey"]
+        if self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
+            self.ui.cut_order_label.setText("<s><font color=%s>%03d</font></s>" % (font_color, cut_order))
+        else:
+            self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
+
+        # Difference and reasons
+        diff_type_label = self._cut_diff.diff_type_label
+        reasons = ",<br>".join(self._cut_diff.reasons)
+        if reasons:
+            self.ui.status_label.setText("%s : <small>%s</small>" % (diff_type_label, reasons))
+        else:
+            self.ui.status_label.setText("%s" % diff_type_label)
+        if self._cut_diff.diff_type in _DIFF_TYPES_STYLE:
+            self.ui.status_label.setStyleSheet(_DIFF_TYPES_STYLE[self._cut_diff.diff_type])
 
     def display_values(self, widget, new_value, old_value):
         """
