@@ -114,12 +114,29 @@ class CutSummary(QtCore.QObject):
         self._cut_diffs[old_shot_key].remove(cut_diff)
         count=len(self._cut_diffs[old_shot_key])
         if count==0:
-            del self._cut_diffs[old_shot_key]
+            # If we have a SG shot, it is now an omitted one
+            if cut_diff.sg_shot:
+                sg_shot=cut_diff.sg_shot
+                sg_cut_item=cut_diff.sg_cut_item
+                self.add_cut_diff(
+                        sg_shot["code"],
+                        sg_shot=sg_shot,
+                        edit=None,
+                        sg_cut_item=sg_cut_item,
+                    )
+            else:
+                # We can discard the list for this shot
+                del self._cut_diffs[old_shot_key]
         elif count==1:
             self._cut_diffs[old_shot_key][0].set_repeated(False)
+
         if cut_diff.repeated:
             self._repeated_count -= 1
             cut_diff.set_repeated(False)
+
+        # These are not valid anymore
+        cut_diff.set_sg_shot(None)
+        cut_diff.set_sg_cut_item(None)
 
         # And add it back with the new name
         if new_shot_key in self._cut_diffs:

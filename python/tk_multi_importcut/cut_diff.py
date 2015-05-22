@@ -95,12 +95,26 @@ class CutDiff(QtCore.QObject):
         """
         return self._sg_shot
 
+    def set_sg_shot(self, sg_shot):
+        """
+        Set the SG shot associated with this CutDiff
+        :param sg_shot: A SG shot dictionary, or None
+        """
+        self._sg_shot=sg_shot
+
     @property
     def sg_cut_item(self):
         """
         Return the Shotgun cut item for this diff, if any
         """
         return self._sg_cut_item
+
+    def set_sg_cut_item(self, sg_cut_item):
+        """
+        Set the SG cut item for this CutDiff
+        :param sg_cut_item: A SG CutItem dictionary or None
+        """
+        self._sg_cut_item=sg_cut_item
 
     @property
     def edit(self):

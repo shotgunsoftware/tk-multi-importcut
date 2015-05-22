@@ -68,11 +68,13 @@ class CutDiffCard(QtGui.QFrame):
         self.ui = Ui_CutDiffCard()
         self.ui.setupUi(self)
         
-        self._thumbnail_requested = False
         app = sgtk.platform.current_bundle()
         self._use_smart_fields = app.get_setting("use_smart_fields") or False
         cut_diff.type_changed.connect(self.diff_type_changed)
+        self.set_ui_values()
 
+    def set_ui_values(self):
+        self._thumbnail_requested = False
         # Shot name widget
         if self._cut_diff.name:
             self.ui.shot_name_line.set_property("valid", True)
@@ -143,7 +145,7 @@ class CutDiffCard(QtGui.QFrame):
         """
         Called when the diff type changed for the CutDiff being displayed
         """
-        self.set_for_type()
+        self.set_ui_values()
         self.type_changed.emit()
 
     @QtCore.Slot(str)
