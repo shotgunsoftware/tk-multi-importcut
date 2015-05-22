@@ -51,7 +51,10 @@ class CutDiff(QtCore.QObject):
     """
     # Emitted when the (shot) name for this item is changed
     name_changed=QtCore.Signal(QtCore.QObject, str, str)
+    # Emitted when the diff type for this item is changed
     type_changed=QtCore.Signal(QtCore.QObject, int, int)
+    # Emitted when this cut diff instance is discarded
+    discarded=QtCore.Signal(QtCore.QObject)
     def __init__(self, name, sg_shot=None, sg_version=None, edit=None, sg_cut_item=None):
         """
         Instantiate a new cut difference
@@ -78,7 +81,7 @@ class CutDiff(QtCore.QObject):
         self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
 
         # Retrieve the cut diff type from the given params
-        self.check_changes()
+        self._check_changes()
 
     @classmethod
     def get_diff_type_label(cls, diff_type):
@@ -155,10 +158,6 @@ class CutDiff(QtCore.QObject):
         # - need to check the new diff type
         self.name_changed.emit(self, self._name, name)
         self._name=name
-        old_type=self._diff_type
-        self.check_changes()
-        if old_type != self._diff_type:
-            self.type_changed.emit(self, old_type, self._diff_type)
 
     @property
     def version_name(self):
@@ -482,6 +481,12 @@ class CutDiff(QtCore.QObject):
         """
         Set the cut difference type for this cut difference
         """
+        old_type=self._diff_type
+        self._check_changes()
+        if old_type != self._diff_type:
+            self.type_changed.emit(self, old_type, self._diff_type)
+    
+    def _check_changes(self):
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
         # The type of difference we are dealing with

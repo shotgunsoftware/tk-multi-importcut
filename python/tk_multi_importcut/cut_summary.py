@@ -45,6 +45,7 @@ class CutSummary(QtCore.QObject):
     """
     new_cut_diff = QtCore.Signal(CutDiff)
     totals_changed = QtCore.Signal()
+    delete_cut_diff = QtCore.Signal(CutDiff)
 
     def __init__(self):
         """
@@ -128,8 +129,10 @@ class CutSummary(QtCore.QObject):
                 # We can discard the list for this shot
                 del self._cut_diffs[old_shot_key]
         elif count==1:
+            # This guy is alone now, so not repeated
             self._cut_diffs[old_shot_key][0].set_repeated(False)
 
+        # If the cut diff was repeated, default back to non repeated
         if cut_diff.repeated:
             self._repeated_count -= 1
             cut_diff.set_repeated(False)
@@ -138,14 +141,30 @@ class CutSummary(QtCore.QObject):
         cut_diff.set_sg_shot(None)
         cut_diff.set_sg_cut_item(None)
 
-        # And add it back with the new name
+        # Add it back with the new name
         if new_shot_key in self._cut_diffs:
-            self._repeated_count += 1
-            self._cut_diffs[new_shot_key].append(cut_diff)
-            for cdiff in self._cut_diffs[new_shot_key]:
-                cdiff.set_repeated(True)
+            count=len(self._cut_diffs[new_shot_key])
+            if count == 1 and not self._cut_diffs[new_shot_key][0].edit:
+                # If only one entry, that could be an omitted shot ( no edit )
+                # in that case the shot is not omitted anymore
+                cdiff=self._cut_diffs[new_shot_key].pop()
+                self.delete_cut_diff.emit(cdiff)
+                cut_diff.set_sg_shot(cdiff.sg_shot)
+                cut_diff.set_sg_cut_item(cdiff.sg_cut_item)
+                self._cut_diffs[new_shot_key].append(cut_diff)
+            else:
+                # SG shot and cut item are shared by all entries in this list
+                cdiff=self._cut_diffs[new_shot_key][0]
+                cut_diff.set_sg_shot(cdiff.sg_shot)
+                cut_diff.set_sg_cut_item(cdiff.sg_cut_item)
+                # Append and flag everything as repeated
+                self._repeated_count += 1
+                self._cut_diffs[new_shot_key].append(cut_diff)
+                for cdiff in self._cut_diffs[new_shot_key]:
+                    cdiff.set_repeated(True)
         else:
             self._cut_diffs[new_shot_key] = [cut_diff]
+        cut_diff.check_changes()
 
     @QtCore.Slot(CutDiff, int, int)
     def cut_diff_type_changed(self, cut_diff, old_type, new_type):

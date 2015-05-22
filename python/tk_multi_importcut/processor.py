@@ -52,6 +52,7 @@ class Processor(QtCore.QThread):
     progress_changed        = QtCore.Signal(int)
     import_cut              = QtCore.Signal(str,dict,dict, str)
     totals_changed          = QtCore.Signal()
+    delete_cut_diff         = QtCore.Signal(CutDiff)
 
     def __init__(self):
         """
@@ -141,15 +142,15 @@ class EdlCut(QtCore.QObject):
     """
     Worker which handles all data
     """
-    step_done = QtCore.Signal(int)
-    new_sg_sequence = QtCore.Signal(dict)
-    new_sg_cut = QtCore.Signal(dict)
-    new_cut_diff = QtCore.Signal(CutDiff)
-    got_busy = QtCore.Signal(int)
-    got_idle = QtCore.Signal()
-    progress_changed = QtCore.Signal(int)
-    totals_changed = QtCore.Signal()
-
+    step_done           = QtCore.Signal(int)
+    new_sg_sequence     = QtCore.Signal(dict)
+    new_sg_cut          = QtCore.Signal(dict)
+    new_cut_diff        = QtCore.Signal(CutDiff)
+    got_busy            = QtCore.Signal(int)
+    got_idle            = QtCore.Signal()
+    progress_changed    = QtCore.Signal(int)
+    totals_changed      = QtCore.Signal()
+    delete_cut_diff     = QtCore.Signal(CutDiff)
     def __init__(self):
         """
         Instantiate a new empty worker
@@ -397,6 +398,7 @@ class EdlCut(QtCore.QObject):
         self.got_busy.emit(None)
         self._summary = CutSummary()
         self._summary.new_cut_diff.connect(self.new_cut_diff)
+        self._summary.delete_cut_diff.connect(self.delete_cut_diff)
         self._summary.totals_changed.connect(self.totals_changed)
         try:
             # Handle the case where we don't have any cut specified

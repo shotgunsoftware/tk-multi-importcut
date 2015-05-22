@@ -64,6 +64,10 @@ class CutDiffsView(QtCore.QObject):
             self._list_widget.insertWidget(count-1, widget)
         self._list_widget.setStretch(self._list_widget.count()-1, 1)
 
+    @QtCore.Slot(CutDiff)
+    def delete_cut_diff(self, cut_diff):
+        print "%s is not needed anymore ..." % str(cut_diff)
+
     @QtCore.Slot(bool)
     def display_repeated_cuts(self, checked):
         """
