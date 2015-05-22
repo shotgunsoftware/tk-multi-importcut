@@ -59,7 +59,7 @@ class EntityLineWidget(QtGui.QLineEdit):
         Define the list of known names for the completer
         :param known_list: A list of possible values
         """
-        cls.__known_list=known_list
+        cls.__known_list=sorted(known_list)
 
     def set_property(self, name, value):
         """
