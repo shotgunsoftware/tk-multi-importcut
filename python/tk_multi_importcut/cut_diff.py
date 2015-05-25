@@ -55,20 +55,18 @@ class CutDiff(QtCore.QObject):
     type_changed=QtCore.Signal(QtCore.QObject, int, int)
     # Emitted when this cut diff instance is discarded
     discarded=QtCore.Signal(QtCore.QObject)
-    def __init__(self, name, sg_shot=None, sg_version=None, edit=None, sg_cut_item=None):
+    def __init__(self, name, sg_shot=None, edit=None, sg_cut_item=None):
         """
         Instantiate a new cut difference
         
         :param name: A name for this cut difference, usually the shot name
         :param sg_shot: An optional shot dictionary, as retrieved from Shotgun
-        :param sg_version: An optional version dictionary, as retrieved from Shotgun
         :param edit: An optional EditEvent instance, retrieved from an EDL
         :param sg_cut_item: An optional cut item dictionary, as retrieved from Shotgun
         """
         super(CutDiff, self).__init__()
         self._name = name
         self._sg_shot = sg_shot
-        self._sg_version = sg_version
         self._edit = edit
         self._sg_cut_item = sg_cut_item
         self._app = sgtk.platform.current_bundle()

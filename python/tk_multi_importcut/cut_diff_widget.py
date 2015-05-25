@@ -70,11 +70,11 @@ class CutDiffCard(QtGui.QFrame):
         
         app = sgtk.platform.current_bundle()
         self._use_smart_fields = app.get_setting("use_smart_fields") or False
+        self._thumbnail_requested = False
         cut_diff.type_changed.connect(self.diff_type_changed)
         self.set_ui_values()
 
     def set_ui_values(self):
-        self._thumbnail_requested = False
         # Shot name widget
         if self._cut_diff.name:
             self.ui.shot_name_line.set_property("valid", True)
@@ -170,6 +170,12 @@ class CutDiffCard(QtGui.QFrame):
         """
         self.set_ui_values()
         self.type_changed.emit()
+        # The linked sg version might have changed so blindly ask for a thumbnail
+        # even if it actually didn't change. This is asynchronous so it shouldn't
+        # harm to request the same thumbnail again. If it is, then sg version
+        # changes should be handled in a dedicated slot and thumbnail requests
+        # issued from it
+        self.retrieve_thumbnail()
 
     @QtCore.Slot(str)
     def shot_name_edited(self, value):
@@ -251,12 +257,18 @@ class CutDiffCard(QtGui.QFrame):
             return
 
         self._thumbnail_requested = True
-
+        self.retrieve_thumbnail()
+        
+    def retrieve_thumbnail(self):
+        """
+        """
+        print "Thumbnail request ..."
         thumb_url = None
         if self._cut_diff.sg_version and self._cut_diff.sg_version.get("image"):
             thumb_url = self._cut_diff.sg_version["image"]
         elif self._cut_diff.sg_shot and self._cut_diff.sg_shot.get("image"):
             thumb_url = self._cut_diff.sg_shot["image"]
+        print "Requesting thumbnail %s" % thumb_url
         if thumb_url:
             _, path = tempfile.mkstemp()
             downloader = DownloadRunner(
