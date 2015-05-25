@@ -158,6 +158,8 @@ class CutSummary(QtCore.QObject):
                 # in that case the shot is not omitted anymore
                 cdiff=self._cut_diffs[new_shot_key].pop()
                 self.delete_cut_diff.emit(cdiff)
+                # Recompute totals with the removed cut diff
+                self.cut_diff_type_changed(cdiff, cdiff.diff_type, None)
                 cut_diff.set_sg_shot(cdiff.sg_shot)
                 cut_diff.set_sg_cut_item(cdiff.sg_cut_item)
                 self._cut_diffs[new_shot_key].append(cut_diff)
@@ -179,6 +181,13 @@ class CutSummary(QtCore.QObject):
 
     @QtCore.Slot(CutDiff, int, int)
     def cut_diff_type_changed(self, cut_diff, old_type, new_type):
+        """
+        Recompute internal totals when a cut diff type changed
+        :param cut_diff: A CutDiff instance
+        :param old_type: Previous diff type for the CutDiff instance
+        :param new_type: New diff type for the CutDiff instance, or None if it
+                         has been deleted
+        """
         if old_type==new_type:
             return
         if old_type not in self._counts:
@@ -186,10 +195,11 @@ class CutSummary(QtCore.QObject):
         self._counts[old_type] -= 1
         if self._counts[old_type]==0:
             del self._counts[old_type]
-        if new_type in self._counts:
-            self._counts[new_type] += 1
-        else:
-            self._counts[new_type] = 1
+        if new_type is not None: # None is used when some cut diff are deleted
+            if new_type in self._counts:
+                self._counts[new_type] += 1
+            else:
+                self._counts[new_type] = 1
         self.totals_changed.emit()
 
     @property
