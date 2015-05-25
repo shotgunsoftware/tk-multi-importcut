@@ -16,6 +16,7 @@ from sgtk.platform.qt import QtCore
 
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .logger import get_logger
+
 _BODY_REPORT_FORMAT = """
 %s
 Links : %s
@@ -104,6 +105,10 @@ class CutSummary(QtCore.QObject):
     def cut_diff_name_changed(self, cut_diff, old_name, new_name):
         """
         Handle cut diff (shot) name changes
+
+        :param cut_diff: A CutDiff instance
+        :param old_name: A string, the CutDiff previous name
+        :param new_name: A string, the CutDiff new name
         """
         new_shot_key=new_name.lower() if new_name else "_no_shot_name_"
         old_shot_key=old_name.lower() if old_name else "_no_shot_name_"
@@ -246,6 +251,8 @@ class CutSummary(QtCore.QObject):
     def diffs_for_shot(self, shot_name):
         """
         Return the CutDiff(s) list for the given shot, if any.
+
+        :param shot_name: A shot name, as a string
         """
         return self._cut_diffs.get(shot_name.lower())
 

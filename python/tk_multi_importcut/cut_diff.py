@@ -47,7 +47,6 @@ class CutDiff(QtCore.QObject):
     - A Shotgun cut item
     - A Shotgun shot
     At least one of them needs to be set
-    A Shotgun Version can be given, for reference purpose
     """
     # Emitted when the (shot) name for this item is changed
     name_changed=QtCore.Signal(QtCore.QObject, str, str)
@@ -145,6 +144,7 @@ class CutDiff(QtCore.QObject):
     def set_name(self, name):
         """
         Set a new name for this cut diff
+        :param name: A string
         """
         if name==self._name:
             return
@@ -182,6 +182,7 @@ class CutDiff(QtCore.QObject):
     def set_sg_version(self, sg_version):
         """
         Set the Shotgun version associated with this diff
+        :param sg_version: A SG version, as a dictionary
         :raises: ValueError if no EditEvent is associated to this diff
         """
         if not self._edit:
@@ -478,6 +479,7 @@ class CutDiff(QtCore.QObject):
     def check_changes(self):
         """
         Set the cut difference type for this cut difference
+        Emit a type_changed if the value changed
         """
         old_type=self._diff_type
         self._check_changes()
@@ -485,6 +487,9 @@ class CutDiff(QtCore.QObject):
             self.type_changed.emit(self, old_type, self._diff_type)
     
     def _check_changes(self):
+        """
+        Set the cut difference type for this cut difference
+        """
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
         # The type of difference we are dealing with
@@ -547,11 +552,12 @@ class CutDiff(QtCore.QObject):
                 else:
                     self._cut_changes_reasons.append("Tail extended %d frs" % -diff)
     
-    def set_repeated(self, val):
+    def set_repeated(self, repeated):
         """
         Set this cut difference as repeated
+        :param repeated: A boolean
         """
-        self._repeated = val
+        self._repeated = repeated
 
     def summary(self):
         """

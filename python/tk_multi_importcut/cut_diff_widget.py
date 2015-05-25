@@ -56,6 +56,7 @@ class CutDiffCard(QtGui.QFrame):
     """
     A widget showing cut differences
     """
+    # Emitted when the CutDiff instance changed its type
     type_changed=QtCore.Signal()
     def __init__(self, parent, cut_diff):
         """
@@ -72,9 +73,12 @@ class CutDiffCard(QtGui.QFrame):
         self._use_smart_fields = app.get_setting("use_smart_fields") or False
         self._thumbnail_requested = False
         cut_diff.type_changed.connect(self.diff_type_changed)
-        self.set_ui_values()
+        self._set_ui_values()
 
-    def set_ui_values(self):
+    def _set_ui_values(self):
+        """
+        Set UI values, colors, etc ... from the CutDiff instance being displayed
+        """
         # Shot name widget
         if self._cut_diff.name:
             self.ui.shot_name_line.set_property("valid", True)
@@ -167,8 +171,13 @@ class CutDiffCard(QtGui.QFrame):
     def diff_type_changed(self, cut_diff, old_type, new_type):
         """
         Called when the diff type changed for the CutDiff being displayed
+        Some parameter are ignored as we have the CutDiff instance as member
+        of our class.
+        :param cut_diff: A CutDiff instance
+        :param old_type: The old type for the CutDiff instance
+        :param new_type: The new type for the CutDiff instance
         """
-        self.set_ui_values()
+        self._set_ui_values()
         self.type_changed.emit()
         # The linked sg version might have changed so blindly ask for a thumbnail
         # even if it actually didn't change. This is asynchronous so it shouldn't
@@ -208,7 +217,10 @@ class CutDiffCard(QtGui.QFrame):
     
     def __getattr__(self, attr_name):
         """
-        Allow access to attached cut diff
+        Allow access to attached cut diff, it will be called by Python only
+        if the requested attribute is not available on this instance
+
+        :param attr_name: An attribute name, as a string
         """
         return getattr(self._cut_diff, attr_name)
 
@@ -217,6 +229,10 @@ class CutDiffCard(QtGui.QFrame):
         Format the text for the given widget ( typically a QLabel ), comparing
         the old value to the new one, displaying only one of them if the two values
         are equal, coloring them otherwise
+
+        :param widget: The widget used to display the values, typically a QLabel
+        :param new_value: New value retrieved from the cut being imported
+        :param old_value: Previous value retrieved from a former cut import
         """
         if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
             widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["sg_red"], new_value))
@@ -258,17 +274,18 @@ class CutDiffCard(QtGui.QFrame):
 
         self._thumbnail_requested = True
         self.retrieve_thumbnail()
-        
+        event.ignore()
+
     def retrieve_thumbnail(self):
         """
+        Check if a SG version can be retrieved from the CutDiff, request an
+        asynchronous thumbnail download if it is the case
         """
-        print "Thumbnail request ..."
         thumb_url = None
         if self._cut_diff.sg_version and self._cut_diff.sg_version.get("image"):
             thumb_url = self._cut_diff.sg_version["image"]
         elif self._cut_diff.sg_shot and self._cut_diff.sg_shot.get("image"):
             thumb_url = self._cut_diff.sg_shot["image"]
-        print "Requesting thumbnail %s" % thumb_url
         if thumb_url:
             _, path = tempfile.mkstemp()
             downloader = DownloadRunner(
@@ -277,8 +294,6 @@ class CutDiffCard(QtGui.QFrame):
             )
             downloader.file_downloaded.connect(self.new_thumbnail)
             QtCore.QThreadPool.globalInstance().start(downloader)
-
-        event.ignore()
 
     def set_thumbnail(self, thumb_path):
         """
