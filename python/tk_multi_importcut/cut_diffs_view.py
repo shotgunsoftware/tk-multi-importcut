@@ -66,6 +66,10 @@ class CutDiffsView(QtCore.QObject):
 
     @QtCore.Slot(CutDiff)
     def delete_cut_diff(self, cut_diff):
+        """
+        Delete the widget associated with the given CutDiff instance
+        :param cut_diff: A CutDiff instance
+        """
         # Retrieve the widget we can delete
         count = self._list_widget.count()
         # Last widget is a stretcher, so we stop at self._list_widget.count()-2
