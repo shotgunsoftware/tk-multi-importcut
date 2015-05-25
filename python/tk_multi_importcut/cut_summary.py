@@ -15,7 +15,7 @@ import sgtk
 from sgtk.platform.qt import QtCore
 
 from .cut_diff import CutDiff, _DIFF_TYPES
-
+from .logger import get_logger
 _BODY_REPORT_FORMAT = """
 %s
 Links : %s
@@ -56,6 +56,7 @@ class CutSummary(QtCore.QObject):
         self._counts = {}
         self._rescans_count = 0
         self._repeated_count = 0
+        self._logger=get_logger()
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
@@ -115,8 +116,10 @@ class CutSummary(QtCore.QObject):
         self._cut_diffs[old_shot_key].remove(cut_diff)
         count=len(self._cut_diffs[old_shot_key])
         if count==0:
+            self._logger.info("No more entry for old shot key %s" % old_shot_key)
             # If we have a SG shot, it is now an omitted one
             if cut_diff.sg_shot:
+                self._logger.info("Adding omitted entry for old shot key %s" % old_shot_key)
                 sg_shot=cut_diff.sg_shot
                 sg_cut_item=cut_diff.sg_cut_item
                 self.add_cut_diff(
@@ -126,9 +129,11 @@ class CutSummary(QtCore.QObject):
                         sg_cut_item=sg_cut_item,
                     )
             else:
+                self._logger.info("Discarding list for old shot key %s" % old_shot_key)
                 # We can discard the list for this shot
                 del self._cut_diffs[old_shot_key]
         elif count==1:
+            self._logger.info("Single entry for old shot key %s" % old_shot_key)
             # This guy is alone now, so not repeated
             self._cut_diffs[old_shot_key][0].set_repeated(False)
 
@@ -143,8 +148,12 @@ class CutSummary(QtCore.QObject):
 
         # Add it back with the new name
         if new_shot_key in self._cut_diffs:
+            for cdiff in self._cut_diffs[new_shot_key]:
+                self._logger.info("%s %s %s %s" % cdiff.summary())
             count=len(self._cut_diffs[new_shot_key])
+            self._logger.info("%d Entries for new shot key %s" % (count, new_shot_key))
             if count == 1 and not self._cut_diffs[new_shot_key][0].edit:
+                self._logger.info("Single omitted entry for new shot key %s" % new_shot_key)
                 # If only one entry, that could be an omitted shot ( no edit )
                 # in that case the shot is not omitted anymore
                 cdiff=self._cut_diffs[new_shot_key].pop()
@@ -153,6 +162,7 @@ class CutSummary(QtCore.QObject):
                 cut_diff.set_sg_cut_item(cdiff.sg_cut_item)
                 self._cut_diffs[new_shot_key].append(cut_diff)
             else:
+                self._logger.info("Adding new entry for new shot key %s" % new_shot_key)
                 # SG shot and cut item are shared by all entries in this list
                 cdiff=self._cut_diffs[new_shot_key][0]
                 cut_diff.set_sg_shot(cdiff.sg_shot)
@@ -163,6 +173,7 @@ class CutSummary(QtCore.QObject):
                 for cdiff in self._cut_diffs[new_shot_key]:
                     cdiff.set_repeated(True)
         else:
+            self._logger.info("Creating single entry for new shot key %s" % new_shot_key)
             self._cut_diffs[new_shot_key] = [cut_diff]
         cut_diff.check_changes()
 

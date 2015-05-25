@@ -554,3 +554,62 @@ class CutDiff(QtCore.QObject):
         Set this cut difference as repeated
         """
         self._repeated = val
+
+    def summary(self):
+        """
+        Return a summary for this CutDiff instance as a tuple with :
+         shot details, cut item details, version details and edit details
+        :return: A four entries tuple, where each entry is potentially empty string
+        """
+        shot_details = ""
+        if self.sg_shot:
+            if self._use_smart_fields:
+                shot_details = \
+                "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
+                    self.sg_shot["code"],
+                    self.sg_shot["sg_status_list"],
+                    self.sg_shot["smart_head_in"],
+                    self.sg_shot["smart_cut_in"],
+                    self.sg_shot["smart_cut_out"],
+                    self.sg_shot["smart_tail_out"],
+                    self.sg_shot["sg_cut_order"],
+                )
+            else:
+                shot_details = \
+                "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
+                    self.sg_shot["code"],
+                    self.sg_shot["sg_status_list"],
+                    self.sg_shot["sg_head_in"],
+                    self.sg_shot["sg_cut_in"],
+                    self.sg_shot["sg_cut_out"],
+                    self.sg_shot["sg_tail_out"],
+                    self.sg_shot["sg_cut_order"],
+                )
+        cut_item_details = ""
+        if self.sg_cut_item:
+            if self.sg_cut_item["sg_fps"] :
+                fps = self.sg_cut_item["sg_fps"]
+                tc_in = edl.Timecode(self.sg_cut_item["sg_timecode_cut_in"], fps)
+                tc_out = edl.Timecode(self.sg_cut_item["sg_timecode_cut_out"], fps)
+            else:
+                tc_in = "????"
+                tc_out = "????"
+            cut_item_details = \
+            "Cut Order %s, TC in %s, TC out %s, Cut In %s, Cut Out %s, Cut Duration %s" % (
+                self.sg_cut_item["sg_cut_order"],
+                tc_in,
+                tc_out,
+                self.sg_cut_item["sg_cut_in"],
+                self.sg_cut_item["sg_cut_out"],
+                self.sg_cut_item["sg_cut_duration"],
+            )
+        version_details = ""
+        sg_version = self.sg_version
+        if sg_version:
+            version_details = "%s, link %s %s" % (
+            sg_version["code"],
+            sg_version["entity"]["type"] if sg_version["entity"] else "None",
+            sg_version["entity.Shot.code"] if sg_version["entity.Shot.code"] else "",
+            )
+        return (shot_details, cut_item_details, version_details, str(self._edit))
+

@@ -193,6 +193,13 @@ class CutDiffCard(QtGui.QFrame):
             return int(self._cut_diff.cut_order)
         return -1
 
+    @property
+    def cut_diff(self):
+        """
+        Return the CutDiff instance this widget is showing
+        """
+        return self._cut_diff
+    
     def __getattr__(self, attr_name):
         """
         Allow access to attached cut diff

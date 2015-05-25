@@ -66,7 +66,21 @@ class CutDiffsView(QtCore.QObject):
 
     @QtCore.Slot(CutDiff)
     def delete_cut_diff(self, cut_diff):
-        print "%s is not needed anymore ..." % str(cut_diff)
+        # Retrieve the widget we can delete
+        count = self._list_widget.count()
+        # Last widget is a stretcher, so we stop at self._list_widget.count()-2
+        for i in range(0, count-1):
+            witem = self._list_widget.itemAt(i)
+            widget = witem.widget()
+            if widget.cut_diff==cut_diff: # Found it
+                witem = self._list_widget.takeAt(i)
+                widget=witem.widget()
+                widget.setParent(None)
+                widget.deleteLater()
+                break
+        else:
+            # This should never happen, raise an error if it does ...
+            raise RuntimeError("Couldn't retrieve a widget for %s" % cut_diff)
 
     @QtCore.Slot(bool)
     def display_repeated_cuts(self, checked):
