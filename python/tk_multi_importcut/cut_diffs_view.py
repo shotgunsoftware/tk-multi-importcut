@@ -63,6 +63,8 @@ class CutDiffsView(QtCore.QObject):
         else:
             self._list_widget.insertWidget(count-1, widget)
         self._list_widget.setStretch(self._list_widget.count()-1, 1)
+        # Redisplay widgets
+        self._display_for_summary_mode()
 
     @QtCore.Slot(CutDiff)
     def delete_cut_diff(self, cut_diff):
@@ -85,6 +87,8 @@ class CutDiffsView(QtCore.QObject):
         else:
             # This should never happen, raise an error if it does ...
             raise RuntimeError("Couldn't retrieve a widget for %s" % cut_diff)
+        # Redisplay widgets
+        self._display_for_summary_mode()
 
     @QtCore.Slot(bool)
     def display_repeated_cuts(self, checked):
@@ -111,14 +115,20 @@ class CutDiffsView(QtCore.QObject):
             return
         self._cuts_display_mode = mode
         self._logger.debug("Switching to %s mode" % mode)
+        self._display_for_summary_mode()
+
+    def _display_for_summary_mode(self):
+        """
+        Hide / show CutDiff widgets depending on the current mode
+        """
         show_only_repeated = self._cuts_display_repeated
         show_only_vfx=self._vfx_shots_only
         count = self._list_widget.count() -1 # We have stretcher
-        if mode == -1: # Show everything
+        if self._cuts_display_mode == -1: # Show everything
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
-        elif mode > 99: # Show "Need Rescan"
+        elif self._cuts_display_mode > 99: # Show "Need Rescan"
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 if widget.need_rescan:
@@ -128,7 +138,7 @@ class CutDiffsView(QtCore.QObject):
         else:
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
-                if widget.diff_type == mode:
+                if widget.diff_type == self._cuts_display_mode:
                     widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
                 else:
                     widget.hide()

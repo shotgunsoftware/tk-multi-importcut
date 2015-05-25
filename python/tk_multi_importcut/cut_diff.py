@@ -475,7 +475,7 @@ class CutDiff(QtCore.QObject):
             # coming from the Sequence
             return True
         # Return True if the edit has a shot name
-        return bool(self._edit.get_shot_name())
+        return bool(self._name)
 
     def check_changes(self):
         """
@@ -559,7 +559,7 @@ class CutDiff(QtCore.QObject):
         """
         Return a summary for this CutDiff instance as a tuple with :
          shot details, cut item details, version details and edit details
-        :return: A four entries tuple, where each entry is potentially empty string
+        :return: A four entries tuple, where each entry is a potentially empty string
         """
         shot_details = ""
         if self.sg_shot:

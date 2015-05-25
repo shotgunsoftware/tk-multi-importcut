@@ -232,61 +232,12 @@ class CutDiffCard(QtGui.QFrame):
         """
         Build a toolitp displaying details about this cut difference
         """
-        shot_details = ""
-        if self._cut_diff.sg_shot:
-            if self._use_smart_fields:
-                shot_details = \
-                "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
-                    self._cut_diff.sg_shot["code"],
-                    self._cut_diff.sg_shot["sg_status_list"],
-                    self._cut_diff.sg_shot["smart_head_in"],
-                    self._cut_diff.sg_shot["smart_cut_in"],
-                    self._cut_diff.sg_shot["smart_cut_out"],
-                    self._cut_diff.sg_shot["smart_tail_out"],
-                    self._cut_diff.sg_shot["sg_cut_order"],
-                )
-            else:
-                shot_details = \
-                "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
-                    self._cut_diff.sg_shot["code"],
-                    self._cut_diff.sg_shot["sg_status_list"],
-                    self._cut_diff.sg_shot["sg_head_in"],
-                    self._cut_diff.sg_shot["sg_cut_in"],
-                    self._cut_diff.sg_shot["sg_cut_out"],
-                    self._cut_diff.sg_shot["sg_tail_out"],
-                    self._cut_diff.sg_shot["sg_cut_order"],
-                )
-        cut_item_details = ""
-        if self._cut_diff.sg_cut_item:
-            if self._cut_diff.sg_cut_item["sg_fps"] :
-                fps = self._cut_diff.sg_cut_item["sg_fps"]
-                tc_in = edl.Timecode(self._cut_diff.sg_cut_item["sg_timecode_cut_in"], fps)
-                tc_out = edl.Timecode(self._cut_diff.sg_cut_item["sg_timecode_cut_out"], fps)
-            else:
-                tc_in = "????"
-                tc_out = "????"
-            cut_item_details = \
-            "Cut Order %s, TC in %s, TC out %s, Cut In %s, Cut Out %s, Cut Duration %s" % (
-                self._cut_diff.sg_cut_item["sg_cut_order"],
-                tc_in,
-                tc_out,
-                self._cut_diff.sg_cut_item["sg_cut_in"],
-                self._cut_diff.sg_cut_item["sg_cut_out"],
-                self._cut_diff.sg_cut_item["sg_cut_duration"],
-            )
-        version_details = ""
-        sg_version = self._cut_diff.sg_version
-        if sg_version:
-            version_details = "%s, link %s %s" % (
-            sg_version["code"],
-            sg_version["entity"]["type"] if sg_version["entity"] else "None",
-            sg_version["entity.Shot.code"] if sg_version["entity.Shot.code"] else "",
-            )
+        shot_details, cut_item_details, version_details, edit_details = self._cut_diff.summary()
         msg = _TOOL_TIP_FORMAT % (
             shot_details,
             version_details,
             cut_item_details,
-            self._cut_diff.edit
+            edit_details
         )
         self.setToolTip(msg)
 
