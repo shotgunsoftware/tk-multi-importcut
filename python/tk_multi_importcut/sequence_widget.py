@@ -82,6 +82,10 @@ class SequenceCard(QtGui.QFrame):
 #            "/Users/steph/Pictures/IMG_4720.jpg"
 #        ][randint(0, 2)])
 
+    @property
+    def sg_entity(self):
+        return self._sg_sequence
+
     @QtCore.Slot()
     def select(self):
         """

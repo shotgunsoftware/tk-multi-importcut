@@ -64,16 +64,31 @@ QProgressBar::chunk {
 /*
 Drop area style : big font, and a dashed outline
 */
-QLabel#drop_area_label {
+DropAreaFrame {
     border: 2px dashed grey;
     border-radius: 4px;
-    font-size: 50px;
     font-style: bold;
     background-color: #2B2B2B;
+}
+/* Font size for the label in the drop area */
+DropAreaFrame QLabel {
+    font-size: 30px;
+}
+
+/*
+Highlight the drop area when something is dragged over
+*/
+DropAreaFrame[dragging="true"] {
+    border: 2px dashed white;
 }
 
 QFrame#SequenceCard, #CutCard, #CutDiffCard {
     border: 2px solid black;
+}
+
+/* Make the Select button SG blue when enabled */
+QPushButton:enabled#select_button {
+    background-color: #2C93E2;
 }
 
 /*

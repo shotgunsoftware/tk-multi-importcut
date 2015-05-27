@@ -17,8 +17,11 @@ class SequencesView(QtCore.QObject):
     """
     Sequences view page handler
     """
+    # Emitted when a sequence is chosen for next step
     sequence_chosen = QtCore.Signal(dict)
-    
+    # Emitted when a different sequence is selected
+    selection_changed=QtCore.Signal(dict)
+
     def __init__(self, grid_widget):
         super(SequencesView, self).__init__()
         self._grid_widget = grid_widget
@@ -57,6 +60,7 @@ class SequencesView(QtCore.QObject):
             self._logger.debug("Unselected %s" % self._selected_card_sequence)
         self._selected_card_sequence = card
         self._selected_card_sequence.select()
+        self.selection_changed.emit(card.sg_entity)
         self._logger.debug("Selected %s" % self._selected_card_sequence)
 
     @QtCore.Slot(unicode)
