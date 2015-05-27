@@ -371,6 +371,9 @@ class Ui_Dialog(object):
         self.submit_button = QtGui.QPushButton(Dialog)
         self.submit_button.setObjectName("submit_button")
         self.horizontalLayout.addWidget(self.submit_button)
+        self.select_button = QtGui.QPushButton(Dialog)
+        self.select_button.setObjectName("select_button")
+        self.horizontalLayout.addWidget(self.select_button)
         self.main_layout.addLayout(self.horizontalLayout)
         self.main_layout.setStretch(0, 1)
 
@@ -402,6 +405,7 @@ class Ui_Dialog(object):
         self.reset_button.setText(QtGui.QApplication.translate("Dialog", "Reset", None, QtGui.QApplication.UnicodeUTF8))
         self.email_button.setText(QtGui.QApplication.translate("Dialog", "Email Summary", None, QtGui.QApplication.UnicodeUTF8))
         self.submit_button.setText(QtGui.QApplication.translate("Dialog", "Import Cut", None, QtGui.QApplication.UnicodeUTF8))
+        self.select_button.setText(QtGui.QApplication.translate("Dialog", "Select", None, QtGui.QApplication.UnicodeUTF8))
 
 from ..dialog import SearchWidget, DropAreaFrame, AnimatedStackedWidget
 from . import resources_rc

@@ -91,6 +91,10 @@ class CutCard(QtGui.QFrame):
 #            "/Users/steph/Pictures/IMG_4720.jpg"
 #        ][randint(0, 2)])
 
+    @property
+    def sg_entity(self):
+        return self._sg_cut
+
     @QtCore.Slot()
     def select(self):
         """

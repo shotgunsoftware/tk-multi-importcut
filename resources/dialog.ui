@@ -900,6 +900,13 @@ background-color: #2C93E2;
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="select_button">
+       <property name="text">
+        <string>Select</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>

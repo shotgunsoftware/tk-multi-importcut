@@ -86,6 +86,11 @@ QFrame#SequenceCard, #CutCard, #CutDiffCard {
     border: 2px solid black;
 }
 
+/* Make the Select button SG blue when enabled */
+QPushButton:enabled#select_button {
+    background-color: #2C93E2;
+}
+
 /*
 QFrame:!focus#SequenceCard {
     border-color: red;

@@ -37,6 +37,9 @@ from .cut_diffs_view import CutDiffsView
 from .submit_dialog import SubmitDialog
 from .downloader import DownloadRunner
 
+# Different steps in the process
+_DROP_STEP, _SEQUENCE_STEP, _CUT_STEP, _SUMMARY_STEP, _LAST_STEP = range(5)
+
 def show_dialog(app_instance):
     """
     Shows the main dialog window.
@@ -75,7 +78,14 @@ class AppDialog(QtGui.QWidget):
         self._app = sgtk.platform.current_bundle()
         
         self._busy = False
-
+        # Current step being displayed
+        self._step=0
+        # Selected sg entity per step : selection only happen in steps 1 and 2
+        # but we create entries for all steps allowing to index the list
+        # with the current step and blindly disable the select button on the
+        # value for each step
+        self._selected_sg_entity=[None]*(_LAST_STEP+1)
+        
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
         # - A Shotgun API instance, via self._app.shotgun
@@ -103,6 +113,7 @@ class AppDialog(QtGui.QWidget):
         # Instantiate a sequences view handler
         self._sequences_view = SequencesView(self.ui.sequence_grid)
         self._sequences_view.sequence_chosen.connect(self.show_sequence)
+        self._sequences_view.selection_changed.connect(self.selection_changed)
         self._processor.new_sg_sequence.connect(self._sequences_view.new_sg_sequence)
         self.ui.sequences_search_line_edit.search_edited.connect(self._sequences_view.search)
         self.ui.sequences_search_line_edit.search_changed.connect(self._sequences_view.search)
@@ -110,6 +121,7 @@ class AppDialog(QtGui.QWidget):
         # Instantiate a cuts view handler
         self._cuts_view = CutsView(self.ui.cuts_grid, self.ui.cuts_sort_button)
         self._cuts_view.show_cut_diff.connect(self.show_cut)
+        self._cuts_view.selection_changed.connect(self.selection_changed)
         self._processor.new_sg_cut.connect(self._cuts_view.new_sg_cut)
         self.ui.search_line_edit.search_edited.connect(self._cuts_view.search)
         self.ui.search_line_edit.search_changed.connect(self._cuts_view.search)
@@ -135,6 +147,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.stackedWidget.first_page_reached.connect(self.reset)
         self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
+        self.ui.select_button.clicked.connect(self.select_button_callback)
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
@@ -228,6 +241,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.setEnabled(False)
         self.ui.email_button.setEnabled(False)
         self.ui.submit_button.setEnabled(False)
+        self.ui.select_button.setEnabled(False)
         # Show the progress bar if a maximum was given
         if maximum:
             self.ui.progress_bar.setValue(0)
@@ -246,6 +260,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.setEnabled(True)
         self.ui.email_button.setEnabled(True)
         self.ui.submit_button.setEnabled(True)
+        self.ui.select_button.setEnabled(bool(self._selected_sg_entity[self._step]))
         self.ui.progress_bar.hide()
 
     def goto_step(self, which):
@@ -272,33 +287,54 @@ class AppDialog(QtGui.QWidget):
         """
         Set the UI for the given step
         """
+        self._step=step
         # 0 : drag and drop
         # 1 : sequence select
         # 2 : cut select
         # 3 : cut summary
         # 4 : import completed
-        if step < 1:
+        if step == _DROP_STEP:
+            # No previous screen
             self.ui.back_button.hide()
+            # Nothing to reset
             self.ui.reset_button.hide()
+            # Clear various things when we hit the first screen
+            # doing a reset
             self.ui.sequences_search_line_edit.clear()
             self.clear_sequence_view()
+            self._selected_sg_entity[1]=None
         else:
+            # Allow reset and back from screens > 0
             self.ui.reset_button.show()
             self.ui.back_button.show()
 
-        if step < 2:
+        if step < _CUT_STEP:
+            self._selected_sg_entity[2]=None
+            # Reset the cut view
             self.clear_cuts_view()
             self.ui.search_line_edit.clear()
+            self._selected_sg_entity[2]=None
 
-        if step < 3:
+        if step < _SUMMARY_STEP:
+            # Reset the summary view
             self.clear_cut_summary_view()
+            # Too early to submit anything
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
         else:
+            # From step 3 can submit the cut
             self.ui.email_button.show()
             self.ui.submit_button.show()
 
-        if step == 4:
+        # We can select things on intermediate screens
+        if step==_SEQUENCE_STEP or step==_CUT_STEP:
+            self.ui.select_button.show()
+            # Only enable it if there is a selection for this step
+            self.ui.select_button.setEnabled(bool(self._selected_sg_entity[step]))
+        else:
+            self.ui.select_button.hide()
+
+        if step == _LAST_STEP:
             self.ui.success_label.setText(
                 "<big>Cut %s successfully imported</big>" % self._processor.sg_new_cut["code"]
             )
@@ -306,6 +342,33 @@ class AppDialog(QtGui.QWidget):
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
 
+    @QtCore.Slot(dict)
+    def selection_changed(self, sg_entity):
+        """
+        Called when selection changes in intermediate screens
+        :param sg_entity: The SG entity which was selected for the current step
+        """
+        # Keep trace of what is selected in different views
+        # so the select button at the bottom of the window can
+        # trigger next step with current selection
+        self._selected_sg_entity[self._step]=sg_entity
+        self.ui.select_button.setEnabled(True)
+
+    @QtCore.Slot()
+    def select_button_callback(self):
+        """
+        Callback for the select button
+        :raises: RuntimeError in cases of inconsistencies
+        """
+        if not self._selected_sg_entity[self._step]:
+            raise RuntimeError("No selection for current step %d" % self._step)
+        if self._step==_SEQUENCE_STEP:
+            self.show_sequence(self._selected_sg_entity[self._step])
+        elif self._step==_CUT_STEP:
+            self.show_cut(self._selected_sg_entity[self._step])
+        else:
+            # Should never happen
+            raise RuntimeError("Invalid step %d for selection callback" % step)
 
     @QtCore.Slot(dict)
     def show_sequence(self, sg_entity):

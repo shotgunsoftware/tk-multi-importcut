@@ -19,7 +19,11 @@ class CutsView(QtCore.QObject):
     """
     Cuts view page handler
     """
+    # Emitted when the cut summary for a cut should be shown
     show_cut_diff = QtCore.Signal(dict)
+
+    # Emitted when a different cut is selected
+    selection_changed=QtCore.Signal(dict)
 
     def __init__(self, grid_widget, sort_menu_button):
         super(CutsView, self).__init__()
@@ -84,6 +88,7 @@ class CutsView(QtCore.QObject):
             self._logger.debug("Unselected %s" % self._selected_card_cut)
         self._selected_card_cut = card
         self._selected_card_cut.select()
+        self.selection_changed.emit(card.sg_entity)
         self._logger.debug("Selected %s" % self._selected_card_cut)
 
     @QtCore.Slot(dict)
