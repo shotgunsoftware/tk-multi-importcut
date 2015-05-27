@@ -56,6 +56,8 @@ class CutDiffCard(QtGui.QFrame):
     """
     A widget showing cut differences
     """
+    # Emitted when the CutDiff instance changed its type
+    type_changed=QtCore.Signal()
     def __init__(self, parent, cut_diff):
         """
         Instantiate a new cut diff card for the given CutDiff instance
@@ -67,9 +69,26 @@ class CutDiffCard(QtGui.QFrame):
         self.ui = Ui_CutDiffCard()
         self.ui.setupUi(self)
         
-        self._thumbnail_requested = False
         app = sgtk.platform.current_bundle()
         self._use_smart_fields = app.get_setting("use_smart_fields") or False
+        self._thumbnail_requested = False
+        cut_diff.type_changed.connect(self.diff_type_changed)
+        self._set_ui_values()
+
+    def _set_ui_values(self):
+        """
+        Set UI values, colors, etc ... from the CutDiff instance being displayed
+        """
+        # Shot name widget
+        if self._cut_diff.name:
+            self.ui.shot_name_line.set_property("valid", True)
+            self.ui.shot_name_line.setText("%s" % self._cut_diff.name)
+        else:
+            self.ui.shot_name_line.set_property("valid", False)
+            self.ui.shot_name_line.setText("")
+        self.ui.shot_name_line.value_changed.connect(self.shot_name_edited)
+        self.ui.shot_name_line.setReadOnly(not self._cut_diff.is_name_editable)
+
         # Cut order
         new_cut_order = self._cut_diff.new_cut_order or 0
         old_cut_order = self._cut_diff.cut_order or 0
@@ -78,21 +97,21 @@ class CutDiffCard(QtGui.QFrame):
             font_color= _COLORS["sg_red"]
         else:
             font_color= _COLORS["lgrey"]
-        
         if self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
             self.ui.cut_order_label.setText("<s><font color=%s>%03d</font></s>" % (font_color, cut_order))
         else:
             self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
 
-        if self._cut_diff.name:
-            self.ui.shot_name_label.setText("<big><b>%s</b></big>" % self._cut_diff.name)
+        # Difference and reasons
+        diff_type_label = self._cut_diff.diff_type_label
+        reasons = ",<br>".join(self._cut_diff.reasons)
+        if reasons:
+            self.ui.status_label.setText("%s : <small>%s</small>" % (diff_type_label, reasons))
         else:
-            self.ui.shot_name_label.setText(
-                "<big><i><font color=%s>%s</font></i></big>" % (
-                    _COLORS["sg_red"],
-                    "No Link"
-                )
-            )
+            self.ui.status_label.setText("%s" % diff_type_label)
+        if self._cut_diff.diff_type in _DIFF_TYPES_STYLE:
+            self.ui.status_label.setStyleSheet(_DIFF_TYPES_STYLE[self._cut_diff.diff_type])
+
 
         sg_version = self._cut_diff.sg_version
         if not sg_version:
@@ -116,14 +135,6 @@ class CutDiffCard(QtGui.QFrame):
         new_value = self._cut_diff.new_tail_out
         self.display_values(self.ui.shot_tail_out_label, new_value, value)
 
-        diff_type_label = self._cut_diff.diff_type_label
-        reasons = ",<br>".join(self._cut_diff.reasons)
-        if reasons:
-            self.ui.status_label.setText("%s : <small>%s</small>" % (diff_type_label, reasons))
-        else:
-            self.ui.status_label.setText("%s" % diff_type_label)
-        if self._cut_diff.diff_type in _DIFF_TYPES_STYLE:
-            self.ui.status_label.setStyleSheet(_DIFF_TYPES_STYLE[self._cut_diff.diff_type])
 
         value = self._cut_diff.cut_in
         new_value = self._cut_diff.new_cut_in
@@ -156,6 +167,36 @@ class CutDiffCard(QtGui.QFrame):
         """
         self.set_thumbnail(path)
 
+    @QtCore.Slot(CutDiff, int, int)
+    def diff_type_changed(self, cut_diff, old_type, new_type):
+        """
+        Called when the diff type changed for the CutDiff being displayed
+        Some parameter are ignored as we have the CutDiff instance as member
+        of our class.
+        :param cut_diff: A CutDiff instance
+        :param old_type: The old type for the CutDiff instance
+        :param new_type: The new type for the CutDiff instance
+        """
+        self._set_ui_values()
+        self.type_changed.emit()
+        # The linked sg version might have changed so blindly ask for a thumbnail
+        # even if it actually didn't change. This is asynchronous so it shouldn't
+        # harm to request the same thumbnail again. If it is, then sg version
+        # changes should be handled in a dedicated slot and thumbnail requests
+        # issued from it
+        self.retrieve_thumbnail()
+
+    @QtCore.Slot(str)
+    def shot_name_edited(self, value):
+        """
+        Called when the shot name was edited
+        :param value: The value from the widget
+        """
+        if value != self._cut_diff.name:
+            self._cut_diff.set_name(value)
+        if not self._cut_diff.name:
+            self.ui.shot_name_line.set_property("valid", False)
+
     @property
     def cut_order(self):
         """
@@ -167,9 +208,19 @@ class CutDiffCard(QtGui.QFrame):
             return int(self._cut_diff.cut_order)
         return -1
 
+    @property
+    def cut_diff(self):
+        """
+        Return the CutDiff instance this widget is showing
+        """
+        return self._cut_diff
+    
     def __getattr__(self, attr_name):
         """
-        Allow access to attached cut diff
+        Allow access to attached cut diff, it will be called by Python only
+        if the requested attribute is not available on this instance
+
+        :param attr_name: An attribute name, as a string
         """
         return getattr(self._cut_diff, attr_name)
 
@@ -178,6 +229,10 @@ class CutDiffCard(QtGui.QFrame):
         Format the text for the given widget ( typically a QLabel ), comparing
         the old value to the new one, displaying only one of them if the two values
         are equal, coloring them otherwise
+
+        :param widget: The widget used to display the values, typically a QLabel
+        :param new_value: New value retrieved from the cut being imported
+        :param old_value: Previous value retrieved from a former cut import
         """
         if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
             widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["sg_red"], new_value))
@@ -199,61 +254,12 @@ class CutDiffCard(QtGui.QFrame):
         """
         Build a toolitp displaying details about this cut difference
         """
-        shot_details = ""
-        if self._cut_diff.sg_shot:
-            if self._use_smart_fields:
-                shot_details = \
-                "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
-                    self._cut_diff.sg_shot["code"],
-                    self._cut_diff.sg_shot["sg_status_list"],
-                    self._cut_diff.sg_shot["smart_head_in"],
-                    self._cut_diff.sg_shot["smart_cut_in"],
-                    self._cut_diff.sg_shot["smart_cut_out"],
-                    self._cut_diff.sg_shot["smart_tail_out"],
-                    self._cut_diff.sg_shot["sg_cut_order"],
-                )
-            else:
-                shot_details = \
-                "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
-                    self._cut_diff.sg_shot["code"],
-                    self._cut_diff.sg_shot["sg_status_list"],
-                    self._cut_diff.sg_shot["sg_head_in"],
-                    self._cut_diff.sg_shot["sg_cut_in"],
-                    self._cut_diff.sg_shot["sg_cut_out"],
-                    self._cut_diff.sg_shot["sg_tail_out"],
-                    self._cut_diff.sg_shot["sg_cut_order"],
-                )
-        cut_item_details = ""
-        if self._cut_diff.sg_cut_item:
-            if self._cut_diff.sg_cut_item["sg_fps"] :
-                fps = self._cut_diff.sg_cut_item["sg_fps"]
-                tc_in = edl.Timecode(self._cut_diff.sg_cut_item["sg_timecode_cut_in"], fps)
-                tc_out = edl.Timecode(self._cut_diff.sg_cut_item["sg_timecode_cut_out"], fps)
-            else:
-                tc_in = "????"
-                tc_out = "????"
-            cut_item_details = \
-            "Cut Order %s, TC in %s, TC out %s, Cut In %s, Cut Out %s, Cut Duration %s" % (
-                self._cut_diff.sg_cut_item["sg_cut_order"],
-                tc_in,
-                tc_out,
-                self._cut_diff.sg_cut_item["sg_cut_in"],
-                self._cut_diff.sg_cut_item["sg_cut_out"],
-                self._cut_diff.sg_cut_item["sg_cut_duration"],
-            )
-        version_details = ""
-        sg_version = self._cut_diff.sg_version
-        if sg_version:
-            version_details = "%s, link %s %s" % (
-            sg_version["code"],
-            sg_version["entity"]["type"] if sg_version["entity"] else "None",
-            sg_version["entity.Shot.code"] if sg_version["entity.Shot.code"] else "",
-            )
+        shot_details, cut_item_details, version_details, edit_details = self._cut_diff.summary()
         msg = _TOOL_TIP_FORMAT % (
             shot_details,
             version_details,
             cut_item_details,
-            self._cut_diff.edit
+            edit_details
         )
         self.setToolTip(msg)
 
@@ -267,7 +273,14 @@ class CutDiffCard(QtGui.QFrame):
             return
 
         self._thumbnail_requested = True
+        self.retrieve_thumbnail()
+        event.ignore()
 
+    def retrieve_thumbnail(self):
+        """
+        Check if a SG version can be retrieved from the CutDiff, request an
+        asynchronous thumbnail download if it is the case
+        """
         thumb_url = None
         if self._cut_diff.sg_version and self._cut_diff.sg_version.get("image"):
             thumb_url = self._cut_diff.sg_version["image"]
@@ -281,8 +294,6 @@ class CutDiffCard(QtGui.QFrame):
             )
             downloader.file_downloaded.connect(self.new_thumbnail)
             QtCore.QThreadPool.globalInstance().start(downloader)
-
-        event.ignore()
 
     def set_thumbnail(self, thumb_path):
         """

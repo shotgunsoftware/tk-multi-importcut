@@ -18,6 +18,38 @@ QDialogButtonBox {
     button-layout: 3;
 }
 
+/*
+Make the line edit looks like a QLabel 
+when not in edit mode 
+*/
+EntityLineWidget {
+    border: none;
+    background: #424242;
+    font-style: normal;
+    font-weight: bold;
+}
+
+/*
+In edit mode, show it is a QLineEdit if it is not read only
+*/
+EntityLineWidget:focus:!read-only {
+    border: 2px solid #2C93E2;
+    border-radius: 2px;
+    background: none;
+    font-style: normal;
+    font-weight: normal;
+}
+
+/*
+When not in edit and the value is empty or not valid
+Make it SG red
+*/
+EntityLineWidget:!focus[valid="false"] {
+    color: #FC6246;
+    font-style: italic;
+}
+
+
 /* Thin progress bar on the main window
 */
 QProgressBar#progress_bar {

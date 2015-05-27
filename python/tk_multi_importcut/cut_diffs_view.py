@@ -15,11 +15,17 @@ from .cut_diff import CutDiff, _DIFF_TYPES
 
 class CutDiffsView(QtCore.QObject):
     """
-    Cut differences view page handler
+    Handle CutDiffWidget view
     """
     totals_changed = QtCore.Signal()
     
     def __init__(self, list_widget):
+        """
+        Construct a new CutDiffsView, using the given list_widget as widgets 
+        container
+
+        :param list_widget: A QVBoxLayout
+        """
         super(CutDiffsView, self).__init__()
         self._list_widget = list_widget
         self._logger = get_logger()
@@ -32,10 +38,13 @@ class CutDiffsView(QtCore.QObject):
         """
         Called when a new cut diff card widget needs to be added to the list of retrieved
         changes
+
+        :param cut_diff: A CutDiff instance for whose a widget needs to be added
         """
         self._logger.debug("Adding %s" % cut_diff.name)
         self.totals_changed.emit()
         widget = CutDiffCard(parent=None, cut_diff=cut_diff)
+
         cut_order = widget.cut_order
         count = self._list_widget.count()
         # Shortcut : instead of looping over all entries, check if we can simply
@@ -62,11 +71,39 @@ class CutDiffsView(QtCore.QObject):
         else:
             self._list_widget.insertWidget(count-1, widget)
         self._list_widget.setStretch(self._list_widget.count()-1, 1)
+        # Redisplay widgets
+        self._display_for_summary_mode()
+
+    @QtCore.Slot(CutDiff)
+    def delete_cut_diff(self, cut_diff):
+        """
+        Delete the widget associated with the given CutDiff instance
+
+        :param cut_diff: A CutDiff instance
+        """
+        # Retrieve the widget we can delete
+        count = self._list_widget.count()
+        # Last widget is a stretcher, so we stop at self._list_widget.count()-2
+        for i in range(0, count-1):
+            witem = self._list_widget.itemAt(i)
+            widget = witem.widget()
+            if widget.cut_diff==cut_diff: # Found it
+                witem = self._list_widget.takeAt(i)
+                widget=witem.widget()
+                widget.setParent(None)
+                widget.deleteLater()
+                break
+        else:
+            # This should never happen, raise an error if it does ...
+            raise RuntimeError("Couldn't retrieve a widget for %s" % cut_diff)
+        # Redisplay widgets
+        self._display_for_summary_mode()
 
     @QtCore.Slot(bool)
     def display_repeated_cuts(self, checked):
         """
         Only display cut diff cards widget affecting the same shot(s)
+        :param checked: A boolean, whether or not repeated cuts should be displayed
         """
         self._cuts_display_repeated = checked
         self.set_display_summary_mode(True, self._cuts_display_mode)
@@ -75,6 +112,7 @@ class CutDiffsView(QtCore.QObject):
     def display_vfx_cuts(self, checked):
         """
         Only display cut diff cards for VFX shots
+        :param checked: A boolean, whether or not non VFX cuts should be displayed
         """
         self._vfx_shots_only = checked
         self.set_display_summary_mode(True, self._cuts_display_mode)
@@ -83,19 +121,29 @@ class CutDiffsView(QtCore.QObject):
         """
         Called when the user click on the top views selectors in the cut summary
         page
+        :param activated: A boolean, whether or not the selector was turned on
+        :param mode: The mode which was activated
         """
+        # Modes are exclusive, so we don't have to handle the case were a mode
+        # was turned off as it means another one was turned on
         if not activated:
             return
         self._cuts_display_mode = mode
         self._logger.debug("Switching to %s mode" % mode)
+        self._display_for_summary_mode()
+
+    def _display_for_summary_mode(self):
+        """
+        Hide / show CutDiff widgets depending on the current mode
+        """
         show_only_repeated = self._cuts_display_repeated
         show_only_vfx=self._vfx_shots_only
         count = self._list_widget.count() -1 # We have stretcher
-        if mode == -1: # Show everything
+        if self._cuts_display_mode == -1: # Show everything
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
-        elif mode > 99: # Show "Need Rescan"
+        elif self._cuts_display_mode > 99: # Show "Need Rescan"
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 if widget.need_rescan:
@@ -105,7 +153,7 @@ class CutDiffsView(QtCore.QObject):
         else:
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
-                if widget.diff_type == mode:
+                if widget.diff_type == self._cuts_display_mode:
                     widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
                 else:
                     widget.hide()

@@ -23,6 +23,7 @@ widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
 DropAreaLabel = widgets.drop_area_label.DropAreaLabel
 AnimatedStackedWidget = widgets.animated_stacked_widget.AnimatedStackedWidget
 from .search_widget import SearchWidget
+from .entity_line_widget import EntityLineWidget
 
 # Custom widgets must be imported before importing the UI
 from .ui.dialog import Ui_Dialog
@@ -116,7 +117,9 @@ class AppDialog(QtGui.QWidget):
         # Instantiate a cut differences view handler
         self._cut_diffs_view = CutDiffsView(self.ui.cutsummary_list)
         self._cut_diffs_view.totals_changed.connect(self.set_cut_summary_view_selectors)
+        self._processor.totals_changed.connect(self.set_cut_summary_view_selectors)
         self._processor.new_cut_diff.connect(self._cut_diffs_view.new_cut_diff)
+        self._processor.delete_cut_diff.connect(self._cut_diffs_view.delete_cut_diff)
 
         # Cut summary view selectors
         self.ui.new_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.NEW))

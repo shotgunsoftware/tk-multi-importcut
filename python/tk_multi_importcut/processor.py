@@ -12,6 +12,8 @@ from sgtk.platform.qt import QtCore
 from .logger import get_logger
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
+from .entity_line_widget import EntityLineWidget
+
 import re
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
@@ -34,7 +36,11 @@ class Processor(QtCore.QThread):
     """
     # Pass through signals which will be redirected to
     # the worker instance created in the running thread, so signals
-    # will be processed in the running thread
+    # will be processed in the running thread.
+    # Typical signals chain is as follow
+    # | UI | <-> | Processor | <-> | EdlCut | <-> | CutSummary |
+    #
+    #
     new_edl                 = QtCore.Signal(str)
     reset                   = QtCore.Signal()
     set_busy                = QtCore.Signal(bool)
@@ -49,6 +55,8 @@ class Processor(QtCore.QThread):
     got_idle                = QtCore.Signal()
     progress_changed        = QtCore.Signal(int)
     import_cut              = QtCore.Signal(str,dict,dict, str)
+    totals_changed          = QtCore.Signal()
+    delete_cut_diff         = QtCore.Signal(CutDiff)
 
     def __init__(self):
         """
@@ -115,7 +123,10 @@ class Processor(QtCore.QThread):
         - Connect this processor signals to worker's ones
         - Then wait for events to process
         """
+        # Create a worker
         self._edl_cut = EdlCut()
+        # Connect signals from the worker to ours as a gateway, so anything
+        # connected to the Processor signals will be connected to the worker
         # Orders we receive
         self.new_edl.connect(self._edl_cut.load_edl)
         self.reset.connect(self._edl_cut.reset)
@@ -123,28 +134,31 @@ class Processor(QtCore.QThread):
         self.retrieve_cuts.connect(self._edl_cut.retrieve_cuts)
         self.show_cut_diff.connect(self._edl_cut.show_cut_diff)
         self.import_cut.connect(self._edl_cut.do_cut_import)
-        # Results we send
+        # Results / orders we send
         self._edl_cut.step_done.connect(self.step_done)
         self._edl_cut.new_sg_sequence.connect(self.new_sg_sequence)
         self._edl_cut.new_sg_cut.connect(self.new_sg_cut)
         self._edl_cut.new_cut_diff.connect(self.new_cut_diff)
+        self._edl_cut.delete_cut_diff.connect(self.delete_cut_diff)
         self._edl_cut.got_busy.connect(self.got_busy)
         self._edl_cut.got_idle.connect(self.got_idle)
         self._edl_cut.progress_changed.connect(self.progress_changed)
+        self._edl_cut.totals_changed.connect(self.totals_changed)
         self.exec_()
 
 class EdlCut(QtCore.QObject):
     """
     Worker which handles all data
     """
-    step_done = QtCore.Signal(int)
-    new_sg_sequence = QtCore.Signal(dict)
-    new_sg_cut = QtCore.Signal(dict)
-    new_cut_diff = QtCore.Signal(CutDiff)
-    got_busy = QtCore.Signal(int)
-    got_idle = QtCore.Signal()
-    progress_changed = QtCore.Signal(int)
-
+    step_done           = QtCore.Signal(int)
+    new_sg_sequence     = QtCore.Signal(dict)
+    new_sg_cut          = QtCore.Signal(dict)
+    new_cut_diff        = QtCore.Signal(CutDiff)
+    got_busy            = QtCore.Signal(int)
+    got_idle            = QtCore.Signal()
+    progress_changed    = QtCore.Signal(int)
+    totals_changed      = QtCore.Signal()
+    delete_cut_diff     = QtCore.Signal(CutDiff)
     def __init__(self):
         """
         Instantiate a new empty worker
@@ -391,7 +405,11 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Retrieving cut summary for %s" % ( self._sg_entity["code"]))
         self.got_busy.emit(None)
         self._summary = CutSummary()
+        # Connect CutSummary signals to ours as pass through, so any listener
+        # on our signals will receive signals emitted by the CutSummary
         self._summary.new_cut_diff.connect(self.new_cut_diff)
+        self._summary.delete_cut_diff.connect(self.delete_cut_diff)
+        self._summary.totals_changed.connect(self.totals_changed)
         try:
             # Handle the case where we don't have any cut specified
             # Grab the latest one ...
@@ -473,6 +491,8 @@ class EdlCut(QtCore.QObject):
                     "image"
                 ],
             )
+            # Record the list of shots for completion purpose
+            EntityLineWidget.set_known_list([x["code"] for x in sg_shots if x["code"]])
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
                 if not shot_name:

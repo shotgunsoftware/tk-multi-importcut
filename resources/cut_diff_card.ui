@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>764</width>
-    <height>101</height>
+    <width>712</width>
+    <height>141</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -100,11 +100,18 @@
       </widget>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1">
+      <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,1,1" columnstretch="0,1,0" columnminimumwidth="0,0,0">
        <item row="1" column="1">
         <widget class="QLabel" name="version_name_label">
          <property name="text">
           <string>sh_001_001_fg_v001</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="version_title_label">
+         <property name="text">
+          <string>VERSION</string>
          </property>
         </widget>
        </item>
@@ -121,17 +128,16 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="version_title_label">
-         <property name="text">
-          <string>VERSION</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="1">
-        <widget class="QLabel" name="shot_name_label">
+        <widget class="EntityLineWidget" name="shot_name_line">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
-          <string>sh_001_001</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -360,6 +366,13 @@ border-bottom: 1px solid black;</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>EntityLineWidget</class>
+   <extends>QLineEdit</extends>
+   <header>..dialog</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>

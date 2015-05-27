@@ -47,22 +47,25 @@ class CutDiff(QtCore.QObject):
     - A Shotgun cut item
     - A Shotgun shot
     At least one of them needs to be set
-    A Shotgun Version can be given, for reference purpose
     """
-    def __init__(self, name, sg_shot=None, sg_version=None, edit=None, sg_cut_item=None):
+    # Emitted when the (shot) name for this item is changed
+    name_changed=QtCore.Signal(QtCore.QObject, str, str)
+    # Emitted when the diff type for this item is changed
+    type_changed=QtCore.Signal(QtCore.QObject, int, int)
+    # Emitted when this cut diff instance is discarded
+    discarded=QtCore.Signal(QtCore.QObject)
+    def __init__(self, name, sg_shot=None, edit=None, sg_cut_item=None):
         """
         Instantiate a new cut difference
         
         :param name: A name for this cut difference, usually the shot name
         :param sg_shot: An optional shot dictionary, as retrieved from Shotgun
-        :param sg_version: An optional version dictionary, as retrieved from Shotgun
         :param edit: An optional EditEvent instance, retrieved from an EDL
         :param sg_cut_item: An optional cut item dictionary, as retrieved from Shotgun
         """
         super(CutDiff, self).__init__()
         self._name = name
         self._sg_shot = sg_shot
-        self._sg_version = sg_version
         self._edit = edit
         self._sg_cut_item = sg_cut_item
         self._app = sgtk.platform.current_bundle()
@@ -75,7 +78,7 @@ class CutDiff(QtCore.QObject):
         self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
 
         # Retrieve the cut diff type from the given params
-        self.check_changes()
+        self._check_changes()
 
     @classmethod
     def get_diff_type_label(cls, diff_type):
@@ -92,12 +95,26 @@ class CutDiff(QtCore.QObject):
         """
         return self._sg_shot
 
+    def set_sg_shot(self, sg_shot):
+        """
+        Set the SG shot associated with this CutDiff
+        :param sg_shot: A SG shot dictionary, or None
+        """
+        self._sg_shot=sg_shot
+
     @property
     def sg_cut_item(self):
         """
         Return the Shotgun cut item for this diff, if any
         """
         return self._sg_cut_item
+
+    def set_sg_cut_item(self, sg_cut_item):
+        """
+        Set the SG cut item for this CutDiff
+        :param sg_cut_item: A SG CutItem dictionary or None
+        """
+        self._sg_cut_item=sg_cut_item
 
     @property
     def edit(self):
@@ -112,6 +129,33 @@ class CutDiff(QtCore.QObject):
         Return the name of this diff
         """
         return self._name
+
+    @property
+    def is_name_editable(self):
+        """
+        Return True if the name for this instance can be changed
+        """
+        # We can only change names coming from an edit entry
+        if not self._edit:
+            return False
+        return True
+
+    def set_name(self, name):
+        """
+        Set a new name for this cut diff
+        :param name: A string
+        :raises: RuntimeError if the name is not editable
+        """
+        if name==self._name:
+            return
+        if not self.is_name_editable:
+            raise RuntimeErrror("Attempting to change a read only name")
+        # if we changed the shot name, it means that we :
+        # - need to check the sg_shot we are linked to
+        # - need to check the sg_cutitem we are linked to
+        # - need to check the new diff type
+        self.name_changed.emit(self, self._name, name)
+        self._name=name
 
     @property
     def version_name(self):
@@ -138,6 +182,7 @@ class CutDiff(QtCore.QObject):
     def set_sg_version(self, sg_version):
         """
         Set the Shotgun version associated with this diff
+        :param sg_version: A SG version, as a dictionary
         :raises: ValueError if no EditEvent is associated to this diff
         """
         if not self._edit:
@@ -429,9 +474,19 @@ class CutDiff(QtCore.QObject):
             # coming from the Sequence
             return True
         # Return True if the edit has a shot name
-        return bool(self._edit.get_shot_name())
+        return bool(self._name)
 
     def check_changes(self):
+        """
+        Set the cut difference type for this cut difference
+        Emit a type_changed if the value changed
+        """
+        old_type=self._diff_type
+        self._check_changes()
+        if old_type != self._diff_type:
+            self.type_changed.emit(self, old_type, self._diff_type)
+    
+    def _check_changes(self):
         """
         Set the cut difference type for this cut difference
         """
@@ -497,8 +552,68 @@ class CutDiff(QtCore.QObject):
                 else:
                     self._cut_changes_reasons.append("Tail extended %d frs" % -diff)
     
-    def set_repeated(self, val):
+    def set_repeated(self, repeated):
         """
         Set this cut difference as repeated
+        :param repeated: A boolean
         """
-        self._repeated = val
+        self._repeated = repeated
+
+    def summary(self):
+        """
+        Return a summary for this CutDiff instance as a tuple with :
+         shot details, cut item details, version details and edit details
+        :return: A four entries tuple, where each entry is a potentially empty string
+        """
+        shot_details = ""
+        if self.sg_shot:
+            if self._use_smart_fields:
+                shot_details = \
+                "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
+                    self.sg_shot["code"],
+                    self.sg_shot["sg_status_list"],
+                    self.sg_shot["smart_head_in"],
+                    self.sg_shot["smart_cut_in"],
+                    self.sg_shot["smart_cut_out"],
+                    self.sg_shot["smart_tail_out"],
+                    self.sg_shot["sg_cut_order"],
+                )
+            else:
+                shot_details = \
+                "Name : %s, Status : %s, Head In : %s, Cut In : %s, Cut Out : %s, Tail Out : %s, Cut Order : %s" % (
+                    self.sg_shot["code"],
+                    self.sg_shot["sg_status_list"],
+                    self.sg_shot["sg_head_in"],
+                    self.sg_shot["sg_cut_in"],
+                    self.sg_shot["sg_cut_out"],
+                    self.sg_shot["sg_tail_out"],
+                    self.sg_shot["sg_cut_order"],
+                )
+        cut_item_details = ""
+        if self.sg_cut_item:
+            if self.sg_cut_item["sg_fps"] :
+                fps = self.sg_cut_item["sg_fps"]
+                tc_in = edl.Timecode(self.sg_cut_item["sg_timecode_cut_in"], fps)
+                tc_out = edl.Timecode(self.sg_cut_item["sg_timecode_cut_out"], fps)
+            else:
+                tc_in = "????"
+                tc_out = "????"
+            cut_item_details = \
+            "Cut Order %s, TC in %s, TC out %s, Cut In %s, Cut Out %s, Cut Duration %s" % (
+                self.sg_cut_item["sg_cut_order"],
+                tc_in,
+                tc_out,
+                self.sg_cut_item["sg_cut_in"],
+                self.sg_cut_item["sg_cut_out"],
+                self.sg_cut_item["sg_cut_duration"],
+            )
+        version_details = ""
+        sg_version = self.sg_version
+        if sg_version:
+            version_details = "%s, link %s %s" % (
+            sg_version["code"],
+            sg_version["entity"]["type"] if sg_version["entity"] else "None",
+            sg_version["entity.Shot.code"] if sg_version["entity.Shot.code"] else "",
+            )
+        return (shot_details, cut_item_details, version_details, str(self._edit))
+
