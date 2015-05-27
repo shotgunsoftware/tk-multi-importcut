@@ -873,16 +873,16 @@ background-color: #2C93E2;
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="reset_button">
+      <widget class="QPushButton" name="cancel_button">
        <property name="text">
-        <string>Reset</string>
+        <string>Close</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="cancel_button">
+      <widget class="QPushButton" name="reset_button">
        <property name="text">
-        <string>Quit</string>
+        <string>Reset</string>
        </property>
       </widget>
      </item>
