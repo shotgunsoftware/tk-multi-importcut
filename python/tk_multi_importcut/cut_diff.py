@@ -135,8 +135,7 @@ class CutDiff(QtCore.QObject):
         """
         Return True if the name for this instance can be changed
         """
-        # When can only change names coming from
-        # an edit entry
+        # We can only change names coming from an edit entry
         if not self._edit:
             return False
         return True
@@ -145,6 +144,7 @@ class CutDiff(QtCore.QObject):
         """
         Set a new name for this cut diff
         :param name: A string
+        :raises: RuntimeError if the name is not editable
         """
         if name==self._name:
             return

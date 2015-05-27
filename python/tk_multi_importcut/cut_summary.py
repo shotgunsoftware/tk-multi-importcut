@@ -192,6 +192,7 @@ class CutSummary(QtCore.QObject):
         :param old_type: Previous diff type for the CutDiff instance
         :param new_type: New diff type for the CutDiff instance, or None if it
                          has been deleted
+        :raises: RuntimeError if the old type is unknown
         """
         if old_type==new_type:
             return
