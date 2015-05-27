@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="tk_multi_importcut">
+    <file>edl_file.png</file>
     <file>clear_search.png</file>
     <file>clear_search_hover.png</file>
     <file>search.png</file>

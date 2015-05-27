@@ -31,14 +31,97 @@
      <widget class="QWidget" name="drop_page">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="DropAreaLabel" name="drop_area_label">
-         <property name="text">
-          <string>DRAG &amp; DROP
+        <widget class="DropAreaFrame" name="drop_area_frame">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="1" column="0">
+           <spacer name="horizontalSpacer_10">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="2">
+           <spacer name="horizontalSpacer_11">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="drop_area_icon_label">
+            <property name="maximumSize">
+             <size>
+              <width>200</width>
+              <height>200</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="pixmap">
+             <pixmap resource="resources.qrc">:/tk_multi_importcut/edl_file.png</pixmap>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="drop_area_label">
+            <property name="text">
+             <string>DRAG &amp; DROP
 EDL</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <spacer name="verticalSpacer_6">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="1">
+           <spacer name="verticalSpacer_7">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -151,8 +234,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>83</width>
+            <height>16</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -287,8 +370,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>83</width>
+            <height>16</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="cuts_grid">
@@ -533,8 +616,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>954</width>
-            <height>504</height>
+            <width>59</width>
+            <height>16</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">
@@ -823,11 +906,6 @@ background-color: #2C93E2;
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DropAreaLabel</class>
-   <extends>QLabel</extends>
-   <header>..dialog</header>
-  </customwidget>
-  <customwidget>
    <class>AnimatedStackedWidget</class>
    <extends>QStackedWidget</extends>
    <header>..dialog</header>
@@ -837,6 +915,12 @@ background-color: #2C93E2;
    <class>SearchWidget</class>
    <extends>QLineEdit</extends>
    <header>..dialog</header>
+  </customwidget>
+  <customwidget>
+   <class>DropAreaFrame</class>
+   <extends>QFrame</extends>
+   <header>..dialog</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

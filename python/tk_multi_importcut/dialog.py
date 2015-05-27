@@ -20,7 +20,7 @@ from sgtk.platform.qt import QtCore, QtGui
 # Import needed Framework
 widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
 # Rename the drop area label to the name we chose in Designer when promoting our label
-DropAreaLabel = widgets.drop_area_label.DropAreaLabel
+DropAreaFrame = widgets.drop_area.DropAreaFrame
 AnimatedStackedWidget = widgets.animated_stacked_widget.AnimatedStackedWidget
 from .search_widget import SearchWidget
 from .entity_line_widget import EntityLineWidget
@@ -98,7 +98,7 @@ class AppDialog(QtGui.QWidget):
         self._processor.start()
         
         # Let's do something when something is dropped
-        self.ui.drop_area_label.something_dropped.connect(self.process_drop)
+        self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
 
         # Instantiate a sequences view handler
         self._sequences_view = SequencesView(self.ui.sequence_grid)
