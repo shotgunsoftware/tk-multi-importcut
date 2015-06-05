@@ -17,13 +17,25 @@ class SequencesView(QtCore.QObject):
     """
     Sequences view page handler
     """
+    # Emitted when a sequence is chosen for next step
     sequence_chosen = QtCore.Signal(dict)
-    
+    # Emitted when a different sequence is selected
+    selection_changed=QtCore.Signal(dict)
+
+    # Emitted when the info message changed
+    new_info_message=QtCore.Signal(str)
+
     def __init__(self, grid_widget):
         super(SequencesView, self).__init__()
         self._grid_widget = grid_widget
         self._selected_card_sequence = None
         self._logger = get_logger()
+         # A one line message which can be displayed when the view is visible
+        self._info_message=""
+
+    @property
+    def info_message(self):
+        return self._info_message
 
     @QtCore.Slot(dict)
     def new_sg_sequence(self, sg_entity):
@@ -45,6 +57,8 @@ class SequencesView(QtCore.QObject):
         # Put the stretcher back
         self._grid_widget.addItem(spacer, row+1, 0, colSpan=2 )
         self._grid_widget.setRowStretch(row+1, 1)
+        self._info_message="%d Sequences" % (i+1)
+        self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(QtGui.QWidget)
     def sequence_selected(self, card):
@@ -57,6 +71,7 @@ class SequencesView(QtCore.QObject):
             self._logger.debug("Unselected %s" % self._selected_card_sequence)
         self._selected_card_sequence = card
         self._selected_card_sequence.select()
+        self.selection_changed.emit(card.sg_entity)
         self._logger.debug("Selected %s" % self._selected_card_sequence)
 
     @QtCore.Slot(unicode)
@@ -69,16 +84,31 @@ class SequencesView(QtCore.QObject):
         """
         self._logger.debug("Searching for %s" % text)
         count = self._grid_widget.count() -1 # We have stretcher
-        for i in range(count-1, -1, -1):
-            witem = self._grid_widget.itemAt(i)
-            widget = witem.widget()
-            if text:
-                widget.setVisible(text in widget._sg_sequence["code"])
-            else:
+        if not count:
+            # Avoid 0 sequences message to be emitted if we don't have
+            # anything ... yet
+            return
+        match_count=0
+        if not text: # Show everything
+            for i in range(count-1, -1, -1):
+                witem = self._grid_widget.itemAt(i)
+                widget = witem.widget()
                 widget.setVisible(True)
+            match_count=count
+        else:
+            for i in range(count-1, -1, -1):
+                witem = self._grid_widget.itemAt(i)
+                widget = witem.widget()
+                if text.lower() in widget._sg_sequence["code"].lower():
+                    match_count += 1
+                    widget.setVisible(True)
+                else:
+                    widget.setVisible(False)
         # Sort widgets so visible ones will be first, with rows
         # distribution re-arranged
         self.sort_changed()
+        self._info_message="%d Sequences" % match_count
+        self.new_info_message.emit(self._info_message)
 
     def sort_changed(self):
         """
@@ -99,7 +129,7 @@ class SequencesView(QtCore.QObject):
         widgets.sort(
             key=lambda x: (
                 x.isHidden(),
-                x._sg_sequence[field],
+                x._sg_sequence[field].lower(),
             ), reverse=False
         )
         row_count = len(widgets) / 2
@@ -133,4 +163,3 @@ class SequencesView(QtCore.QObject):
             widget = witem.widget()
             widget.close()
         # print self._grid_widget.count()
-

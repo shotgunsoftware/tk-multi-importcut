@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>712</width>
-    <height>141</height>
+    <width>876</width>
+    <height>94</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
   <property name="frameShadow">
    <enum>QFrame::Raised</enum>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,2">
+  <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,2">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -27,34 +27,24 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="left_layout" stretch="0,0,1">
+    <layout class="QHBoxLayout" name="left_layout" stretch="0,1">
      <property name="spacing">
       <number>5</number>
      </property>
      <property name="leftMargin">
-      <number>0</number>
+      <number>4</number>
+     </property>
+     <property name="topMargin">
+      <number>4</number>
      </property>
      <property name="rightMargin">
-      <number>10</number>
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>4</number>
      </property>
      <item>
-      <widget class="QLabel" name="cut_order_label">
-       <property name="text">
-        <string>001</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-       </property>
-       <property name="margin">
-        <number>0</number>
-       </property>
-       <property name="indent">
-        <number>0</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="icon_label">
+      <widget class="ExtendedThumbnail" name="icon_label">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -63,20 +53,20 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>160</width>
-         <height>90</height>
+         <width>142</width>
+         <height>80</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>160</width>
-         <height>90</height>
+         <width>142</width>
+         <height>80</height>
         </size>
        </property>
        <property name="baseSize">
         <size>
-         <width>160</width>
-         <height>90</height>
+         <width>142</width>
+         <height>80</height>
         </size>
        </property>
        <property name="styleSheet">
@@ -87,6 +77,9 @@
        </property>
        <property name="pixmap">
         <pixmap resource="resources.qrc">:/tk_multi_importcut/sg_logo.png</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>false</bool>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -100,7 +93,13 @@
       </widget>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,1,1" columnstretch="0,1,0" columnminimumwidth="0,0,0">
+      <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,1,1" columnstretch="1,4" columnminimumwidth="0,0">
+       <property name="horizontalSpacing">
+        <number>-1</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>2</number>
+       </property>
        <item row="1" column="1">
         <widget class="QLabel" name="version_name_label">
          <property name="text">
@@ -160,6 +159,12 @@
      <property name="spacing">
       <number>0</number>
      </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
      <property name="bottomMargin">
       <number>0</number>
      </property>
@@ -170,12 +175,6 @@
        </property>
        <item row="1" column="5" colspan="2">
         <widget class="QLabel" name="tail_title_label">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(74, 74, 74);
-border-top: 1px solid black;
-border-left: 1px solid black;
-border-right: 1px solid black;</string>
-         </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
          </property>
@@ -189,12 +188,6 @@ border-right: 1px solid black;</string>
        </item>
        <item row="1" column="0" colspan="2">
         <widget class="QLabel" name="head_title_label">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(74, 74, 74);
-border-top: 1px solid black;
-border-left: 1px solid black;
-</string>
-         </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
          </property>
@@ -210,12 +203,7 @@ border-left: 1px solid black;
         </widget>
        </item>
        <item row="0" column="3">
-        <widget class="QLabel" name="label_4">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(84, 84, 84);
-border-top: 1px solid black;
-</string>
-         </property>
+        <widget class="QLabel" name="separator_label">
          <property name="text">
           <string/>
          </property>
@@ -223,11 +211,6 @@ border-top: 1px solid black;
        </item>
        <item row="0" column="4" colspan="2">
         <widget class="QLabel" name="cut_out_label">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(84, 84, 84);
-border-top: 1px solid black;
-</string>
-         </property>
          <property name="text">
           <string>1028</string>
          </property>
@@ -238,12 +221,6 @@ border-top: 1px solid black;
        </item>
        <item row="1" column="2" colspan="3">
         <widget class="QLabel" name="cut_title_label">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(74, 74, 74);
-border-top: 1px solid black;
-border-left: 1px solid black;
-</string>
-         </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
          </property>
@@ -257,11 +234,6 @@ border-left: 1px solid black;
        </item>
        <item row="0" column="1" colspan="2">
         <widget class="QLabel" name="cut_in_label">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(84, 84, 84);
-border-top: 1px solid black;
-</string>
-         </property>
          <property name="text">
           <string>1009</string>
          </property>
@@ -272,43 +244,38 @@ border-top: 1px solid black;
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="shot_head_in_label">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(84, 84, 84);
-border-top: 1px solid black;
-border-left: 1px solid black;</string>
-         </property>
          <property name="text">
           <string>1001</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
+         <property name="margin">
+          <number>4</number>
+         </property>
+         <property name="indent">
+          <number>-1</number>
+         </property>
         </widget>
        </item>
        <item row="0" column="6">
         <widget class="QLabel" name="shot_tail_out_label">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(84, 84, 84);
-border-top: 1px solid black;
-border-right: 1px solid black;</string>
-         </property>
          <property name="text">
           <string>1036</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
+         <property name="margin">
+          <number>4</number>
+         </property>
+         <property name="indent">
+          <number>-1</number>
+         </property>
         </widget>
        </item>
        <item row="2" column="0" colspan="2">
         <widget class="QLabel" name="head_duration_label">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(84, 84, 84);
-border-top: 1px solid black;
-border-bottom: 1px solid black;
-border-left: 1px solid black;
-</string>
-         </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
          </property>
@@ -322,13 +289,6 @@ border-left: 1px solid black;
        </item>
        <item row="2" column="2" colspan="3">
         <widget class="QLabel" name="cut_duration_label">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(84, 84, 84);
-border-top: 1px solid black;
-border-bottom: 1px solid black;
-border-left: 1px solid black;
-</string>
-         </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
          </property>
@@ -342,13 +302,6 @@ border-left: 1px solid black;
        </item>
        <item row="2" column="5" colspan="2">
         <widget class="QLabel" name="tail_duration_label">
-         <property name="styleSheet">
-          <string notr="true">background-color : rgb(84, 84, 84);
-border-top: 1px solid black;
-border-left: 1px solid black;
-border-right: 1px solid black;
-border-bottom: 1px solid black;</string>
-         </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
          </property>
@@ -370,6 +323,11 @@ border-bottom: 1px solid black;</string>
   <customwidget>
    <class>EntityLineWidget</class>
    <extends>QLineEdit</extends>
+   <header>..dialog</header>
+  </customwidget>
+  <customwidget>
+   <class>ExtendedThumbnail</class>
+   <extends>QLabel</extends>
    <header>..dialog</header>
   </customwidget>
  </customwidgets>

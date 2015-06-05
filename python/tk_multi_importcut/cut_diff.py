@@ -36,8 +36,8 @@ _DIFF_LABELS = {
     _DIFF_TYPES.REINSTATED : "Reinstated",
     _DIFF_TYPES.RESCAN : "Rescan Needed",
     _DIFF_TYPES.CUT_CHANGE : "Cut Change",
-    _DIFF_TYPES.NO_CHANGE : "No Change",
-    _DIFF_TYPES.NO_LINK : "No Link",
+    _DIFF_TYPES.NO_CHANGE : "",
+    _DIFF_TYPES.NO_LINK : "",
 }
 
 class CutDiff(QtCore.QObject):

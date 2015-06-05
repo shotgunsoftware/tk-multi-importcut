@@ -19,6 +19,9 @@ class CutDiffsView(QtCore.QObject):
     """
     totals_changed = QtCore.Signal()
     
+    # Emitted when the info message changed
+    new_info_message=QtCore.Signal(str)
+
     def __init__(self, list_widget):
         """
         Construct a new CutDiffsView, using the given list_widget as widgets 
@@ -32,6 +35,12 @@ class CutDiffsView(QtCore.QObject):
         self._cuts_display_repeated = False
         self._vfx_shots_only=False
         self._cuts_display_mode = -1
+         # A one line message which can be displayed when the view is visible
+        self._info_message=""
+
+    @property
+    def info_message(self):
+        return self._info_message
 
     @QtCore.Slot(CutDiff)
     def new_cut_diff(self, cut_diff):
@@ -47,32 +56,40 @@ class CutDiffsView(QtCore.QObject):
 
         cut_order = widget.cut_order
         count = self._list_widget.count()
+        insert_index=self._get_insert_index(widget)
+        self._list_widget.insertWidget(insert_index, widget)
+        self._list_widget.setStretch(self._list_widget.count()-1, 1)
+        # Redisplay widgets
+        self._display_for_summary_mode()
+        self._info_message="%d Cut Items" % count
+        self.new_info_message.emit(self._info_message)
+
+    def _get_insert_index(self, widget):
+        """
+        Return the insert index for this cut diff card, based on its cut order
+        :param cut_diff: A CutDiffCard instance
+        """
+        cut_order = widget.cut_order
+        count = self._list_widget.count()
         # Shortcut : instead of looping over all entries, check if we can simply
         # insert it at the end
         if count > 1: # A widget + the stretcher
             witem = self._list_widget.itemAt(count-2)
             if cut_order > witem.widget().cut_order:
-                self._list_widget.insertWidget(count-1, widget)
-                self._list_widget.setStretch(self._list_widget.count()-1, 1)
-                return
+                return (count-1)
         # Retrieve where we should insert it
         # Last widget is a stretcher, so we stop at self._list_widget.count()-2
         for i in range(0, count-1):
             witem = self._list_widget.itemAt(i)
             if witem.widget().cut_order == cut_order:
-                if cut_diff.diff_type == _DIFF_TYPES.OMITTED:
-                    self._list_widget.insertWidget(i, widget)
+                if widget.cut_diff.diff_type == _DIFF_TYPES.OMITTED:
+                    return i
                 else:
-                    self._list_widget.insertWidget(i+1, widget)
-                break
+                    return (i+1)
             elif witem.widget().cut_order > cut_order: # Insert before next widget
-                self._list_widget.insertWidget(i, widget)
-                break
-        else:
-            self._list_widget.insertWidget(count-1, widget)
-        self._list_widget.setStretch(self._list_widget.count()-1, 1)
-        # Redisplay widgets
-        self._display_for_summary_mode()
+                return i
+        # Insert at the end
+        return (count-1)
 
     @QtCore.Slot(CutDiff)
     def delete_cut_diff(self, cut_diff):
@@ -139,14 +156,17 @@ class CutDiffsView(QtCore.QObject):
         show_only_repeated = self._cuts_display_repeated
         show_only_vfx=self._vfx_shots_only
         count = self._list_widget.count() -1 # We have stretcher
+        match_count=0
         if self._cuts_display_mode == -1: # Show everything
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
+            match_count=count
         elif self._cuts_display_mode > 99: # Show "Need Rescan"
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 if widget.need_rescan:
+                    match_count += 1
                     widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
                 else:
                     widget.hide()
@@ -154,7 +174,11 @@ class CutDiffsView(QtCore.QObject):
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 if widget.diff_type == self._cuts_display_mode:
-                    widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
+                    if not show_only_vfx or widget.is_vfx_shot:
+                        match_count += 1
+                        widget.setVisible(True)
+                    else:
+                        widget.setVisible(False)
                 else:
                     widget.hide()
         if count > 1:
@@ -165,6 +189,8 @@ class CutDiffsView(QtCore.QObject):
                 self._list_widget.parentWidget().size().width(),
                 wsize.height()* count)
 
+        self._info_message="%d Cut Items" % match_count
+        self.new_info_message.emit(self._info_message)
 
     def clear(self):
         """

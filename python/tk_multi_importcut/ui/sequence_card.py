@@ -44,6 +44,8 @@ class Ui_SequenceCard(object):
         self.icon_label.setObjectName("icon_label")
         self.horizontalLayout.addWidget(self.icon_label)
         self.verticalLayout_2 = QtGui.QVBoxLayout()
+        self.verticalLayout_2.setSpacing(1)
+        self.verticalLayout_2.setContentsMargins(-1, 4, -1, 4)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.title_label = QtGui.QLabel(SequenceCard)
         self.title_label.setObjectName("title_label")

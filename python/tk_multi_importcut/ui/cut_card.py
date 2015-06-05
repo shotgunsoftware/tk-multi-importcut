@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_CutCard(object):
     def setupUi(self, CutCard):
         CutCard.setObjectName("CutCard")
-        CutCard.resize(441, 100)
+        CutCard.resize(433, 74)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -43,6 +43,8 @@ class Ui_CutCard(object):
         self.icon_label.setObjectName("icon_label")
         self.horizontalLayout.addWidget(self.icon_label)
         self.verticalLayout_2 = QtGui.QVBoxLayout()
+        self.verticalLayout_2.setSpacing(2)
+        self.verticalLayout_2.setContentsMargins(-1, 4, -1, 4)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.title_label = QtGui.QLabel(CutCard)
         self.title_label.setObjectName("title_label")
