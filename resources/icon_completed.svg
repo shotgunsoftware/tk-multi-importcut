@@ -7,19 +7,25 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="256"
    height="256"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.2 r9819"
-   inkscape:export-filename="/Users/steph/devs/sg/sgtk/apps/tk-multi-importscan/resources/icon_completed.png"
+   inkscape:version="0.91 r13725"
+   inkscape:export-filename="/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/resources/icon_completed.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    sodipodi:docname="icon_completed.svg">
   <defs
-     id="defs4" />
+     id="defs4">
+    <color-profile
+       name="sRGB-IEC61966-2.1"
+       xlink:href="/System/Library/ColorSync/Profiles/sRGB Profile.icc"
+       id="color-profile4134" />
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -28,7 +34,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.69140625"
-     inkscape:cx="-295.73446"
+     inkscape:cx="-636.34463"
      inkscape:cy="128"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -46,7 +52,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>

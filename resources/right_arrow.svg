@@ -7,19 +7,25 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="256"
    height="256"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.2 r9819"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="right_arrow.svg"
-   inkscape:export-filename="/Users/steph/devs/sg/sgtk/apps/tk-multi-ingestdelivery/resources/right_arrow.png"
+   inkscape:export-filename="/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/resources/right_arrow.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
-     id="defs4" />
+     id="defs4">
+    <color-profile
+       name="sRGB-IEC61966-2.1"
+       xlink:href="/System/Library/ColorSync/Profiles/sRGB Profile.icc"
+       id="color-profile4134" />
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -28,7 +34,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.35"
-     inkscape:cx="-133.57143"
+     inkscape:cx="-806.42857"
      inkscape:cy="217.4534"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
