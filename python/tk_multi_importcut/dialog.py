@@ -148,8 +148,8 @@ class AppDialog(QtGui.QWidget):
         self.ui.only_vfx_check_box.toggled.connect(self._cut_diffs_view.display_vfx_cuts)
 
         # Ensure we land on the startup screen
-        self.ui.stackedWidget.set_current_index(0)
-        self.set_ui_for_step(0)
+        self.ui.stackedWidget.set_current_index(_DROP_STEP)
+        self.set_ui_for_step(_DROP_STEP)
         
         self.ui.back_button.clicked.connect(self.previous_page)
         self.ui.stackedWidget.first_page_reached.connect(self.reset)
@@ -185,14 +185,14 @@ class AppDialog(QtGui.QWidget):
             ret = QtGui.QMessageBox.Yes
 
         if ret == QtGui.QMessageBox.Yes:
-            self.goto_step(0)
+            self.goto_step(_DROP_STEP)
 
     @QtCore.Slot()
     def reset(self):
         """
         Called when the first page is reached
         """
-        self.set_ui_for_step(0)
+        self.set_ui_for_step(_DROP_STEP)
 
     @QtCore.Slot(int)
     def step_failed(self, which):
