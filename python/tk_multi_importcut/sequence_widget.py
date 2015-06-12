@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Shotgun Software Inc.
+# Copyright (c) 2015 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -17,29 +17,9 @@ from .downloader import DownloadRunner
 from .logger import get_logger
 
 from .ui.sequence_card import Ui_SequenceCard
-# Some standard colors
-# Used in Sgtk apps
-_COLORS = {
-    "sg_blue" : "#2C93E2",
-    "sg_red"  : "#FC6246",
-    "mid_blue"  : "#1B82D1",
-    "green" :       "#57B510",
-    "yellow" :      "#A1A51A",
-    "lgrey" :       "#A5A5A5",
-    "dgrey" :       "#666666",
-}
 
+from .constants import _COLORS, _STATUS_COLORS
 
-_STYLES = {
-    "selected" : "border-color: %s" % _COLORS["sg_blue"],
-}
-_STATUS_COLORS = {
-    "omt" : _COLORS["sg_red"],
-    "act" : _COLORS["green"],
-    "ip" : _COLORS["sg_blue"],
-    "hld" : _COLORS["lgrey"],
-    "fin" : _COLORS["dgrey"],
-}
 class SequenceCard(QtGui.QFrame):
     """
     Widget displaying a Shotgun Sequence
@@ -61,26 +41,24 @@ class SequenceCard(QtGui.QFrame):
 
         self.ui = Ui_SequenceCard()
         self.ui.setupUi(self)
-        self.ui.title_label.setText("<big><b>%s</b></big>" % sg_sequence["code"])
+        self.ui.title_label.setText("%s" % sg_sequence["code"])
         if self._sg_sequence["_display_status"]:
             self.ui.status_label.setText(
                 "<font color=%s>%s</font>" % (
                     _STATUS_COLORS.get(self._sg_sequence["sg_status_list"], _COLORS["lgrey"]),
-                    self._sg_sequence["_display_status"]["name"],
+                    self._sg_sequence["_display_status"]["name"].upper(),
                 )
             )
         else:
             self.ui.status_label.setText(sg_sequence["sg_status_list"])
-        self.ui.details_label.setText("<small>%s</small>" % sg_sequence["description"])
+        self.ui.details_label.setText("%s" % (sg_sequence["description"] or ""))
         self.ui.select_button.setVisible(False)
         self.ui.select_button.clicked.connect(self.show_selected)
         self.set_thumbnail(":/tk_multi_importcut/sg_sequence_thumbnail.png")
-#        from random import randint
-#        self.set_thumbnail( [
-#            "/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/resources/no_thumbnail.png",
-#            "/Users/steph/Pictures/microsoftazurelogo.png",
-#            "/Users/steph/Pictures/IMG_4720.jpg"
-#        ][randint(0, 2)])
+
+    @property
+    def sg_entity(self):
+        return self._sg_sequence
 
     @QtCore.Slot()
     def select(self):
@@ -88,8 +66,9 @@ class SequenceCard(QtGui.QFrame):
         Set this card UI to selected mode
         """
         self.setProperty("selected", True)
+        self.style().unpolish(self)
+        self.style().polish(self)
         self.ui.select_button.setVisible(True)
-        self.setStyleSheet(_STYLES["selected"])
 
     @QtCore.Slot()
     def unselect(self):
@@ -97,6 +76,8 @@ class SequenceCard(QtGui.QFrame):
         Set this card UI to unselected mode
         """
         self.setProperty("selected", False)
+        self.style().unpolish(self)
+        self.style().polish(self)
         self.ui.select_button.setVisible(False)
         self.setStyleSheet("")
 

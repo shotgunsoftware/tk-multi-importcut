@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Shotgun Software Inc.
+# Copyright (c) 2015 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -19,17 +19,7 @@ edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 from .ui.cut_diff_card import Ui_CutDiffCard
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .downloader import DownloadRunner
-
-# Some standard colors
-# Used in Sgtk apps
-_COLORS = {
-    "sg_blue" :     "#2C93E2",
-    "sg_red"  :     "#FC6246",
-    "mid_blue"  :   "#1B82D1",
-    "green" :       "#57B510",
-    "yellow" :      "#A1A51A",
-    "lgrey" :       "#A5A5A5",
-}
+from .constants import _COLORS
 
 # Some colors for the different CuDiffType
 _DIFF_TYPES_STYLE = {
@@ -79,6 +69,9 @@ class CutDiffCard(QtGui.QFrame):
         """
         Set UI values, colors, etc ... from the CutDiff instance being displayed
         """
+        self.setProperty("omitted", bool(self._cut_diff.diff_type == _DIFF_TYPES.OMITTED))
+        self.style().unpolish(self)
+        self.style().polish(self)
         # Shot name widget
         if self._cut_diff.name:
             self.ui.shot_name_line.set_property("valid", True)
@@ -93,37 +86,55 @@ class CutDiffCard(QtGui.QFrame):
         new_cut_order = self._cut_diff.new_cut_order or 0
         old_cut_order = self._cut_diff.cut_order or 0
         cut_order = new_cut_order or old_cut_order
-        if old_cut_order != new_cut_order:
-            font_color= _COLORS["sg_red"]
-        else:
-            font_color= _COLORS["lgrey"]
-        if self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
-            self.ui.cut_order_label.setText("<s><font color=%s>%03d</font></s>" % (font_color, cut_order))
-        else:
-            self.ui.cut_order_label.setText("<font color=%s>%03d</font>" % (font_color, cut_order))
 
+        if self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
+            font_color= _COLORS["sg_red"]
+        elif self._cut_diff.diff_type == _DIFF_TYPES.NEW:
+            font_color= _COLORS["green"]
+        else:
+            if old_cut_order != new_cut_order:
+                font_color= _COLORS["yellow"]
+            else:
+                font_color= _COLORS["lgrey"]
+
+        self.ui.icon_label.set_text(
+            cut_order,
+            font_color,
+            bool(self._cut_diff.diff_type == _DIFF_TYPES.OMITTED)
+        )
         # Difference and reasons
         diff_type_label = self._cut_diff.diff_type_label
-        reasons = ",<br>".join(self._cut_diff.reasons)
-        if reasons:
-            self.ui.status_label.setText("%s : <small>%s</small>" % (diff_type_label, reasons))
+        reasons = ", ".join(self._cut_diff.reasons)
+        if diff_type_label:
+            if reasons:
+                self.ui.status_label.setText("<b>%s :</b> %s" % (diff_type_label, reasons))
+            else:
+                self.ui.status_label.setText("<b>%s</b>" % diff_type_label)
         else:
-            self.ui.status_label.setText("%s" % diff_type_label)
-        if self._cut_diff.diff_type in _DIFF_TYPES_STYLE:
-            self.ui.status_label.setStyleSheet(_DIFF_TYPES_STYLE[self._cut_diff.diff_type])
-
+            self.ui.status_label.setText("%s" % reasons)
+        self.ui.status_label.setStyleSheet(_DIFF_TYPES_STYLE.get(self._cut_diff.diff_type, ""))
 
         sg_version = self._cut_diff.sg_version
+        self.ui.version_name_label.setToolTip(None)
         if not sg_version:
+            # No Version
             self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
                 _COLORS["yellow"],
-                self._cut_diff.version_name,
+                self._cut_diff.version_name or "No Version",
             ))
         elif sg_version.get("entity.Shot.code") != self._cut_diff.name:
+            # Version linked to another shot
             self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
                 _COLORS["sg_red"],
                 self._cut_diff.version_name,
             ))
+            self.ui.version_name_label.setToolTip(
+                "Version %s is linked to Shot %s, instead of %s" % (
+                    self._cut_diff.version_name,
+                    sg_version.get("entity.Shot.code"),
+                    self._cut_diff.name,
+                )
+            )
         else:
             self.ui.version_name_label.setText(self._cut_diff.version_name)
 
@@ -235,20 +246,24 @@ class CutDiffCard(QtGui.QFrame):
         :param old_value: Previous value retrieved from a former cut import
         """
         if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
-            widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["sg_red"], new_value))
+            widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
         elif self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
-            widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["lgrey"], old_value))
+            if old_value is not None:
+                widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], old_value))
+            else:
+                # Old values are retrieved from cut items, we can have omitted shots without cut items
+                widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], ""))
         else:
             if new_value != old_value:
                 if old_value is not None:
-                    widget.setText("<big><font color=%s>%s</font> <font color=%s>(%s)</font></big>" % (
+                    widget.setText("<font color=%s>%s</font> <font color=%s>(%s)</font>" % (
                         _COLORS["sg_red"], new_value,
                         _COLORS["lgrey"], old_value
                     ))
                 else:
-                    widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["sg_red"], new_value))
+                    widget.setText("<font color=%s>%s</font>" % (_COLORS["yellow"], new_value))
             else:
-                widget.setText("<big><font color=%s>%s</font></big>" % (_COLORS["lgrey"], new_value))
+                widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
 
     def set_tool_tip(self):
         """

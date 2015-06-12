@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Shotgun Software Inc.
+# Copyright (c) 2015 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -18,31 +18,7 @@ from .logger import get_logger
 from datetime import datetime
 
 from .ui.cut_card import Ui_CutCard
-# Some standard colors
-# Used in Sgtk apps
-_COLORS = {
-    "sg_blue" : "#2C93E2",
-    "sg_red"  : "#FC6246",
-    "mid_blue"  : "#1B82D1",
-    "green" :       "#57B510",
-    "yellow" :      "#A1A51A",
-    "lgrey" :       "#A5A5A5",
-    "dgrey" :       "#666666",
-}
-
-
-_STYLES = {
-    "selected" : "border-color: %s" % _COLORS["sg_blue"],
-}
-_STATUS_COLORS = {
-    "omt" : _COLORS["sg_red"],
-    "act" : _COLORS["green"],
-    "apr" : _COLORS["green"],
-    "ip" : _COLORS["sg_blue"],
-    "new" : _COLORS["sg_blue"],
-    "hld" : _COLORS["lgrey"],
-    "fin" : _COLORS["dgrey"],
-}
+from .constants import _COLORS, _STATUS_COLORS
 
 class CutCard(QtGui.QFrame):
     """
@@ -68,9 +44,9 @@ class CutCard(QtGui.QFrame):
         self.ui.title_label.setText("<big><b>%s</b></big>" % sg_cut["code"])
         if self._sg_cut["_display_status"]:
             self.ui.status_label.setText(
-                "<font color=%s>%s</font>" % (
+                "<b><font color=%s>%s</font></b>" % (
                     _STATUS_COLORS.get(self._sg_cut["sg_status_list"], _COLORS["lgrey"]),
-                    self._sg_cut["_display_status"]["name"],
+                    self._sg_cut["_display_status"]["name"].upper(),
                 )
             )
         else:
@@ -91,14 +67,19 @@ class CutCard(QtGui.QFrame):
 #            "/Users/steph/Pictures/IMG_4720.jpg"
 #        ][randint(0, 2)])
 
+    @property
+    def sg_entity(self):
+        return self._sg_cut
+
     @QtCore.Slot()
     def select(self):
         """
         Set this card UI to selected mode
         """
         self.setProperty("selected", True)
+        self.style().unpolish(self)
+        self.style().polish(self)
         self.ui.select_button.setVisible(True)
-        self.setStyleSheet(_STYLES["selected"])
 
     @QtCore.Slot()
     def unselect(self):
@@ -106,8 +87,9 @@ class CutCard(QtGui.QFrame):
         Set this card UI to unselected mode
         """
         self.setProperty("selected", False)
+        self.style().unpolish(self)
+        self.style().polish(self)
         self.ui.select_button.setVisible(False)
-        self.setStyleSheet("")
 
     @QtCore.Slot()
     def show_selected(self):
@@ -170,7 +152,7 @@ class CutCard(QtGui.QFrame):
             QtCore.QThreadPool.globalInstance().start(downloader)
 
         event.ignore()
-    
+
     def set_thumbnail(self, thumb_path):
         """
         Build a pixmap from the given file path and use it as icon, resizing it to 

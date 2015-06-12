@@ -1,0 +1,336 @@
+/*
+ Copyright (c) 2015 Shotgun Software Inc.
+ 
+ CONFIDENTIAL AND PROPRIETARY
+ 
+ This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+ Source Code License included in this distribution package. See LICENSE.
+ By accessing, using, copying or modifying this work you indicate your
+ agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
+ not expressly granted therein are reserved by Shotgun Software Inc.
+*/
+
+/*
+Make sure standard dialogs and button boxes
+Will have the "Do it" button on the far right
+*/
+QDialogButtonBox {
+    button-layout: 3;
+}
+
+/*
+Make the line edit looks like a QLabel 
+when not in edit mode 
+*/
+EntityLineWidget {
+    border: none;
+    background: #525252;
+    font-style: normal;
+    font-weight: bold;
+}
+
+/*
+In edit mode, show it is a QLineEdit if it is not read only
+*/
+EntityLineWidget:focus:!read-only {
+    border: 2px solid #2C93E2;
+    border-radius: 2px;
+    background: none;
+    font-style: normal;
+    font-weight: normal;
+}
+
+/*
+When not in edit and the value is empty or not valid
+Make it SG red
+*/
+EntityLineWidget:!focus[valid="false"] {
+    color: #FC6246;
+    font-style: italic;
+}
+
+
+/* Thin progress bar on the main window
+
+QProgressBar#progress_bar {
+     border: 1px none grey;
+     text-align: center;
+ }
+
+QProgressBar::chunk {
+    background-color: #2C93E2;
+}
+*/
+/*
+Drop area style : big font, and a dashed outline
+*/
+DropAreaFrame {
+    border: 2px dashed grey;
+    border-radius: 4px;
+    font-style: bold;
+    background-color: #2B2B2B;
+}
+/* Font size for the label in the drop area */
+DropAreaFrame QLabel {
+    font-size: 30px;
+}
+
+/*
+Highlight the drop area when something is dragged over
+*/
+DropAreaFrame[dragging="true"] {
+    border: 2px dashed white;
+}
+/*
+Red text on errors
+*/
+#progress_bar_label {
+    font-size: 12px;
+}
+#feedback_label[level="error"], #progress_bar_label[level="error"] {
+    color: #FC6246;
+}
+
+/*
+No visible border for cards, and set the background color otherwise they will
+inherit the one from the scroll area they are in
+*/
+SequenceCard, CutCard, CutDiffCard {
+    border: 1px none black;
+    background-color: #525252;
+    border-radius: 2px;
+}
+/* Highlight selected cards */
+SequenceCard[selected="true"], CutCard[selected="true"] {
+    border: 1px solid #2C93E2;
+    background-color: rgba(44, 147, 226, 25%)
+}
+/* Labels on Sequence cards */
+SequenceCard #title_label {
+    font-weight: bold;
+    font-size: 15px;
+}
+SequenceCard #status_label {
+    font-weight: bold;
+}
+
+/* Make the Select button SG blue when enabled */
+QPushButton:enabled#select_button {
+    background-color: #2C93E2;
+}
+/* Screens titles */
+QLabel#sequences_title_label, QLabel#cuts_title_label {
+    font-size: 20px;
+}
+QLabel#cut_summary_title_label {
+    font-size: 12px;
+}
+/* 
+No dashed outline when clicking on the sort button in cuts view
+*/
+#cuts_sort_button {
+    outline: none;
+}
+/* Dark backround for all scroll area */
+QScrollArea {
+    background-color: #2B2B2B;
+    border: none;
+}
+/*
+Not sure why, but we need to define a background color for these
+widgets so the QScrollArea backgroun-color is used, making it yellow
+so it's obbvious it is a "dummy" color. Not setting it or setting it
+to anything else than a real color doesn't work ...
+*/
+#sequence_area, #cuts_area, #cut_summary_widgets {
+    background-color: yellow;
+}
+
+/* 
+Couldn't find a way to have a nice bottom
+border for this widget : added a line just under it
+and removing any border here
+*/
+QFrame#cut_summary_selectors_frame {
+    border: none;
+}
+/*
+Cut summary view mode buttons, defaults
+*/
+QAbstractButton#new_select_button,
+QAbstractButton#cut_change_select_button,
+QAbstractButton#omitted_select_button,
+QAbstractButton#reinstated_select_button,
+QAbstractButton#rescan_select_button,
+QAbstractButton#total_button {
+    outline: none;
+    font-size: 14px;
+}
+
+/*
+Add a blue underline when they are checked and make them blue
+*/
+QAbstractButton#new_select_button:checked,
+QAbstractButton#cut_change_select_button:checked,
+QAbstractButton#omitted_select_button:checked,
+QAbstractButton#reinstated_select_button:checked,
+QAbstractButton#rescan_select_button:checked,
+QAbstractButton#total_button:checked {
+    border-top: 2px none #2C93E2;
+    border-bottom: 2px solid #2C93E2;
+    outline: none;
+    color: #2C93E2;
+}
+/*
+Cut summary view mode buttons, disable regular
+press style
+*/
+QAbstractButton#new_select_button:pressed,
+QAbstractButton#cut_change_select_button:pressed,
+QAbstractButton#omitted_select_button:pressed,
+QAbstractButton#reinstated_select_button:pressed,
+QAbstractButton#rescan_select_button:pressed,
+QAbstractButton#total_button:pressed {
+    border-top: 2px none #2C93E2;
+    border-bottom: 2px solid #2C93E2;
+    outline: none;
+}
+/*
+Cut summary view mode buttons, highlight they are clickable
+*/
+QAbstractButton#new_select_button:!checked:hover,
+QAbstractButton#cut_change_select_button:!checked:hover,
+QAbstractButton#omitted_select_button:!checked:hover,
+QAbstractButton#reinstated_select_button:!checked:hover,
+QAbstractButton#rescan_select_button:!checked:hover,
+QAbstractButton#total_button:!checked:hover {
+    color: white;
+}
+QAbstractButton#only_vfx_check_box {
+    font-size: 14px;
+}
+/*
+Make the radio button blue when checked
+*/
+QAbstractButton#only_vfx_check_box:checked {
+    color: #2C93E2;
+}
+/*
+#horizontalLayout_3 {
+    background-color: orange;
+}
+*/
+/* Red outline for omitted cut items */
+CutDiffCard[omitted="true"] #icon_label {
+    border: 1px solid #FC6246;
+    border-radius: 2px;
+}
+
+/* Titles in SG blue for cut summary cards */
+CutDiffCard #head_title_label,
+CutDiffCard #cut_title_label,
+CutDiffCard #tail_title_label {
+    color: #2C93E2;
+}
+/* Some of them are blue and bold */
+CutDiffCard #shot_title_label,
+CutDiffCard #version_title_label {
+    color: #2C93E2;
+    font-weight: bold;
+}
+/* Set font size for some labels */
+CutDiffCard #shot_head_in_label,
+CutDiffCard #cut_in_label,
+CutDiffCard #cut_out_label,
+CutDiffCard #shot_tail_out_label,
+CutDiffCard #head_title_label,
+CutDiffCard #cut_title_label,
+CutDiffCard #tail_title_label,
+CutDiffCard #head_duration_label,
+CutDiffCard #cut_duration_label,
+CutDiffCard #tail_duration_label {
+    font-size: 12px;
+}
+/* But reduce the one for some */
+CutDiffCard #icon_label {
+    font-size: 12px;
+    font-weight: bold;
+}
+/* Styling for the cut values :
+
+- Make the center row darker
+- Add some left / right / bottom border to display inner grid
+
+| shot_head_in_label | cut_in_label | separator label | cut_out_label | shot_tail_out_label |
+ -------------------------------------------------------------------------------------------
+|    head_title_label        |       cut_title_label         |       tail_title_label       |
+ -------------------------------------------------------------------------------------------
+|    head_duration_label     |       cut_duration_label      |       tail_duration_label    |
+
+
+*/
+/* Top row */
+CutDiffCard #shot_head_in_label {
+    background-color : #646464;
+    border-left: 1px solid black;
+}
+CutDiffCard #cut_in_label, CutDiffCard #separator_label, CutDiffCard #cut_out_label {
+    background-color : #646464;
+}
+CutDiffCard #shot_tail_out_label {
+    background-color : #646464;
+    border-right: 1px solid black;
+}
+/* Central row */
+CutDiffCard #head_title_label {
+    background-color : #565656;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+}
+CutDiffCard #cut_title_label {
+    background-color : #565656;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+}
+CutDiffCard #tail_title_label {
+    background-color : #565656;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
+/* Bottom row */
+CutDiffCard #head_duration_label {
+    background-color : #646464;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+}
+CutDiffCard #cut_duration_label {
+    background-color : #646464;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+}
+CutDiffCard #tail_duration_label {
+    background-color : #646464;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
+/* Progress window */
+#progress_page #progress_screen_title_label {
+    font-size: 20px;
+}
+/* Success window */
+#success_page #success_frame {
+    color: #2C93E2;
+    border: 1px none #555555;
+}
+#success_page #success_label {
+    font-size: 15px;
+    font-weight: bold;
+}
+#success_page #shotgun_button {
+    border: none;
+    outline: none;
+    font-size: 15px;
+    text-decoration: underline;
+}

@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Shotgun Software Inc.
+# Copyright (c) 2015 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -19,7 +19,14 @@ class CutsView(QtCore.QObject):
     """
     Cuts view page handler
     """
+    # Emitted when the cut summary for a cut should be shown
     show_cut_diff = QtCore.Signal(dict)
+
+    # Emitted when a different cut is selected
+    selection_changed=QtCore.Signal(dict)
+
+    # Emitted when the info message changed
+    new_info_message=QtCore.Signal(str)
 
     def __init__(self, grid_widget, sort_menu_button):
         super(CutsView, self).__init__()
@@ -29,6 +36,12 @@ class CutsView(QtCore.QObject):
         self._action_group = None
         self._logger = get_logger()
         self.build_cuts_sort_menu()
+         # A one line message which can be displayed when the view is visible
+        self._info_message=""
+
+    @property
+    def info_message(self):
+        return self._info_message
 
     @QtCore.Slot(dict)
     def new_sg_cut(self, sg_entity):
@@ -49,6 +62,8 @@ class CutsView(QtCore.QObject):
         self._grid_widget.setRowStretch(row, 0)
         self._grid_widget.addItem(spacer, row+1, 0, colSpan=2 )
         self._grid_widget.setRowStretch(row+1, 1)
+        self._info_message="%d Cuts" % (i+1)
+        self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(unicode)
     def search(self, text):
@@ -60,16 +75,31 @@ class CutsView(QtCore.QObject):
         """
         self._logger.debug("Searching for %s" % text)
         count = self._grid_widget.count() -1 # We have stretcher
-        for i in range(count-1, -1, -1):
-            witem = self._grid_widget.itemAt(i)
-            widget = witem.widget()
-            if text:
-                widget.setVisible(text in widget._sg_cut["code"])
-            else:
+        match_count=0
+        if not count:
+            return
+        if not text:
+            # Show everything
+            for i in range(count-1, -1, -1):
+                witem = self._grid_widget.itemAt(i)
+                widget = witem.widget()
                 widget.setVisible(True)
+            match_count=count
+        else:
+            for i in range(count-1, -1, -1):
+                witem = self._grid_widget.itemAt(i)
+                widget = witem.widget()
+                # Case insentitive match
+                if text.lower() in widget._sg_cut["code"].lower():
+                    widget.setVisible(True)
+                    match_count += 1
+                else:
+                    widget.setVisible(False)
         # Sort widgets so visible ones will be first, with rows
         # distribution re-arranged
         self.sort_changed(self._action_group.checkedAction())
+        self._info_message="%d Cuts" % match_count
+        self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(QtGui.QWidget)
     def cut_selected(self, card):
@@ -84,6 +114,7 @@ class CutsView(QtCore.QObject):
             self._logger.debug("Unselected %s" % self._selected_card_cut)
         self._selected_card_cut = card
         self._selected_card_cut.select()
+        self.selection_changed.emit(card.sg_entity)
         self._logger.debug("Selected %s" % self._selected_card_cut)
 
     @QtCore.Slot(dict)

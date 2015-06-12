@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Shotgun Software Inc.
+# Copyright (c) 2015 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -13,6 +13,9 @@ from .logger import get_logger
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
 from .entity_line_widget import EntityLineWidget
+
+# Different steps in the process
+from .constants import _DROP_STEP, _SEQUENCE_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 import re
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
@@ -45,6 +48,7 @@ class Processor(QtCore.QThread):
     reset                   = QtCore.Signal()
     set_busy                = QtCore.Signal(bool)
     step_done               = QtCore.Signal(int)
+    step_failed             = QtCore.Signal(int)
     new_sg_sequence         = QtCore.Signal(dict)
     new_sg_cut              = QtCore.Signal(dict)
     retrieve_sequences      = QtCore.Signal()
@@ -76,6 +80,15 @@ class Processor(QtCore.QThread):
         return None
 
     @property
+    def edl_file_path(self):
+        """
+        Return the full file path of the EDL file being imported
+        """
+        if self._edl_cut:
+            return self._edl_cut._edl_file_path
+        return None
+
+    @property
     def summary(self):
         """
         Return the current CutSummary instance
@@ -89,10 +102,23 @@ class Processor(QtCore.QThread):
         """
         Return the current Shotgun entity ( Sequence ) we are displaying cut 
         changes for
+        :returns: A Shotgun entity dictionary or None
         """
         if self._edl_cut and self._edl_cut._sg_entity:
             return self._edl_cut._sg_entity
         return None
+
+    @property
+    def sg_cut(self):
+        """
+        Return the current Shotgun Cut we are displaying cut
+        changes for.
+        :returns: A Cut dictionary or None if no Cut are yet available in SG
+        """
+        if self._edl_cut and self._edl_cut._sg_cut:
+            return self._edl_cut._sg_cut
+        return None
+
     @property
     def sg_new_cut(self):
         """
@@ -101,6 +127,7 @@ class Processor(QtCore.QThread):
         if self._edl_cut:
             return self._edl_cut._sg_new_cut
         return None
+
     @property
     def sg_new_cut_url(self):
         sg_new_cut = self.sg_new_cut
@@ -136,6 +163,7 @@ class Processor(QtCore.QThread):
         self.import_cut.connect(self._edl_cut.do_cut_import)
         # Results / orders we send
         self._edl_cut.step_done.connect(self.step_done)
+        self._edl_cut.step_failed.connect(self.step_failed)
         self._edl_cut.new_sg_sequence.connect(self.new_sg_sequence)
         self._edl_cut.new_sg_cut.connect(self.new_sg_cut)
         self._edl_cut.new_cut_diff.connect(self.new_cut_diff)
@@ -151,6 +179,7 @@ class EdlCut(QtCore.QObject):
     Worker which handles all data
     """
     step_done           = QtCore.Signal(int)
+    step_failed         = QtCore.Signal(int)
     new_sg_sequence     = QtCore.Signal(dict)
     new_sg_cut          = QtCore.Signal(dict)
     new_cut_diff        = QtCore.Signal(CutDiff)
@@ -159,11 +188,13 @@ class EdlCut(QtCore.QObject):
     progress_changed    = QtCore.Signal(int)
     totals_changed      = QtCore.Signal()
     delete_cut_diff     = QtCore.Signal(CutDiff)
+
     def __init__(self):
         """
         Instantiate a new empty worker
         """
         super(EdlCut, self).__init__()
+        self._edl_file_path = None
         self._edl = None
         self._sg_entity = None
         self._summary = None
@@ -231,6 +262,7 @@ class EdlCut(QtCore.QObject):
         """
         Clear this worker, discarding all data
         """
+        self._edl_file_path = None
         self._edl = None
         self._sg_entity = None
         self._summary = None
@@ -246,6 +278,7 @@ class EdlCut(QtCore.QObject):
         """
         self._logger.info("Loading %s ..." % path)
         try:
+            self._edl_file_path = path
             self._edl = edl.EditList(
                 file_path=path,
                 visitor=self.process_edit,
@@ -295,9 +328,10 @@ class EdlCut(QtCore.QObject):
                             edit._shot_name = sg_version["entity.Shot.code"]
             self.retrieve_sequences()
             # Can go to next step
-            self.step_done.emit(0)
+            self.step_done.emit(_DROP_STEP)
         except Exception, e:
             self._edl = None
+            self._edl_file_path = None
             self._logger.error("Couldn't load %s : %s" % (path, str(e)))
 
 
@@ -326,10 +360,9 @@ class EdlCut(QtCore.QObject):
             if not sg_sequences:
                 raise RuntimeWarning("Couldn't retrieve any Sequence for project %s" % self._ctx.project["name"])
             for sg_sequence in sg_sequences:
+                # Register a display status if one available
                 if sg_sequence["sg_status_list"] in status_dict:
                     sg_sequence["_display_status"] = status_dict[sg_sequence["sg_status_list"]]
-                else:
-                    sg_sequence["_display_status"] = sg_sequence["sg_status_list"]
                 self.new_sg_sequence.emit(sg_sequence)
             self._logger.info("Retrieved %d Sequences." % len(sg_sequences))
         except Exception, e :
@@ -340,7 +373,8 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(dict)
     def retrieve_cuts(self, sg_entity):
         """
-        Retrieve all sequences for the current project
+        Retrieve all Cuts for the given Shotgun entity
+        :param sg_entity: A Shotgun entity dictionary, typically a Sequence
         """
         self._sg_entity = sg_entity
         # Retrieve display names and colors for statuses
@@ -373,19 +407,18 @@ class EdlCut(QtCore.QObject):
             # If no cut, go directly to next step
             if not sg_cuts:
                 self.show_cut_diff({})
-                self.step_done.emit(2)
+                self.step_done.emit(_CUT_STEP)
                 self._no_cut_for_sequence = True
                 return
 
             self._no_cut_for_sequence = False
             for sg_cut in sg_cuts:
+                # Register a display status if one available
                 if sg_cut["sg_status_list"] in status_dict:
                     sg_cut["_display_status"] = status_dict[sg_cut["sg_status_list"]]
-                else:
-                    sg_cut["_display_status"] = sg_cut["sg_status_list"]
                 self.new_sg_cut.emit(sg_cut)
             self._logger.info("Retrieved %d Cuts." % len(sg_cuts))
-            self.step_done.emit(1)
+            self.step_done.emit(_SEQUENCE_STEP)
         except Exception, e :
             self._logger.exception(str(e))
         finally:
@@ -394,16 +427,17 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(dict)
     def show_cut_diff(self, sg_cut):
         """
-        Build a cut summary for the given Shotgun entity ( Sequence )
+        Build a cut summary for the current Shotgun entity ( Sequence ) and the given,
+        potentially empty, Shotgun Cut.
         - Retrieve all shots linked to the Shotgun entity
-        - Retrieve all cut items linked to these shots
+        - Retrieve all cut items linked to the Cut
         - Reconciliate them with the current edit list previously loaded
         
-        :param sg_entity: A Shotgun entity disctionary retrieved from Shotgun, 
-                          typically a Sequence
+        :param sg_cut: A Shotgun Cut dictionary retrieved from Shotgun, or an empty dictionary
         """
         self._logger.info("Retrieving cut summary for %s" % ( self._sg_entity["code"]))
         self.got_busy.emit(None)
+        self._sg_cut=sg_cut
         self._summary = CutSummary()
         # Connect CutSummary signals to ours as pass through, so any listener
         # on our signals will receive signals emitted by the CutSummary
@@ -415,7 +449,6 @@ class EdlCut(QtCore.QObject):
             # Grab the latest one ...
             if not sg_cut:
                 # Retrieve cuts linked to the sequence, pick up the latest or approved one
-                # Later, the UI will allow selecting it
                 sg_cut = self._sg.find_one(
                     "Cut",
                     [["sg_sequence", "is", self._sg_entity]],
@@ -553,8 +586,8 @@ class EdlCut(QtCore.QObject):
                         edit=None,
                         sg_cut_item=matching_cut_item
                     )
-            self.step_done.emit(2)
             self._logger.info("Retrieved %d cut differences." % len(self._summary))
+            self.step_done.emit(_CUT_STEP)
         except Exception, e :
             self._logger.exception(str(e))
         finally:
@@ -591,6 +624,7 @@ class EdlCut(QtCore.QObject):
         """
         self._logger.info("Importing cut %s" % title)
         self.got_busy.emit(4)
+        self.step_done.emit(_SUMMARY_STEP)
         try:
             self._sg_new_cut = self.create_sg_cut(title)
             self.update_sg_shots()
@@ -604,10 +638,12 @@ class EdlCut(QtCore.QObject):
             self.progress_changed.emit(4)
         except Exception, e :
             self._logger.exception(str(e))
+            # Go back to summary screen
+            self.step_failed.emit(_PROGRESS_STEP)
         else:
             self._logger.info("Cut %s imported" % title)
             # Can go to next step
-            self.step_done.emit(3)
+            self.step_done.emit(_PROGRESS_STEP)
         finally:
             self.got_idle.emit()
 
@@ -717,7 +753,7 @@ class EdlCut(QtCore.QObject):
             if cut_diff.diff_type == _DIFF_TYPES.NO_LINK:
                 pass
             elif cut_diff.diff_type == _DIFF_TYPES.NEW:
-                self._logger.info("Will create shot %s for %s" % (shot_name, self._sg_entity))
+                self._logger.info("Will create shot %s for %s" % (shot_name, self._sg_entity["code"]))
                 data = {
                     "project" : self._ctx.project,
                     "code" : cut_diff.name,

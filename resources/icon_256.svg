@@ -7,19 +7,25 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="256"
    height="256"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.5 r10040"
+   inkscape:version="0.91 r13725"
    inkscape:export-filename="/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/icon_256.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    sodipodi:docname="icon_256.svg">
   <defs
-     id="defs4" />
+     id="defs4">
+    <color-profile
+       name="sRGB-IEC61966-2.1"
+       xlink:href="/System/Library/ColorSync/Profiles/sRGB Profile.icc"
+       id="color-profile4137" />
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -28,7 +34,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.3828125"
-     inkscape:cx="26.649758"
+     inkscape:cx="-143.65533"
      inkscape:cy="128"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -63,7 +69,7 @@
        sodipodi:cy="146.44067"
        sodipodi:rx="109.92091"
        sodipodi:ry="94.372879"
-       d="m 272.63278,146.44067 c 0,52.12071 -49.21327,94.37288 -109.92091,94.37288 -60.70765,0 -109.920915,-42.25217 -109.920915,-94.37288 0,-52.120698 49.213265,-94.372875 109.920915,-94.372875 60.70764,0 109.92091,42.252177 109.92091,94.372875 z"
+       d="M 272.63278,146.44067 A 109.92091,94.372879 0 0 1 162.71187,240.81355 109.92091,94.372879 0 0 1 52.790955,146.44067 109.92091,94.372879 0 0 1 162.71187,52.067795 109.92091,94.372879 0 0 1 272.63278,146.44067 Z"
        transform="matrix(1.120516,0,0,1.3051223,-54.321252,733.23918)"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />

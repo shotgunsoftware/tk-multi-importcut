@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Shotgun Software Inc.
+# Copyright (c) 2015 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -20,22 +20,26 @@ from sgtk.platform.qt import QtCore, QtGui
 # Import needed Framework
 widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
 # Rename the drop area label to the name we chose in Designer when promoting our label
-DropAreaLabel = widgets.drop_area_label.DropAreaLabel
+DropAreaFrame = widgets.drop_area.DropAreaFrame
 AnimatedStackedWidget = widgets.animated_stacked_widget.AnimatedStackedWidget
 from .search_widget import SearchWidget
 from .entity_line_widget import EntityLineWidget
+from .extended_thumbnail import ExtendedThumbnail
 
 # Custom widgets must be imported before importing the UI
 from .ui.dialog import Ui_Dialog
 
 from .processor import Processor
-from .logger import BundleLogHandler, get_logger
+from .logger import BundleLogHandler, get_logger, ShortNameFilter
 from .sequences_view import SequencesView
 from .cuts_view import CutsView
 from .cut_diff import _DIFF_TYPES
 from .cut_diffs_view import CutDiffsView
 from .submit_dialog import SubmitDialog
 from .downloader import DownloadRunner
+
+# Different steps in the process
+from .constants import _DROP_STEP, _SEQUENCE_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 def show_dialog(app_instance):
     """
@@ -75,7 +79,14 @@ class AppDialog(QtGui.QWidget):
         self._app = sgtk.platform.current_bundle()
         
         self._busy = False
-
+        # Current step being displayed
+        self._step = 0
+        # Selected sg entity per step : selection only happen in steps 1 and 2
+        # but we create entries for all steps allowing to index the list
+        # with the current step and blindly disable the select button on the
+        # value for each step
+        self._selected_sg_entity = [None]*(_LAST_STEP+1)
+        
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
         # - A Shotgun API instance, via self._app.shotgun
@@ -92,17 +103,20 @@ class AppDialog(QtGui.QWidget):
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
         self._processor.step_done.connect(self.step_done)
+        self._processor.step_failed.connect(self.step_failed)
         self._processor.got_busy.connect(self.set_busy)
         self._processor.got_idle.connect(self.set_idle)
         self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
         self._processor.start()
         
         # Let's do something when something is dropped
-        self.ui.drop_area_label.something_dropped.connect(self.process_drop)
+        self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
 
         # Instantiate a sequences view handler
         self._sequences_view = SequencesView(self.ui.sequence_grid)
         self._sequences_view.sequence_chosen.connect(self.show_sequence)
+        self._sequences_view.selection_changed.connect(self.selection_changed)
+        self._sequences_view.new_info_message.connect(self.display_info_message)
         self._processor.new_sg_sequence.connect(self._sequences_view.new_sg_sequence)
         self.ui.sequences_search_line_edit.search_edited.connect(self._sequences_view.search)
         self.ui.sequences_search_line_edit.search_changed.connect(self._sequences_view.search)
@@ -110,6 +124,8 @@ class AppDialog(QtGui.QWidget):
         # Instantiate a cuts view handler
         self._cuts_view = CutsView(self.ui.cuts_grid, self.ui.cuts_sort_button)
         self._cuts_view.show_cut_diff.connect(self.show_cut)
+        self._cuts_view.selection_changed.connect(self.selection_changed)
+        self._cuts_view.new_info_message.connect(self.display_info_message)
         self._processor.new_sg_cut.connect(self._cuts_view.new_sg_cut)
         self.ui.search_line_edit.search_edited.connect(self._cuts_view.search)
         self.ui.search_line_edit.search_changed.connect(self._cuts_view.search)
@@ -117,6 +133,7 @@ class AppDialog(QtGui.QWidget):
         # Instantiate a cut differences view handler
         self._cut_diffs_view = CutDiffsView(self.ui.cutsummary_list)
         self._cut_diffs_view.totals_changed.connect(self.set_cut_summary_view_selectors)
+        self._cut_diffs_view.new_info_message.connect(self.display_info_message)
         self._processor.totals_changed.connect(self.set_cut_summary_view_selectors)
         self._processor.new_cut_diff.connect(self._cut_diffs_view.new_cut_diff)
         self._processor.delete_cut_diff.connect(self._cut_diffs_view.delete_cut_diff)
@@ -130,18 +147,21 @@ class AppDialog(QtGui.QWidget):
         self.ui.total_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, -1))
         self.ui.only_vfx_check_box.toggled.connect(self._cut_diffs_view.display_vfx_cuts)
 
-        self.set_ui_for_step(0)
+        # Ensure we land on the startup screen
+        self.ui.stackedWidget.set_current_index(_DROP_STEP)
+        self.set_ui_for_step(_DROP_STEP)
+        
         self.ui.back_button.clicked.connect(self.previous_page)
         self.ui.stackedWidget.first_page_reached.connect(self.reset)
         self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
+        self.ui.select_button.clicked.connect(self.select_button_callback)
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
 
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
-        self.ui.progress_bar.hide()
 
     @property
     def no_cut_for_sequence(self):
@@ -152,14 +172,39 @@ class AppDialog(QtGui.QWidget):
         """
         Reset callback, going back to the first page
         """
-        self.goto_step(0)
+        # Omly ask confirmation if the cut was not yet imported
+        if self._step != _LAST_STEP:
+            msg_box = QtGui.QMessageBox(self)
+            msg_box.setIcon(QtGui.QMessageBox.Warning)
+            msg_box.setText("<big><b>Are you sure you want to Reset ?</b></big>")
+            msg_box.setInformativeText("All Import Cut progress will be lost.")
+            msg_box.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+            msg_box.setDefaultButton(QtGui.QMessageBox.No)
+            ret = msg_box.exec_()
+        else:
+            ret = QtGui.QMessageBox.Yes
+
+        if ret == QtGui.QMessageBox.Yes:
+            self.goto_step(_DROP_STEP)
 
     @QtCore.Slot()
     def reset(self):
         """
         Called when the first page is reached
         """
-        self.set_ui_for_step(0)
+        self.set_ui_for_step(_DROP_STEP)
+
+    @QtCore.Slot(int)
+    def step_failed(self, which):
+        """
+        Called when a step failed, and going back to previous page
+        should be allowed.
+        """
+        if which == _PROGRESS_STEP:
+            self.ui.progress_screen_title_label.setText(
+                "Import failed",
+            )
+            self.ui.back_button.show()
 
     @QtCore.Slot(int)
     def step_done(self, which):
@@ -178,7 +223,7 @@ class AppDialog(QtGui.QWidget):
             QtGui.QMessageBox.warning(
                 self,
                 "Can't process drop",
-                "Please drop only on file at a time",
+                "Please drop only one file at a time",
             )
             return
         self.new_edl.emit(paths[0])
@@ -190,10 +235,26 @@ class AppDialog(QtGui.QWidget):
         """
         Display a new message in the feedback widget
         """
+
         if levelno == logging.ERROR or levelno == logging.CRITICAL:
-            self.ui.feedback_label.setStyleSheet( "color: #FC6246")
+            self.ui.feedback_label.setProperty("level", "error")
+            self.ui.progress_bar_label.setProperty("level", "error")
         else:
-            self.ui.feedback_label.setStyleSheet("")
+            self.ui.feedback_label.setProperty("level", "info")
+            self.ui.progress_bar_label.setProperty("level", "info")
+
+        self.style().unpolish(self.ui.feedback_label)
+        self.style().polish(self.ui.feedback_label)
+        self.style().unpolish(self.ui.progress_bar_label)
+        self.style().polish(self.ui.progress_bar_label)
+        self.ui.feedback_label.setText(message)
+        self.ui.progress_bar_label.setText(message)
+
+    @QtCore.Slot(str)
+    def display_info_message(self, message):
+        self.ui.feedback_label.setProperty("level", "info")
+        self.style().unpolish(self.ui.feedback_label)
+        self.style().polish(self.ui.feedback_label)
         self.ui.feedback_label.setText(message)
 
     @QtCore.Slot()
@@ -228,6 +289,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.setEnabled(False)
         self.ui.email_button.setEnabled(False)
         self.ui.submit_button.setEnabled(False)
+        self.ui.select_button.setEnabled(False)
         # Show the progress bar if a maximum was given
         if maximum:
             self.ui.progress_bar.setValue(0)
@@ -246,6 +308,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.setEnabled(True)
         self.ui.email_button.setEnabled(True)
         self.ui.submit_button.setEnabled(True)
+        self.ui.select_button.setEnabled(bool(self._selected_sg_entity[self._step]))
         self.ui.progress_bar.hide()
 
     def goto_step(self, which):
@@ -262,8 +325,8 @@ class AppDialog(QtGui.QWidget):
         Skip the cuts view page if needed
         """
         current_page = self.ui.stackedWidget.currentIndex()
-        if current_page == 3 and self.no_cut_for_sequence:
-            self.ui.stackedWidget.goto_page(1)
+        if current_page == _SUMMARY_STEP and self.no_cut_for_sequence:
+            self.ui.stackedWidget.goto_page(_SEQUENCE_STEP)
         else:
             self.ui.stackedWidget.prev_page()
 
@@ -272,40 +335,119 @@ class AppDialog(QtGui.QWidget):
         """
         Set the UI for the given step
         """
+        self._step=step
         # 0 : drag and drop
         # 1 : sequence select
         # 2 : cut select
         # 3 : cut summary
         # 4 : import completed
-        if step < 1:
+        if step == _DROP_STEP:
+            # No previous screen
             self.ui.back_button.hide()
+            # Nothing to reset
             self.ui.reset_button.hide()
+            # Clear various things when we hit the first screen
+            # doing a reset
             self.ui.sequences_search_line_edit.clear()
             self.clear_sequence_view()
+            self._selected_sg_entity[1]=None
         else:
+            # Allow reset and back from screens > 0
             self.ui.reset_button.show()
             self.ui.back_button.show()
 
-        if step < 2:
+        if step < _CUT_STEP:
+            self._selected_sg_entity[2]=None
+            # Reset the cut view
             self.clear_cuts_view()
             self.ui.search_line_edit.clear()
+            self._selected_sg_entity[2]=None
 
-        if step < 3:
+        if step < _SUMMARY_STEP:
+            # Reset the summary view
             self.clear_cut_summary_view()
+            # Too early to submit anything
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
+
+        # We can select things on intermediate screens
+        if step==_SEQUENCE_STEP or step==_CUT_STEP:
+            self.ui.select_button.show()
+            # Only enable it if there is a selection for this step
+            self.ui.select_button.setEnabled(bool(self._selected_sg_entity[step]))
         else:
+            self.ui.select_button.hide()
+        
+        # Display info message in feedback line and other special things
+        # based on the current step
+        if step==_SEQUENCE_STEP:
+            self.display_info_message(self._sequences_view.info_message)
+        elif step==_CUT_STEP:
+            self.display_info_message(self._cuts_view.info_message)
+        elif step==_SUMMARY_STEP:
             self.ui.email_button.show()
             self.ui.submit_button.show()
-
-        if step == 4:
+            self.display_info_message(self._cut_diffs_view.info_message)
+            if self._processor.sg_cut:
+                self.ui.cut_summary_title_label.setText(
+                    "Comparing %s and <b>%s</b> for %s <b>%s</b>" % (
+                    os.path.basename(self._processor.edl_file_path),
+                    self._processor.sg_cut["code"],
+                    self._processor.sg_entity["type"],
+                    self._processor.sg_entity["code"],
+                    )
+                )
+            else:
+                self.ui.cut_summary_title_label.setText(
+                    "Showing %s for %s <b>%s</b>" % (
+                    os.path.basename(self._processor.edl_file_path),
+                    self._processor.sg_entity["type"],
+                    self._processor.sg_entity["code"],
+                    )
+                )
+        elif step == _PROGRESS_STEP:
+            self.ui.progress_screen_title_label.setText(
+                "Importing %s ..." % os.path.basename(self._processor.edl_file_path),
+            )
+            self.ui.email_button.hide()
+            self.ui.submit_button.hide()
+        elif step == _LAST_STEP:
             self.ui.success_label.setText(
-                "<big>Cut %s successfully imported</big>" % self._processor.sg_new_cut["code"]
+                "Cut %s successfully imported" % self._processor.sg_new_cut["code"]
             )
             self.ui.back_button.hide()
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
+            # Clear info message
+            self.display_info_message("")
 
+    @QtCore.Slot(dict)
+    def selection_changed(self, sg_entity):
+        """
+        Called when selection changes in intermediate screens
+        :param sg_entity: The SG entity which was selected for the current step
+        """
+        # Keep trace of what is selected in different views
+        # so the select button at the bottom of the window can
+        # trigger next step with current selection
+        self._selected_sg_entity[self._step]=sg_entity
+        self.ui.select_button.setEnabled(True)
+
+    @QtCore.Slot()
+    def select_button_callback(self):
+        """
+        Callback for the select button
+        :raises: RuntimeError in cases of inconsistencies
+        """
+        if not self._selected_sg_entity[self._step]:
+            raise RuntimeError("No selection for current step %d" % self._step)
+        if self._step==_SEQUENCE_STEP:
+            self.show_sequence(self._selected_sg_entity[self._step])
+        elif self._step==_CUT_STEP:
+            self.show_cut(self._selected_sg_entity[self._step])
+        else:
+            # Should never happen
+            raise RuntimeError("Invalid step %d for selection callback" % step)
 
     @QtCore.Slot(dict)
     def show_sequence(self, sg_entity):
@@ -313,17 +455,17 @@ class AppDialog(QtGui.QWidget):
         Called when cuts needs to be shown for a particular sequence
         """
         self._logger.info("Retrieving cuts for %s" % sg_entity["code"] )
-        self.ui.selected_sequence_label.setText("Showing cuts for Sequence <big><b>%s</big></b>" % sg_entity["code"] )
+        self.ui.selected_sequence_label.setText("Sequence: <big><b>%s</big></b>" % sg_entity["code"] )
         self.show_cuts_for_sequence.emit(sg_entity)
 
     @QtCore.Slot(dict)
     def show_cut(self, sg_cut):
         """
         Called when cut changes needs to be shown for a particular sequence/cut
+        :param sg_cut: A Cut dictionary as retrieved from Shotgun
         """
         self._logger.info("Retrieving cut information for %s" % sg_cut["code"] )
         self.show_cut_diff.emit(sg_cut)
-
 
     @QtCore.Slot()
     def set_cut_summary_view_selectors(self):
@@ -368,7 +510,6 @@ class AppDialog(QtGui.QWidget):
         Called when a the cut needs to be imported in Shotgun. Show a dialog where the
         user can review changes before importing the cut.
         """
-        #self.generate_report()
         dialog = SubmitDialog(
             parent=self,
             title=self._processor.title,
@@ -403,45 +544,23 @@ class AppDialog(QtGui.QWidget):
         QtGui.QDesktopServices.openUrl(sg_url)
         self.close()
 
-    def generate_report(self):
-#        Could be used to generate a report ?
-#
-#        pixmap = QtGui.QPixmap.grabWidget(self.ui.cut_summary_widgets)
-#        pixmap.save("/tmp/cut_report.svg", format="SVG")
-
-        #First render the widget to a QPicture, which stores QPainter commands.
-        pic = QtGui.QPicture(formatVersion=7)
-        picPainter = QtGui.QPainter()
-        picPainter.begin(pic)
-        for i in range(0, self.ui.cutsummary_list.count()-1):
-            witem = self.ui.cutsummary_list.itemAt(i)
-            widget = witem.widget()
-            widget.ui.icon_label.render(picPainter, QtCore.QPoint())
-            #picPainter.drawText(QtCore.QPoint(), widget.ui.shot_name_label.text())
-        picPainter.end()
-        #pic.save("/tmp/cut_grab.pic")
-        pic_size = pic.boundingRect()
-        # Set up the printer
-        printer = QtGui.QPrinter(QtGui.QPrinter.ScreenResolution)
-        #printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
-        printer.setOutputFileName("/tmp/cut_summary_report.pdf")
-        printer.setOutputFormat(QtGui.QPrinter.NativeFormat)
-        #printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
-        page_rect = printer.pageRect()
-        printer.newPage()
-        print_size = printer.pageRect(QtGui.QPrinter.DevicePixel)
-        try:
-            # Finally, draw the QPicture to your printer
-            painter = QtGui.QPainter()
-            painter.begin(printer)
-            
-#            painter.scale(
-#                print_size.width()/float(pic_size.width()), print_size.width()/float(pic_size.width())
-#                )
-            painter.drawPicture(QtCore.QPointF(0, 0), pic);
-            #painter.drawText(0,0, "HELLO WORLD")
-        finally:
-            painter.end()
+    @QtCore.Slot(str, list)
+    def display_exception(self, msg, exec_info):
+        """
+        Display a popup window with the error message
+        and the exec_info in the "details"
+        """
+        msg_box = QtGui.QMessageBox(
+            parent=self,
+            icon=QtGui.QMessageBox.Critical
+            )
+        msg_box.setText("The following error was reported :")
+        msg_box.setInformativeText(msg)
+        msg_box.setDetailedText("\n".join(exec_info))
+        msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+        msg_box.show()
+        msg_box.raise_()
+        msg_box.activateWindow()
 
     def closeEvent(self, evt):
         """
@@ -471,16 +590,48 @@ class AppDialog(QtGui.QWidget):
         self._logger = get_logger()
         handler = BundleLogHandler(self._app)
         handler.new_message.connect(self.new_message)
+        handler.new_error_with_exc_info.connect(self.display_exception)
         self._logger.addHandler(handler)
+
+        # Copied over from tk-desktop and tk-multi-ingestdelivery
+        if sys.platform == "darwin":
+            fname = os.path.join(os.path.expanduser("~"), "Library", "Logs", "Shotgun", "%s.log" % self._app.name)
+        elif sys.platform == "win32":
+            fname = os.path.join(os.environ.get("APPDATA", "APPDATA_NOT_SET"), "Shotgun", "%s.log" % self._app.name)
+        elif sys.platform.startswith("linux"):
+            fname = os.path.join(os.path.expanduser("~"), ".shotgun", "logs", "%s.log" % self._app.name)
+        else:
+            raise NotImplementedError("Unknown platform: %s" % sys.platform)
+
+        handler = logging.handlers.RotatingFileHandler(fname, maxBytes=1024*1024, backupCount=5)
+        handler.addFilter(ShortNameFilter())
+        handler.setFormatter(logging.Formatter(
+            "%(asctime)s %(levelname)s %(short_name)s %(message)s"
+        ))
+        self._logger.addHandler(handler)
+
         self._logger.setLevel(level)
 
     def set_custom_style(self):
         """
         Append our custom style to the inherited style sheet
         """
-        this_folder = os.path.abspath(os.path.dirname(__file__))
-        css_file = os.path.join(this_folder, "ui", "style_sheet.css")
+        this_folder = self._app.disk_location #os.path.abspath(os.path.dirname(__file__))
+        css_file = os.path.join(this_folder, "style_sheet.css")
         if os.path.exists(css_file):
+            self._load_css(css_file)
+
+    def _load_css(self, css_file):
+        self.setStyleSheet("")
+        if os.path.exists(css_file):
+            # Add a watcher to pickup changes only if the app was started from tk-shell
+            # usually clients use tk-desktop or tk-shotgun, so it should be safe to
+            # assume that this will cause any harm in production
+            if sgtk.platform.current_engine().name == "tk-shell":
+                # Re-attach a watcher everytime the file is changed, otherwise it
+                # seems the watcher is run only once ?
+                watcher=QtCore.QFileSystemWatcher([css_file], self)
+                watcher.fileChanged.connect(self.reload_css)
             try:
                 # Read css file
                 f = open(css_file)
@@ -493,4 +644,9 @@ class AppDialog(QtGui.QWidget):
             except Exception,e:
                 self._app.log_warning( "Unable to read style sheet %s" % css_file )
 
-        
+    @QtCore.Slot(str)
+    def reload_css(self, path):
+        self._logger.info("Reloading %s" % path)
+        self._load_css(path)
+        self._logger.info("%s loaded" % path)
+        self.update()
