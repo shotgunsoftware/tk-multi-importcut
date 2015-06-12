@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Shotgun Software Inc.
+# Copyright (c) 2015 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -80,12 +80,12 @@ class AppDialog(QtGui.QWidget):
         
         self._busy = False
         # Current step being displayed
-        self._step=0
+        self._step = 0
         # Selected sg entity per step : selection only happen in steps 1 and 2
         # but we create entries for all steps allowing to index the list
         # with the current step and blindly disable the select button on the
         # value for each step
-        self._selected_sg_entity=[None]*(_LAST_STEP+1)
+        self._selected_sg_entity = [None]*(_LAST_STEP+1)
         
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
@@ -197,7 +197,8 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(int)
     def step_failed(self, which):
         """
-        Called when a step is done, and next page can be displayed
+        Called when a step failed, and going back to previous page
+        should be allowed.
         """
         if which == _PROGRESS_STEP:
             self.ui.progress_screen_title_label.setText(
