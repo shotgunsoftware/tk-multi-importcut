@@ -17,13 +17,18 @@ Will have the "Do it" button on the far right
 QDialogButtonBox {
     button-layout: 3;
 }
-
+CutDiffCard #version_name_label {
+    padding: 1px; /* Give a bit of margin so the lineedit and label can be aligned */
+    margin: 0px;
+}
 /*
 Make the line edit looks like a QLabel 
 when not in edit mode 
 */
 EntityLineWidget {
-    border: none;
+    border: 0px solid #2C93E2;
+    padding: 2px; /* Give a bit of margin so the lineedit and label can be aligned */
+    margin: 0px;
     background: #525252;
     font-style: normal;
     font-weight: bold;
@@ -38,6 +43,7 @@ EntityLineWidget:focus:!read-only {
     background: none;
     font-style: normal;
     font-weight: normal;
+    padding: 0px; /* suppress alignment padding */
 }
 
 /*
@@ -239,6 +245,11 @@ CutDiffCard #version_title_label {
     font-weight: bold;
 }
 /* Set font size for some labels */
+CutDiffCard #shot_title_label,
+CutDiffCard #version_title_label,
+CutDiffCard #version_name_label,
+CutDiffCard #status_label,
+CutDiffCard #shot_name_line,
 CutDiffCard #shot_head_in_label,
 CutDiffCard #cut_in_label,
 CutDiffCard #cut_out_label,
