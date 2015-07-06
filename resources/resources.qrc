@@ -12,5 +12,7 @@
     <file>left_arrow.png</file>
     <file>right_arrow.png</file>
     <file>sg_logo.png</file>
+    <file>pencil.png</file>
+    <file>pencil_24.png</file>
   </qresource>
 </RCC>

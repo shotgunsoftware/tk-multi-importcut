@@ -33,7 +33,14 @@ EntityLineWidget {
     font-style: normal;
     font-weight: bold;
 }
-
+EntityLineWidget:hover:!read-only:!focus {
+    background-image: url(:/tk_multi_importcut/pencil_24.png);
+    background-repeat: no-repeat;
+    background-position: center right;
+    background-origin: content;
+    background-color: lightyellow;
+    color: black;
+}
 /*
 In edit mode, show it is a QLineEdit if it is not read only
 */
