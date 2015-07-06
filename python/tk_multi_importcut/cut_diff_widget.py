@@ -276,7 +276,7 @@ class CutDiffCard(QtGui.QFrame):
             cut_item_details,
             edit_details
         )
-        self.setToolTip(msg)
+        self.ui.icon_label.setToolTip(msg)
 
     def showEvent(self, event):
         """

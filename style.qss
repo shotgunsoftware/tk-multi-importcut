@@ -326,6 +326,18 @@ CutDiffCard #tail_duration_label {
     border-left: 1px solid black;
     border-right: 1px solid black;
 }
+/*
+Style for tooltip on extended thumbnail
+for some mysterious reasons the background
+is desperately black and can't be changed
+so ... make the font color white ...
+*/
+ExtendedThumbnail QToolTip {
+    border: none;
+    background-color: red;
+    color: white;
+}
+
 /* Progress window */
 #progress_page #progress_screen_title_label {
     font-size: 20px;
