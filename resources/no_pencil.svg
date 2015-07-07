@@ -15,8 +15,8 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="pencil.svg"
-   inkscape:export-filename="/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/resources/pencil_24.png"
+   sodipodi:docname="no_pencil.svg"
+   inkscape:export-filename="/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/resources/no_pencil_24.png"
    inkscape:export-xdpi="8.4375"
    inkscape:export-ydpi="8.4375">
   <defs
@@ -60,7 +60,7 @@
     <g
        id="g4171"
        transform="matrix(-0.97465161,1.1615446,1.1615446,0.97465161,-797.22424,-97.681014)"
-       style="stroke-width:5.27603988;stroke-miterlimit:3;stroke-dasharray:none;stroke:#a0a0a0;stroke-opacity:1"
+       style="stroke-width:5.27603988;stroke-miterlimit:3;stroke-dasharray:none;stroke:#bebebe;stroke-opacity:1"
        inkscape:export-xdpi="8.4375"
        inkscape:export-ydpi="8.4375">
       <rect
@@ -70,23 +70,28 @@
          height="21.259039"
          width="124.11077"
          id="rect4136"
-         style="opacity:1;fill:none;fill-opacity:1;stroke:#a0a0a0;stroke-width:5.27603988;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         style="opacity:1;fill:none;fill-opacity:1;stroke:#bebebe;stroke-width:5.27603988;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4138"
          d="m 55.790623,899.80884 122.986077,0"
-         style="fill:none;fill-rule:evenodd;stroke:#a0a0a0;stroke-width:5.27603988;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-opacity:1" />
+         style="fill:none;fill-rule:evenodd;stroke:#bebebe;stroke-width:5.27603988;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-opacity:1" />
       <path
          sodipodi:nodetypes="ccc"
          inkscape:connector-curvature="0"
          id="path4140"
          d="m 178.77237,888.34181 21.90448,11.58584 -21.44374,9.97845"
-         style="fill:none;fill-rule:evenodd;stroke:#a0a0a0;stroke-width:5.27603988;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-opacity:1" />
+         style="fill:none;fill-rule:evenodd;stroke:#bebebe;stroke-width:5.27603988;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4147"
          d="m 195.57143,895.93361 0,7.14286"
-         style="fill:none;fill-rule:evenodd;stroke:#a0a0a0;stroke-width:5.27603988;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-opacity:1" />
+         style="fill:none;fill-rule:evenodd;stroke:#bebebe;stroke-width:5.27603988;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-opacity:1" />
     </g>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#a0a0a0;stroke-width:10;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 26.984748,821.32661 229.01525,1027.3978"
+       id="path4196"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>
