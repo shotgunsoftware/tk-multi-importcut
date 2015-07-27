@@ -616,22 +616,21 @@ class AppDialog(QtGui.QWidget):
         """
         Append our custom style to the inherited style sheet
         """
+        self._css_watcher = None
         this_folder = self._app.disk_location #os.path.abspath(os.path.dirname(__file__))
-        css_file = os.path.join(this_folder, "style_sheet.css")
+        css_file = os.path.join(this_folder, "style.qss")
         if os.path.exists(css_file):
             self._load_css(css_file)
-
-    def _load_css(self, css_file):
-        self.setStyleSheet("")
-        if os.path.exists(css_file):
             # Add a watcher to pickup changes only if the app was started from tk-shell
             # usually clients use tk-desktop or tk-shotgun, so it should be safe to
             # assume that this will cause any harm in production
             if sgtk.platform.current_engine().name == "tk-shell":
-                # Re-attach a watcher everytime the file is changed, otherwise it
-                # seems the watcher is run only once ?
-                watcher=QtCore.QFileSystemWatcher([css_file], self)
-                watcher.fileChanged.connect(self.reload_css)
+                self._css_watcher=QtCore.QFileSystemWatcher([css_file], self)
+                self._css_watcher.fileChanged.connect(self.reload_css)
+
+    def _load_css(self, css_file):
+        self.setStyleSheet("")
+        if os.path.exists(css_file):
             try:
                 # Read css file
                 f = open(css_file)
@@ -648,5 +647,9 @@ class AppDialog(QtGui.QWidget):
     def reload_css(self, path):
         self._logger.info("Reloading %s" % path)
         self._load_css(path)
+        # Some code editors rename files on save, so the watcher will
+        # stop watching it. Check if the file watched, re-attach it if not
+        if self._css_watcher and path not in self._css_watcher.files():
+            self._css_watcher.addPath(path)
         self._logger.info("%s loaded" % path)
         self.update()

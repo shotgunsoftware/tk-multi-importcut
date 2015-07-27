@@ -626,7 +626,7 @@ class EdlCut(QtCore.QObject):
         self.got_busy.emit(4)
         self.step_done.emit(_SUMMARY_STEP)
         try:
-            self._sg_new_cut = self.create_sg_cut(title)
+            self._sg_new_cut = self.create_sg_cut(title, description)
             self.update_sg_shots()
             self.progress_changed.emit(1)
             self.update_sg_versions()
@@ -695,7 +695,7 @@ class EdlCut(QtCore.QObject):
         self._app.shotgun.create("Note", data)
 
 
-    def create_sg_cut(self, title):
+    def create_sg_cut(self, title, description):
         """
         Create a Cut in Shotgun, linked to the current Sequence
         """
@@ -708,6 +708,7 @@ class EdlCut(QtCore.QObject):
                 "sg_sequence" : self._sg_entity,
                 "created_by" : self._ctx.user,
                 "updated_by" : self._ctx.user,
+                "description" : description,
             },
             ["id", "code"])
         return sg_cut

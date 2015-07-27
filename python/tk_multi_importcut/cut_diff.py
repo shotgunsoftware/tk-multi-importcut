@@ -138,6 +138,9 @@ class CutDiff(QtCore.QObject):
         # We can only change names coming from an edit entry
         if not self._edit:
             return False
+        # And only if there is no version linked to it
+        if self._sg_cut_item and self._sg_cut_item["sg_version.Version.code"]:
+            return False
         return True
 
     def set_name(self, name):

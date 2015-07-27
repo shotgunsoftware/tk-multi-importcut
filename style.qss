@@ -17,18 +17,42 @@ Will have the "Do it" button on the far right
 QDialogButtonBox {
     button-layout: 3;
 }
-
+CutDiffCard #version_name_label {
+    padding: 1px; /* Give a bit of margin so the lineedit and label can be aligned */
+    margin: 0px;
+}
 /*
 Make the line edit looks like a QLabel 
 when not in edit mode 
 */
 EntityLineWidget {
-    border: none;
+    border: 0px solid #2C93E2;
+    padding: 2px; /* Give a bit of margin so the lineedit and label can be aligned */
+    margin: 0px;
     background: #525252;
     font-style: normal;
     font-weight: bold;
 }
-
+/*
+But highlight it is editable ( if it is ) on mouse hover
+*/
+EntityLineWidget:hover:!read-only:!focus {
+    background-image: url(:/tk_multi_importcut/pencil_24.png);
+    background-repeat: no-repeat;
+    background-position: center right;
+    background-origin: content;
+    background-color: rgba(44, 147, 226, 25%);
+}
+/*
+Highlight non editable fields by showing the crossed pencil
+icon
+*/
+EntityLineWidget:hover:read-only:!focus {
+    background-image: url(:/tk_multi_importcut/no_pencil_24.png);
+    background-repeat: no-repeat;
+    background-position: center right;
+    background-origin: content;
+}
 /*
 In edit mode, show it is a QLineEdit if it is not read only
 */
@@ -38,6 +62,7 @@ EntityLineWidget:focus:!read-only {
     background: none;
     font-style: normal;
     font-weight: normal;
+    padding: 0px; /* suppress alignment padding */
 }
 
 /*
@@ -103,7 +128,7 @@ SequenceCard, CutCard, CutDiffCard {
 /* Highlight selected cards */
 SequenceCard[selected="true"], CutCard[selected="true"] {
     border: 1px solid #2C93E2;
-    background-color: rgba(44, 147, 226, 25%)
+    background-color: rgba(44, 147, 226, 25%);
 }
 /* Labels on Sequence cards */
 SequenceCard #title_label {
@@ -239,6 +264,11 @@ CutDiffCard #version_title_label {
     font-weight: bold;
 }
 /* Set font size for some labels */
+CutDiffCard #shot_title_label,
+CutDiffCard #version_title_label,
+CutDiffCard #version_name_label,
+CutDiffCard #status_label,
+CutDiffCard #shot_name_line,
 CutDiffCard #shot_head_in_label,
 CutDiffCard #cut_in_label,
 CutDiffCard #cut_out_label,
@@ -315,6 +345,20 @@ CutDiffCard #tail_duration_label {
     border-left: 1px solid black;
     border-right: 1px solid black;
 }
+/*
+Style for tooltip on extended thumbnail
+for some mysterious reasons the background
+is desperately black and can't be changed
+so ... make the font color white ...
+*/
+ExtendedThumbnail QToolTip {
+    border: 1px solid #2C93E2;
+    background-color: red; /* will be obvious it works when it will ... */
+    background-image: none;
+    border-image: none;
+    color: white;
+}
+
 /* Progress window */
 #progress_page #progress_screen_title_label {
     font-size: 20px;
