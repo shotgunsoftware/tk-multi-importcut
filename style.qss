@@ -358,6 +358,49 @@ ExtendedThumbnail QToolTip {
     border-image: none;
     color: white;
 }
+CutDiffCard[repeated=true] #shot_name_line{
+    color: #A1A51A;
+}
+/*
+ Styling depending on the cut difference type
+*/
+CutDiffCard ExtendedThumbnail {
+    color: #A5A5A5;
+}
+CutDiffCard[cut_order_changed=true] ExtendedThumbnail {
+    color: #A1A51A;
+}
+CutDiffCard[diff_type="new"] #status_label,
+CutDiffCard[diff_type="new"]  ExtendedThumbnail
+{
+    color: #57B510;
+}
+CutDiffCard[diff_type="omitted"]  #status_label,
+CutDiffCard[diff_type="omitted"]  ExtendedThumbnail
+{
+    color: #FC6246;
+}
+CutDiffCard[diff_type="reinstated"]  #status_label,
+{
+    color: #A1A51A;
+}
+CutDiffCard[diff_type="rescan_needed"]  #status_label ,
+{
+    color: #57B510;
+}
+CutDiffCard[diff_type="cut_change"]  #status_label ,
+{
+}
+CutDiffCard[diff_type="no_change"]  #status_label ,
+{
+    color: #A5A5A5;
+}
+CutDiffCard[diff_type="no_link"]  #status_label ,
+{
+    color: #FC6246;
+}
+
+
 
 /* Progress window */
 #progress_page #progress_screen_title_label {

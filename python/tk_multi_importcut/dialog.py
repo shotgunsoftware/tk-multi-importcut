@@ -95,7 +95,7 @@ class AppDialog(QtGui.QWidget):
         
         # lastly, set up our very basic UI
         self.set_custom_style()
-        self.set_logger()
+        self.set_logger(logging.DEBUG)
         # Keep this thread for UI stuff
         # Handle data and processong in a separate thread
         self._processor = Processor()

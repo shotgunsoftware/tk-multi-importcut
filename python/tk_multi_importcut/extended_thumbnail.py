@@ -26,18 +26,19 @@ class ExtendedThumbnail(QtGui.QLabel):
         """
         super(ExtendedThumbnail, self).__init__(*args, **kwargs)
         self._text=text or ""
-        self._color = QtGui.QColor()
+        self._color = None
         self._strike_through=False
 
     def set_text(self, text, color, strike_through=False):
         """
         Set the text, color and if this thumbnail should be striked through
         :param text: A string
-        :param color: A QColor used when drawing
+        :param color: An optional color to override the QColor used when drawing
         :param strike_through: Whether or not a strike through should be drawn
         """
         self._text=str(text)
-        self._color = QtGui.QColor(color)
+        if color:
+            self._color = QtGui.QColor(color)
         self._strike_through=strike_through
         self.update()
 
@@ -64,12 +65,13 @@ class ExtendedThumbnail(QtGui.QLabel):
         """
         painter.setRenderHints(QtGui.QPainter.Antialiasing)
         painter.setFont(self.font())
-        painter.setPen(self._color)
+        if self._color:
+            painter.setPen(self._color)
         brush = QtGui.QBrush(
             QtGui.QColor(
-                self._color.red() * 0.1,
-                self._color.green() * 0.1,
-                self._color.blue() * 0.1,
+                painter.pen().color().red() * 0.1,
+                painter.pen().color().green() * 0.1,
+                painter.pen().color().blue() * 0.1,
                 128),
             QtCore.Qt.SolidPattern
         )
