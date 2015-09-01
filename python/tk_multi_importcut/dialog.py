@@ -12,6 +12,7 @@ import sgtk
 import os
 import sys
 import logging
+import logging.handlers
 import tempfile
 
 # by importing QT from sgtk rather than directly, we ensure that
