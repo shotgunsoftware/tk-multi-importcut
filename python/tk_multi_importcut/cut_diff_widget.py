@@ -66,6 +66,7 @@ class CutDiffCard(QtGui.QFrame):
         self._use_smart_fields = app.get_setting("use_smart_fields") or False
         self._thumbnail_requested = False
         cut_diff.type_changed.connect(self.diff_type_changed)
+        cut_diff.repeated_changed.connect(self.repeated_changed)
         self._set_ui_values()
 
     def set_property(self, name, value):
@@ -107,7 +108,8 @@ class CutDiffCard(QtGui.QFrame):
         self.ui.shot_name_line.setReadOnly(not self._cut_diff.is_name_editable)
         if self._cut_diff.repeated:
             self.ui.shot_name_line.setToolTip("Shot is repeated")
-
+        else:
+            self.ui.shot_name_line.setToolTip("")
         # Cut order
         new_cut_order = self._cut_diff.new_cut_order or 0
         old_cut_order = self._cut_diff.cut_order or 0
@@ -198,8 +200,10 @@ class CutDiffCard(QtGui.QFrame):
     def diff_type_changed(self, cut_diff, old_type, new_type):
         """
         Called when the diff type changed for the CutDiff being displayed
+
         Some parameter are ignored as we have the CutDiff instance as member
         of our class.
+
         :param cut_diff: A CutDiff instance
         :param old_type: The old type for the CutDiff instance
         :param new_type: The new type for the CutDiff instance
@@ -212,6 +216,19 @@ class CutDiffCard(QtGui.QFrame):
         # changes should be handled in a dedicated slot and thumbnail requests
         # issued from it
         self.retrieve_thumbnail()
+
+    @QtCore.Slot(CutDiff, int, int)
+    def repeated_changed(self, cut_diff, old_repeated, new_repeated):
+        """
+        Called when the repeated changed for the CutDiff being displayed
+
+        Some parameter are ignored as we have the CutDiff instance as member
+        of our class.
+        :param cut_diff: A CutDiff instance
+        :param old_repeated: The old repeated value for the CutDiff instance
+        :param new_type: The new repeated value for the CutDiff instance
+        """
+        self._set_ui_values()
 
     @QtCore.Slot(str)
     def shot_name_edited(self, value):

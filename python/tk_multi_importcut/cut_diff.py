@@ -52,6 +52,8 @@ class CutDiff(QtCore.QObject):
     name_changed=QtCore.Signal(QtCore.QObject, str, str)
     # Emitted when the diff type for this item is changed
     type_changed=QtCore.Signal(QtCore.QObject, int, int)
+    # Emitted when the diff type for this item is changed
+    repeated_changed=QtCore.Signal(QtCore.QObject, bool, bool)
     # Emitted when this cut diff instance is discarded
     discarded=QtCore.Signal(QtCore.QObject)
     def __init__(self, name, sg_shot=None, edit=None, sg_cut_item=None):
@@ -560,7 +562,10 @@ class CutDiff(QtCore.QObject):
         Set this cut difference as repeated
         :param repeated: A boolean
         """
-        self._repeated = repeated
+        if repeated != self._repeated:
+            old_repeated = self._repeated
+            self._repeated = repeated
+            self.repeated_changed.emit(self, old_repeated, self._repeated)
 
     def summary(self):
         """
