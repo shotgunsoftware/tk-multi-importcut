@@ -69,6 +69,7 @@ class Processor(QtCore.QThread):
         super(Processor, self).__init__()
         self._logger = get_logger()
         self._edl_cut = None
+        edl.EditList.set_logger(self._logger.getChild("(editorial)"))
 
     @property
     def title(self):

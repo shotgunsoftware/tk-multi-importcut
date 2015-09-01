@@ -95,6 +95,16 @@ class BundleLogHandler(logging.StreamHandler):
             )
         self.new_message.emit(record.levelno, record.getMessage())
         if self._bundle:
+            # Special cases for tk-shotgun and tk-desktop :
+            # - tk-shotgun : messages are displayed in a pop up window after
+            #                the app is closed, which is confusing
+            # - tk-desktop : messages are send through a pipe to desktop server
+            #                and logged into tk-desktop logs. We have our own
+            #                logging file and sometimes tk-desktop will hang when
+            #                writing data, so don't log anything
+            engine_name = sgtk.platform.current_engine().name
+            if engine_name == "tk-shotgun" or engine_name == "tk-desktop":
+                return
             # Pick up the right framework method, given the record level
             if record.levelno == logging.INFO:
                 self._bundle.log_info(record.getMessage())
