@@ -40,6 +40,62 @@ The changes in %s are as follows:
 
 """
 
+class ShotCutDiffList(list):
+    """
+    A list of cut differences for a given shot. Minimum and maximum values
+    are computed when adding / removing entries. These values are used to deal
+    with repeated shots, that is, shots which appears more than once in the cut.
+    """
+    def __init__(self, cut_diff, *args, **kwargs):
+        super(ShotCutDiffList, self).__init__(*args, **kwargs)
+        self._logger=get_logger()
+        self._min_cut_in = None
+        self._max_cut_out = None
+        self._min_cut_order = None
+        self._min_tc_cut_in = None
+        # Values above are populated in the append call below
+        self.append(cut_diff)
+
+    def append(self, cut_diff):
+        """
+        Add the given cut difference to our list, recompute min and max values
+        :param cut_diff: A CutDiff instance
+        """
+        super(ShotCutDiffList, self).append(cut_diff)
+        self._update_min_and_max(cut_diff)
+
+    def remove(self, cut_diff):
+        """
+        Remove the given cut difference from our list, recompute min and max values
+        :param cut_diff: A CutDiff instance
+        """
+        super(ShotCutDiffList, self).remove(cut_diff)
+        # Reset our internal values
+        self._min_cut_in = None
+        self._max_cut_out = None
+        self._min_cut_order = None
+        self._min_tc_cut_in = None
+        # And recompute them from what is left
+        for cdiff in self:
+            self._update_min_and_max(cdiff)
+
+    def _update_min_and_max(self, cut_diff):
+        """
+        Update min and max values from the given cut diffence
+
+        :param cut_diff: A CutDiff instance
+        """
+        if cut_diff.new_cut_order is not None and (self._min_cut_order is None or cut_diff.new_cut_order < self._min_cut_order):
+            self._min_cut_order = cut_diff.new_cut_order
+        if cut_diff.new_cut_in is not None and ( self._min_cut_in is None or cut_diff.new_cut_in < self._min_cut_in):
+            self._min_cut_in = cut_diff.new_cut_in
+        if cut_diff.new_cut_out is not None and ( self._max_cut_out is None or cut_diff.new_cut_out > self._max_cut_out):
+            self._max_cut_out = cut_diff.new_cut_out
+        tc_cut_in = cut_diff.new_tc_cut_in
+        if tc_cut_in is not None and (self._min_tc_cut_in is None or tc_cut_in.to_frame() < self._min_tc_cut_in.to_frame()):
+            self._min_tc_cut_in = tc_cut_in
+        self._logger.info("Min tc cut in is %s" % self._min_tc_cut_in)
+
 class CutSummary(QtCore.QObject):
     """
     A list of cut differences, stored in CutDiff instances
@@ -97,7 +153,7 @@ class CutSummary(QtCore.QObject):
             for cdiff in self._cut_diffs[shot_key]:
                 cdiff.set_repeated(True)
         else:
-            self._cut_diffs[shot_key] = [cut_diff]
+            self._cut_diffs[shot_key] = ShotCutDiffList(cut_diff)
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
     
@@ -181,7 +237,7 @@ class CutSummary(QtCore.QObject):
                     cdiff.set_repeated(True)
         else:
             self._logger.debug("Creating single entry for new shot key %s" % new_shot_key)
-            self._cut_diffs[new_shot_key] = [cut_diff]
+            self._cut_diffs[new_shot_key] = ShotCutDiffList(cut_diff)
         cut_diff.check_changes()
 
     @QtCore.Slot(CutDiff, int, int)
