@@ -53,6 +53,8 @@ class ShotCutDiffList(list):
         self._max_cut_out = None
         self._min_cut_order = None
         self._min_tc_cut_in = None
+        self._max_tc_cut_out = None
+        self._earliest_entry = None
         # Values above are populated in the append call below
         self.append(cut_diff)
 
@@ -61,23 +63,47 @@ class ShotCutDiffList(list):
         Add the given cut difference to our list, recompute min and max values
         :param cut_diff: A CutDiff instance
         """
+        old_len = len(self)
         super(ShotCutDiffList, self).append(cut_diff)
         self._update_min_and_max(cut_diff)
+        cut_diff.set_siblings(self)
 
     def remove(self, cut_diff):
         """
         Remove the given cut difference from our list, recompute min and max values
         :param cut_diff: A CutDiff instance
         """
+        cut_diff.set_siblings(None)
         super(ShotCutDiffList, self).remove(cut_diff)
         # Reset our internal values
         self._min_cut_in = None
         self._max_cut_out = None
         self._min_cut_order = None
         self._min_tc_cut_in = None
+        self._max_tc_cut_out = None
+        self._earliest_entry = None
+        self._latest_entry = None
         # And recompute them from what is left
         for cdiff in self:
             self._update_min_and_max(cdiff)
+
+    @property
+    def earliest(self):
+        """
+        Return the entry with the earliest tc cut in from our list
+
+        :returns: A CutDiff instance, or None
+        """
+        return self._earliest_entry
+
+    @property
+    def latest(self):
+        """
+        Return the entry with latest tc cut out from out list
+
+        :returns: A CutDiff instance, or None
+        """
+        return self._latest_entry
 
     def _update_min_and_max(self, cut_diff):
         """
@@ -85,16 +111,22 @@ class ShotCutDiffList(list):
 
         :param cut_diff: A CutDiff instance
         """
+        tc_cut_in = cut_diff.new_tc_cut_in
+        if tc_cut_in is not None and (self._min_tc_cut_in is None or tc_cut_in.to_frame() < self._min_tc_cut_in.to_frame()):
+            self._min_tc_cut_in = tc_cut_in
+            self._earliest_entry = cut_diff
+        tc_cut_out = cut_diff.new_tc_cut_out
+        if tc_cut_out is not None and (self._max_tc_cut_out is None or tc_cut_out.to_frame() > self._max_tc_cut_out.to_frame()):
+            self._max_tc_cut_out = tc_cut_out
+            self._latest_entry = cut_diff
+        self._logger.info("Min tc cut in is %s" % self._min_tc_cut_in)
+        self._logger.info("Max tc cut out is %s" % self._max_tc_cut_out)
         if cut_diff.new_cut_order is not None and (self._min_cut_order is None or cut_diff.new_cut_order < self._min_cut_order):
             self._min_cut_order = cut_diff.new_cut_order
         if cut_diff.new_cut_in is not None and ( self._min_cut_in is None or cut_diff.new_cut_in < self._min_cut_in):
             self._min_cut_in = cut_diff.new_cut_in
         if cut_diff.new_cut_out is not None and ( self._max_cut_out is None or cut_diff.new_cut_out > self._max_cut_out):
             self._max_cut_out = cut_diff.new_cut_out
-        tc_cut_in = cut_diff.new_tc_cut_in
-        if tc_cut_in is not None and (self._min_tc_cut_in is None or tc_cut_in.to_frame() < self._min_tc_cut_in.to_frame()):
-            self._min_tc_cut_in = tc_cut_in
-        self._logger.info("Min tc cut in is %s" % self._min_tc_cut_in)
 
 class CutSummary(QtCore.QObject):
     """

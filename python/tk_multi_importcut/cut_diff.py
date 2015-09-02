@@ -115,6 +115,7 @@ class CutDiff(QtCore.QObject):
         self._default_head_in_duration = self._app.get_setting("default_head_in_duration")
         self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
 
+        self._siblings = None # List of other entries for the same shot
         # Retrieve the cut diff type from the given params
         self._check_changes()
 
@@ -298,6 +299,17 @@ class CutDiff(QtCore.QObject):
         """
         Return the new head in value
         """
+        # Special case if we are dealing with a repeated shot
+        # Frames are relative to the earliest entry in our siblings
+        if self.repeated:
+            # Get the head in for the earliest entry
+            earliest = self._siblings.earliest
+            if not earliest:
+                raise ValueError("%s is repeated but does not have an earliest entry defined" % self)
+            if earliest != self: # We are not the earliest
+                return earliest.new_head_in
+        # Default case : retrieve the value from the shot
+        # or fall back to the default one
         nh = self.shot_head_in
         if nh is None:
             nh = self.default_head_in
@@ -406,12 +418,26 @@ class CutDiff(QtCore.QObject):
                 offset = self._edit.source_in.to_frame() - tc_cut_in.to_frame()
                 # Just apply the offset to the old cut in
                 return cut_in + offset
+        # If repeated our cut in is relative to the earliest entry
+        if self.repeated:
+            # Get the head in for the earliest entry
+            earliest = self._siblings.earliest
+            if not earliest:
+                raise ValueError("%s is repeated but does not have an earliest entry defined" % self)
+            if earliest != self: # We are not the earliest
+                # get its tc_cut_in
+                earliest_tc_cut_in = earliest.new_tc_cut_in
+                if earliest_tc_cut_in is None:
+                    raise ValueError("Earliest %s is not able to compute tc cut in" % earliest_tc_cut_in)
+                # Compute the difference with ours
+                offset = self.new_tc_cut_in.to_frame() - earliest_tc_cut_in.to_frame()
+                # add it the earliest head in
+                return earliest.new_cut_in + offset
         # If we don't have a previous entry, retrieve default values
         # and return an arbitrary value
-        head_in = self.shot_head_in
-        if head_in is None:
-            head_in = self.default_head_in
-        return self.default_head_in + self._default_head_in_duration
+        head_in = self.new_head_in
+        head_duration = self._default_head_in_duration
+        return head_in + head_duration
 
     @property
     def new_tc_cut_in(self):
@@ -441,6 +467,21 @@ class CutDiff(QtCore.QObject):
         if self._edit:
             return cut_in + self._edit.source_duration -1
         return None
+
+    @property
+    def new_tc_cut_out(self):
+        """
+        Return the new timecode cut out, or None.
+        The new value is retrieved from the edit source timecode out,
+        if there is an edit.
+
+        :returns: A Timecode instance or None
+        """
+        # If we don't have any edit entry, then we don't have
+        # any new tc cut in by definition
+        if not self._edit:
+            return None
+        return self._edit.source_out
 
     @property
     def head_duration(self):
@@ -518,15 +559,24 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
+        if not self._edit: # No new value
+            return None
         cut_out = self.new_cut_out
         if cut_out is None:
             return None
         tail_out = self.shot_tail_out
         if tail_out is None:
+            if self.repeated:
+                latest = self._siblings.latest
+                if not latest:
+                    raise ValueError("Couldn't get latest entry for repeated shot %s" % self)
+                if latest != self:
+                    # If we are not ourself the latest entry
+                    tail_out = latest.new_tail_out
+        if tail_out is None:
+            # Fallback to defaults
             return self._app.get_setting("default_tail_out_duration")
-        if self._edit:
-            return tail_out - cut_out
-        return None
+        return tail_out - cut_out
 
     @property
     def diff_type(self):
@@ -564,6 +614,9 @@ class CutDiff(QtCore.QObject):
         Return true if the associated shot appears more than once in the 
         cut summary
         """
+        if not self._siblings or len(self._siblings) < 2:
+            return False
+        return True
         return self._repeated
 
     @property
@@ -583,6 +636,13 @@ class CutDiff(QtCore.QObject):
             return True
         # Return True if the edit has a shot name
         return bool(self._name)
+
+    def set_siblings(self, siblings):
+        """
+        Set our list of siblings, which is other entries for the same shot
+        :param siblings: a ShotCutDiffList or None
+        """
+        self._siblings  = siblings
 
     def check_changes(self):
         """
