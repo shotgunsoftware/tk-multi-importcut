@@ -55,6 +55,7 @@ class ShotCutDiffList(list):
         self._min_tc_cut_in = None
         self._max_tc_cut_out = None
         self._earliest_entry = None
+        self._latest_entry = None
         # Values above are populated in the append call below
         self.append(cut_diff)
 
