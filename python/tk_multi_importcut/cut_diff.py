@@ -614,9 +614,15 @@ class CutDiff(QtCore.QObject):
         Return true if the associated shot appears more than once in the 
         cut summary
         """
-        if not self._siblings or len(self._siblings) < 2:
-            return False
-        return True
+#        if not self._siblings or len(self._siblings) < 2:
+#            return False
+#        return True
+        # We use an explicit flag for repeated shots and don't rely
+        # on the self._siblings list containing more then one entry
+        # as this is controlled by the cut summary and can be changed
+        # without us being notified. The cut summary will call set_repeated
+        # explicitely when changing our flag, giving us a chance to compare the
+        # new value with the old one.
         return self._repeated
 
     @property
@@ -725,10 +731,14 @@ class CutDiff(QtCore.QObject):
         Set this cut difference as repeated
         :param repeated: A boolean
         """
-        if repeated != self._repeated:
+        # This is set explicetely by the cut summary, so we have a chance to
+        # compare the new value with the old one
+        if repeated != self.repeated:
             old_repeated = self._repeated
             self._repeated = repeated
             self.repeated_changed.emit(self, old_repeated, self._repeated)
+            # Cut in / out values are affected by repeated changes
+            self._check_changes()
 
     def summary(self):
         """
