@@ -67,6 +67,10 @@ class ShotCutDiffList(list):
         super(ShotCutDiffList, self).append(cut_diff)
         self._update_min_and_max(cut_diff)
         cut_diff.set_siblings(self)
+        if cut_diff == self._earliest_entry or cut_diff == self._latest_entry:
+            # We neeed to recompute in and out for all entries
+            for cdiff in self:
+                self._update_min_and_max(cdiff)
 
     def remove(self, cut_diff):
         """
@@ -114,6 +118,7 @@ class ShotCutDiffList(list):
         tc_cut_in = cut_diff.new_tc_cut_in
         if tc_cut_in is not None and (self._min_tc_cut_in is None or tc_cut_in.to_frame() < self._min_tc_cut_in.to_frame()):
             self._min_tc_cut_in = tc_cut_in
+            old_earliest_entry = self._earliest_entry
             self._earliest_entry = cut_diff
         tc_cut_out = cut_diff.new_tc_cut_out
         if tc_cut_out is not None and (self._max_tc_cut_out is None or tc_cut_out.to_frame() > self._max_tc_cut_out.to_frame()):
