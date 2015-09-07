@@ -736,6 +736,8 @@ class EdlCut(QtCore.QObject):
             min_cut_in = None
             max_cut_out = None
             sg_shot = None
+            # For repeated shots we have multiple entries, a single entry if not
+            # repeated, following code handle both cases
             for cut_diff in items:
                 if sg_shot is None and cut_diff.sg_shot:
                     sg_shot = cut_diff.sg_shot
@@ -865,34 +867,57 @@ class EdlCut(QtCore.QObject):
         # unless it becomes part of the specs
         self._logger.info("Updating versions ...")
         sg_batch_data = []
+        requested_versions = {}
         for shot_name, items in self._summary.iteritems():
             for cut_diff in items:
                 edit = cut_diff.edit
                 if edit and not edit.get_sg_version() and edit.get_version_name():
-                    sg_batch_data.append({
-                        "request_type" : "create",
-                        "entity_type" : "Version",
-                        "data" : {
-                            "project" : self._ctx.project,
-                            "code" : edit.get_version_name(),
-                            "entity": cut_diff.sg_shot,
-                            "updated_by" : self._ctx.user,
-                            "created_by" : self._ctx.user,
-                            "entity" : cut_diff.sg_shot,
-                        },
-                        "return_fields" : [
-                            "entity.Shot.code",
-                        ]
-                    })
+                    version_name = edit.get_version_name()
+                    if version_name in requested_versions: # Already have a request for it
+                        # Check we don't have a shot mismatch, and don't request the same version
+                        # twice
+                        if cut_diff.sg_shot != requested_versions[version_name]["data"]["entity"]:
+                            raise ValueError("Can't link the same version %s to different shots %s and %s" % (
+                                version_name,
+                                cut_diff.sg_shot["code"],
+                                requested_versions[version_name]["data"]["entity"]["code"],
+                            ))
+                    else:
+                        # Not yet requested, time to do it !
+                        request = {
+                            "request_type" : "create",
+                            "entity_type" : "Version",
+                            "data" : {
+                                "project" : self._ctx.project,
+                                "code" : version_name,
+                                "entity" : cut_diff.sg_shot,
+                                "updated_by" : self._ctx.user,
+                                "created_by" : self._ctx.user,
+                            },
+                            "return_fields" : [
+                                "entity.Shot.code",
+                            ]
+                        }
+                        sg_batch_data.append(request)
+                        requested_versions[version_name] = request
         if sg_batch_data:
             res = self._sg.batch(sg_batch_data)
             self._logger.info("Created %d new versions." % len(res))
+            # Build a dictionary with version names as keys, please note
+            # that this works only because we prevent version with the same names
+            # to be created and linked to different shots
+            new_versions = {}
+            for r in res:
+                new_versions[r["code"]] = r
             for shot_name, items in self._summary.iteritems():
                 for cut_diff in items:
                     edit = cut_diff.edit
-                    if edit and not edit.get_sg_version():
+                    if edit and not edit.get_sg_version() and edit.get_version_name():
                         # Creation order should match
-                        cut_diff.set_sg_version(res.pop(0))
+                        version_name = edit.get_version_name()
+                        if version_name not in new_versions:
+                            raise RuntimeError("Couldn't retrieve version %s in created ones" % version_name)
+                        cut_diff.set_sg_version(new_versions[version_name])
 
     def create_sg_cut_items(self, sg_cut):
         """
