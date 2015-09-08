@@ -150,7 +150,6 @@ class CutSummary(QtCore.QObject):
         self._cut_diffs = {}
         self._counts = {}
         self._rescans_count = 0
-        self._repeated_count = 0
         self._logger=get_logger()
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
@@ -186,7 +185,6 @@ class CutSummary(QtCore.QObject):
         # can be upper cases, but actual SG shots be lower cases
         shot_key = shot_name.lower() if shot_name else "_no_shot_name_"
         if shot_key in self._cut_diffs:
-            self._repeated_count += 1
             self._cut_diffs[shot_key].append(cut_diff)
             for cdiff in self._cut_diffs[shot_key]:
                 cdiff.set_repeated(True)
@@ -238,7 +236,6 @@ class CutSummary(QtCore.QObject):
 
         # If the cut diff was repeated, default back to non repeated
         if cut_diff.repeated:
-            self._repeated_count -= 1
             cut_diff.set_repeated(False)
 
         # These are not valid anymore
@@ -269,7 +266,6 @@ class CutSummary(QtCore.QObject):
                 cut_diff.set_sg_shot(cdiff.sg_shot)
                 cut_diff.set_sg_cut_item(cdiff.sg_cut_item)
                 # Append and flag everything as repeated
-                self._repeated_count += 1
                 self._cut_diffs[new_shot_key].append(cut_diff)
                 for cdiff in self._cut_diffs[new_shot_key]:
                     cdiff.set_repeated(True)
@@ -314,7 +310,7 @@ class CutSummary(QtCore.QObject):
         """
         Return the number of entries which share their shot with another entry
         """
-        return self._repeated_count
+        return sum( [len(self._cut_diffs[x]) for x in self._cut_diffs if len(self._cut_diffs[x]) > 1])
 
     def count_for_type(self, diff_type):
         """
