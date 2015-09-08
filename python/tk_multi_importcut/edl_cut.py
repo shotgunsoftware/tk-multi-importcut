@@ -402,7 +402,9 @@ class EdlCut(QtCore.QObject):
                             sg_cut_item=self.sg_cut_item_for_shot(
                                 sg_cut_items,
                                 existing[0].sg_shot,
-                                edit.get_sg_version())
+                                edit.get_sg_version(),
+                                edit
+                            )
                         )
                     else :
                         # Do we have a matching shot in SG ?
@@ -423,6 +425,7 @@ class EdlCut(QtCore.QObject):
                                 sg_cut_items,
                                 matching_shot,
                                 edit.get_sg_version(),
+                                edit,
                             )
                         cut_diff = self._summary.add_cut_diff(
                             shot_name,
@@ -430,10 +433,35 @@ class EdlCut(QtCore.QObject):
                             edit=edit,
                             sg_cut_item=matching_cut_item
                         )
+            # Process cut items left over
+            for sg_cut_item in sg_cut_items:
+                # If not compliant to what we expect, just ignore it
+                if sg_cut_item["sg_link"] and sg_cut_item["sg_link"]["id"] and \
+                sg_cut_item["sg_link"]["type"] == "Shot":
+                    shot_name = "No Link"
+                    matching_shot = None
+                    for sg_shot in sg_shots:
+                        if sg_shot["id"] == sg_cut_item["sg_link"]["id"]:
+                            # yes we do
+                            self._logger.debug("Found matching existing shot %s" % shot_name)
+                            shot_name = sg_shot["code"]
+                            matching_shot = sg_shot
+                            # Remove this entry from the list
+                            if sg_shot in leftover_shots:
+                                leftover_shots.remove(sg_shot)
+                            break
+                    cut_diff = self._summary.add_cut_diff(
+                        shot_name,
+                        sg_shot=matching_shot,
+                        edit=None,
+                        sg_cut_item=sg_cut_item
+                    )
+            
             # Process now all sg shots leftover
             for sg_shot in leftover_shots:
                 # Don't show omitted shots which are not in this cut
                 if sg_shot["sg_status_list"] not in self._omit_statuses:
+                    # In theory we shouldn't have any leftover cut items ...
                     matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
                     cut_diff = self._summary.add_cut_diff(
                         sg_shot["code"],
@@ -441,6 +469,7 @@ class EdlCut(QtCore.QObject):
                         edit=None,
                         sg_cut_item=matching_cut_item
                     )
+        
             self._logger.info("Retrieved %d cut differences." % len(self._summary))
             self.step_done.emit(_CUT_STEP)
         except Exception, e :
@@ -448,12 +477,28 @@ class EdlCut(QtCore.QObject):
         finally:
             self.got_idle.emit()
 
-    def sg_cut_item_for_shot(self, sg_cut_items, sg_shot, sg_version=None):
+    def sg_cut_item_for_shot(self, sg_cut_items, sg_shot, sg_version=None, edit=None):
         """
-        Return a cut item for the given shot from the given list
-        retrieved from Shotgun
+        Return a cut item for the given shot from the given cut items list retrieved from Shotgun
+
+        The sg_cut_items list is modified inside this method, entries being removed as
+        they are chosen.
+        
+        Best matching cut item is returned, a score is computed for each entry
+        from :
+        - Is it linked to the right shot ?
+        - Is it linked to the right version ?
+        - Is the cut order the same ?
+        - Is the tc in the same ?
+        - Is the tc out the same ?
+        
+        :param sg_cut_items: A list of CutItem instances to consider
+        :param sg_shot: A SG shot dictionary
+        :param sg_version: A SG version dictionary
+        :param edit: An EditEvent instance or None
         """
-        potential_match = None
+
+        potential_matches = []
         for sg_cut_item in sg_cut_items:
             # Is it linked to the given shot ?
             if sg_cut_item["sg_link"] and sg_shot and \
@@ -462,16 +507,79 @@ class EdlCut(QtCore.QObject):
                     # We can have multiple cut items for the same shot
                     # use the linked version to pick the right one, if
                     # available
-                    if not sg_version: # No particular version to match
-                        return sg_cut_item
-                    if sg_cut_item["sg_version"] and \
-                        sg_version["id"] == sg_cut_item["sg_version"]["id"]: # Perfect match
-                        return sg_cut_item
-                    # Will keep looking around but we keep a reference to cut item
-                    # linked to the same shot
-                    potential_match = sg_cut_item
-        return potential_match
-    
+                    if not sg_version:
+                        # No particular version to match, score is based on
+                        # on differences between cut order, tc in and out
+                        # give score a bonus as we don't have an explicit mismatch
+                        potential_matches.append((
+                            sg_cut_item,
+                            100 + self._get_cut_item_score(sg_cut_item, edit)
+                            ))
+                    elif sg_cut_item["sg_version"]:
+                            if sg_version["id"] == sg_cut_item["sg_version"]["id"]:
+                                # Give a bonus to score as we matched the right
+                                # version
+                                potential_matches.append((
+                                    sg_cut_item,
+                                    1000 + self._get_cut_item_score(sg_cut_item, edit)
+                                    ))
+                            else:
+                                # Version mismatch, don't give any bonus
+                                potential_matches.append((
+                                    sg_cut_item,
+                                    self._get_cut_item_score(sg_cut_item, edit)
+                                    ))
+                    else:
+                        # Will keep looking around but we keep a reference to cut item
+                        # linked to the same shot
+                        # give score a little bonus as we didn't have any explicit
+                        # mismatch
+                        potential_matches.append((
+                            sg_cut_item,
+                            100 + self._get_cut_item_score(sg_cut_item, edit)
+                            ))
+        if potential_matches:
+            potential_matches.sort(key=lambda x : x[1], reverse=True)
+            # Return just the cut item, not including the score
+            best = potential_matches[0][0]
+            sg_cut_items.remove(best) # Prevent this one to be used multiple times
+            return best
+        return None
+
+    def _get_cut_item_score(self, sg_cut_item, edit):
+        """
+        Return a matching score for the given cut item and edit, based on :
+        - Is the cut order the same ?
+        - Is the tc in the same ?
+        - Is the tc out the same ?
+
+        So the best score is 3 if all matches
+        
+        :param sg_cut_item: a CutItem instance
+        :param edit: An EditEvent instance
+        """
+        if not edit:
+            return 0
+        score = 0
+        # Compute the cut order difference
+        diff = edit.id - sg_cut_item["sg_cut_order"]
+        if diff == 0:
+            score += 1
+        diff = edit.source_in - edl.Timecode(
+                                    sg_cut_item["sg_timecode_cut_in"],
+                                    sg_cut_item["sg_fps"]
+                                ).to_frame()
+        if diff == 0:
+            score += 1
+        diff = edit.source_out - edl.Timecode(
+                                    sg_cut_item["sg_timecode_cut_out"],
+                                    sg_cut_item["sg_fps"]
+                                ).to_frame()
+
+        if diff == 0:
+            score += 1
+        return score
+
     @QtCore.Slot(str, dict, dict, str)
     def do_cut_import(self, title, sender, to, description):
         """
