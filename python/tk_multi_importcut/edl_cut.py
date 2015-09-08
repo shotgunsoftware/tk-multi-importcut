@@ -21,18 +21,6 @@ from .constants import _DROP_STEP, _SEQUENCE_STEP, _CUT_STEP, _SUMMARY_STEP, _PR
 import re
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
-_NOTE_FORMAT = """
-*Total:* %s
-*Cut Changes:* %s
-*New:* %s
-*Omitted:* %s
-*Reinstated:* %s
-*Repeated:* %s
-*Need Rescan:* %s
-*Description:*
-%s
-"""
-
 class EdlCut(QtCore.QObject):
     """
     Worker which handles all data
@@ -64,6 +52,8 @@ class EdlCut(QtCore.QObject):
         self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
         self._sg_new_cut = None
         self._no_cut_for_sequence = False
+        # Retrieve some settings
+        self._omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
 
     def process_edit(self, edit, logger):
         """
@@ -383,11 +373,16 @@ class EdlCut(QtCore.QObject):
                     "image"
                 ],
             )
+            # Duplicate the list of shots, allowing us to know easily which ones are not part
+            # of this edit by removing entries when we use them
+            leftover_shots = sg_shots[:]
             # Record the list of shots for completion purpose
-            EntityLineWidget.set_known_list([x["code"] for x in sg_shots if x["code"]])
+            EntityLineWidget.set_known_list(set([x["code"] for x in sg_shots if x["code"]]))
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
                 if not shot_name:
+                    # If we don't have a shot name, we can't match
+                    # anything
                     cut_diff = self._summary.add_cut_diff(
                         None,
                         sg_shot=None,
@@ -419,7 +414,8 @@ class EdlCut(QtCore.QObject):
                                 self._logger.debug("Found matching existing shot %s" % shot_name)
                                 matching_shot = sg_shot
                                 # Remove this entry from the list
-                                sg_shots.remove(sg_shot)
+                                if sg_shot in leftover_shots:
+                                    leftover_shots.remove(sg_shot)
                                 break
                         # Do we have a matching cut item ?
                         if matching_shot:
@@ -435,9 +431,9 @@ class EdlCut(QtCore.QObject):
                             sg_cut_item=matching_cut_item
                         )
             # Process now all sg shots leftover
-            for sg_shot in sg_shots:
+            for sg_shot in leftover_shots:
                 # Don't show omitted shots which are not in this cut
-                if sg_shot["sg_status_list"] != "omt":
+                if sg_shot["sg_status_list"] not in self._omit_statuses:
                     matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
                     cut_diff = self._summary.add_cut_diff(
                         sg_shot["code"],
@@ -530,16 +526,6 @@ class EdlCut(QtCore.QObject):
                 sg_link["id"],
             ) for sg_link in sg_links]
         subject, body = summary.get_report(title, links)
-#        contents = _NOTE_FORMAT % (
-#            len(summary),
-#            summary.count_for_type(_DIFF_TYPES.CUT_CHANGE),
-#            summary.count_for_type(_DIFF_TYPES.NEW),
-#            summary.count_for_type(_DIFF_TYPES.OMITTED),
-#            summary.count_for_type(_DIFF_TYPES.REINSTATED),
-#            summary.repeated_count,
-#            summary.rescans_count,
-#            description
-#        )
         contents = "%s\n%s" % (description, body)
         data = {
             "project" : self._ctx.project,
@@ -582,7 +568,6 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Updating shots ...")
         sg_batch_data = []
         reinstate_status = self._app.get_setting("reinstate_status")
-        omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
             # Handle shot duplicates :
@@ -648,7 +633,7 @@ class EdlCut(QtCore.QObject):
                     "entity_type" : "Shot",
                     "entity_id" : sg_shot["id"],
                     "data" : {
-                        "sg_status_list" : omit_statuses[-1], # Arbitrarily pick the last one
+                        "sg_status_list" : self._omit_statuses[-1], # Arbitrarily pick the last one
                         # Add code in the update so it will be returned with batch results
                         "code" : sg_shot["code"],
                     }
