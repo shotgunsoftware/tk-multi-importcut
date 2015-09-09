@@ -678,36 +678,17 @@ class EdlCut(QtCore.QObject):
         reinstate_status = self._app.get_setting("reinstate_status")
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
-            # Handle shot duplicates :
-            # - find earliest cut order
-            # - find earliest cut in
-            # - find latest cut out
-            # - find a shot id ( should be the same for all entries )
-            min_cut_order = None
-            min_cut_in = None
-            max_cut_out = None
-            sg_shot = None
-            # For repeated shots we have multiple entries, a single entry if not
-            # repeated, following code handle both cases
-            for cut_diff in items:
-                if sg_shot is None and cut_diff.sg_shot:
-                    sg_shot = cut_diff.sg_shot
-                edit = cut_diff.edit
-                if edit and (min_cut_order is None or edit.id < min_cut_order):
-                    min_cut_order = edit.id
-                if cut_diff.new_cut_in is not None and ( min_cut_in is None or cut_diff.new_cut_in < min_cut_in):
-                    min_cut_in = cut_diff.new_cut_in
-                if cut_diff.new_cut_out is not None and ( max_cut_out is None or cut_diff.new_cut_out > max_cut_out):
-                    max_cut_out = cut_diff.new_cut_out
+            # Retrieve values for the shot, and the shot itself
+            sg_shot, min_cut_order, min_cut_in, max_cut_out, shot_diff_type = items.get_shot_values()
             # Cut diff types should be the same for all repeated entries, except may be for
             # rescan / cut change, but we do the same thing in both cases, so it does not
             # matter, so arbitrarily use the first entry
             cut_diff = items[0]
 
             # Skip entries where the shot name couldn't be retrieved
-            if cut_diff.diff_type == _DIFF_TYPES.NO_LINK:
+            if shot_diff_type == _DIFF_TYPES.NO_LINK:
                 pass
-            elif cut_diff.diff_type == _DIFF_TYPES.NEW:
+            elif shot_diff_type == _DIFF_TYPES.NEW:
                 self._logger.info("Will create shot %s for %s" % (shot_name, self._sg_entity["code"]))
                 data = {
                     "project" : self._ctx.project,
@@ -735,7 +716,7 @@ class EdlCut(QtCore.QObject):
                     "entity_type" : "Shot",
                     "data" : data
                 })
-            elif cut_diff.diff_type == _DIFF_TYPES.OMITTED:
+            elif shot_diff_type == _DIFF_TYPES.OMITTED:
                 sg_batch_data.append({
                     "request_type" : "update",
                     "entity_type" : "Shot",
@@ -746,7 +727,7 @@ class EdlCut(QtCore.QObject):
                         "code" : sg_shot["code"],
                     }
                 })
-            elif cut_diff.diff_type == _DIFF_TYPES.REINSTATED:
+            elif shot_diff_type == _DIFF_TYPES.REINSTATED:
                 data = {
                     "sg_status_list" : reinstate_status,
                     "sg_cut_order" : min_cut_order,

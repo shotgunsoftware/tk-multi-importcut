@@ -49,9 +49,6 @@ class ShotCutDiffList(list):
     def __init__(self, cut_diff, *args, **kwargs):
         super(ShotCutDiffList, self).__init__(*args, **kwargs)
         self._logger=get_logger()
-        self._min_cut_in = None
-        self._max_cut_out = None
-        self._min_cut_order = None
         self._min_tc_cut_in = None
         self._max_tc_cut_out = None
         self._earliest_entry = None
@@ -81,9 +78,6 @@ class ShotCutDiffList(list):
         cut_diff.set_siblings(None)
         super(ShotCutDiffList, self).remove(cut_diff)
         # Reset our internal values
-        self._min_cut_in = None
-        self._max_cut_out = None
-        self._min_cut_order = None
         self._min_tc_cut_in = None
         self._max_tc_cut_out = None
         self._earliest_entry = None
@@ -110,6 +104,75 @@ class ShotCutDiffList(list):
         """
         return self._latest_entry
 
+    def get_shot_values(self):
+        """
+        Loop over our cut diff list and return values which should be set on the
+        Shot.
+
+        The shot difference type can be different from individual cut difference
+        types, for example a new edit can be added, but the shot itself is not
+        new.
+
+        Return a tuple with :
+        - A SG Shot dictionary or None
+        - The smallest cut order
+        - The earliest cut in
+        - The latest cut out
+        - The shot difference type
+        """
+        min_cut_order = None
+        min_cut_in = None
+        max_cut_out = None
+        sg_shot = None
+        # Use first entry as inital value, the list is guaranteed to not be
+        # empty
+        shot_diff_type = self[0].diff_type
+        for cut_diff in self:
+            if sg_shot is None and cut_diff.sg_shot:
+                sg_shot = cut_diff.sg_shot
+            edit = cut_diff.edit
+            if edit and (min_cut_order is None or edit.id < min_cut_order):
+                min_cut_order = edit.id
+            if cut_diff.new_cut_in is not None and ( min_cut_in is None or cut_diff.new_cut_in < min_cut_in):
+                min_cut_in = cut_diff.new_cut_in
+            if cut_diff.new_cut_out is not None and ( max_cut_out is None or cut_diff.new_cut_out > max_cut_out):
+                max_cut_out = cut_diff.new_cut_out
+            # Special cases for diff type :
+            # - A shot is no link if any of its items is no link ( should be all of them )
+            # - A shot is omitted if all its items are omitted
+            # - A shot is new if all its items are new
+            # - A shot is reinstated if at least one of its items is reinstated
+            # - A shot needs rescan if any of its items neeed rescan
+            cut_diff_type = cut_diff.diff_type
+            if cut_diff_type == _DIFF_TYPES.NO_LINK:
+                shot_diff_type = _DIFF_TYPES.NO_LINK
+            elif shot_diff_type == _DIFF_TYPES.NEW:
+                if cut_diff_type != _DIFF_TYPES.NEW:
+                    # Can't become omitted
+                    if cut_diff_type == _DIFF_TYPES.OMITTED:
+                        shot_diff_type = _DIFF_TYPES.CUT_CHANGE
+                    else:
+                        shot_diff_type = cut_diff_type
+            elif shot_diff_type == _DIFF_TYPES.OMITTED:
+                if cut_diff_type != _DIFF_TYPES.OMITTED:
+                    # Can't become new
+                    if cut_diff_type == _DIFF_TYPES.NEW:
+                        shot_diff_type = _DIFF_TYPES.CUT_CHANGE
+                    else:
+                        shot_diff_type = cut_diff_type
+            elif shot_diff_type == _DIFF_TYPES.REINSTATED:
+                # Once in reinstated stays with it
+                pass
+            elif shot_diff_type == _DIFF_TYPES.RESCAN:
+                # Only allow resinstated to change the type
+                if cut_diff_type == _DIFF_TYPES.REINSTATED:
+                    shot_diff_type = cut_diff_type
+            else:
+                if cut_diff_type not in [_DIFF_TYPES.NEW, _DIFF_TYPES.OMITTED]:
+                    shot_diff_type = cut_diff_type
+
+        return (sg_shot, min_cut_order, min_cut_in, max_cut_out, shot_diff_type,)
+
     def _update_min_and_max(self, cut_diff):
         """
         Update min and max values from the given cut diffence
@@ -125,14 +188,6 @@ class ShotCutDiffList(list):
         if tc_cut_out is not None and (self._max_tc_cut_out is None or tc_cut_out.to_frame() > self._max_tc_cut_out.to_frame()):
             self._max_tc_cut_out = tc_cut_out
             self._latest_entry = cut_diff
-        self._logger.info("Min tc cut in is %s" % self._min_tc_cut_in)
-        self._logger.info("Max tc cut out is %s" % self._max_tc_cut_out)
-        if cut_diff.new_cut_order is not None and (self._min_cut_order is None or cut_diff.new_cut_order < self._min_cut_order):
-            self._min_cut_order = cut_diff.new_cut_order
-        if cut_diff.new_cut_in is not None and ( self._min_cut_in is None or cut_diff.new_cut_in < self._min_cut_in):
-            self._min_cut_in = cut_diff.new_cut_in
-        if cut_diff.new_cut_out is not None and ( self._max_cut_out is None or cut_diff.new_cut_out > self._max_cut_out):
-            self._max_cut_out = cut_diff.new_cut_out
 
 class CutSummary(QtCore.QObject):
     """
@@ -151,6 +206,8 @@ class CutSummary(QtCore.QObject):
         self._counts = {}
         self._rescans_count = 0
         self._logger=get_logger()
+        self._omit_statuses = sgtk.platform.current_bundle().get_setting("omit_statuses") or ["omt"]
+
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
@@ -173,6 +230,18 @@ class CutSummary(QtCore.QObject):
         )
         cut_diff.name_changed.connect(self.cut_diff_name_changed)
         cut_diff.type_changed.connect(self.cut_diff_type_changed)
+        # Use a lower case key, as shot names we retrieve from EDLs
+        # can be upper cases, but actual SG shots be lower cases
+        shot_key = shot_name.lower() if shot_name else "_no_shot_name_"
+        if shot_key in self._cut_diffs:
+            print "%s : %d" % (shot_key, len(self._cut_diffs[shot_key]))
+            self._cut_diffs[shot_key].append(cut_diff)
+            if len(self._cut_diffs[shot_key]) > 1:
+                for cdiff in self._cut_diffs[shot_key]:
+                    cdiff.set_repeated(True)
+        else:
+            self._cut_diffs[shot_key] = ShotCutDiffList(cut_diff)
+            cut_diff.set_repeated(False)
         diff_type = cut_diff.diff_type
         if diff_type in self._counts:
             self._counts[diff_type] += 1
@@ -181,15 +250,6 @@ class CutSummary(QtCore.QObject):
 
         if cut_diff.need_rescan:
             self._rescans_count += 1
-        # Use a lower case key, as shot names we retrieve from EDLs
-        # can be upper cases, but actual SG shots be lower cases
-        shot_key = shot_name.lower() if shot_name else "_no_shot_name_"
-        if shot_key in self._cut_diffs:
-            self._cut_diffs[shot_key].append(cut_diff)
-            for cdiff in self._cut_diffs[shot_key]:
-                cdiff.set_repeated(True)
-        else:
-            self._cut_diffs[shot_key] = ShotCutDiffList(cut_diff)
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
     
@@ -219,7 +279,7 @@ class CutSummary(QtCore.QObject):
                 self._logger.debug("Adding omitted entry for old shot key %s" % old_shot_key)
                 sg_shot=cut_diff.sg_shot
                 sg_cut_item=cut_diff.sg_cut_item
-                self.add_cut_diff(
+                cdiff = self.add_cut_diff(
                         sg_shot["code"],
                         sg_shot=sg_shot,
                         edit=None,

@@ -301,7 +301,10 @@ class CutDiff(QtCore.QObject):
         """
         # Special case if we are dealing with a repeated shot
         # Frames are relative to the earliest entry in our siblings
-        if self.repeated:
+        # If we don't have any edit we don't need to do it and the
+        # earliest entry might be None, as it is based on tc cut in,
+        # and this is not defined without edits
+        if self._edit and self.repeated:
             # Get the head in for the earliest entry
             earliest = self._siblings.earliest
             if not earliest:
@@ -566,7 +569,9 @@ class CutDiff(QtCore.QObject):
             return None
         tail_out = self.shot_tail_out
         if tail_out is None:
-            if self.repeated:
+            # Special case if we have an edit and are repeated
+            # if we don't have an edit, the new_tail_duration is irrelevant
+            if self._edit and self.repeated:
                 latest = self._siblings.latest
                 if not latest:
                     raise ValueError("Couldn't get latest entry for repeated shot %s" % self)
@@ -670,7 +675,7 @@ class CutDiff(QtCore.QObject):
         if not self.name:
             self._diff_type = _DIFF_TYPES.NO_LINK
             return
-        if not self._sg_shot or not self._sg_cut_item:
+        if not self._sg_shot or (self.repeated and not self._sg_cut_item):
             self._diff_type = _DIFF_TYPES.NEW
             return
         if not self._edit:
