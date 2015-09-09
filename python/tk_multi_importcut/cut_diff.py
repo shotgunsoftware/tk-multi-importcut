@@ -670,7 +670,7 @@ class CutDiff(QtCore.QObject):
         if not self.name:
             self._diff_type = _DIFF_TYPES.NO_LINK
             return
-        if not self._sg_shot:
+        if not self._sg_shot or not self._sg_cut_item:
             self._diff_type = _DIFF_TYPES.NEW
             return
         if not self._edit:
