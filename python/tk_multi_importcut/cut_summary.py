@@ -234,7 +234,6 @@ class CutSummary(QtCore.QObject):
         # can be upper cases, but actual SG shots be lower cases
         shot_key = shot_name.lower() if shot_name else "_no_shot_name_"
         if shot_key in self._cut_diffs:
-            print "%s : %d" % (shot_key, len(self._cut_diffs[shot_key]))
             self._cut_diffs[shot_key].append(cut_diff)
             if len(self._cut_diffs[shot_key]) > 1:
                 for cdiff in self._cut_diffs[shot_key]:
