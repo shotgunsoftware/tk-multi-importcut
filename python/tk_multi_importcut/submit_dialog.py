@@ -14,16 +14,31 @@
 import sgtk
 
 from sgtk.platform.qt import QtCore, QtGui
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 from .ui.submit_dialog import Ui_submit_dialog
 from .cut_diff import _DIFF_TYPES
 class SubmitDialog(QtGui.QDialog):
+    """
+    Submit dialog, offering a summary and a couple of options to the user
+    """
     submit = QtCore.Signal(str, dict, dict, str)
     def __init__(self, parent=None, title=None, summary=None):
+        """
+        Instantiate a new dialog
+        :param parent: a QWidget
+        :param title: a string, used a imported Cut name
+        :param summary: a CutSummary instance
+        """
         super(SubmitDialog, self).__init__(parent)
         self.ui = Ui_submit_dialog()
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
+        # Create a settings manager where we can pull and push prefs later
+        self._user_settings = settings.UserSettings(self._app)
+        # Retrieve user settings and set UI values
+        update_shot_fields = self._user_settings.retrieve("update_shot_fields", True)
+        self.ui.update_shot_fields_checkbox.setChecked(update_shot_fields)
 
         buttons = self.ui.import_cut_button_box.buttons()
         submit_button = buttons[0]
@@ -52,6 +67,10 @@ class SubmitDialog(QtGui.QDialog):
 
     @QtCore.Slot()
     def submit_cut(self):
+        """
+        Submit the cut import and close the dialog
+        """
+        self._save_settings()
         title = self.ui.title_text.text()
         to = self.ui.to_text.text()
         sg = self._app.shotgun
@@ -71,4 +90,15 @@ class SubmitDialog(QtGui.QDialog):
 
     @QtCore.Slot()
     def close_dialog(self):
+        """
+        Close the dialog on submit or cancel
+        """
         self.close()
+
+    def _save_settings(self):
+        """
+        Save user settings from current UI values
+        """
+        # Save the settings
+        update_shot_fields = self.ui.update_shot_fields_checkbox.isChecked()
+        self._user_settings.store("update_shot_fields", update_shot_fields)
