@@ -22,7 +22,7 @@ class SubmitDialog(QtGui.QDialog):
     """
     Submit dialog, offering a summary and a couple of options to the user
     """
-    submit = QtCore.Signal(str, dict, dict, str)
+    submit = QtCore.Signal(str, dict, dict, str, bool)
     def __init__(self, parent=None, title=None, summary=None):
         """
         Instantiate a new dialog
@@ -71,6 +71,7 @@ class SubmitDialog(QtGui.QDialog):
         Submit the cut import and close the dialog
         """
         self._save_settings()
+        update_shot_fields = self.ui.update_shot_fields_checkbox.isChecked()
         title = self.ui.title_text.text()
         to = self.ui.to_text.text()
         sg = self._app.shotgun
@@ -85,7 +86,7 @@ class SubmitDialog(QtGui.QDialog):
             return
         description = self.ui.description_text.toPlainText()
         user = self._app.context.user or {}
-        self.submit.emit(title, user, sg_group, description)
+        self.submit.emit(title, user, sg_group, description, update_shot_fields)
         self.close_dialog()
 
     @QtCore.Slot()

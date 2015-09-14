@@ -580,8 +580,8 @@ class EdlCut(QtCore.QObject):
             score += 1
         return score
 
-    @QtCore.Slot(str, dict, dict, str)
-    def do_cut_import(self, title, sender, to, description):
+    @QtCore.Slot(str, dict, dict, str, bool)
+    def do_cut_import(self, title, sender, to, description, update_shots):
         """
         Import the cut changes in Shotgun
         """
@@ -590,7 +590,7 @@ class EdlCut(QtCore.QObject):
         self.step_done.emit(_SUMMARY_STEP)
         try:
             self._sg_new_cut = self.create_sg_cut(title, description)
-            self.update_sg_shots()
+            self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
             self.update_sg_versions()
             self.progress_changed.emit(2)
@@ -612,8 +612,8 @@ class EdlCut(QtCore.QObject):
 
     def create_note(self, title, sender, to, description, sg_links=None):
         """
-        Create a note in Shotgun, linked to the current Shotgun entity, and
-        optionally linked to the list of sg_links
+        Create a note in Shotgun, linked to the current Shotgun entity, typically
+        a Sequence and optionally linked to the list of sg_links
         
         :param title: A title for the note
         :param sender: A Shotgun user dictionary
@@ -666,14 +666,20 @@ class EdlCut(QtCore.QObject):
             ["id", "code"])
         return sg_cut
 
-    def update_sg_shots(self):
+    def update_sg_shots(self, update_shots):
         """
         Update shots in Shotgun
         - Create them if needed
+        If udpate_shots is true :
         - Change their status
         - Update cut in, cut out values
+
+        :param update_shots: Whether or not Shot fields should be updated
         """
-        self._logger.info("Updating shots ...")
+        if update_shots:
+            self._logger.info("Updating shots ...")
+        else:
+            self._logger.info("Creating new shots ...")
         sg_batch_data = []
         reinstate_status = self._app.get_setting("reinstate_status")
         # Loop over all shots that we need to create
@@ -689,6 +695,7 @@ class EdlCut(QtCore.QObject):
             if shot_diff_type == _DIFF_TYPES.NO_LINK:
                 pass
             elif shot_diff_type == _DIFF_TYPES.NEW:
+                # We always create shots if needed
                 self._logger.info("Will create shot %s for %s" % (shot_name, self._sg_entity["code"]))
                 data = {
                     "project" : self._ctx.project,
@@ -716,65 +723,67 @@ class EdlCut(QtCore.QObject):
                     "entity_type" : "Shot",
                     "data" : data
                 })
-            elif shot_diff_type == _DIFF_TYPES.OMITTED:
-                sg_batch_data.append({
-                    "request_type" : "update",
-                    "entity_type" : "Shot",
-                    "entity_id" : sg_shot["id"],
-                    "data" : {
-                        "sg_status_list" : self._omit_statuses[-1], # Arbitrarily pick the last one
+            elif update_shots:
+                # We only update shots if asked to do so
+                if shot_diff_type == _DIFF_TYPES.OMITTED:
+                    sg_batch_data.append({
+                        "request_type" : "update",
+                        "entity_type" : "Shot",
+                        "entity_id" : sg_shot["id"],
+                        "data" : {
+                            "sg_status_list" : self._omit_statuses[-1], # Arbitrarily pick the last one
+                            # Add code in the update so it will be returned with batch results
+                            "code" : sg_shot["code"],
+                        }
+                    })
+                elif shot_diff_type == _DIFF_TYPES.REINSTATED:
+                    data = {
+                        "sg_status_list" : reinstate_status,
+                        "sg_cut_order" : min_cut_order,
                         # Add code in the update so it will be returned with batch results
                         "code" : sg_shot["code"],
                     }
-                })
-            elif shot_diff_type == _DIFF_TYPES.REINSTATED:
-                data = {
-                    "sg_status_list" : reinstate_status,
-                    "sg_cut_order" : min_cut_order,
-                    # Add code in the update so it will be returned with batch results
-                    "code" : sg_shot["code"],
-                }
-                if self._use_smart_fields:
-                    data.update({
-                        "smart_cut_in" : min_cut_in,
-                        "smart_cut_out" : max_cut_out,
-                        "smart_tail_out" : cut_diff.new_tail_out,
+                    if self._use_smart_fields:
+                        data.update({
+                            "smart_cut_in" : min_cut_in,
+                            "smart_cut_out" : max_cut_out,
+                            "smart_tail_out" : cut_diff.new_tail_out,
+                        })
+                    else:
+                        data.update({
+                            "sg_cut_in" : min_cut_in,
+                            "sg_cut_out" : max_cut_out,
+                        })
+                    sg_batch_data.append({
+                        "request_type" : "update",
+                        "entity_type" : "Shot",
+                        "entity_id" : sg_shot["id"],
+                        "data" : data
                     })
-                else:
-                    data.update({
-                        "sg_cut_in" : min_cut_in,
-                        "sg_cut_out" : max_cut_out,
+                else: # Cut change or rescan or no change
+                    data = {
+                        # Add code and status in the update so it will be returned with batch results
+                        "sg_status_list" : sg_shot["sg_status_list"],
+                        "sg_cut_order" : min_cut_order,
+                        "code" : sg_shot["code"],
+                    }
+                    if self._use_smart_fields:
+                        data.update({
+                            "smart_cut_in" : min_cut_in,
+                            "smart_cut_out" : max_cut_out,
+                            "smart_tail_out" : cut_diff.new_tail_out,
+                        })
+                    else:
+                        data.update({
+                            "sg_cut_in" : min_cut_in,
+                            "sg_cut_out" : max_cut_out,
+                        })
+                    sg_batch_data.append({
+                        "request_type" : "update",
+                        "entity_type" : "Shot",
+                        "entity_id" : sg_shot["id"],
+                        "data" : data
                     })
-                sg_batch_data.append({
-                    "request_type" : "update",
-                    "entity_type" : "Shot",
-                    "entity_id" : sg_shot["id"],
-                    "data" : data
-                })
-            else: # Cut change or rescan or no change
-                data = {
-                    # Add code and status in the update so it will be returned with batch results
-                    "sg_status_list" : sg_shot["sg_status_list"],
-                    "sg_cut_order" : min_cut_order,
-                    "code" : sg_shot["code"],
-                }
-                if self._use_smart_fields:
-                    data.update({
-                        "smart_cut_in" : min_cut_in,
-                        "smart_cut_out" : max_cut_out,
-                        "smart_tail_out" : cut_diff.new_tail_out,
-                    })
-                else:
-                    data.update({
-                        "sg_cut_in" : min_cut_in,
-                        "sg_cut_out" : max_cut_out,
-                    })
-                sg_batch_data.append({
-                    "request_type" : "update",
-                    "entity_type" : "Shot",
-                    "entity_id" : sg_shot["id"],
-                    "data" : data
-                })
         if sg_batch_data:
             res = self._sg.batch(sg_batch_data)
             self._logger.info("Created %d new shots." % len(res))
