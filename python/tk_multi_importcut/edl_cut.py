@@ -688,7 +688,9 @@ class EdlCut(QtCore.QObject):
             sg_shot, min_cut_order, min_cut_in, max_cut_out, shot_diff_type = items.get_shot_values()
             # Cut diff types should be the same for all repeated entries, except may be for
             # rescan / cut change, but we do the same thing in both cases, so it does not
-            # matter, so arbitrarily use the first entry
+            # matter, head in and tail out values can be evaluated on any repeated shot
+            # entry
+            # so arbitrarily use the first entry
             cut_diff = items[0]
 
             # Skip entries where the shot name couldn't be retrieved
@@ -706,17 +708,17 @@ class EdlCut(QtCore.QObject):
                 }
                 if self._use_smart_fields:
                     data.update({
-                        "smart_head_in" : cut_diff.default_head_in,
+                        "smart_head_in" : cut_diff.new_head_in,
                         "smart_cut_in" : min_cut_in,
                         "smart_cut_out" : max_cut_out,
-                        "smart_tail_out" : cut_diff.default_tail_out,
+                        "smart_tail_out" : cut_diff.new_tail_out,
                     })
                 else:
                     data.update({
-                        "sg_head_in" : cut_diff.default_head_in,
+                        "sg_head_in" : cut_diff.new_head_in,
                         "sg_cut_in" : min_cut_in,
                         "sg_cut_out" : max_cut_out,
-                        "sg_tail_out" : cut_diff.default_tail_out,
+                        "sg_tail_out" : cut_diff.new_tail_out,
                     })
                 sg_batch_data.append({
                     "request_type" : "create",

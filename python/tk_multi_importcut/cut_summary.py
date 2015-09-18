@@ -208,7 +208,6 @@ class CutSummary(QtCore.QObject):
         self._logger=get_logger()
         self._omit_statuses = sgtk.platform.current_bundle().get_setting("omit_statuses") or ["omt"]
 
-
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
         Add a new cut difference to this summary

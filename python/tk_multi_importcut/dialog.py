@@ -34,7 +34,7 @@ from .processor import Processor
 from .logger import BundleLogHandler, get_logger, ShortNameFilter
 from .sequences_view import SequencesView
 from .cuts_view import CutsView
-from .cut_diff import _DIFF_TYPES
+from .cut_diff import _DIFF_TYPES, CutDiff
 from .cut_diffs_view import CutDiffsView
 from .submit_dialog import SubmitDialog
 from .downloader import DownloadRunner
@@ -96,6 +96,9 @@ class AppDialog(QtGui.QWidget):
         # lastly, set up our very basic UI
         self.set_custom_style()
         self.set_logger(logging.INFO)
+
+        CutDiff.retrieve_default_timecode_frame_mapping()
+
         # Keep this thread for UI stuff
         # Handle data and processong in a separate thread
         self._processor = Processor()

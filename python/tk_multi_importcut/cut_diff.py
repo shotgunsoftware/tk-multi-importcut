@@ -92,6 +92,8 @@ class CutDiff(QtCore.QObject):
     # Emitted when this cut diff instance is discarded
     discarded=QtCore.Signal(QtCore.QObject)
 
+    __default_timecode_frame_mapping = None
+
     def __init__(self, name, sg_shot=None, edit=None, sg_cut_item=None):
         """
         Instantiate a new cut difference
@@ -111,11 +113,16 @@ class CutDiff(QtCore.QObject):
         self._repeated = False
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
+        # default head in is not used at the moment, but I'm not sure the
+        # timecode_frame_map thing is what is expected so keeping it around ...
         self._default_head_in = self._app.get_setting("default_head_in")
         self._default_head_in_duration = self._app.get_setting("default_head_in_duration")
         self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
 
         self._siblings = None # List of other entries for the same shot
+        # Later we might want to allow users to edit the mapping, so
+        # so let's make a copy of defaults in this instance
+        self._timecode_frame_map = self.__default_timecode_frame_mapping
         # Retrieve the cut diff type from the given params
         self._check_changes()
 
@@ -126,6 +133,21 @@ class CutDiff(QtCore.QObject):
         :param diff_type: A _DIFF_TYPES entry
         """
         return _DIFF_LABELS[diff_type]
+
+    @classmethod
+    def retrieve_default_timecode_frame_mapping(cls):
+        sgtk.platform.current_bundle()
+        timecode_frame_mapping = sgtk.platform.current_bundle().get_setting("timecode_frame_mapping")
+        if not timecode_frame_mapping["timecode"] or timecode_frame_mapping["timecode"] == "automatic":
+            cls.__default_timecode_frame_mapping = (
+                None,
+                timecode_frame_mapping["frame"]
+            )
+        else:
+            cls.__default_timecode_frame_mapping = (
+                edl.Timecode(timecode_frame_mapping["timecode"]),
+                timecode_frame_mapping["frame"]
+            )
 
     @property
     def sg_shot(self):
@@ -240,6 +262,7 @@ class CutDiff(QtCore.QObject):
         """
         Return the default head in value, e.g. 1001
         """
+        raise RuntimeErrror("This is deprecated and shouldn't be used")
         return self._default_head_in
 
     @property
@@ -311,11 +334,19 @@ class CutDiff(QtCore.QObject):
                 raise ValueError("%s is repeated but does not have an earliest entry defined" % self)
             if earliest != self: # We are not the earliest
                 return earliest.new_head_in
+        # If we don't have a previous entry, we need to retrieve the initial value
         # Default case : retrieve the value from the shot
         # or fall back to the default one
         nh = self.shot_head_in
         if nh is None:
-            nh = self.default_head_in
+            if self._timecode_frame_map[0] is not None: # Explicit timecode
+                base_tc = self._timecode_frame_map[0]
+                base_frame = self._timecode_frame_map[1]
+                cut_in = self.new_tc_cut_in.to_frame() - base_tc.to_frame() + base_frame
+                nh = cut_in - self._default_head_in_duration
+            else:
+                # Use the frame number as default head in
+                nh = self._timecode_frame_map[1]
         return nh
 
     @property
@@ -438,9 +469,15 @@ class CutDiff(QtCore.QObject):
                 return earliest.new_cut_in + offset
         # If we don't have a previous entry, retrieve default values
         # and return an arbitrary value
-        head_in = self.new_head_in
-        head_duration = self._default_head_in_duration
-        return head_in + head_duration
+        if self._timecode_frame_map[0] is not None:
+            base_tc = self._timecode_frame_map[0]
+            base_frame = self._timecode_frame_map[1]
+            cut_in = self.new_tc_cut_in.to_frame() - base_tc.to_frame() + base_frame
+            return cut_in
+        else:
+            head_in = self.new_head_in
+            head_duration = self._default_head_in_duration
+            return head_in + head_duration
 
     @property
     def new_tc_cut_in(self):
