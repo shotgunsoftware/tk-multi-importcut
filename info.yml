@@ -56,7 +56,7 @@ configuration:
         items:
             timecode: { type: str, default_value: "automatic" }
             frame: { type: int, default_value: 1001 }
-        default_value: {}
+        default_value: { timecode: 'automatic', frame: 1001 }
         description: "Defines a mapping between timecodes and frame numbers.
                       If the timecode is left empty or set to 'automatic',
                       the mapping is automatically determined on first import
