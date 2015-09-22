@@ -32,6 +32,7 @@ from .ui.dialog import Ui_Dialog
 
 from .processor import Processor
 from .logger import BundleLogHandler, get_logger, ShortNameFilter
+from .entity_types_view import EntityTypesView
 from .sequences_view import SequencesView
 from .cuts_view import CutsView
 from .cut_diff import _DIFF_TYPES, CutDiff
@@ -40,7 +41,7 @@ from .submit_dialog import SubmitDialog
 from .downloader import DownloadRunner
 
 # Different steps in the process
-from .constants import _DROP_STEP, _SEQUENCE_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+from .constants import _DROP_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 def show_dialog(app_instance):
     """
@@ -115,6 +116,10 @@ class AppDialog(QtGui.QWidget):
         
         # Let's do something when something is dropped
         self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
+
+        # Instantiate a entity type view handler
+        self._entity_types_view = EntityTypesView(self.ui.entity_types_layout)
+        self._entity_types_view.new_info_message.connect(self.display_info_message)
 
         # Instantiate a sequences view handler
         self._sequences_view = SequencesView(self.ui.sequence_grid)
@@ -232,6 +237,9 @@ class AppDialog(QtGui.QWidget):
             return
         self.new_edl.emit(paths[0])
         self.ui.sequences_label.setText("Importing %s" % os.path.basename(paths[0]))
+        self.ui.entity_picker_message_label.setText(
+            "Importing %s ..." % os.path.basename(paths[0]),
+        )
         #self._logger.info( "Processing %s" % (paths[0] ))
 
     @QtCore.Slot(int, str)
@@ -330,7 +338,7 @@ class AppDialog(QtGui.QWidget):
         """
         current_page = self.ui.stackedWidget.currentIndex()
         if current_page == _SUMMARY_STEP and self.no_cut_for_sequence:
-            self.ui.stackedWidget.goto_page(_SEQUENCE_STEP)
+            self.ui.stackedWidget.goto_page(_ENTITY_STEP)
         else:
             self.ui.stackedWidget.prev_page()
 
@@ -352,20 +360,23 @@ class AppDialog(QtGui.QWidget):
             self.ui.reset_button.hide()
             # Clear various things when we hit the first screen
             # doing a reset
-            self.ui.sequences_search_line_edit.clear()
-            self.clear_sequence_view()
-            self._selected_sg_entity[1]=None
+            self._selected_sg_entity[_ENTITY_TYPE_STEP]=None
         else:
             # Allow reset and back from screens > 0
             self.ui.reset_button.show()
             self.ui.back_button.show()
 
+        if step < _ENTITY_STEP:
+            self.ui.sequences_search_line_edit.clear()
+            self.clear_sequence_view()
+            self._selected_sg_entity[_ENTITY_STEP]=None
+
         if step < _CUT_STEP:
-            self._selected_sg_entity[2]=None
+            self._selected_sg_entity[_CUT_STEP]=None
             # Reset the cut view
             self.clear_cuts_view()
             self.ui.search_line_edit.clear()
-            self._selected_sg_entity[2]=None
+            self._selected_sg_entity[_CUT_STEP]=None
 
         if step < _SUMMARY_STEP:
             # Reset the summary view
@@ -375,7 +386,7 @@ class AppDialog(QtGui.QWidget):
             self.ui.submit_button.hide()
 
         # We can select things on intermediate screens
-        if step==_SEQUENCE_STEP or step==_CUT_STEP:
+        if step==_ENTITY_TYPE_STEP or step==_ENTITY_STEP or step==_CUT_STEP:
             self.ui.select_button.show()
             # Only enable it if there is a selection for this step
             self.ui.select_button.setEnabled(bool(self._selected_sg_entity[step]))
@@ -384,7 +395,9 @@ class AppDialog(QtGui.QWidget):
         
         # Display info message in feedback line and other special things
         # based on the current step
-        if step==_SEQUENCE_STEP:
+        if step==_ENTITY_TYPE_STEP:
+            self.display_info_message(self._sequences_view.info_message)
+        elif step==_ENTITY_STEP:
             self.display_info_message(self._sequences_view.info_message)
         elif step==_CUT_STEP:
             self.display_info_message(self._cuts_view.info_message)
@@ -445,7 +458,7 @@ class AppDialog(QtGui.QWidget):
         """
         if not self._selected_sg_entity[self._step]:
             raise RuntimeError("No selection for current step %d" % self._step)
-        if self._step==_SEQUENCE_STEP:
+        if self._step==_ENTITY_STEP:
             self.show_sequence(self._selected_sg_entity[self._step])
         elif self._step==_CUT_STEP:
             self.show_cut(self._selected_sg_entity[self._step])

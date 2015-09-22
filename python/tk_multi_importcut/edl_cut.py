@@ -16,7 +16,7 @@ from .cut_summary import CutSummary
 from .entity_line_widget import EntityLineWidget
 
 # Different steps in the process
-from .constants import _DROP_STEP, _SEQUENCE_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+from .constants import _DROP_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 import re
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
@@ -267,7 +267,7 @@ class EdlCut(QtCore.QObject):
                     sg_cut["_display_status"] = status_dict[sg_cut["sg_status_list"]]
                 self.new_sg_cut.emit(sg_cut)
             self._logger.info("Retrieved %d Cuts." % len(sg_cuts))
-            self.step_done.emit(_SEQUENCE_STEP)
+            self.step_done.emit(_ENTITY_STEP)
         except Exception, e :
             self._logger.exception(str(e))
         finally:

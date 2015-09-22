@@ -116,17 +116,35 @@ Red text on errors
     color: #FC6246;
 }
 
+#entity_picker_frame {
+    background-color: #2B2B2B;
+}
+#entity_types_frame {
+    border: 1px none black;
+}
 /*
 No visible border for cards, and set the background color otherwise they will
 inherit the one from the scroll area they are in
 */
+EntityTypeCard {
+    background-color: #525252;
+    border: 1px none black;
+    background-color: #525252;
+    border-radius: 2px;
+    min-height: 200px;
+    max-width: 200px;
+}
+EntityTypeCard #title_label {
+    font-weight: bold;
+    font-size: 15px;
+}
 SequenceCard, CutCard, CutDiffCard {
     border: 1px none black;
     background-color: #525252;
     border-radius: 2px;
 }
 /* Highlight selected cards */
-SequenceCard[selected="true"], CutCard[selected="true"] {
+SequenceCard[selected="true"], CutCard[selected="true"], EntityTypeCard[selected="true"] {
     border: 1px solid #2C93E2;
     background-color: rgba(44, 147, 226, 25%);
 }
@@ -144,7 +162,10 @@ QPushButton:enabled#select_button {
     background-color: #2C93E2;
 }
 /* Screens titles */
-QLabel#sequences_title_label, QLabel#cuts_title_label {
+QLabel#entity_picker_title_label_2,
+QLabel#entity_picker_title_label,
+QLabel#sequences_title_label,
+QLabel#cuts_title_label {
     font-size: 20px;
 }
 QLabel#cut_summary_title_label {
