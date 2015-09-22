@@ -136,9 +136,10 @@ class EntityTypesView(QtCore.QObject):
 
         # Retrieve all entity types which are accepted by Cut.sg_sequence field
         # in Shotgun
+        cut_link_field = sgtk.platform.current_bundle().get_setting("cut_link_field")
         sg = sgtk.platform.current_bundle().shotgun
-        schema = sg.schema_field_read("Cut", "sg_sequence")
-        entity_types = schema["sg_sequence"]["properties"]["valid_types"]["value"]
+        schema = sg.schema_field_read("Cut", cut_link_field)
+        entity_types = schema[cut_link_field]["properties"]["valid_types"]["value"]
         for entity_type in entity_types:
             # Don't add Project twice
             if entity_type != "Project":
