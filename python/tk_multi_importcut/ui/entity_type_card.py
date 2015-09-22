@@ -11,13 +11,14 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_entity_type_frame(object):
     def setupUi(self, entity_type_frame):
         entity_type_frame.setObjectName("entity_type_frame")
-        entity_type_frame.resize(183, 173)
+        entity_type_frame.resize(179, 157)
         entity_type_frame.setFrameShape(QtGui.QFrame.StyledPanel)
         entity_type_frame.setFrameShadow(QtGui.QFrame.Raised)
         self.verticalLayout = QtGui.QVBoxLayout(entity_type_frame)
         self.verticalLayout.setObjectName("verticalLayout")
         self.icon_label = QtGui.QLabel(entity_type_frame)
         self.icon_label.setText("")
+        self.icon_label.setScaledContents(True)
         self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.icon_label.setObjectName("icon_label")
         self.verticalLayout.addWidget(self.icon_label)

@@ -131,13 +131,18 @@ EntityTypeCard {
     border: 1px none black;
     background-color: #525252;
     border-radius: 2px;
-    min-height: 200px;
-    max-width: 200px;
+    min-height: 120px;
+    max-height: 150px;
+    max-width: 180px;
 }
 EntityTypeCard #title_label {
     font-weight: bold;
     font-size: 15px;
 }
+EntityTypeCard #icon_label {
+    min-height: 100px;
+}
+
 SequenceCard, CutCard, CutDiffCard {
     border: 1px none black;
     background-color: #525252;

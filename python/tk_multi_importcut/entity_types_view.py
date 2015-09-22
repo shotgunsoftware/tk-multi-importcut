@@ -20,6 +20,9 @@ class EntityTypeCard(QtGui.QFrame):
     """
     A card for a given entity type
     """
+    # Emitted when cuts linked to the given entity type should be displayed
+    show_entities = QtCore.Signal(str)
+
     # Emitted when this card wants to be selected
     highlight_selected = QtCore.Signal(QtGui.QWidget)
 
@@ -29,10 +32,25 @@ class EntityTypeCard(QtGui.QFrame):
         self.ui.setupUi(self)
         self._entity_type = entity_type
         self.ui.title_label.setText(entity_type)
-
+        self.set_thumbnail(
+            ":/tk_multi_importcut/sg_%s_thumbnail.png" % entity_type.lower()
+        )
     @property
     def entity_type(self):
         return self._entity_type
+    
+    def _set_icon(self):
+        """
+        Set the icon for the card based on the entity type
+        """
+        
+    @QtCore.Slot()
+    def show_selected(self):
+        """
+        Gently ask to show cuts linked to a given entity type
+        """
+        self.highlight_selected.emit(self)
+        self.show_entities.emit(self._entity_type)
 
     @QtCore.Slot()
     def select(self):
@@ -57,6 +75,37 @@ class EntityTypeCard(QtGui.QFrame):
         Handle single click events : select this card
         """
         self.highlight_selected.emit(self)
+
+    def mouseDoubleClickEvent(self, event):
+        """
+        Handle double clicks : show cut changes for the attached sequence
+        """
+        self.show_selected()
+
+    def set_thumbnail(self, thumb_path):
+        """
+        Build a pixmap from the given file path and use it as icon, resizing it to 
+        fit into the widget icon size
+
+        :param thumb_path: Full path to an image to use as thumbnail
+        """
+        size = self.ui.icon_label.size()
+        ratio = size.width() / float(size.height())
+        pixmap = QtGui.QPixmap(thumb_path)
+        if pixmap.isNull():
+            # Fall back to default sequence icon
+            pixmap = QtGui.QPixmap(":/tk_multi_importcut/sg_sequence_thumbnail.png")
+        self.ui.icon_label.setPixmap(pixmap)
+#        psize = pixmap.size()
+#        pratio = psize.width() / float(psize.height())
+#        if pratio > ratio:
+#            self.ui.icon_label.setPixmap(
+#                pixmap.scaledToWidth(size.width(), mode=QtCore.Qt.SmoothTransformation)
+#            )
+#        else:
+#            self.ui.icon_label.setPixmap(
+#                pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
+#            )
 
 class EntityTypesView(QtCore.QObject):
     """
@@ -83,6 +132,7 @@ class EntityTypesView(QtCore.QObject):
         self._entity_type_cards.append(EntityTypeCard("Project"))
         self._layout.addWidget(self._entity_type_cards[0])
         self._entity_type_cards[-1].highlight_selected.connect(self.entity_type_selected)
+        self._entity_type_cards[-1].show_entities.connect(self.entity_type_chosen)
 
         # Retrieve all entity types which are accepted by Cut.sg_sequence field
         # in Shotgun
@@ -95,6 +145,7 @@ class EntityTypesView(QtCore.QObject):
                 self._entity_type_cards.append(EntityTypeCard(entity_type))
                 self._layout.addWidget(self._entity_type_cards[-1])
                 self._entity_type_cards[-1].highlight_selected.connect(self.entity_type_selected)
+                self._entity_type_cards[-1].show_entities.connect(self.entity_type_chosen)
 
     @property
     def info_message(self):

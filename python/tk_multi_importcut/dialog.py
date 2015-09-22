@@ -120,6 +120,8 @@ class AppDialog(QtGui.QWidget):
         # Instantiate a entity type view handler
         self._entity_types_view = EntityTypesView(self.ui.entity_types_layout)
         self._entity_types_view.new_info_message.connect(self.display_info_message)
+        self._entity_types_view.selection_changed.connect(self.selection_changed)
+        self._entity_types_view.entity_type_chosen.connect(self.show_entities)
 
         # Instantiate a sequences view handler
         self._sequences_view = SequencesView(self.ui.sequence_grid)
@@ -458,6 +460,8 @@ class AppDialog(QtGui.QWidget):
         """
         if not self._selected_sg_entity[self._step]:
             raise RuntimeError("No selection for current step %d" % self._step)
+        if self._step==_ENTITY_TYPE_STEP:
+            self.show_entities(self._selected_sg_entity[self._step])
         if self._step==_ENTITY_STEP:
             self.show_sequence(self._selected_sg_entity[self._step])
         elif self._step==_CUT_STEP:
@@ -465,6 +469,13 @@ class AppDialog(QtGui.QWidget):
         else:
             # Should never happen
             raise RuntimeError("Invalid step %d for selection callback" % step)
+
+    @QtCore.Slot(str)
+    def show_entities(self, sg_entity_type):
+        """
+        Called when cuts needs to be shown for a particular sequence
+        """
+        self._logger.info("Retrieving cuts for %s" % sg_entity_type )
 
     @QtCore.Slot(dict)
     def show_sequence(self, sg_entity):
