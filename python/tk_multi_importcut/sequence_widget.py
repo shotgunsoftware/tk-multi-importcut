@@ -41,17 +41,17 @@ class SequenceCard(QtGui.QFrame):
 
         self.ui = Ui_SequenceCard()
         self.ui.setupUi(self)
-        self.ui.title_label.setText("%s" % sg_entity["code"])
+        self.ui.title_label.setText("%s" % self.entity_name)
         if self._sg_entity["_display_status"]:
             self.ui.status_label.setText(
                 "<font color=%s>%s</font>" % (
-                    _STATUS_COLORS.get(self._sg_entity["sg_status_list"], _COLORS["lgrey"]),
+                    _STATUS_COLORS.get(self.entity_status, _COLORS["lgrey"]),
                     self._sg_entity["_display_status"]["name"].upper(),
                 )
             )
         else:
-            self.ui.status_label.setText(sg_entity["sg_status_list"])
-        self.ui.details_label.setText("%s" % (sg_entity["description"] or ""))
+            self.ui.status_label.setText(self.entity_status)
+        self.ui.details_label.setText("%s" % (self.entity_description or ""))
         self.ui.select_button.setVisible(False)
         self.ui.select_button.clicked.connect(self.show_selected)
         self.set_thumbnail(":/tk_multi_importcut/sg_%s_thumbnail.png" % (
@@ -74,6 +74,26 @@ class SequenceCard(QtGui.QFrame):
             )
         )
 
+    @property
+    def entity_status(self):
+        """
+        Return the status of the attached entity
+        """
+        # Deal with status field not being consistent in SG
+        return self._sg_entity.get("sg_status_list",
+            self._sg_entity.get("sg_status")
+        )
+
+    @property
+    def entity_description(self):
+        """
+        Return the description of the attached entity
+        """
+        # Deal with status field not being consistent in SG
+        return self._sg_entity.get("description",
+            self._sg_entity.get("sg_description")
+        )
+    
     @QtCore.Slot()
     def select(self):
         """
@@ -109,7 +129,7 @@ class SequenceCard(QtGui.QFrame):
         """
         Called when a new thumbnail is available for this card
         """
-        self._logger.debug("Loading thumbnail %s for %s" % (path, self._sg_entity["code"]))
+        self._logger.debug("Loading thumbnail %s for %s" % (path, self.entity_name))
         self.set_thumbnail(path)
 
     def mouseDoubleClickEvent(self, event):
@@ -146,7 +166,7 @@ class SequenceCard(QtGui.QFrame):
             return
         self._thumbnail_requested = True
         if self._sg_entity and self._sg_entity["image"]:
-            self._logger.debug("Requesting %s for %s" % ( self._sg_entity["image"], self._sg_entity["code"]))
+            self._logger.debug("Requesting %s for %s" % ( self._sg_entity["image"], self.entity_name))
             _, path = tempfile.mkstemp()
             downloader = DownloadRunner(
                 sg_attachment=self._sg_entity["image"],
@@ -173,7 +193,7 @@ class SequenceCard(QtGui.QFrame):
             self._logger.debug("Null pixmap %s %d %d for %s" % (
                 thumb_path,
                 pixmap.size().width(), pixmap.size().height(),
-                self._sg_entity["code"]))
+                self.entity_name))
             return
         psize = pixmap.size()
         pratio = psize.width() / float(psize.height())

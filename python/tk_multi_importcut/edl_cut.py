@@ -204,7 +204,7 @@ class EdlCut(QtCore.QObject):
             if entity_type == "Project":
                 sg_entities = self._sg.find("Project",
                     [["id", "is", self._ctx.project["id"]]],
-                    [ "name", "id", "sg_status_list", "image", "description"],
+                    [ "name", "id", "sg_status", "image", "sg_description"],
                     order=[{"field_name" : "name", "direction" : "asc"}]
                 )
             else:
@@ -220,9 +220,18 @@ class EdlCut(QtCore.QObject):
                     self._ctx.project["name"],
                 ))
             for sg_entity in sg_entities:
-                # Register a display status if one available
-                if sg_entity["sg_status_list"] in status_dict:
-                    sg_entity["_display_status"] = status_dict[sg_entity["sg_status_list"]]
+                # Project uses sg_status and not sg_status_list
+                status = sg_entity.get("sg_status_list",
+                    sg_entity.get("sg_status", "")
+                )
+                # Register a display status if one available, with the color from SG
+                if status in status_dict:
+                    sg_entity["_display_status"] = status_dict[status]
+                else:
+                    # Project uses a list of strings, not actual statuses
+                    sg_entity["_display_status"] = {
+                        "name" : status.title(),
+                    }
                 self.new_sg_entity.emit(sg_entity)
             self._logger.info("Retrieved %d %s." % (
                 len(sg_entities),
