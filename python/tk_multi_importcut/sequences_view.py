@@ -38,7 +38,7 @@ class SequencesView(QtCore.QObject):
         return self._info_message
 
     @QtCore.Slot(dict)
-    def new_sg_sequence(self, sg_entity):
+    def new_sg_entity(self, sg_entity):
         """
         Called when a new sequence card widget needs to be added to the list
         of retrieved sequences
@@ -99,7 +99,7 @@ class SequencesView(QtCore.QObject):
             for i in range(count-1, -1, -1):
                 witem = self._grid_widget.itemAt(i)
                 widget = witem.widget()
-                if text.lower() in widget._sg_sequence["code"].lower():
+                if text.lower() in widget.entity_name.lower():
                     match_count += 1
                     widget.setVisible(True)
                 else:
@@ -129,7 +129,7 @@ class SequencesView(QtCore.QObject):
         widgets.sort(
             key=lambda x: (
                 x.isHidden(),
-                x._sg_sequence[field].lower(),
+                x.entity_name.lower(),
             ), reverse=False
         )
         row_count = len(widgets) / 2

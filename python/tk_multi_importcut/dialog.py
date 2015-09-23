@@ -62,7 +62,7 @@ class AppDialog(QtGui.QWidget):
     Main application dialog window
     """
     new_edl = QtCore.Signal(str)
-    get_sequences = QtCore.Signal()
+    get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
     def __init__(self):
@@ -104,7 +104,7 @@ class AppDialog(QtGui.QWidget):
         # Handle data and processong in a separate thread
         self._processor = Processor()
         self.new_edl.connect(self._processor.new_edl)
-        self.get_sequences.connect(self._processor.retrieve_sequences)
+        self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
         self._processor.step_done.connect(self.step_done)
@@ -128,7 +128,7 @@ class AppDialog(QtGui.QWidget):
         self._sequences_view.sequence_chosen.connect(self.show_sequence)
         self._sequences_view.selection_changed.connect(self.selection_changed)
         self._sequences_view.new_info_message.connect(self.display_info_message)
-        self._processor.new_sg_sequence.connect(self._sequences_view.new_sg_sequence)
+        self._processor.new_sg_entity.connect(self._sequences_view.new_sg_entity)
         self.ui.sequences_search_line_edit.search_edited.connect(self._sequences_view.search)
         self.ui.sequences_search_line_edit.search_changed.connect(self._sequences_view.search)
 
@@ -462,20 +462,21 @@ class AppDialog(QtGui.QWidget):
             raise RuntimeError("No selection for current step %d" % self._step)
         if self._step==_ENTITY_TYPE_STEP:
             self.show_entities(self._selected_sg_entity[self._step])
-        if self._step==_ENTITY_STEP:
+        elif self._step==_ENTITY_STEP:
             self.show_sequence(self._selected_sg_entity[self._step])
         elif self._step==_CUT_STEP:
             self.show_cut(self._selected_sg_entity[self._step])
         else:
             # Should never happen
-            raise RuntimeError("Invalid step %d for selection callback" % step)
+            raise RuntimeError("Invalid step %d for selection callback" % self._step)
 
     @QtCore.Slot(str)
     def show_entities(self, sg_entity_type):
         """
         Called when cuts needs to be shown for a particular sequence
         """
-        self._logger.info("Retrieving cuts for %s" % sg_entity_type )
+        self._logger.info("Retrieving %s(s)" % sg_entity_type )
+        self.get_entities.emit(sg_entity_type)
 
     @QtCore.Slot(dict)
     def show_sequence(self, sg_entity):

@@ -27,7 +27,7 @@ class EdlCut(QtCore.QObject):
     """
     step_done           = QtCore.Signal(int)
     step_failed         = QtCore.Signal(int)
-    new_sg_sequence     = QtCore.Signal(dict)
+    new_sg_entity       = QtCore.Signal(dict)
     new_sg_cut          = QtCore.Signal(dict)
     new_cut_diff        = QtCore.Signal(CutDiff)
     got_busy            = QtCore.Signal(int)
@@ -54,6 +54,7 @@ class EdlCut(QtCore.QObject):
         self._no_cut_for_sequence = False
         # Retrieve some settings
         self._omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
+        self._cut_link_field = self._app.get_setting("cut_link_field")
 
     def process_edit(self, edit, logger):
         """
@@ -175,7 +176,7 @@ class EdlCut(QtCore.QObject):
                         edit._sg_version = sg_version
                         if not edit.get_shot_name() and sg_version["entity.Shot.code"]:
                             edit._shot_name = sg_version["entity.Shot.code"]
-            self.retrieve_sequences()
+            #self.retrieve_entities()
             # Can go to next step
             self.step_done.emit(_DROP_STEP)
         except Exception, e:
@@ -185,7 +186,7 @@ class EdlCut(QtCore.QObject):
 
 
     @QtCore.Slot(str)
-    def retrieve_sequences(self):
+    def retrieve_entities(self, entity_type):
         """
         Retrieve all sequences for the current project
         """
@@ -197,23 +198,37 @@ class EdlCut(QtCore.QObject):
                 r, g, b = sg_status["bg_color"].split(",")
                 sg_status["_bg_hex_color"] = "#%02x%02x%02x" % (int(r), int(g), int(b))
             status_dict[sg_status["code"]] = sg_status
-        self._logger.info("Retrieving Sequences for project %s ..." % self._ctx.project["name"])
+        self._logger.info("Retrieving %s(s) for project %s ..." % (entity_type, self._ctx.project["name"]))
         self.got_busy.emit(None)
         try:
-            sg_sequences = self._sg.find(
-                "Sequence",
-                [["project", "is", self._ctx.project]],
-                [ "code", "id", "sg_status_list", "image", "description"],
-                order=[{"field_name" : "code", "direction" : "asc"}]
-            )
-            if not sg_sequences:
-                raise RuntimeWarning("Couldn't retrieve any Sequence for project %s" % self._ctx.project["name"])
-            for sg_sequence in sg_sequences:
+            if entity_type == "Project":
+                sg_entities = self._sg.find("Project",
+                    [["id", "is", self._ctx.project["id"]]],
+                    [ "name", "id", "sg_status_list", "image", "description"],
+                    order=[{"field_name" : "name", "direction" : "asc"}]
+                )
+            else:
+                sg_entities = self._sg.find(
+                    entity_type,
+                    [["project", "is", self._ctx.project]],
+                    [ "code", "name", "title", "id", "sg_status_list", "image", "description"],
+                    order=[{"field_name" : "code", "direction" : "asc"}]
+                )
+            if not sg_entities:
+                raise RuntimeWarning("Couldn't retrieve any %s for project %s" % (
+                    entity_type,
+                    self._ctx.project["name"],
+                ))
+            for sg_entity in sg_entities:
                 # Register a display status if one available
-                if sg_sequence["sg_status_list"] in status_dict:
-                    sg_sequence["_display_status"] = status_dict[sg_sequence["sg_status_list"]]
-                self.new_sg_sequence.emit(sg_sequence)
-            self._logger.info("Retrieved %d Sequences." % len(sg_sequences))
+                if sg_entity["sg_status_list"] in status_dict:
+                    sg_entity["_display_status"] = status_dict[sg_entity["sg_status_list"]]
+                self.new_sg_entity.emit(sg_entity)
+            self._logger.info("Retrieved %d %s." % (
+                len(sg_entities),
+                entity_type,
+            ))
+            self.step_done.emit(_ENTITY_TYPE_STEP)
         except Exception, e :
             self._logger.exception(str(e))
         finally:
@@ -239,7 +254,7 @@ class EdlCut(QtCore.QObject):
         try:
             sg_cuts = self._sg.find(
                 "Cut",
-                [["sg_sequence", "is", sg_entity]],
+                [[self._cut_link_field, "is", sg_entity]],
                 [
                     "code",
                     "id",
@@ -300,7 +315,7 @@ class EdlCut(QtCore.QObject):
                 # Retrieve cuts linked to the sequence, pick up the latest or approved one
                 sg_cut = self._sg.find_one(
                     "Cut",
-                    [["sg_sequence", "is", self._sg_entity]],
+                    [[self._cut_link_field, "is", self._sg_entity]],
                     [],
                     order=[{"field_name" : "id", "direction" : "desc"}]
                 )
@@ -656,12 +671,12 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Creating cut %s ..." % title)
         sg_cut = self._sg.create(
             "Cut", {
-                "project" : self._ctx.project,
-                "code" : title,
-                "sg_sequence" : self._sg_entity,
-                "created_by" : self._ctx.user,
-                "updated_by" : self._ctx.user,
-                "description" : description,
+                "project"               : self._ctx.project,
+                "code"                  : title,
+                self._cut_link_field    : self._sg_entity,
+                "created_by"            : self._ctx.user,
+                "updated_by"            : self._ctx.user,
+                "description"           : description,
             },
             ["id", "code"])
         return sg_cut
