@@ -12,8 +12,6 @@ import sgtk
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
 
-from .sequence_widget import SequenceCard
-
 from .ui.entity_type_card import Ui_entity_type_frame
 
 class EntityTypeCard(QtGui.QFrame):

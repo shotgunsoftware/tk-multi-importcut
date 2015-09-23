@@ -20,7 +20,7 @@ from .ui.sequence_card import Ui_SequenceCard
 
 from .constants import _COLORS, _STATUS_COLORS
 
-class SequenceCard(QtGui.QFrame):
+class EntityCard(QtGui.QFrame):
     """
     Widget displaying a Shotgun Sequence
     """
@@ -30,11 +30,11 @@ class SequenceCard(QtGui.QFrame):
     highlight_selected = QtCore.Signal(QtGui.QWidget)
     def __init__(self, parent, sg_entity):
         """
-        Instantiate a new SequenceCard for the given Shotgun Sequence
+        Instantiate a new EntityCard for the given Shotgun Sequence
         :param parent: A parent QWidget
         :param sg_entity: A Shotgun entity, as a dictionary, to display
         """
-        super(SequenceCard, self).__init__(parent)
+        super(EntityCard, self).__init__(parent)
         self._thumbnail_requested = False
         self._sg_entity = sg_entity
         self._logger = get_logger()

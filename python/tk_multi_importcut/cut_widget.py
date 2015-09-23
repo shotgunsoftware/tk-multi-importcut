@@ -30,7 +30,7 @@ class CutCard(QtGui.QFrame):
     highlight_selected = QtCore.Signal(QtGui.QWidget)
     def __init__(self, parent, sg_cut):
         """
-        Instantiate a new SequenceCard for the given Shotgun Sequence
+        Instantiate a new CutCard for the given Shotgun cut
         :param parent: A parent QWidget
         :param sg_cut: A Shotgun cut, as a dictionary, to display
         """

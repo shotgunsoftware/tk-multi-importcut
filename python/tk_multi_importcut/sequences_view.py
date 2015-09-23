@@ -11,7 +11,7 @@
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
 
-from .sequence_widget import SequenceCard
+from .entity_widget import EntityCard
 
 class SequencesView(QtCore.QObject):
     """
@@ -49,7 +49,7 @@ class SequencesView(QtCore.QObject):
         row = i / 2
         column = i % 2
         self._logger.debug("Adding %s at %d %d %d" % ( sg_entity, i, row, column))
-        widget = SequenceCard(None, sg_entity)
+        widget = EntityCard(None, sg_entity)
         widget.highlight_selected.connect(self.sequence_selected)
         widget.show_sequence.connect(self.sequence_chosen)
         self._grid_widget.addWidget(widget, row, column, )
