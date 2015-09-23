@@ -125,7 +125,7 @@ class AppDialog(QtGui.QWidget):
 
         # Instantiate a sequences view handler
         self._sequences_view = EntitiesView(self.ui.sequence_grid)
-        self._sequences_view.sequence_chosen.connect(self.show_sequence)
+        self._sequences_view.sequence_chosen.connect(self.show_entity)
         self._sequences_view.selection_changed.connect(self.selection_changed)
         self._sequences_view.new_info_message.connect(self.display_info_message)
         self._processor.new_sg_entity.connect(self._sequences_view.new_sg_entity)
@@ -413,7 +413,7 @@ class AppDialog(QtGui.QWidget):
                     os.path.basename(self._processor.edl_file_path),
                     self._processor.sg_cut["code"],
                     self._processor.sg_entity["type"],
-                    self._processor.sg_entity["code"],
+                    self._processor.entity_name,
                     )
                 )
             else:
@@ -421,7 +421,7 @@ class AppDialog(QtGui.QWidget):
                     "Showing %s for %s <b>%s</b>" % (
                     os.path.basename(self._processor.edl_file_path),
                     self._processor.sg_entity["type"],
-                    self._processor.sg_entity["code"],
+                    self._processor.entity_name,
                     )
                 )
         elif step == _PROGRESS_STEP:
@@ -463,7 +463,7 @@ class AppDialog(QtGui.QWidget):
         if self._step==_ENTITY_TYPE_STEP:
             self.show_entities(self._selected_sg_entity[self._step])
         elif self._step==_ENTITY_STEP:
-            self.show_sequence(self._selected_sg_entity[self._step])
+            self.show_entity(self._selected_sg_entity[self._step])
         elif self._step==_CUT_STEP:
             self.show_cut(self._selected_sg_entity[self._step])
         else:
@@ -476,15 +476,26 @@ class AppDialog(QtGui.QWidget):
         Called when cuts needs to be shown for a particular sequence
         """
         self._logger.info("Retrieving %s(s)" % sg_entity_type )
+        self.ui.sequences_title_label.setText("Select %s" % sg_entity_type)
+        self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type)
         self.get_entities.emit(sg_entity_type)
 
     @QtCore.Slot(dict)
-    def show_sequence(self, sg_entity):
+    def show_entity(self, sg_entity):
         """
-        Called when cuts needs to be shown for a particular sequence
+        Called when cuts needs to be shown for a particular entity
         """
-        self._logger.info("Retrieving cuts for %s" % sg_entity["code"] )
-        self.ui.selected_sequence_label.setText("Sequence: <big><b>%s</big></b>" % sg_entity["code"] )
+        name = sg_entity.get("code",
+            sg_entity.get("name",
+                sg_entity.get("title", "????")
+            )
+        )
+        self._logger.info("Retrieving cuts for %s" % name )
+        self.ui.selected_sequence_label.setText(
+            "%s : <big><b>%s</big></b>" % (
+                sg_entity["type"],
+                name,
+        ))
         self.show_cuts_for_sequence.emit(sg_entity)
 
     @QtCore.Slot(dict)

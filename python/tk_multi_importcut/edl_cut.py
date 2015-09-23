@@ -43,6 +43,8 @@ class EdlCut(QtCore.QObject):
         super(EdlCut, self).__init__()
         self._edl_file_path = None
         self._edl = None
+        self._sg_entity_type = None
+        self._sg_shot_link_field_name = None
         self._sg_entity = None
         self._summary = None
         self._logger = get_logger()
@@ -55,6 +57,20 @@ class EdlCut(QtCore.QObject):
         # Retrieve some settings
         self._omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
         self._cut_link_field = self._app.get_setting("cut_link_field")
+
+    @property
+    def entity_name(self):
+        """
+        Return the name of the attached entity
+        """
+        if not self._sg_entity:
+            return None
+        # Deal with name field not being consistent in SG
+        return self._sg_entity.get("code",
+            self._sg_entity.get("name",
+                self._sg_entity.get("title", "????")
+            )
+        )
 
     def process_edit(self, edit, logger):
         """
@@ -114,6 +130,8 @@ class EdlCut(QtCore.QObject):
         """
         self._edl_file_path = None
         self._edl = None
+        self._sg_entity_type = None
+        self._sg_shot_link_field_name = None
         self._sg_entity = None
         self._summary = None
         self._sg_new_cut = None
@@ -190,6 +208,8 @@ class EdlCut(QtCore.QObject):
         """
         Retrieve all sequences for the current project
         """
+        self._sg_entity_type = entity_type
+        self._sg_shot_link_field_name = None
         # Retrieve display names and colors for statuses
         sg_statuses = self._sg.find("Status", [], ["code", "name", "icon", "bg_color"])
         status_dict = {}
@@ -201,6 +221,22 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Retrieving %s(s) for project %s ..." % (entity_type, self._ctx.project["name"]))
         self.got_busy.emit(None)
         try:
+            # Retrieve a "link" field on Shots which accepts our entity type
+            shot_schema = self._sg.schema_field_read("Shot")
+            for field_name, field in shot_schema.iteritems():
+                if field["data_type"]["value"] == "entity":
+                    if self._sg_entity_type in field["properties"]["valid_types"]["value"]:
+                        self._sg_shot_link_field_name = field_name
+                        break
+            if not self._sg_shot_link_field_name:
+                raise ValueError("Couldn't retrieve a field accepting %s on shots" % (
+                    self._sg_entity_type,
+                ))
+
+            self._logger.info("Will use field %s to retrieve %s from shots" % (
+                self._sg_shot_link_field_name,
+                self._sg_entity_type
+            ))
             if entity_type == "Project":
                 sg_entities = self._sg.find("Project",
                     [["id", "is", self._ctx.project["id"]]],
@@ -308,7 +344,7 @@ class EdlCut(QtCore.QObject):
         
         :param sg_cut: A Shotgun Cut dictionary retrieved from Shotgun, or an empty dictionary
         """
-        self._logger.info("Retrieving cut summary for %s" % ( self._sg_entity["code"]))
+        self._logger.info("Retrieving cut summary for %s" % ( self.entity_name))
         self.got_busy.emit(None)
         self._sg_cut=sg_cut
         self._summary = CutSummary()
@@ -381,7 +417,7 @@ class EdlCut(QtCore.QObject):
             # Retrieve shots linked to the sequence
             sg_shots = self._sg.find(
                 "Shot",
-                [["sg_sequence", "is", self._sg_entity]],
+                [[self._sg_shot_link_field_name, "is", self._sg_entity]],
                 [
                     "code",
                     "sg_status_list",
@@ -722,11 +758,14 @@ class EdlCut(QtCore.QObject):
                 pass
             elif shot_diff_type == _DIFF_TYPES.NEW:
                 # We always create shots if needed
-                self._logger.info("Will create shot %s for %s" % (shot_name, self._sg_entity["code"]))
+                self._logger.info("Will create shot %s for %s" % (
+                    shot_name,
+                    self.entity_name
+                ))
                 data = {
                     "project" : self._ctx.project,
                     "code" : cut_diff.name,
-                    "sg_sequence" : self._sg_entity,
+                    self._sg_shot_link_field_name : self._sg_entity,
                     "updated_by" : self._ctx.user,
                     "sg_cut_order" : min_cut_order,
                 }

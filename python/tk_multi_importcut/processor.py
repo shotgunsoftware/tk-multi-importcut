@@ -97,6 +97,16 @@ class Processor(QtCore.QThread):
         return None
 
     @property
+    def entity_name(self):
+        """
+        Return the name of entity which was picked, if any
+        :returns: A string or None
+        """
+        if not self._edl_cut:
+            return None
+        return self._edl_cut.entity_name
+
+    @property
     def sg_cut(self):
         """
         Return the current Shotgun Cut we are displaying cut

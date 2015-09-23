@@ -94,16 +94,6 @@ class EntityTypeCard(QtGui.QFrame):
             # Fall back to default sequence icon
             pixmap = QtGui.QPixmap(":/tk_multi_importcut/sg_sequence_thumbnail.png")
         self.ui.icon_label.setPixmap(pixmap)
-#        psize = pixmap.size()
-#        pratio = psize.width() / float(psize.height())
-#        if pratio > ratio:
-#            self.ui.icon_label.setPixmap(
-#                pixmap.scaledToWidth(size.width(), mode=QtCore.Qt.SmoothTransformation)
-#            )
-#        else:
-#            self.ui.icon_label.setPixmap(
-#                pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
-#            )
 
 class EntityTypesView(QtCore.QObject):
     """
@@ -117,6 +107,25 @@ class EntityTypesView(QtCore.QObject):
     # Emitted when the info message changed
     new_info_message=QtCore.Signal(str)
 
+    # Some order for entity types, from the more general to the more
+    # specific
+    __entity_type_order = {
+        "project" : 100,
+        "reel": 50,
+        "customentity04": 50,
+        "sequence": 10,
+        "scene": 10,
+    }
+
+    @classmethod
+    def types_order(cls, entity_type):
+        """
+        Return an order for the given entity_type, used as a key
+        param when sorting entity types.
+        :returns: An integer or -1
+        """
+        return cls.__entity_type_order.get(entity_type.lower(), -1)
+
     def __init__(self, layout):
         super(EntityTypesView, self).__init__()
         self._layout = layout
@@ -126,25 +135,17 @@ class EntityTypesView(QtCore.QObject):
          # A one line message which can be displayed when the view is visible
         self._info_message=""
         
-        # Always add Project to supported entity types
-        self._entity_type_cards.append(EntityTypeCard("Project"))
-        self._layout.addWidget(self._entity_type_cards[0])
-        self._entity_type_cards[-1].highlight_selected.connect(self.entity_type_selected)
-        self._entity_type_cards[-1].show_entities.connect(self.entity_type_chosen)
-
         # Retrieve all entity types which are accepted by Cut.sg_sequence field
         # in Shotgun
         cut_link_field = sgtk.platform.current_bundle().get_setting("cut_link_field")
         sg = sgtk.platform.current_bundle().shotgun
         schema = sg.schema_field_read("Cut", cut_link_field)
         entity_types = schema[cut_link_field]["properties"]["valid_types"]["value"]
-        for entity_type in entity_types:
-            # Don't add Project twice
-            if entity_type != "Project":
-                self._entity_type_cards.append(EntityTypeCard(entity_type))
-                self._layout.addWidget(self._entity_type_cards[-1])
-                self._entity_type_cards[-1].highlight_selected.connect(self.entity_type_selected)
-                self._entity_type_cards[-1].show_entities.connect(self.entity_type_chosen)
+        for entity_type in sorted(entity_types, key=self.types_order, reverse=True):
+            self._entity_type_cards.append(EntityTypeCard(entity_type))
+            self._layout.addWidget(self._entity_type_cards[-1])
+            self._entity_type_cards[-1].highlight_selected.connect(self.entity_type_selected)
+            self._entity_type_cards[-1].show_entities.connect(self.entity_type_chosen)
 
     @property
     def info_message(self):
