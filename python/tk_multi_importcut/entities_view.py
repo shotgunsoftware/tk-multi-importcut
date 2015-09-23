@@ -13,9 +13,9 @@ from .logger import get_logger
 
 from .entity_widget import EntityCard
 
-class SequencesView(QtCore.QObject):
+class EntitiesView(QtCore.QObject):
     """
-    Sequences view page handler
+    Entities view page handler
     """
     # Emitted when a sequence is chosen for next step
     sequence_chosen = QtCore.Signal(dict)
@@ -26,7 +26,7 @@ class SequencesView(QtCore.QObject):
     new_info_message=QtCore.Signal(str)
 
     def __init__(self, grid_widget):
-        super(SequencesView, self).__init__()
+        super(EntitiesView, self).__init__()
         self._grid_widget = grid_widget
         self._selected_card_sequence = None
         self._logger = get_logger()

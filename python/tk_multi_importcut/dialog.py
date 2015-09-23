@@ -33,7 +33,7 @@ from .ui.dialog import Ui_Dialog
 from .processor import Processor
 from .logger import BundleLogHandler, get_logger, ShortNameFilter
 from .entity_types_view import EntityTypesView
-from .sequences_view import SequencesView
+from .entities_view import EntitiesView
 from .cuts_view import CutsView
 from .cut_diff import _DIFF_TYPES, CutDiff
 from .cut_diffs_view import CutDiffsView
@@ -124,7 +124,7 @@ class AppDialog(QtGui.QWidget):
         self._entity_types_view.entity_type_chosen.connect(self.show_entities)
 
         # Instantiate a sequences view handler
-        self._sequences_view = SequencesView(self.ui.sequence_grid)
+        self._sequences_view = EntitiesView(self.ui.sequence_grid)
         self._sequences_view.sequence_chosen.connect(self.show_sequence)
         self._sequences_view.selection_changed.connect(self.selection_changed)
         self._sequences_view.new_info_message.connect(self.display_info_message)
