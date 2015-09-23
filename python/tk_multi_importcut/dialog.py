@@ -412,7 +412,7 @@ class AppDialog(QtGui.QWidget):
                     "Comparing %s and <b>%s</b> for %s <b>%s</b>" % (
                     os.path.basename(self._processor.edl_file_path),
                     self._processor.sg_cut["code"],
-                    self._processor.sg_entity["type"],
+                    self._processor.entity_type_name,
                     self._processor.entity_name,
                     )
                 )
@@ -420,7 +420,7 @@ class AppDialog(QtGui.QWidget):
                 self.ui.cut_summary_title_label.setText(
                     "Showing %s for %s <b>%s</b>" % (
                     os.path.basename(self._processor.edl_file_path),
-                    self._processor.sg_entity["type"],
+                    self._processor.entity_type_name,
                     self._processor.entity_name,
                     )
                 )
@@ -475,9 +475,14 @@ class AppDialog(QtGui.QWidget):
         """
         Called when cuts needs to be shown for a particular sequence
         """
-        self._logger.info("Retrieving %s(s)" % sg_entity_type )
-        self.ui.sequences_title_label.setText("Select %s" % sg_entity_type)
-        self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type)
+        # Retrieve the nice name instead of CustomEntity04
+        sg_entity_type_name = sgtk.util.get_entity_type_display_name(
+            sgtk.platform.current_bundle().sgtk,
+            sg_entity_type,
+        )
+        self._logger.info("Retrieving %s(s)" % sg_entity_type_name )
+        self.ui.sequences_title_label.setText("Select %s" % sg_entity_type_name)
+        self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
         self.get_entities.emit(sg_entity_type)
 
     @QtCore.Slot(dict)
@@ -489,6 +494,10 @@ class AppDialog(QtGui.QWidget):
             sg_entity.get("name",
                 sg_entity.get("title", "????")
             )
+        )
+        type_name = sgtk.util.get_entity_type_display_name(
+            sgtk.platform.current_bundle().sgtk,
+            sg_entity["type"],
         )
         self._logger.info("Retrieving cuts for %s" % name )
         self.ui.selected_sequence_label.setText(

@@ -71,6 +71,17 @@ class EdlCut(QtCore.QObject):
                 self._sg_entity.get("title", "????")
             )
         )
+    @property
+    def entity_type_name(self):
+        """
+        Return a nice name for the attached entity's type
+        """
+        if not self._sg_entity:
+            return None
+        return sgtk.util.get_entity_type_display_name(
+            sgtk.platform.current_bundle().sgtk,
+            self._sg_entity["type"],
+        )
 
     def process_edit(self, edit, logger):
         """

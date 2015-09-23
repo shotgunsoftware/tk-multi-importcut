@@ -40,8 +40,8 @@ class EntitiesView(QtCore.QObject):
     @QtCore.Slot(dict)
     def new_sg_entity(self, sg_entity):
         """
-        Called when a new sequence card widget needs to be added to the list
-        of retrieved sequences
+        Called when a new entity card widget needs to be added to the list
+        of retrieved entities
         """
         i = self._grid_widget.count() -1 # We have a stretcher
         # Remove it

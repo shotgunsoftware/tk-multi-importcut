@@ -29,7 +29,11 @@ class EntityTypeCard(QtGui.QFrame):
         self.ui = Ui_entity_type_frame()
         self.ui.setupUi(self)
         self._entity_type = entity_type
-        self.ui.title_label.setText(entity_type)
+        self._entity_type_name = sgtk.util.get_entity_type_display_name(
+            sgtk.platform.current_bundle().sgtk,
+            self._entity_type,
+        )
+        self.ui.title_label.setText(self._entity_type_name)
         self.set_thumbnail(
             ":/tk_multi_importcut/sg_%s_thumbnail.png" % entity_type.lower()
         )
