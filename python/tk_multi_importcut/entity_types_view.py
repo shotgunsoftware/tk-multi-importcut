@@ -91,6 +91,7 @@ class EntityTypeCard(QtGui.QFrame):
         ratio = size.width() / float(size.height())
         pixmap = QtGui.QPixmap(thumb_path)
         if pixmap.isNull():
+            return
             # Fall back to default sequence icon
             pixmap = QtGui.QPixmap(":/tk_multi_importcut/sg_sequence_thumbnail.png")
         self.ui.icon_label.setPixmap(pixmap)
