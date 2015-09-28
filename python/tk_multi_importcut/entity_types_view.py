@@ -11,6 +11,8 @@
 import sgtk
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
+from .downloader import DownloadRunner
+import tempfile
 
 from .ui.entity_type_card import Ui_entity_type_frame
 
@@ -28,6 +30,8 @@ class EntityTypeCard(QtGui.QFrame):
         super(EntityTypeCard, self).__init__(parent)
         self.ui = Ui_entity_type_frame()
         self.ui.setupUi(self)
+        self._logger = get_logger()
+
         self._entity_type = entity_type
         self._entity_type_name = sgtk.util.get_entity_type_display_name(
             sgtk.platform.current_bundle().sgtk,
@@ -37,6 +41,25 @@ class EntityTypeCard(QtGui.QFrame):
         self.set_thumbnail(
             ":/tk_multi_importcut/sg_%s_thumbnail.png" % entity_type.lower()
         )
+        if self._entity_type == "Project":
+            # Retrieve the icon for current project
+            app = sgtk.platform.current_bundle()
+            sg_project = app.shotgun.find_one(
+                "Project",
+                [["id", "is", app.context.project["id"]]],
+                ["image"]
+            )
+            if sg_project and sg_project["image"]:
+                self._logger.debug("Requesting %s" % ( sg_project["image"]))
+            _, path = tempfile.mkstemp()
+            downloader = DownloadRunner(
+                sg_attachment=sg_project["image"],
+                path=path,
+            )
+            downloader.file_downloaded.connect(self.new_thumbnail)
+            QtCore.QThreadPool.globalInstance().start(downloader)
+
+
     @property
     def entity_type(self):
         return self._entity_type
@@ -72,6 +95,14 @@ class EntityTypeCard(QtGui.QFrame):
         self.style().unpolish(self)
         self.style().polish(self)
 
+    @QtCore.Slot(str)
+    def new_thumbnail(self, path):
+        """
+        Called when a new thumbnail is available for this card
+        """
+        self._logger.debug("Loading thumbnail %s for %s" % (path, self.entity_type))
+        self.set_thumbnail(path, resize_to_fit=True)
+
     def mousePressEvent(self, event):
         """
         Handle single click events : select this card
@@ -84,21 +115,36 @@ class EntityTypeCard(QtGui.QFrame):
         """
         self.show_selected()
 
-    def set_thumbnail(self, thumb_path):
+    def set_thumbnail(self, thumb_path, resize_to_fit=False):
         """
         Build a pixmap from the given file path and use it as icon, resizing it to 
         fit into the widget icon size
 
         :param thumb_path: Full path to an image to use as thumbnail
+        :param resize_to_fit: Whether or not the pixmap should be resized to fit
         """
         size = self.ui.icon_label.size()
         ratio = size.width() / float(size.height())
         pixmap = QtGui.QPixmap(thumb_path)
         if pixmap.isNull():
             return
-            # Fall back to default sequence icon
-            pixmap = QtGui.QPixmap(":/tk_multi_importcut/sg_sequence_thumbnail.png")
-        self.ui.icon_label.setPixmap(pixmap)
+        if not resize_to_fit:
+            # Let Qt do its thing
+            self.ui.icon_label.setScaledContents(True)
+            self.ui.icon_label.setPixmap(pixmap)
+        else:
+            # Explicit resize done by us
+            self.ui.icon_label.setScaledContents(False)
+            psize = pixmap.size()
+            pratio = psize.width() / float(psize.height())
+            if pratio > ratio:
+                self.ui.icon_label.setPixmap(
+                    pixmap.scaledToWidth(size.width(), mode=QtCore.Qt.SmoothTransformation)
+                )
+            else:
+                self.ui.icon_label.setPixmap(
+                    pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
+                )
 
 class EntityTypesView(QtCore.QObject):
     """

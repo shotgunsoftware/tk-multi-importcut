@@ -140,6 +140,7 @@ class EdlCut(QtCore.QObject):
         """
         Clear this worker, discarding all data
         """
+        had_something = self._edl_file_path is not None
         self._edl_file_path = None
         self._edl = None
         self._sg_entity_type = None
@@ -147,7 +148,8 @@ class EdlCut(QtCore.QObject):
         self._sg_entity = None
         self._summary = None
         self._sg_new_cut = None
-        self._logger.info("Session discarded...")
+        if had_something:
+            self._logger.info("Session discarded...")
 
     @QtCore.Slot(str)
     def load_edl(self, path):
