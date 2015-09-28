@@ -241,11 +241,22 @@ class EdlCut(QtCore.QObject):
         try:
             # Retrieve a "link" field on Shots which accepts our entity type
             shot_schema = self._sg.schema_field_read("Shot")
-            for field_name, field in shot_schema.iteritems():
-                if field["data_type"]["value"] == "entity":
-                    if self._sg_entity_type in field["properties"]["valid_types"]["value"]:
-                        self._sg_shot_link_field_name = field_name
-                        break
+            # Prefer a sg_<entity type> field if available
+            entity_type_name = sgtk.util.get_entity_type_display_name(
+                sgtk.platform.current_bundle().sgtk, entity_type,
+            )
+            field_name = "sg_%s" % entity_type_name.lower()
+            field = shot_schema.get(field_name)
+            if field and field["data_type"]["value"] == "entity" and self._sg_entity_type in field["properties"]["valid_types"]["value"]:
+                self._logger.debug("Using preferred shot field %s" % field_name)
+                self._sg_shot_link_field_name = field_name
+            else:
+                # General lookup
+                for field_name, field in shot_schema.iteritems():
+                    if field["data_type"]["value"] == "entity":
+                        if self._sg_entity_type in field["properties"]["valid_types"]["value"]:
+                            self._sg_shot_link_field_name = field_name
+                            break
             if not self._sg_shot_link_field_name:
                 raise ValueError("Couldn't retrieve a field accepting %s on shots" % (
                     self._sg_entity_type,
