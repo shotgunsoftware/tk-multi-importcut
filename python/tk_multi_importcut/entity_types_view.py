@@ -170,3 +170,20 @@ class EntityTypesView(QtCore.QObject):
         self.selection_changed.emit(card.entity_type)
         self._logger.debug("Selected %s" % self._selected_entity_type)
 
+    def count(self):
+        """
+        Return the number of entity types which can be used
+        """
+        return len(self._entity_type_cards)
+    
+    def select_and_skip(self):
+        """
+        If there is a single entry automatically select it and return True if
+        the app can go to next step.
+        :returns: True if this screen can be skipped, False otherwise
+        """
+        if len(self._entity_type_cards) == 1:
+            self.entity_type_selected(self._entity_type_cards[0])
+            self.entity_type_chosen.emit(self._entity_type_cards[0].entity_type)
+            return True
+        return False

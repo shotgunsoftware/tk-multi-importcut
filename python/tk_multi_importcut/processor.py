@@ -152,6 +152,10 @@ class Processor(QtCore.QThread):
     def no_cut_for_entity(self):
         return self._edl_cut._no_cut_for_entity
 
+    @property
+    def project_import(self):
+        return self._edl_cut._project_import
+
     def run(self):
         """
         Run the processor

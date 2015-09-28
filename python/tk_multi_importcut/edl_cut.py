@@ -54,6 +54,7 @@ class EdlCut(QtCore.QObject):
         self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
         self._sg_new_cut = None
         self._no_cut_for_entity = False
+        self._project_import = False
         # Retrieve some settings
         self._omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
         self._cut_link_field = self._app.get_setting("cut_link_field")
@@ -219,6 +220,10 @@ class EdlCut(QtCore.QObject):
         """
         Retrieve all sequences for the current project
         """
+        if entity_type == "Project":
+            self._project_import = True
+        else:
+            self._project_import = False
         self._sg_entity_type = entity_type
         self._sg_shot_link_field_name = None
         # Retrieve display names and colors for statuses
@@ -284,7 +289,11 @@ class EdlCut(QtCore.QObject):
                 len(sg_entities),
                 entity_type,
             ))
-            self.step_done.emit(_ENTITY_TYPE_STEP)
+            if entity_type == "Project":
+                # Skip project selection screen
+                self.retrieve_cuts(sg_entities[0])
+            else:
+                self.step_done.emit(_ENTITY_TYPE_STEP)
         except Exception, e :
             self._logger.exception(str(e))
         finally:
@@ -327,7 +336,6 @@ class EdlCut(QtCore.QObject):
             # If no cut, go directly to next step
             if not sg_cuts:
                 self.show_cut_diff({})
-                self.step_done.emit(_CUT_STEP)
                 self._no_cut_for_entity = True
                 return
 

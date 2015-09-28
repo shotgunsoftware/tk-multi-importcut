@@ -163,3 +163,4 @@ class EntitiesView(QtCore.QObject):
             widget = witem.widget()
             widget.close()
         # print self._grid_widget.count()
+

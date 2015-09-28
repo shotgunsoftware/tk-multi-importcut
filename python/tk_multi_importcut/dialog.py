@@ -123,14 +123,14 @@ class AppDialog(QtGui.QWidget):
         self._entity_types_view.selection_changed.connect(self.selection_changed)
         self._entity_types_view.entity_type_chosen.connect(self.show_entities)
 
-        # Instantiate a sequences view handler
-        self._sequences_view = EntitiesView(self.ui.sequence_grid)
-        self._sequences_view.sequence_chosen.connect(self.show_entity)
-        self._sequences_view.selection_changed.connect(self.selection_changed)
-        self._sequences_view.new_info_message.connect(self.display_info_message)
-        self._processor.new_sg_entity.connect(self._sequences_view.new_sg_entity)
-        self.ui.sequences_search_line_edit.search_edited.connect(self._sequences_view.search)
-        self.ui.sequences_search_line_edit.search_changed.connect(self._sequences_view.search)
+        # Instantiate a entities view handler
+        self._entities_view = EntitiesView(self.ui.sequence_grid)
+        self._entities_view.sequence_chosen.connect(self.show_entity)
+        self._entities_view.selection_changed.connect(self.selection_changed)
+        self._entities_view.new_info_message.connect(self.display_info_message)
+        self._processor.new_sg_entity.connect(self._entities_view.new_sg_entity)
+        self.ui.sequences_search_line_edit.search_edited.connect(self._entities_view.search)
+        self.ui.sequences_search_line_edit.search_changed.connect(self._entities_view.search)
 
         # Instantiate a cuts view handler
         self._cuts_view = CutsView(self.ui.cuts_grid, self.ui.cuts_sort_button)
@@ -178,6 +178,10 @@ class AppDialog(QtGui.QWidget):
     def no_cut_for_entity(self):
         return self._processor.no_cut_for_entity
 
+    @property
+    def project_import(self):
+        return self._processor.project_import
+
     @QtCore.Slot()
     def do_reset(self):
         """
@@ -222,7 +226,14 @@ class AppDialog(QtGui.QWidget):
         """
         Called when a step is done, and next page can be displayed
         """
-        self.goto_step(which+1)
+        next_step = which+1
+        # Check if we can skip some intermediate screens
+        if next_step == _ENTITY_TYPE_STEP and self._entity_types_view.select_and_skip():
+            # Skip single entity type screen, autoselecting the single entry
+            next_step += 1
+#        if next_step == _ENTITY_STEP and self._entities_view.select_and_skip():
+#            next_step += 1
+        self.goto_step(next_step)
 
     @QtCore.Slot(list)
     def process_drop(self, paths):
@@ -339,10 +350,23 @@ class AppDialog(QtGui.QWidget):
         Skip the cuts view page if needed
         """
         current_page = self.ui.stackedWidget.currentIndex()
-        if current_page == _SUMMARY_STEP and self.no_cut_for_entity:
-            self.ui.stackedWidget.goto_page(_ENTITY_STEP)
-        else:
-            self.ui.stackedWidget.prev_page()
+        previous_page = current_page-1
+
+        if previous_page == _CUT_STEP and self.no_cut_for_entity:
+            # Skip cut selection screen
+            previous_page = _ENTITY_STEP
+        
+        if previous_page == _ENTITY_STEP and self.project_import:
+            # Skip project selection
+            previous_page = _ENTITY_TYPE_STEP
+        
+        if previous_page == _ENTITY_TYPE_STEP and self._entity_types_view.count() < 2:
+            previous_page = _DROP_STEP
+
+        if previous_page < 0:
+            previous_page = _DROP_STEP
+
+        self.ui.stackedWidget.goto_page(previous_page)
 
     @QtCore.Slot(int)
     def set_ui_for_step(self, step):
@@ -398,9 +422,9 @@ class AppDialog(QtGui.QWidget):
         # Display info message in feedback line and other special things
         # based on the current step
         if step==_ENTITY_TYPE_STEP:
-            self.display_info_message(self._sequences_view.info_message)
+            self.display_info_message(self._entity_types_view.info_message)
         elif step==_ENTITY_STEP:
-            self.display_info_message(self._sequences_view.info_message)
+            self.display_info_message(self._entities_view.info_message)
         elif step==_CUT_STEP:
             self.display_info_message(self._cuts_view.info_message)
         elif step==_SUMMARY_STEP:
@@ -534,7 +558,7 @@ class AppDialog(QtGui.QWidget):
         """
         Reset the page displaying available sequences
         """
-        self._sequences_view.clear()
+        self._entities_view.clear()
 
     def clear_cuts_view(self):
         """
