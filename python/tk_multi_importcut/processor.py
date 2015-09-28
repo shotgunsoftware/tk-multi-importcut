@@ -149,8 +149,8 @@ class Processor(QtCore.QThread):
         )
 
     @property
-    def no_cut_for_sequence(self):
-        return self._edl_cut._no_cut_for_sequence
+    def no_cut_for_entity(self):
+        return self._edl_cut._no_cut_for_entity
 
     def run(self):
         """

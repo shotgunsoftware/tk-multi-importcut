@@ -28,7 +28,7 @@ class EntitiesView(QtCore.QObject):
     def __init__(self, grid_widget):
         super(EntitiesView, self).__init__()
         self._grid_widget = grid_widget
-        self._selected_card_sequence = None
+        self._selected_entity_card = None
         self._logger = get_logger()
          # A one line message which can be displayed when the view is visible
         self._info_message=""
@@ -50,7 +50,7 @@ class EntitiesView(QtCore.QObject):
         column = i % 2
         self._logger.debug("Adding %s at %d %d %d" % ( sg_entity, i, row, column))
         widget = EntityCard(None, sg_entity)
-        widget.highlight_selected.connect(self.sequence_selected)
+        widget.highlight_selected.connect(self.entity_selected)
         widget.show_sequence.connect(self.sequence_chosen)
         self._grid_widget.addWidget(widget, row, column, )
         self._grid_widget.setRowStretch(row, 0)
@@ -61,18 +61,18 @@ class EntitiesView(QtCore.QObject):
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(QtGui.QWidget)
-    def sequence_selected(self, card):
+    def entity_selected(self, card):
         """
-        Called when a sequence card is selected, ensure only one is selected at
+        Called when an entity card is selected, ensure only one is selected at
         a time
         """
-        if self._selected_card_sequence:
-            self._selected_card_sequence.unselect()
-            self._logger.debug("Unselected %s" % self._selected_card_sequence)
-        self._selected_card_sequence = card
-        self._selected_card_sequence.select()
+        if self._selected_entity_card:
+            self._selected_entity_card.unselect()
+            self._logger.debug("Unselected %s" % self._selected_entity_card)
+        self._selected_entity_card = card
+        self._selected_entity_card.select()
         self.selection_changed.emit(card.sg_entity)
-        self._logger.debug("Selected %s" % self._selected_card_sequence)
+        self._logger.debug("Selected %s" % self._selected_entity_card)
 
     @QtCore.Slot(unicode)
     def search(self, text):
@@ -156,7 +156,7 @@ class EntitiesView(QtCore.QObject):
         """
         Reset the page displaying available sequences
         """
-        self._selected_card_sequence = None
+        self._selected_entity_card = None
         count = self._grid_widget.count() -1 # We have stretcher
         for i in range(count-1, -1, -1):
             witem = self._grid_widget.takeAt(i)

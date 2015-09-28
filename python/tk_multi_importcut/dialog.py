@@ -175,8 +175,8 @@ class AppDialog(QtGui.QWidget):
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
 
     @property
-    def no_cut_for_sequence(self):
-        return self._processor.no_cut_for_sequence
+    def no_cut_for_entity(self):
+        return self._processor.no_cut_for_entity
 
     @QtCore.Slot()
     def do_reset(self):
@@ -339,7 +339,7 @@ class AppDialog(QtGui.QWidget):
         Skip the cuts view page if needed
         """
         current_page = self.ui.stackedWidget.currentIndex()
-        if current_page == _SUMMARY_STEP and self.no_cut_for_sequence:
+        if current_page == _SUMMARY_STEP and self.no_cut_for_entity:
             self.ui.stackedWidget.goto_page(_ENTITY_STEP)
         else:
             self.ui.stackedWidget.prev_page()

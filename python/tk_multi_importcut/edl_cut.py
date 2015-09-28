@@ -53,7 +53,7 @@ class EdlCut(QtCore.QObject):
         self._ctx = self._app.context
         self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
         self._sg_new_cut = None
-        self._no_cut_for_sequence = False
+        self._no_cut_for_entity = False
         # Retrieve some settings
         self._omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
         self._cut_link_field = self._app.get_setting("cut_link_field")
@@ -328,10 +328,10 @@ class EdlCut(QtCore.QObject):
             if not sg_cuts:
                 self.show_cut_diff({})
                 self.step_done.emit(_CUT_STEP)
-                self._no_cut_for_sequence = True
+                self._no_cut_for_entity = True
                 return
 
-            self._no_cut_for_sequence = False
+            self._no_cut_for_entity = False
             for sg_cut in sg_cuts:
                 # Register a display status if one available
                 if sg_cut["sg_status_list"] in status_dict:
