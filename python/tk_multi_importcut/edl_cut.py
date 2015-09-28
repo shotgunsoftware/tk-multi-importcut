@@ -275,7 +275,7 @@ class EdlCut(QtCore.QObject):
                 # Project uses sg_status and not sg_status_list
                 status = sg_entity.get("sg_status_list",
                     sg_entity.get("sg_status", "")
-                )
+                ) or ""
                 # Register a display status if one available, with the color from SG
                 if status in status_dict:
                     sg_entity["_display_status"] = status_dict[status]
