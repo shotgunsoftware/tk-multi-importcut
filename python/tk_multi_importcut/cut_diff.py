@@ -28,6 +28,8 @@ _DIFF_TYPES = diff_types(
     CUT_CHANGE=4,       # Some values changed, but don't fall in previous categories
     NO_CHANGE=5,        # Values are identical to previous ones
     NO_LINK=6,          # Related shot name couldn't be found
+    NEW_IN_CUT=7,       # A new repeated shot entry is added, but the shot already exists
+    OMITTED_IN_CUT=8,   # A repeated shot entry was removed
 )
 # Display names for cut diff types
 _DIFF_LABELS = {
@@ -38,6 +40,8 @@ _DIFF_LABELS = {
     _DIFF_TYPES.CUT_CHANGE : "Cut Change",
     _DIFF_TYPES.NO_CHANGE : "",
     _DIFF_TYPES.NO_LINK : "",
+    _DIFF_TYPES.NEW_IN_CUT : "New in Cut",
+    _DIFF_TYPES.OMITTED_IN_CUT : "Omitted",
 }
 
 class CutDiff(QtCore.QObject):
@@ -692,6 +696,26 @@ class CutDiff(QtCore.QObject):
         """
         self._siblings  = siblings
 
+    @property
+    def interpreted_diff_type(self):
+        """
+        Some difference types are grouped under a common type, return this group type 
+        for the current difference type.
+        :returns: A _DIFF_TYPES
+        """
+        # Please note that a loop is done over all siblings, so this must be used
+        # with care as it can be inefficient
+        if self.diff_type == _DIFF_TYPES.OMITTED_IN_CUT and self.repeated:
+            # Check if all our siblings are omitted_in_cut as well
+            all_omitted = all( x._diff_type == _DIFF_TYPES.OMITTED_IN_CUT for x in self._siblings)
+            if all_omitted:
+                return _DIFF_TYPES.OMITTED
+
+        if self.diff_type in [_DIFF_TYPES.NEW_IN_CUT, _DIFF_TYPES.OMITTED_IN_CUT]:
+            return _DIFF_TYPES.CUT_CHANGE
+        # Fall back to reality !
+        return self.diff_type
+
     def check_changes(self):
         """
         Set the cut difference type for this cut difference
@@ -712,11 +736,18 @@ class CutDiff(QtCore.QObject):
         if not self.name:
             self._diff_type = _DIFF_TYPES.NO_LINK
             return
-        if not self._sg_shot or (self.repeated and not self._sg_cut_item):
+        if not self._sg_shot:
             self._diff_type = _DIFF_TYPES.NEW
             return
+        if self.repeated and not self._sg_cut_item:
+            self._diff_type = _DIFF_TYPES.NEW_IN_CUT
+            return
+
         if not self._edit:
-            self._diff_type = _DIFF_TYPES.OMITTED
+            if not self.repeated:
+                self._diff_type = _DIFF_TYPES.OMITTED
+            else:
+                self._diff_type = _DIFF_TYPES.OMITTED_IN_CUT
             return
         # We have both a shot and an edit
         omit_statuses = self._app.get_setting("omit_statuses") or []
@@ -780,7 +811,10 @@ class CutDiff(QtCore.QObject):
             self._repeated = repeated
             self.repeated_changed.emit(self, old_repeated, self._repeated)
             # Cut in / out values are affected by repeated changes
+            old_type=self._diff_type
             self._check_changes()
+            if old_type != self._diff_type:
+                self.type_changed.emit(self, old_type, self._diff_type)
 
     def summary(self):
         """

@@ -173,7 +173,7 @@ class CutDiffsView(QtCore.QObject):
         else:
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
-                if widget.diff_type == self._cuts_display_mode:
+                if widget.cut_diff.interpreted_diff_type == self._cuts_display_mode:
                     if not show_only_vfx or widget.is_vfx_shot:
                         match_count += 1
                         widget.setVisible(True)

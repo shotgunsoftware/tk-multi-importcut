@@ -31,6 +31,8 @@ _DIFF_TYPES_PROPERTIES = {
     _DIFF_TYPES.CUT_CHANGE : "cut_change",
     _DIFF_TYPES.NO_CHANGE : "no_change",
     _DIFF_TYPES.NO_LINK : "no_link",
+    _DIFF_TYPES.NEW_IN_CUT : "new_in_cut",
+    _DIFF_TYPES.OMITTED_IN_CUT : "omitted",
 }
 
 # Format string for tooltips
@@ -278,9 +280,9 @@ class CutDiffCard(QtGui.QFrame):
         :param new_value: New value retrieved from the cut being imported
         :param old_value: Previous value retrieved from a former cut import
         """
-        if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
+        if self._cut_diff.diff_type in [_DIFF_TYPES.NEW, _DIFF_TYPES.NEW_IN_CUT]:
             widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
-        elif self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
+        elif self._cut_diff.diff_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]:
             if old_value is not None:
                 widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], old_value))
             else:

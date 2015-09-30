@@ -126,7 +126,7 @@ class ShotCutDiffList(list):
         sg_shot = None
         # Use first entry as inital value, the list is guaranteed to not be
         # empty
-        shot_diff_type = self[0].diff_type
+        shot_diff_type = None
         for cut_diff in self:
             if sg_shot is None and cut_diff.sg_shot:
                 sg_shot = cut_diff.sg_shot
@@ -140,37 +140,53 @@ class ShotCutDiffList(list):
             # Special cases for diff type :
             # - A shot is no link if any of its items is no link ( should be all of them )
             # - A shot is omitted if all its items are omitted
-            # - A shot is new if all its items are new
-            # - A shot is reinstated if at least one of its items is reinstated
+            # - A shot is new if any of its items is new ( should be all of them )
+            # - A shot is reinstated if at least one of its items is reinstated ( should be all of them )
             # - A shot needs rescan if any of its items neeed rescan
             cut_diff_type = cut_diff.diff_type
-            if cut_diff_type == _DIFF_TYPES.NO_LINK:
-                shot_diff_type = _DIFF_TYPES.NO_LINK
-            elif shot_diff_type == _DIFF_TYPES.NEW:
-                if cut_diff_type != _DIFF_TYPES.NEW:
-                    # Can't become omitted
-                    if cut_diff_type == _DIFF_TYPES.OMITTED:
-                        shot_diff_type = _DIFF_TYPES.CUT_CHANGE
-                    else:
-                        shot_diff_type = cut_diff_type
-            elif shot_diff_type == _DIFF_TYPES.OMITTED:
-                if cut_diff_type != _DIFF_TYPES.OMITTED:
-                    # Can't become new
-                    if cut_diff_type == _DIFF_TYPES.NEW:
-                        shot_diff_type = _DIFF_TYPES.CUT_CHANGE
-                    else:
-                        shot_diff_type = cut_diff_type
-            elif shot_diff_type == _DIFF_TYPES.REINSTATED:
-                # Once in reinstated stays with it
-                pass
-            elif shot_diff_type == _DIFF_TYPES.RESCAN:
-                # Only allow resinstated to change the type
-                if cut_diff_type == _DIFF_TYPES.REINSTATED:
-                    shot_diff_type = cut_diff_type
-            else:
-                if cut_diff_type not in [_DIFF_TYPES.NEW, _DIFF_TYPES.OMITTED]:
-                    shot_diff_type = cut_diff_type
+            if cut_diff_type in [
+                _DIFF_TYPES.NO_LINK,
+                _DIFF_TYPES.NEW,
+                _DIFF_TYPES.REINSTATED,
+                _DIFF_TYPES.OMITTED
+            ]:
+                shot_diff_type = cut_diff_type
+                # Can't be changed by another entry, no need to loop further
+                break
 
+            if cut_diff_type == _DIFF_TYPES.OMITTED_IN_CUT:
+                # Could be a repeated shot entry removed from the cut
+                # or really the whole shot being removed
+                if shot_diff_type == None:
+                    # Set initial value
+                    shot_diff_type = _DIFF_TYPES.OMITTED
+                elif shot_diff_type == _DIFF_TYPES.NO_CHANGE:
+                    shot_diff_type=_DIFF_TYPES.CUT_CHANGE
+                else:
+                    # Shot is already with the right state, no need to do anything
+                    pass
+
+            elif cut_diff_type == _DIFF_TYPES.RESCAN:
+                shot_diff_type = _DIFF_TYPES.RESCAN
+            elif cut_diff_type == _DIFF_TYPES.NEW_IN_CUT:
+                # Only set the value if not already set to something and
+                # not RESCAN, to preserve it
+                if shot_diff_type is None or shot_diff_type != _DIFF_TYPES.RESCAN:
+                    # Report them as cut changes at the shot level
+                    shot_diff_type = _DIFF_TYPES.CUT_CHANGE
+            else:    # _DIFF_TYPES.NO_CHANGE, _DIFF_TYPES.CUT_CHANGE
+                if shot_diff_type is None:
+                    # initial value
+                    shot_diff_type = cut_diff_type
+                elif shot_diff_type != _DIFF_TYPES.RESCAN: # Preserve rescan
+                    if shot_diff_type != cut_diff_type:
+                        # If different values fall back to CUT_CHANGE
+                        shot_diff_type = _DIFF_TYPES.CUT_CHANGE
+            print shot_diff_type, cut_diff_type
+        # Having _OMITTED_IN_CUT here means that all entries were _OMITTED_IN_CUT
+        # so the whole shot is _OMITTED
+        if shot_diff_type == _DIFF_TYPES.OMITTED_IN_CUT:
+            shot_diff_type = _DIFF_TYPES.OMITTED
         return (sg_shot, min_cut_order, min_cut_in, max_cut_out, shot_diff_type,)
 
     def _update_min_and_max(self, cut_diff):
@@ -241,13 +257,23 @@ class CutSummary(QtCore.QObject):
             self._cut_diffs[shot_key] = ShotCutDiffList(cut_diff)
             cut_diff.set_repeated(False)
         diff_type = cut_diff.diff_type
-        if diff_type in self._counts:
-            self._counts[diff_type] += 1
-        else:
-            self._counts[diff_type] = 1
+        # Some counts are per shot, some others per edits, so only update some
+        # of them if the new entry is not repeated
+        if diff_type not in [
+            _DIFF_TYPES.NEW,
+            _DIFF_TYPES.OMITTED,
+            _DIFF_TYPES.REINSTATED,
+            _DIFF_TYPES.RESCAN
+        ] or not cut_diff.repeated:
+            if diff_type in self._counts:
+                self._counts[diff_type] += 1
+            else:
+                self._counts[diff_type] = 1
 
-        if cut_diff.need_rescan:
+        if cut_diff.need_rescan and not cut_diff.repeated:
             self._rescans_count += 1
+        self._recompute_counts()
+        
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
     
@@ -331,6 +357,7 @@ class CutSummary(QtCore.QObject):
             self._logger.debug("Creating single entry for new shot key %s" % new_shot_key)
             self._cut_diffs[new_shot_key] = ShotCutDiffList(cut_diff)
         cut_diff.check_changes()
+        self._recompute_counts()
 
     @QtCore.Slot(CutDiff, int, int)
     def cut_diff_type_changed(self, cut_diff, old_type, new_type):
@@ -386,7 +413,7 @@ class CutSummary(QtCore.QObject):
         """
         for name, items in self._cut_diffs.iteritems():
             for item in items:
-                if item.diff_type == diff_type:
+                if item.interpreted_diff_type == diff_type:
                     yield item
     
     def has_shot(self, shot_name):
@@ -404,6 +431,48 @@ class CutSummary(QtCore.QObject):
         :param shot_name: A shot name, as a string
         """
         return self._cut_diffs.get(shot_name.lower())
+
+    def _recompute_counts(self):
+        """
+        Recompute internal counts from Cut differences
+        """
+        self._counts = {}
+        for k,v in self._cut_diffs.iteritems():
+            _, _, _, _, shot_diff_type = v.get_shot_values()
+            if shot_diff_type in [
+                _DIFF_TYPES.NEW,
+                _DIFF_TYPES.OMITTED,
+                _DIFF_TYPES.REINSTATED,
+                _DIFF_TYPES.RESCAN
+            ]:
+                # We count these per shots
+                if shot_diff_type in self._counts:
+                    self._counts[shot_diff_type] += 1
+                else:
+                    self._counts[shot_diff_type] = 1
+            else:
+                # We count others per entries
+                for cut_diff in v:
+                    # We don't use cut_diff.interpreted_type here, as it will
+                    # loop over all siblings, repeated shots cases are handled
+                    # with the shot_diff_type
+                    diff_type = self._interpreted_diff_type(cut_diff.diff_type)
+                    if diff_type in self._counts:
+                        self._counts[diff_type] += 1
+                    else:
+                        self._counts[diff_type] = 1
+        self._logger.info(str(self._counts))
+        self.totals_changed.emit()
+
+    def _interpreted_diff_type(self, diff_type):
+        """
+        Some difference types are grouped under a common type, return
+        this group type for the given difference type
+        :returns: A _DIFF_TYPES
+        """
+        if diff_type in [_DIFF_TYPES.NEW_IN_CUT, _DIFF_TYPES.OMITTED_IN_CUT]:
+            return _DIFF_TYPES.CUT_CHANGE
+        return diff_type
 
     def __len__(self):
         """
