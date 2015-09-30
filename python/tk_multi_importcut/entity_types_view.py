@@ -13,6 +13,7 @@ from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
 from .downloader import DownloadRunner
 import tempfile
+from operator import attrgetter
 
 from .ui.entity_type_card import Ui_entity_type_frame
 
@@ -63,12 +64,11 @@ class EntityTypeCard(QtGui.QFrame):
     @property
     def entity_type(self):
         return self._entity_type
-    
-    def _set_icon(self):
-        """
-        Set the icon for the card based on the entity type
-        """
-        
+
+    @property
+    def entity_type_name(self):
+        return self._entity_type_name
+
     @QtCore.Slot()
     def show_selected(self):
         """
@@ -158,25 +158,6 @@ class EntityTypesView(QtCore.QObject):
     # Emitted when the info message changed
     new_info_message=QtCore.Signal(str)
 
-    # Some order for entity types, from the more general to the more
-    # specific
-    __entity_type_order = {
-        "project" : 100,
-        "reel": 50,
-        "customentity04": 50,
-        "sequence": 10,
-        "scene": 10,
-    }
-
-    @classmethod
-    def types_order(cls, entity_type):
-        """
-        Return an order for the given entity_type, used as a key
-        param when sorting entity types.
-        :returns: An integer or -1
-        """
-        return cls.__entity_type_order.get(entity_type.lower(), -1)
-
     def __init__(self, layout):
         super(EntityTypesView, self).__init__()
         self._layout = layout
@@ -192,11 +173,14 @@ class EntityTypesView(QtCore.QObject):
         sg = sgtk.platform.current_bundle().shotgun
         schema = sg.schema_field_read("Cut", cut_link_field)
         entity_types = schema[cut_link_field]["properties"]["valid_types"]["value"]
-        for entity_type in sorted(entity_types, key=self.types_order, reverse=True):
+        # Create all cards
+        for entity_type in entity_types:
             self._entity_type_cards.append(EntityTypeCard(entity_type))
-            self._layout.addWidget(self._entity_type_cards[-1])
             self._entity_type_cards[-1].highlight_selected.connect(self.entity_type_selected)
             self._entity_type_cards[-1].show_entities.connect(self.entity_type_chosen)
+        # And insert them sorted by their nice name
+        for entity_card in sorted(self._entity_type_cards, key=attrgetter("entity_type_name")):
+            self._layout.addWidget(entity_card)
 
     @property
     def info_message(self):
