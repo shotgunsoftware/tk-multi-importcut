@@ -772,9 +772,6 @@ class CutDiff(QtCore.QObject):
         if not self._sg_shot:
             self._diff_type = _DIFF_TYPES.NEW
             return
-        if self.repeated and not self._sg_cut_item:
-            self._diff_type = _DIFF_TYPES.NEW_IN_CUT
-            return
 
         if not self._edit:
             if not self.repeated:
@@ -787,6 +784,11 @@ class CutDiff(QtCore.QObject):
         if self._sg_shot["sg_status_list"] in omit_statuses:
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
+
+        if self.repeated and not self._sg_cut_item:
+            self._diff_type = _DIFF_TYPES.NEW_IN_CUT
+            return
+
         # Check if we have a difference
         # If any of the previous value is not set, then assume all changed ( initial import )
         if self.cut_order is None or self.cut_in is None or self.cut_out is None or\
