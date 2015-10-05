@@ -128,6 +128,21 @@ class PostInstall(Hook):
             sg.schema_field_update("Cut", field_name, {
                 "name" : "Status",
             })
+        # Make sure we have a sg_link field on Cut
+        field_name = app.get_setting("cut_link_field")
+        schema = sg.schema_field_read("Cut")
+        if field_name.lower() not in schema:
+            display_name = ' '.join( field_name.split('_')[1:]) # strip the sg_ part
+            properties = { "valid_types" : ["Sequence"]}
+            res = sg.schema_field_create(
+                "Cut", "entity", display_name, properties
+            )
+            # Check that we got the field name we expected
+            if res != field_name.lower():
+                raise RuntimeError("Wanted to create a field named %s, and created %s instead" % (
+                    field_name,res)
+                )
+            app.log_info("Created %s field for cuts" % field_name)
 
         app.log_debug("SG site correctly setup !")
 

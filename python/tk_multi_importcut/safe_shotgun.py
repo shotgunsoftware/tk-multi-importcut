@@ -51,6 +51,8 @@ class ThreadSafeShotgun(Shotgun):
             login                       =   sg_handle.config.user_login,
             password                    =   sg_handle.config.user_password,
             sudo_as_login               =   sg_handle.config.sudo_as_login,
+            session_token               =   sg_handle.config.session_token,
+            auth_token                  =   sg_handle.config.auth_token,
             connect                     =   False
         )
 

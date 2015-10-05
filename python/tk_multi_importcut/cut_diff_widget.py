@@ -21,13 +21,18 @@ from .cut_diff import CutDiff, _DIFF_TYPES
 from .downloader import DownloadRunner
 from .constants import _COLORS
 
-# Some colors for the different CuDiffType
-_DIFF_TYPES_STYLE = {
-    _DIFF_TYPES.NEW : "color: %s" % _COLORS["green"],
-    _DIFF_TYPES.OMITTED : "color: %s" % _COLORS["sg_red"],
-    _DIFF_TYPES.REINSTATED : "color: %s" % _COLORS["yellow"],
-    _DIFF_TYPES.NO_CHANGE : "color: %s" % _COLORS["lgrey"],
-    _DIFF_TYPES.NO_LINK : "color: %s" % _COLORS["sg_red"],
+# diff_type property values which are set on the widget
+# and can be use in a style sheet
+_DIFF_TYPES_PROPERTIES = {
+    _DIFF_TYPES.NEW : "new",
+    _DIFF_TYPES.OMITTED : "omitted",
+    _DIFF_TYPES.REINSTATED : "reinstated",
+    _DIFF_TYPES.RESCAN : "rescan_needed",
+    _DIFF_TYPES.CUT_CHANGE : "cut_change",
+    _DIFF_TYPES.NO_CHANGE : "no_change",
+    _DIFF_TYPES.NO_LINK : "no_link",
+    _DIFF_TYPES.NEW_IN_CUT : "new_in_cut",
+    _DIFF_TYPES.OMITTED_IN_CUT : "omitted",
 }
 
 # Format string for tooltips
@@ -63,15 +68,37 @@ class CutDiffCard(QtGui.QFrame):
         self._use_smart_fields = app.get_setting("use_smart_fields") or False
         self._thumbnail_requested = False
         cut_diff.type_changed.connect(self.diff_type_changed)
+        cut_diff.repeated_changed.connect(self.repeated_changed)
         self._set_ui_values()
 
+    def set_property(self, name, value):
+        """
+        Set the given property to the given value and ensure styling
+        is refreshed so the property is taken into account from the
+        style sheet
+        :param name: An arbitrary property
+        :param value: An arbitrary value
+        """
+        self.setProperty(name, value)
+        # We need to refresh ourself and a couple of children
+        # widgets
+        widgets = [
+            self,
+            self.ui.shot_name_line,
+            self.ui.icon_label,
+            self.ui.version_name_label,
+            self.ui.status_label
+        ]
+        for w in widgets:
+            self.style().unpolish(w)
+            self.style().polish(w)
+    
     def _set_ui_values(self):
         """
         Set UI values, colors, etc ... from the CutDiff instance being displayed
         """
-        self.setProperty("omitted", bool(self._cut_diff.diff_type == _DIFF_TYPES.OMITTED))
-        self.style().unpolish(self)
-        self.style().polish(self)
+        self.set_property("diff_type", _DIFF_TYPES_PROPERTIES[self._cut_diff.diff_type])
+        self.set_property("repeated", self._cut_diff.repeated)
         # Shot name widget
         if self._cut_diff.name:
             self.ui.shot_name_line.set_property("valid", True)
@@ -81,25 +108,19 @@ class CutDiffCard(QtGui.QFrame):
             self.ui.shot_name_line.setText("")
         self.ui.shot_name_line.value_changed.connect(self.shot_name_edited)
         self.ui.shot_name_line.setReadOnly(not self._cut_diff.is_name_editable)
-
+        if self._cut_diff.repeated:
+            self.ui.shot_name_line.setToolTip("Shot is repeated")
+        else:
+            self.ui.shot_name_line.setToolTip("")
         # Cut order
         new_cut_order = self._cut_diff.new_cut_order or 0
         old_cut_order = self._cut_diff.cut_order or 0
         cut_order = new_cut_order or old_cut_order
-
-        if self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
-            font_color= _COLORS["sg_red"]
-        elif self._cut_diff.diff_type == _DIFF_TYPES.NEW:
-            font_color= _COLORS["green"]
-        else:
-            if old_cut_order != new_cut_order:
-                font_color= _COLORS["yellow"]
-            else:
-                font_color= _COLORS["lgrey"]
+        self.set_property("cut_order_changed", bool(old_cut_order != new_cut_order))
 
         self.ui.icon_label.set_text(
             cut_order,
-            font_color,
+            None, # use default color form styling
             bool(self._cut_diff.diff_type == _DIFF_TYPES.OMITTED)
         )
         # Difference and reasons
@@ -112,7 +133,6 @@ class CutDiffCard(QtGui.QFrame):
                 self.ui.status_label.setText("<b>%s</b>" % diff_type_label)
         else:
             self.ui.status_label.setText("%s" % reasons)
-        self.ui.status_label.setStyleSheet(_DIFF_TYPES_STYLE.get(self._cut_diff.diff_type, ""))
 
         sg_version = self._cut_diff.sg_version
         self.ui.version_name_label.setToolTip(None)
@@ -182,8 +202,10 @@ class CutDiffCard(QtGui.QFrame):
     def diff_type_changed(self, cut_diff, old_type, new_type):
         """
         Called when the diff type changed for the CutDiff being displayed
+
         Some parameter are ignored as we have the CutDiff instance as member
         of our class.
+
         :param cut_diff: A CutDiff instance
         :param old_type: The old type for the CutDiff instance
         :param new_type: The new type for the CutDiff instance
@@ -196,6 +218,19 @@ class CutDiffCard(QtGui.QFrame):
         # changes should be handled in a dedicated slot and thumbnail requests
         # issued from it
         self.retrieve_thumbnail()
+
+    @QtCore.Slot(CutDiff, int, int)
+    def repeated_changed(self, cut_diff, old_repeated, new_repeated):
+        """
+        Called when the repeated changed for the CutDiff being displayed
+
+        Some parameter are ignored as we have the CutDiff instance as member
+        of our class.
+        :param cut_diff: A CutDiff instance
+        :param old_repeated: The old repeated value for the CutDiff instance
+        :param new_type: The new repeated value for the CutDiff instance
+        """
+        self._set_ui_values()
 
     @QtCore.Slot(str)
     def shot_name_edited(self, value):
@@ -245,9 +280,9 @@ class CutDiffCard(QtGui.QFrame):
         :param new_value: New value retrieved from the cut being imported
         :param old_value: Previous value retrieved from a former cut import
         """
-        if self._cut_diff.diff_type == _DIFF_TYPES.NEW:
+        if self._cut_diff.diff_type in [_DIFF_TYPES.NEW, _DIFF_TYPES.NEW_IN_CUT]:
             widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
-        elif self._cut_diff.diff_type == _DIFF_TYPES.OMITTED:
+        elif self._cut_diff.diff_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]:
             if old_value is not None:
                 widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], old_value))
             else:
