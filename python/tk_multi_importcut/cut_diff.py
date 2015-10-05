@@ -401,6 +401,21 @@ class CutDiff(QtCore.QObject):
         return None
 
     @property
+    def tc_cut_out(self):
+        """
+        Return the timecode associated with the current cut out value from the
+        associated cut item, or none
+
+        :returns: A Timecode instance or None
+        """
+        if self._sg_cut_item:
+            return edl.Timecode(
+                self._sg_cut_item["sg_timecode_cut_out"],
+                self._sg_cut_item["sg_fps"]
+            )
+        return None
+
+    @property
     def cut_out(self):
         """
         Return the current cut out value from the associated cut item, or None
@@ -456,21 +471,25 @@ class CutDiff(QtCore.QObject):
                 offset = self._edit.source_in.to_frame() - tc_cut_in.to_frame()
                 # Just apply the offset to the old cut in
                 return cut_in + offset
+        # If we don't have a previous cut item, we can't just compute an offset
+        # from the previous cut values, so we need to compute brand new values
         # If repeated our cut in is relative to the earliest entry
         if self.repeated:
             # Get the head in for the earliest entry
             earliest = self._siblings.earliest
             if not earliest:
                 raise ValueError("%s is repeated but does not have an earliest entry defined" % self)
+            # If we are the earliest, we will fall back to the default case below
             if earliest != self: # We are not the earliest
                 # get its tc_cut_in
-                earliest_tc_cut_in = earliest.new_tc_cut_in
+                earliest_tc_cut_in = self._siblings.min_tc_cut_in
                 if earliest_tc_cut_in is None:
                     raise ValueError("Earliest %s is not able to compute tc cut in" % earliest_tc_cut_in)
                 # Compute the difference with ours
                 offset = self.new_tc_cut_in.to_frame() - earliest_tc_cut_in.to_frame()
                 # add it the earliest head in
-                return earliest.new_cut_in + offset
+                return self._siblings.min_cut_in + offset
+        # Not repeated or earliest entry case
         # If we don't have a previous entry, retrieve default values
         # and return an arbitrary value
         if self._timecode_frame_map[0] is not None:
@@ -695,6 +714,20 @@ class CutDiff(QtCore.QObject):
         :param siblings: a ShotCutDiffList or None
         """
         self._siblings  = siblings
+
+    def is_earliest(self):
+        """
+        Return True if this CutDiff is the earliest in repeated shots.
+        If the shot is not repeated, this entry is the earliest.
+        :returns: True of False
+        """
+        if not self._siblings:
+            return True
+        print str(self._siblings)
+        print self._siblings.earliest, self
+        if self._siblings.earliest == self:
+            return True
+        return False
 
     @property
     def interpreted_diff_type(self):

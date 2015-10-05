@@ -49,12 +49,24 @@ class ShotCutDiffList(list):
     def __init__(self, cut_diff, *args, **kwargs):
         super(ShotCutDiffList, self).__init__(*args, **kwargs)
         self._logger=get_logger()
+        self._reset_min_and_max() # Just so attributes are defined
+        # Values above are populated in the append call below
+        self.append(cut_diff)
+
+    def _reset_min_and_max(self):
+        """
+        Reset values used to handle repeated shots min and max
+        """
+        # From a previous cut
         self._min_tc_cut_in = None
         self._max_tc_cut_out = None
         self._earliest_entry = None
         self._latest_entry = None
-        # Values above are populated in the append call below
-        self.append(cut_diff)
+        # From the new edit
+        self._new_min_tc_cut_in = None
+        self._new_max_tc_cut_out = None
+        self._new_earliest_entry = None
+        self._new_latest_entry = None
 
     def append(self, cut_diff):
         """
@@ -78,10 +90,7 @@ class ShotCutDiffList(list):
         cut_diff.set_siblings(None)
         super(ShotCutDiffList, self).remove(cut_diff)
         # Reset our internal values
-        self._min_tc_cut_in = None
-        self._max_tc_cut_out = None
-        self._earliest_entry = None
-        self._latest_entry = None
+        self._reset_min_and_max()
         # And recompute them from what is left
         for cdiff in self:
             self._update_min_and_max(cdiff)
@@ -93,7 +102,9 @@ class ShotCutDiffList(list):
 
         :returns: A CutDiff instance, or None
         """
-        return self._earliest_entry
+        if self._earliest_entry:
+            return self._earliest_entry
+        return self._new_earliest_entry
 
     @property
     def latest(self):
@@ -102,7 +113,27 @@ class ShotCutDiffList(list):
 
         :returns: A CutDiff instance, or None
         """
-        return self._latest_entry
+        if self._latest_entry:
+            return self._latest_entry
+        return self._new_latest_entry
+
+    @property
+    def min_tc_cut_in(self):
+        if self._min_tc_cut_in is not None:
+            return self._min_tc_cut_in
+        return self._new_min_tc_cut_in
+
+    @property
+    def min_cut_in(self):
+        if self._earliest_entry:
+            return self._earliest_entry.cut_in
+        return self._new_earliest_entry.new_cut_in
+
+    @property
+    def max_tc_cut_out(self):
+        if self._max_tc_cut_out is not None:
+            return self._max_tc_cut_out
+        return self._new_max_tc_cut_out
 
     def get_shot_values(self):
         """
@@ -124,8 +155,6 @@ class ShotCutDiffList(list):
         min_cut_in = None
         max_cut_out = None
         sg_shot = None
-        # Use first entry as inital value, the list is guaranteed to not be
-        # empty
         shot_diff_type = None
         for cut_diff in self:
             if sg_shot is None and cut_diff.sg_shot:
@@ -182,7 +211,6 @@ class ShotCutDiffList(list):
                     if shot_diff_type != cut_diff_type:
                         # If different values fall back to CUT_CHANGE
                         shot_diff_type = _DIFF_TYPES.CUT_CHANGE
-            print shot_diff_type, cut_diff_type
         # Having _OMITTED_IN_CUT here means that all entries were _OMITTED_IN_CUT
         # so the whole shot is _OMITTED
         if shot_diff_type == _DIFF_TYPES.OMITTED_IN_CUT:
@@ -195,15 +223,23 @@ class ShotCutDiffList(list):
 
         :param cut_diff: A CutDiff instance
         """
-        tc_cut_in = cut_diff.new_tc_cut_in
+        tc_cut_in = cut_diff.tc_cut_in
         if tc_cut_in is not None and (self._min_tc_cut_in is None or tc_cut_in.to_frame() < self._min_tc_cut_in.to_frame()):
             self._min_tc_cut_in = tc_cut_in
-            old_earliest_entry = self._earliest_entry
             self._earliest_entry = cut_diff
-        tc_cut_out = cut_diff.new_tc_cut_out
+        tc_cut_out = cut_diff.tc_cut_out
         if tc_cut_out is not None and (self._max_tc_cut_out is None or tc_cut_out.to_frame() > self._max_tc_cut_out.to_frame()):
             self._max_tc_cut_out = tc_cut_out
             self._latest_entry = cut_diff
+
+        tc_cut_in = cut_diff.new_tc_cut_in
+        if tc_cut_in is not None and (self._new_min_tc_cut_in is None or tc_cut_in.to_frame() < self._new_min_tc_cut_in.to_frame()):
+            self._new_min_tc_cut_in = tc_cut_in
+            self._new_earliest_entry = cut_diff
+        tc_cut_out = cut_diff.new_tc_cut_out
+        if tc_cut_out is not None and (self._new_max_tc_cut_out is None or tc_cut_out.to_frame() > self._new_max_tc_cut_out.to_frame()):
+            self._new_max_tc_cut_out = tc_cut_out
+            self._new_latest_entry = cut_diff
 
 class CutSummary(QtCore.QObject):
     """
@@ -270,8 +306,6 @@ class CutSummary(QtCore.QObject):
             else:
                 self._counts[diff_type] = 1
 
-        if cut_diff.need_rescan and not cut_diff.repeated:
-            self._rescans_count += 1
         self._recompute_counts()
         
         self.new_cut_diff.emit(cut_diff)
@@ -372,10 +406,16 @@ class CutSummary(QtCore.QObject):
         if old_type==new_type:
             return
         if old_type not in self._counts:
-            raise RuntimeError("Couldn't retrieve cut diff type %s in counts" % old_type)
-        self._counts[old_type] -= 1
-        if self._counts[old_type]==0:
-            del self._counts[old_type]
+            # This can happen if the diff type changed when a cut_diff is added
+            # with repeated shots
+            self._logger.debug(
+                "Couldn't retrieve cut diff type %s in counts (new type : %s)" % (
+                    old_type, new_type,
+            ))
+        else:
+            self._counts[old_type] -= 1
+            if self._counts[old_type]==0:
+                del self._counts[old_type]
         if new_type is not None: # None is used when some cut diff are deleted
             if new_type in self._counts:
                 self._counts[new_type] += 1
@@ -405,15 +445,17 @@ class CutSummary(QtCore.QObject):
         """
         return self._counts.get(diff_type, 0)
 
-    def edits_for_type(self, diff_type):
+    def edits_for_type(self, diff_type, just_earliest=False):
         """
         Return the CutDiff instances for the given CutDiffType
 
         :param diff_type: A CutDiffType
+        :param just_earliest: Whether or not all matching CutDiff should be
+                              returned or just the earliest(s)
         """
         for name, items in self._cut_diffs.iteritems():
             for item in items:
-                if item.interpreted_diff_type == diff_type:
+                if item.interpreted_diff_type == diff_type and (not just_earliest or item.is_earliest()):
                     yield item
     
     def has_shot(self, shot_name):
@@ -461,7 +503,11 @@ class CutSummary(QtCore.QObject):
                         self._counts[diff_type] += 1
                     else:
                         self._counts[diff_type] = 1
-        self._logger.info(str(self._counts))
+        # Legacy thing : rescan count was once not handled with a diff type
+        # so keep updating it until all references to it is removed from the
+        # code
+        self._rescans_count = self._counts.get(_DIFF_TYPES.RESCAN, 0)
+        self._logger.debug(str(self._counts))
         self.totals_changed.emit()
 
     def _interpreted_diff_type(self, diff_type):
@@ -572,21 +618,21 @@ class CutSummary(QtCore.QObject):
             self.count_for_type(_DIFF_TYPES.NEW),
             "\n".join([
                 edit.name for edit in sorted(
-                    self.edits_for_type(_DIFF_TYPES.NEW),
+                    self.edits_for_type(_DIFF_TYPES.NEW, just_earliest=True),
                     key=lambda x : x.new_cut_order
                 )
             ]),
             self.count_for_type(_DIFF_TYPES.OMITTED),
             "\n".join([
                 edit.name for edit in sorted(
-                    self.edits_for_type(_DIFF_TYPES.OMITTED),
+                    self.edits_for_type(_DIFF_TYPES.OMITTED, just_earliest=True),
                     key=lambda x : x.cut_order or -1
                 )
             ]),
             self.count_for_type(_DIFF_TYPES.REINSTATED),
             "\n".join([
                 edit.name for edit in sorted(
-                    self.edits_for_type(_DIFF_TYPES.REINSTATED),
+                    self.edits_for_type(_DIFF_TYPES.REINSTATED, just_earliest=True),
                     key=lambda x : x.new_cut_order
                 )
             ]),
