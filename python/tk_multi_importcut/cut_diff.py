@@ -723,8 +723,6 @@ class CutDiff(QtCore.QObject):
         """
         if not self._siblings:
             return True
-        print str(self._siblings)
-        print self._siblings.earliest, self
         if self._siblings.earliest == self:
             return True
         return False

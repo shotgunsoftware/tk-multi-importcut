@@ -120,7 +120,7 @@ class CutDiffCard(QtGui.QFrame):
 
         self.ui.icon_label.set_text(
             cut_order,
-            None, # use default color form styling
+            None, # use default color from styling
             bool(self._cut_diff.diff_type == _DIFF_TYPES.OMITTED)
         )
         # Difference and reasons
