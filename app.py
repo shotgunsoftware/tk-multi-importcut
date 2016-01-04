@@ -47,4 +47,17 @@ class ImportCutApp(Application):
             display_name,
             menu_callback,
             settings)
+
+        if self.engine.name == "tk-shell":
+            settings = {
+                "icon": self.icon_256,
+                "short_name": "%s_with_args" % short_name }
+
+            self.engine.register_command(
+                "%s_with_args" % display_name,
+                self.load_edl_for_entity,
+                settings)
         
+    def load_edl_for_entity(self, edl_file_path, sg_entity):
+        app_payload = self.import_module("tk_multi_importcut")
+        app_payload.dialog.load_edl_for_entity(self, edl_file_path, sg_entity)

@@ -14,6 +14,7 @@ import sys
 import logging
 import logging.handlers
 import tempfile
+import ast
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
@@ -55,6 +56,14 @@ def show_dialog(app_instance):
     # to be carried out by toolkit.
     app_instance.engine.show_dialog("Import Cut", app_instance, AppDialog)
     
+def load_edl_for_entity(app_instance, edl_file_path, sg_entity):
+    app_instance.engine.show_dialog(
+        "Import Cut",
+        app_instance,
+        AppDialog,
+        edl_file_path=edl_file_path,
+        sg_entity=sg_entity
+    )
 
 
 class AppDialog(QtGui.QWidget):
@@ -65,7 +74,7 @@ class AppDialog(QtGui.QWidget):
     get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
-    def __init__(self):
+    def __init__(self, edl_file_path=None, sg_entity=None):
         """
         Constructor
         """
@@ -174,6 +183,18 @@ class AppDialog(QtGui.QWidget):
 
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
 
+        if edl_file_path:
+            self.new_edl.emit(edl_file_path)
+            if sg_entity:
+                sg_entity_dict = ast.literal_eval(sg_entity)
+                if not isinstance(sg_entity_dict, dict):
+                    raise ValueError("Invalid SG entity %s" % sg_entity)
+                self.show_entities(sg_entity_dict["type"])
+                self._selected_sg_entity[_ENTITY_STEP] = sg_entity_dict
+                self.show_entity(sg_entity_dict)
+                self.ui.stackedWidget.set_current_index(_ENTITY_STEP)
+                self.set_ui_for_step(_ENTITY_STEP)
+    
     @property
     def no_cut_for_entity(self):
         return self._processor.no_cut_for_entity
