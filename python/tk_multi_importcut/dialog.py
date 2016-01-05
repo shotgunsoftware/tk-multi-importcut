@@ -77,6 +77,9 @@ class AppDialog(QtGui.QWidget):
     def __init__(self, edl_file_path=None, sg_entity=None):
         """
         Constructor
+        :param edl_file_path: Full path to an EDL file
+        :param sg_entity: A string which can be evaluated as a SG entity dictionary, 
+                          e.g '{"code" : "001", "id" : 19, "type" : "Sequence"}'
         """
         # first, call the base class and let it do its thing.
         QtGui.QWidget.__init__(self)
@@ -184,17 +187,18 @@ class AppDialog(QtGui.QWidget):
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
 
         if edl_file_path:
+            # Special mode for Premiere integration : load the given EDL
+            # and select the given SG entity
             self.new_edl.emit(edl_file_path)
             if sg_entity:
                 sg_entity_dict = ast.literal_eval(sg_entity)
                 if not isinstance(sg_entity_dict, dict):
                     raise ValueError("Invalid SG entity %s" % sg_entity)
+                self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity_dict["type"]
                 self.show_entities(sg_entity_dict["type"])
                 self._selected_sg_entity[_ENTITY_STEP] = sg_entity_dict
                 self.show_entity(sg_entity_dict)
-                self.ui.stackedWidget.set_current_index(_ENTITY_STEP)
-                self.set_ui_for_step(_ENTITY_STEP)
-    
+
     @property
     def no_cut_for_entity(self):
         return self._processor.no_cut_for_entity
