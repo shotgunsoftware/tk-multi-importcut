@@ -77,7 +77,7 @@ def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
         AppDialog,
         edl_file_path=edl_file_path,
         sg_entity=sg_entity_dict,
-        frame_rate=float(frame_rate),
+        frame_rate=int(frame_rate),
     )
 
 
