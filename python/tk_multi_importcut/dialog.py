@@ -56,13 +56,28 @@ def show_dialog(app_instance):
     # to be carried out by toolkit.
     app_instance.engine.show_dialog("Import Cut", app_instance, AppDialog)
     
-def load_edl_for_entity(app_instance, edl_file_path, sg_entity):
+def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
+    """
+    Run the app with a pre-selected edl file and SG entity
+    :param edl_file_path: Full path to an EDL file
+    :param sg_entity: A SG entity dictionary as a string, e.g. 
+                      '{"code" : "001", "id" : 19, "type" : "Sequence"}'
+    :param frame_rate: The frame rate for the EDL file
+    """
+    sg_entity_dict = None
+    # Convert the string representation to a regular dict
+    if sg_entity:
+        sg_entity_dict = ast.literal_eval(sg_entity)
+        if not isinstance(sg_entity_dict, dict):
+            raise ValueError("Invalid SG entity %s" % sg_entity)
+
     app_instance.engine.show_dialog(
         "Import Cut",
         app_instance,
         AppDialog,
         edl_file_path=edl_file_path,
-        sg_entity=sg_entity
+        sg_entity=sg_entity_dict,
+        frame_rate=float(frame_rate),
     )
 
 
@@ -74,12 +89,13 @@ class AppDialog(QtGui.QWidget):
     get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
-    def __init__(self, edl_file_path=None, sg_entity=None):
+
+    def __init__(self, edl_file_path=None, sg_entity=None, frame_rate=None):
         """
         Constructor
         :param edl_file_path: Full path to an EDL file
-        :param sg_entity: A string which can be evaluated as a SG entity dictionary, 
-                          e.g '{"code" : "001", "id" : 19, "type" : "Sequence"}'
+        :param sg_entity: A SG entity dictionary
+        :param frame_rate: Use a specific frame rate for the import 
         """
         # first, call the base class and let it do its thing.
         QtGui.QWidget.__init__(self)
@@ -95,6 +111,7 @@ class AppDialog(QtGui.QWidget):
         self._busy = False
         # Current step being displayed
         self._step = 0
+
         # Selected sg entity per step : selection only happen in steps 1 and 2
         # but we create entries for all steps allowing to index the list
         # with the current step and blindly disable the select button on the
@@ -114,7 +131,7 @@ class AppDialog(QtGui.QWidget):
 
         # Keep this thread for UI stuff
         # Handle data and processong in a separate thread
-        self._processor = Processor()
+        self._processor = Processor(frame_rate)
         self.new_edl.connect(self._processor.new_edl)
         self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
@@ -124,7 +141,6 @@ class AppDialog(QtGui.QWidget):
         self._processor.got_busy.connect(self.set_busy)
         self._processor.got_idle.connect(self.set_idle)
         self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
-        self._processor.start()
         
         # Let's do something when something is dropped
         self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
@@ -187,17 +203,24 @@ class AppDialog(QtGui.QWidget):
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
 
         if edl_file_path:
-            # Special mode for Premiere integration : load the given EDL
-            # and select the given SG entity
-            self.new_edl.emit(edl_file_path)
-            if sg_entity:
-                sg_entity_dict = ast.literal_eval(sg_entity)
-                if not isinstance(sg_entity_dict, dict):
-                    raise ValueError("Invalid SG entity %s" % sg_entity)
-                self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity_dict["type"]
-                self.show_entities(sg_entity_dict["type"])
-                self._selected_sg_entity[_ENTITY_STEP] = sg_entity_dict
-                self.show_entity(sg_entity_dict)
+            # Wait for the processor to be ready before doing anything
+            self._processor.ready.connect(lambda : self._preselected_input(
+                edl_file_path, sg_entity
+            ))
+
+        self._processor.start()
+
+    def _preselected_input(self, edl_file_path, sg_entity):
+        # Special mode for Premiere integration : load the given EDL
+        # and select the given SG entity
+        
+        self.new_edl.emit(edl_file_path)
+        if sg_entity:
+            self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
+            self.show_entities(sg_entity["type"])
+            self._selected_sg_entity[_ENTITY_STEP] = sg_entity
+            self.show_entity(sg_entity)
+            self.goto_step(_CUT_STEP)
 
     @property
     def no_cut_for_entity(self):
@@ -252,6 +275,9 @@ class AppDialog(QtGui.QWidget):
         Called when a step is done, and next page can be displayed
         """
         next_step = which+1
+        cur_step = self.ui.stackedWidget.currentIndex()
+        if next_step < cur_step:
+            return
         # Check if we can skip some intermediate screens
         if next_step == _ENTITY_TYPE_STEP and self._entity_types_view.select_and_skip():
             # Skip single entity type screen, autoselecting the single entry

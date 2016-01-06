@@ -58,6 +58,16 @@ class ImportCutApp(Application):
                 self.load_edl_for_entity,
                 settings)
         
-    def load_edl_for_entity(self, edl_file_path, sg_entity):
+    def load_edl_for_entity(self, edl_file_path, sg_entity, frame_rate):
+        """
+        Allow running import cut with pre-selected edl file path and SG
+        entity, and to change the frame rate for the EDL file
+
+        :param edl_file_path: Full path to an EDL file
+        :param sg_entity: A SG entity dictionary as a string, e.g. 
+                          '{"code" : "001", "id" : 19, "type" : "Sequence"}'
+        :param frame_rate: The frame rate for the EDL file
+        """
         app_payload = self.import_module("tk_multi_importcut")
-        app_payload.dialog.load_edl_for_entity(self, edl_file_path, sg_entity)
+        app_payload.dialog.load_edl_for_entity(self, edl_file_path, sg_entity, frame_rate)
+        
