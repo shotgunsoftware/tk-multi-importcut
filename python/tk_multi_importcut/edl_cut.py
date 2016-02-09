@@ -36,7 +36,7 @@ class EdlCut(QtCore.QObject):
     totals_changed      = QtCore.Signal()
     delete_cut_diff     = QtCore.Signal(CutDiff)
 
-    def __init__(self):
+    def __init__(self, frame_rate=None):
         """
         Instantiate a new empty worker
         """
@@ -55,6 +55,7 @@ class EdlCut(QtCore.QObject):
         self._sg_new_cut = None
         self._no_cut_for_entity = False
         self._project_import = False
+        self._frame_rate = frame_rate
         # Retrieve some settings
         self._omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
         self._cut_link_field = self._app.get_setting("cut_link_field")
@@ -161,10 +162,20 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Loading %s ..." % path)
         try:
             self._edl_file_path = path
-            self._edl = edl.EditList(
-                file_path=path,
-                visitor=self.process_edit,
-            )
+            if self._frame_rate is not None:
+                self._logger.info("Using explicit frame rate %f ..." % self._frame_rate)
+                self._edl = edl.EditList(
+                    file_path=path,
+                    visitor=self.process_edit,
+                    fps=self._frame_rate,
+                )
+            else:
+                self._logger.info("Using default frame rate ...")
+                # Use default frame rate, whatever it is
+                self._edl = edl.EditList(
+                    file_path=path,
+                    visitor=self.process_edit,
+                )
             self._logger.info(
                 "%s loaded, %s edits" % (
                     self._edl.title, len(self._edl.edits)

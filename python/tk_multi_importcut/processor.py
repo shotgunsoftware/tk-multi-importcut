@@ -48,14 +48,16 @@ class Processor(QtCore.QThread):
     import_cut              = QtCore.Signal(str,dict,dict, str, bool)
     totals_changed          = QtCore.Signal()
     delete_cut_diff         = QtCore.Signal(CutDiff)
+    ready                   = QtCore.Signal()
 
-    def __init__(self):
+    def __init__(self, frame_rate=None):
         """
         Instantiate a new Processor
         """
         super(Processor, self).__init__()
         self._logger = get_logger()
         self._edl_cut = None
+        self._frame_rate = frame_rate
         edl.EditList.set_logger(self._logger.getChild("(editorial)"))
 
     @property
@@ -164,7 +166,7 @@ class Processor(QtCore.QThread):
         - Then wait for events to process
         """
         # Create a worker
-        self._edl_cut = EdlCut()
+        self._edl_cut = EdlCut(frame_rate=self._frame_rate)
         # Connect signals from the worker to ours as a gateway, so anything
         # connected to the Processor signals will be connected to the worker
         # Orders we receive
@@ -185,4 +187,6 @@ class Processor(QtCore.QThread):
         self._edl_cut.got_idle.connect(self.got_idle)
         self._edl_cut.progress_changed.connect(self.progress_changed)
         self._edl_cut.totals_changed.connect(self.totals_changed)
+        # Tell the outside world we are ready to process things
+        self.ready.emit()
         self.exec_()
