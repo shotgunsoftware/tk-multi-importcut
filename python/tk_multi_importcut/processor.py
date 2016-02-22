@@ -461,22 +461,18 @@ class EdlCut(QtCore.QObject):
                 sg_cut_item_entity = self._app.get_setting("sg_cut_item_entity")
                 # Retrieve all cut items linked to that cut
                 sg_cut_items = self._sg.find(sg_cut_item_entity,
-                    [["sg_cut", "is", sg_cut]], [
-                        "sg_cut",
-                        "sg_timecode_cut_in",
-                        "sg_timecode_cut_out",
-                        "sg_head_in",
-                        "sg_tail_out",
-                        "sg_cut_order",
-                        "sg_cut_in",
-                        "sg_cut_out",
-                        "sg_link",
-                        "sg_cut_duration",
-                        "sg_fps",
-                        "sg_version",
-                        "sg_version.Version.code",
-                        "sg_version.Version.entity",
-                        "sg_version.Version.image",
+                    [["cut", "is", sg_cut]], [
+                        "cut",
+                        "timecode_cut_item_in",
+                        "timecode_cut_item_out",
+                        "cut_order",
+                        "cut_item_in",
+                        "cut_item_out",
+                        "shot",
+                        "version",
+                        "version.Version.code",
+                        "version.Version.entity",
+                        "version.Version.image",
                     ]
                 )
                 # Consolidate versions retrieved from cut items
@@ -497,15 +493,15 @@ class EdlCut(QtCore.QObject):
                         sg_cut_item_versions[item_version["id"]] = item_version
                 # We match fields that we would have retrieved with a sg.find("Version", ... )
                 for sg_cut_item in sg_cut_items:
-                    if sg_cut_item["sg_version"]:
-                        sg_cut_item["sg_version"]["code"] = sg_cut_item["sg_version.Version.code"]
-                        sg_cut_item["sg_version"]["entity"] = sg_cut_item["sg_version.Version.entity"]
-                        sg_cut_item["sg_version"]["image"] = sg_cut_item["sg_version.Version.image"]
-                        item_version = sg_cut_item_versions.get(sg_cut_item["sg_version"]["id"])
+                    if sg_cut_item["version"]:
+                        sg_cut_item["version"]["code"] = sg_cut_item["version.Version.code"]
+                        sg_cut_item["version"]["entity"] = sg_cut_item["version.Version.entity"]
+                        sg_cut_item["version"]["image"] = sg_cut_item["version.Version.image"]
+                        item_version = sg_cut_item_versions.get(sg_cut_item["version"]["id"])
                         if item_version:
-                            sg_cut_item["sg_version"]["entity.Shot.code"] = item_version["entity.Shot.code"]
+                            sg_cut_item["version"]["entity.Shot.code"] = item_version["entity.Shot.code"]
                         else:
-                            sg_cut_item["sg_version"]["entity.Shot.code"] = None
+                            sg_cut_item["version"]["entity.Shot.code"] = None
             # Retrieve shots linked to the sequence
             sg_shots = self._sg.find(
                 "Shot",
@@ -602,16 +598,16 @@ class EdlCut(QtCore.QObject):
         potential_match = None
         for sg_cut_item in sg_cut_items:
             # Is it linked to the given shot ?
-            if sg_cut_item["sg_link"] and sg_shot and \
-                sg_cut_item["sg_link"]["id"] == sg_shot["id"] \
-                and sg_cut_item["sg_link"]["type"] == sg_shot["type"]:
+            if sg_cut_item["shot"] and sg_shot and \
+                sg_cut_item["shot"]["id"] == sg_shot["id"] \
+                and sg_cut_item["shot"]["type"] == sg_shot["type"]:
                     # We can have multiple cut items for the same shot
                     # use the linked version to pick the right one, if
                     # available
                     if not sg_version: # No particular version to match
                         return sg_cut_item
-                    if sg_cut_item["sg_version"] and \
-                        sg_version["id"] == sg_cut_item["sg_version"]["id"]: # Perfect match
+                    if sg_cut_item["version"] and \
+                        sg_version["id"] == sg_cut_item["version"]["id"]: # Perfect match
                         return sg_cut_item
                     # Will keep looking around but we keep a reference to cut item
                     # linked to the same shot
@@ -913,20 +909,16 @@ class EdlCut(QtCore.QObject):
                         "data" : {
                             "project" : self._ctx.project,
                             "code" : edit.reel,
-                            "sg_cut" : sg_cut,
-                            "sg_cut_order" : edit.id,
-                            "sg_timecode_cut_in" : str(edit.source_in),
-                            "sg_timecode_cut_out" : str(edit.source_out),
-                            "sg_timecode_edl_in" : str(edit.record_in),
-                            "sg_timecode_edl_out" : str(edit.record_out),
-                            "sg_cut_in" : cut_diff.new_cut_in,
-                            "sg_cut_out" : cut_diff.new_cut_out,
-                            "sg_head_in" : cut_diff.new_head_in,
-                            "sg_tail_out" : cut_diff.new_tail_out,
-                            "sg_cut_duration" : cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
-                            "sg_link" : cut_diff.sg_shot,
-                            "sg_version" : edit.get_sg_version(),
-                            "sg_fps" : self._edl.fps,
+                            "cut" : sg_cut,
+                            "cut_order" : edit.id,
+                            "timecode_cut_item_in" : str(edit.source_in),
+                            "timecode_cut_item_out" : str(edit.source_out),
+                            "timecode_edit_in" : str(edit.record_in),
+                            "timecode_edit_out" : str(edit.record_out),
+                            "cut_item_in" : cut_diff.new_cut_in,
+                            "cut_item_out" : cut_diff.new_cut_out,
+                            "shot" : cut_diff.sg_shot,
+                            "version" : edit.get_sg_version(),
                             "created_by" : self._ctx.user,
                             "updated_by" : self._ctx.user,
                         }
