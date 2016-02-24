@@ -295,12 +295,13 @@ class EdlCut(QtCore.QObject):
             # Consolidate what we loaded
             # Build a dictionary using versions names as keys
             versions_names = {}
+
             for edit in self._edl.edits:
                 v_name = edit.get_version_name()
                 if v_name:
                     # SG find method is case insensitive, don't have to worry
                     # about upper / lower case names match
-                    # but we use lowerkeys keys
+                    # but we use lowercase keys
                     v_name = v_name.lower()
                     if v_name not in versions_names:
                         versions_names[v_name] = [edit]
@@ -391,7 +392,7 @@ class EdlCut(QtCore.QObject):
         try:
             sg_cuts = self._sg.find(
                 "Cut",
-                [["sg_sequence", "is", sg_entity]],
+                [["entity", "is", sg_entity]],
                 [
                     "code",
                     "id",
@@ -452,7 +453,7 @@ class EdlCut(QtCore.QObject):
                 # Retrieve cuts linked to the sequence, pick up the latest or approved one
                 sg_cut = self._sg.find_one(
                     "Cut",
-                    [["sg_sequence", "is", self._sg_entity]],
+                    [["entity", "is", self._sg_entity]],
                     [],
                     order=[{"field_name" : "id", "direction" : "desc"}]
                 )
@@ -475,12 +476,13 @@ class EdlCut(QtCore.QObject):
                         "version.Version.image",
                     ]
                 )
+
                 # Consolidate versions retrieved from cut items
                 # Because of a bug in the Shotgun API, we can't use two levels of
                 # redirection, with "sg_version.Version.entity.Shot.code",
                 # to retrieve the Shot linked to the Version, a CRUD
                 # error will happen if one of the CutItem does not have version linked
-                sg_cut_item_version_ids = [ x["sg_version"]["id"] for x in sg_cut_items if x["sg_version"]]
+                sg_cut_item_version_ids = [ x["version"]["id"] for x in sg_cut_items if x["version"]]
                 sg_cut_item_versions = {}
                 if sg_cut_item_version_ids:
                     sg_cut_item_versions_list = self._sg.find(
@@ -523,6 +525,18 @@ class EdlCut(QtCore.QObject):
             )
             # Record the list of shots for completion purpose
             EntityLineWidget.set_known_list([x["code"] for x in sg_shots if x["code"]])
+            
+            # Store the edit_offset in the summary instance so we can
+            # calculate edit in/out relative to the Cut (frame 1) later on
+            for edit in self._edl.edits:
+                if edit.id == 1:
+                    # todo: replace with fps from Cut entity
+                    self._summary.edit_offset = edl.Timecode(str(edit.record_in), 24).to_frame()
+                    break
+            # todo: Stephane recommends the folloinwg code instead, but it errors, should investigate:
+            # ERROR: EditEvent has no attribute Timecode
+            # if self._edl.edits: self._summary.edit_offset = self._edl.edits[0].Timecode(str(edit.record_in), 24).to_frame()
+            
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
                 if not shot_name:
@@ -691,7 +705,6 @@ class EdlCut(QtCore.QObject):
         }
         self._app.shotgun.create("Note", data)
 
-
     def create_sg_cut(self, title, description):
         """
         Create a Cut in Shotgun, linked to the current Sequence
@@ -702,7 +715,9 @@ class EdlCut(QtCore.QObject):
             "Cut", {
                 "project" : self._ctx.project,
                 "code" : title,
-                "sg_sequence" : self._sg_entity,
+                "entity" : self._sg_entity,
+                # "duration" : cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
+                "fps" : float(self._edl.fps),
                 "created_by" : self._ctx.user,
                 "updated_by" : self._ctx.user,
                 "description" : description,
@@ -902,7 +917,11 @@ class EdlCut(QtCore.QObject):
             for cut_diff in items:
                 edit = cut_diff.edit
                 if edit:
-                    tc_cut_in = edit.source_in.to_frame()
+                    # todo: get fps from cut entity
+                    tc_edit_in = edl.Timecode(
+                        str(edit.record_in), 24).to_frame() - self._summary.edit_offset + 1
+                    tc_edit_out = edl.Timecode(
+                        str(edit.record_out), 24).to_frame() - self._summary.edit_offset + 1
                     sg_batch_data.append({
                         "request_type" : "create",
                         "entity_type" : cut_item_entity,
@@ -917,6 +936,8 @@ class EdlCut(QtCore.QObject):
                             "timecode_edit_out" : str(edit.record_out),
                             "cut_item_in" : cut_diff.new_cut_in,
                             "cut_item_out" : cut_diff.new_cut_out,
+                            "edit_in" : tc_edit_in,
+                            "edit_out" : tc_edit_out,
                             "shot" : cut_diff.sg_shot,
                             "version" : edit.get_sg_version(),
                             "created_by" : self._ctx.user,

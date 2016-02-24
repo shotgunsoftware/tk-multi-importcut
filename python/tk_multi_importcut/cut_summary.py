@@ -52,12 +52,14 @@ class CutSummary(QtCore.QObject):
         """
         Create a new empty CutSummary
         """
-        super(CutSummary,self).__init__()
+        super(CutSummary, self).__init__()
         self._cut_diffs = {}
         self._counts = {}
         self._rescans_count = 0
         self._repeated_count = 0
         self._logger=get_logger()
+
+        self.edit_offset = 0
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
@@ -278,7 +280,7 @@ class CutSummary(QtCore.QObject):
 
     def iteritems(self):
         """
-        Iterate over shot names for this summary, yielding (name, CutDiffs list )
+        Iterate over shot names for this summary, yielding (name, CutDiffs list)
         tuple
         """
         for name, items in self._cut_diffs.iteritems():
