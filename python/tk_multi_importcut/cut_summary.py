@@ -60,6 +60,9 @@ class CutSummary(QtCore.QObject):
         self._logger=get_logger()
 
         self.edit_offset = 0
+        self.tc_start = None
+        self.tc_end = None
+        self.duration = None
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """

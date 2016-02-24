@@ -532,11 +532,20 @@ class EdlCut(QtCore.QObject):
                 if edit.id == 1:
                     # todo: replace with fps from Cut entity
                     self._summary.edit_offset = edl.Timecode(str(edit.record_in), 24).to_frame()
-                    break
-            # todo: Stephane recommends the folloinwg code instead, but it errors, should investigate:
+                    self._summary.tc_start = edit.record_in
+                if edit.id == len(self._edl.edits):
+                    self._summary.tc_end = edit.record_out
+
+            # todo: need to get fps from Cut entity
+            start_frame = edl.Timecode(str(self._summary.tc_start), 24).to_frame()
+            end_frame = edl.Timecode(str(self._summary.tc_end), 24).to_frame()
+
+            self._summary.duration = end_frame - start_frame
+
+            # todo: Stephane recommends the folloinwg code instead of above, but it errors, should investigate:
             # ERROR: EditEvent has no attribute Timecode
             # if self._edl.edits: self._summary.edit_offset = self._edl.edits[0].Timecode(str(edit.record_in), 24).to_frame()
-            
+                
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
                 if not shot_name:
@@ -716,13 +725,17 @@ class EdlCut(QtCore.QObject):
                 "project" : self._ctx.project,
                 "code" : title,
                 "entity" : self._sg_entity,
-                # "duration" : cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
                 "fps" : float(self._edl.fps),
                 "created_by" : self._ctx.user,
                 "updated_by" : self._ctx.user,
                 "description" : description,
+                "timecode_start" : str(self._summary.tc_start),
+                "timecode_end" : str(self._summary.tc_end),
+                "duration" : self._summary.duration
             },
             ["id", "code"])
+        # Upload edl file to the new cut record
+        self._sg.upload("Cut", sg_cut["id"], self._edl_file_path, "attachments")
         return sg_cut
 
     def update_sg_shots(self):
