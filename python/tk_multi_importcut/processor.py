@@ -526,9 +526,28 @@ class EdlCut(QtCore.QObject):
             # Record the list of shots for completion purpose
             EntityLineWidget.set_known_list([x["code"] for x in sg_shots if x["code"]])
             
-            # Store the edit_offset in the summary instance so we can
-            # calculate edit in/out relative to the Cut (frame 1) later on
+            # Building a little dictionary for use in naming reels /
+            # CutItem Name / code (whatever you want to call it).
+            # Basically we add a 3 padded number to the end of any
+            # reel that has a name which is duplicated, so we add an
+            # iteration key and a dup key
+            reel_names = {}
             for edit in self._edl.edits:
+                if reel_names.get(edit.reel):
+                    reel_names[edit.reel]["dup"] = True
+                else:
+                    reel_names[edit.reel] = {}
+                    reel_names[edit.reel]["dup"] = False
+                reel_names[edit.reel]["iter"] = 1
+
+            for edit in self._edl.edits:
+                if reel_names[edit.reel]["dup"] == True:
+                    edit.reel_name = "%s%s" % (edit.reel, str(reel_names[edit.reel]["iter"]).zfill(3))
+                    reel_names[edit.reel]["iter"] += 1
+                else:
+                    edit.reel_name = edit.reel
+                # Store the edit_offset in the summary instance so we can
+                # calculate edit in/out relative to the Cut (frame 1) later on
                 if edit.id == 1:
                     # todo: replace with fps from Cut entity
                     self._summary.edit_offset = edl.Timecode(str(edit.record_in), 24).to_frame()
@@ -940,7 +959,7 @@ class EdlCut(QtCore.QObject):
                         "entity_type" : cut_item_entity,
                         "data" : {
                             "project" : self._ctx.project,
-                            "code" : edit.reel,
+                            "code" : edit.reel_name,
                             "cut" : sg_cut,
                             "cut_order" : edit.id,
                             "timecode_cut_item_in" : str(edit.source_in),
