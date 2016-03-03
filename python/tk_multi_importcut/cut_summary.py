@@ -283,6 +283,10 @@ class CutSummary(QtCore.QObject):
     def duration(self):
         return self._duration
 
+    @property
+    def edit_offset(self):
+        return self._edit_offset
+
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
         Add a new cut difference to this summary
