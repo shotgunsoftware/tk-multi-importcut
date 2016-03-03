@@ -266,10 +266,15 @@ class CutSummary(QtCore.QObject):
         self._tc_end = tc_edit_out
         self._edit_offset = 0
         self._duration = 0
-        if self._tc_start is not None:
-            self._edit_offset = tc_edit_in.to_frame()
-            if self._tc_end is not None:
-                self._duration = tc_edit_out.to_frame() - self._edit_offset
+        self._fps = 24.0
+        
+        # todo: Stêphane moved the edit offset & duration code
+        # here from show_cut_diff in edl_cut.py, but it doesn't
+        # seem to be working, so I've switched it back temporarily
+        # if self._tc_start is not None:
+        #     self._edit_offset = tc_edit_in.to_frame()
+        #     if self._tc_end is not None:
+        #         self._duration = tc_edit_out.to_frame() - self._edit_offset
 
     @property
     def timecode_start(self):
@@ -286,6 +291,30 @@ class CutSummary(QtCore.QObject):
     @property
     def edit_offset(self):
         return self._edit_offset
+
+    @property
+    def fps(self):
+        return self._fps
+    
+    @timecode_start.setter
+    def timecode_start(self, value):
+        self._tc_start = value
+
+    @timecode_end.setter
+    def timecode_end(self, value):
+        self._tc_end = value
+
+    @duration.setter
+    def duration(self, value):
+        self._duration = value
+
+    @edit_offset.setter
+    def edit_offset(self, value):
+        self._edit_offset = value
+
+    @fps.setter
+    def fps(self, value):
+        self._fps = value
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """

@@ -398,7 +398,7 @@ class CutDiff(QtCore.QObject):
         if self._sg_cut_item:
             return edl.Timecode(
                 self._sg_cut_item["timecode_cut_item_in"],
-                self._sg_cut_item["sg_fps"]
+                self._sg_cut_item["cut.Cut.fps"]
             )
         return None
 
@@ -413,7 +413,7 @@ class CutDiff(QtCore.QObject):
         if self._sg_cut_item:
             return edl.Timecode(
                 self._sg_cut_item["timecode_cut_item_out"],
-                self._sg_cut_item["sg_fps"]
+                self._sg_cut_item["cut.Cut.fps"]
             )
         return None
 

@@ -463,6 +463,9 @@ class EdlCut(QtCore.QObject):
                         "version.Version.image",
                      ]
                 )
+                # Take fps for Cut entity from first CutItem entity
+                if self._summary.fps == None:
+                    self._summary.fps = sg_cut_items[0]["cut.Cut.fps"]
                 # Consolidate versions retrieved from cut items
                 # Because of a bug in the Shotgun API, we can't use two levels of
                 # redirection, with "sg_version.Version.entity.Shot.code",
@@ -486,9 +489,9 @@ class EdlCut(QtCore.QObject):
                     if sg_cut_item["shot"] and sg_cut_item["shot"]["type"] == "Shot":
                         sg_known_shot_ids.add(sg_cut_item["shot"]["id"])
                     if sg_cut_item["version"]:
-                        sg_cut_item["version"]["code"] = sg_cut_item["sg_version.Version.code"]
-                        sg_cut_item["version"]["entity"] = sg_cut_item["sg_version.Version.entity"]
-                        sg_cut_item["version"]["image"] = sg_cut_item["sg_version.Version.image"]
+                        sg_cut_item["version"]["code"] = sg_cut_item["version.Version.code"]
+                        sg_cut_item["version"]["entity"] = sg_cut_item["version.Version.entity"]
+                        sg_cut_item["version"]["image"] = sg_cut_item["version.Version.image"]
                         item_version = sg_cut_item_versions.get(sg_cut_item["version"]["id"])
                         if item_version:
                             sg_cut_item["version"]["entity.Shot.code"] = item_version["entity.Shot.code"]
@@ -544,6 +547,17 @@ class EdlCut(QtCore.QObject):
                     edit.reel_name = edit.reel
                 reel_names.add(edit.reel_name)
 
+                # todo: Stéphane moved this code to CutSummary, try moving again
+                # Store the edit_offset in the summary instance so we can
+                # calculate edit in/out relative to the Cut (frame 1) later on
+                if edit.id == 1:
+                    # todo: replace with fps from Cut entity
+                    self._summary.edit_offset = edl.Timecode(
+                        str(edit.record_in), self._summary.fps).to_frame()
+                    self._summary.tc_start = edit.record_in
+                if edit.id == len(self._edl.edits):
+                    self._summary.tc_end = edit.record_out
+
                 shot_name = edit.get_shot_name()
                 if not shot_name:
                     # If we don't have a shot name, we can't match
@@ -593,6 +607,15 @@ class EdlCut(QtCore.QObject):
                             edit=edit,
                             sg_cut_item=matching_cut_item
                         )
+            
+            #todo: Stéphane moved this code to CutSummary but it doesn't
+            # work, investigate b/c it should be moved there
+            start_frame = edl.Timecode(
+                str(self._summary.tc_start), self._summary.fps).to_frame()
+            end_frame = edl.Timecode(
+                str(self._summary.tc_end), self._summary.fps).to_frame()
+            self._summary.duration = end_frame - start_frame
+
             # Process cut items left over
             for sg_cut_item in sg_cut_items:
                 # If not compliant to what we expect, just ignore it
@@ -722,18 +745,18 @@ class EdlCut(QtCore.QObject):
             return 0
         score = 0
         # Compute the cut order difference
-        diff = edit.id - sg_cut_item["sg_cut_order"]
+        diff = edit.id - sg_cut_item["cut_order"]
         if diff == 0:
             score += 1
         diff = edit.source_in - edl.Timecode(
-                                    sg_cut_item["sg_timecode_cut_in"],
-                                    sg_cut_item["sg_fps"]
+                                    sg_cut_item["timecode_cut_item_in"],
+                                    sg_cut_item["cut.Cut.fps"]
                                 ).to_frame()
         if diff == 0:
             score += 1
         diff = edit.source_out - edl.Timecode(
-                                    sg_cut_item["sg_timecode_cut_out"],
-                                    sg_cut_item["sg_fps"]
+                                    sg_cut_item["timecode_cut_item_out"],
+                                    sg_cut_item["cut.Cut.fps"]
                                 ).to_frame()
 
         if diff == 0:
@@ -828,7 +851,7 @@ class EdlCut(QtCore.QObject):
                 "project"               : self._ctx.project,
                 "code"                  : title,
                 self._cut_link_field    : self._sg_entity,
-                "fps"                   : self._frame_rate,
+                "fps"                   : float(self._edl.fps),
                 "created_by"            : self._ctx.user,
                 "updated_by"            : self._ctx.user,
                 "description"           : description,
