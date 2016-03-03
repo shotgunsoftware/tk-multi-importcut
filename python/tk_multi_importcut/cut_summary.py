@@ -249,16 +249,39 @@ class CutSummary(QtCore.QObject):
     totals_changed = QtCore.Signal()
     delete_cut_diff = QtCore.Signal(CutDiff)
 
-    def __init__(self):
+    def __init__(self, tc_edit_in=None, tc_edit_out=None):
         """
         Create a new empty CutSummary
+        :param tc_edit_in: A Timecode instance, first edit timecode in
+        :param tc_edit_out: A Timecode instance, very last edit timecode out
         """
-        super(CutSummary,self).__init__()
+        super(CutSummary, self).__init__()
         self._cut_diffs = {}
         self._counts = {}
         self._rescans_count = 0
         self._logger=get_logger()
         self._omit_statuses = sgtk.platform.current_bundle().get_setting("omit_statuses") or ["omt"]
+
+        self._tc_start = tc_edit_in
+        self._tc_end = tc_edit_out
+        self._edit_offset = 0
+        self._duration = 0
+        if self._tc_start is not None:
+            self._edit_offset = tc_edit_in.to_frame()
+            if self._tc_end is not None:
+                self._duration = tc_edit_out.to_frame() - self._edit_offset
+
+    @property
+    def timecode_start(self):
+        return self._tc_start
+
+    @property
+    def timecode_end(self):
+        return self._tc_end
+
+    @property
+    def duration(self):
+        return self._duration
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
@@ -541,7 +564,7 @@ class CutSummary(QtCore.QObject):
 
     def iteritems(self):
         """
-        Iterate over shot names for this summary, yielding (name, CutDiffs list )
+        Iterate over shot names for this summary, yielding (name, CutDiffs list)
         tuple
         """
         for name, items in self._cut_diffs.iteritems():
