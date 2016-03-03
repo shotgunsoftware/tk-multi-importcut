@@ -48,3 +48,4 @@ class PostInstall(Hook):
                     sg_cut_item_entity
                 )
             )
+

@@ -116,26 +116,49 @@ Red text on errors
     color: #FC6246;
 }
 
+#entity_picker_frame {
+    background-color: #2B2B2B;
+}
+#entity_types_frame {
+    border: 1px none black;
+}
 /*
 No visible border for cards, and set the background color otherwise they will
 inherit the one from the scroll area they are in
 */
-SequenceCard, CutCard, CutDiffCard {
+EntityTypeCard {
+    background-color: #525252;
+    border: 1px none black;
+    background-color: #525252;
+    border-radius: 2px;
+    min-height: 120px;
+    max-height: 150px;
+    max-width: 180px;
+}
+EntityTypeCard #title_label {
+    font-weight: bold;
+    font-size: 15px;
+}
+EntityTypeCard #icon_label {
+    min-height: 100px;
+}
+
+EntityCard, CutCard, CutDiffCard {
     border: 1px none black;
     background-color: #525252;
     border-radius: 2px;
 }
 /* Highlight selected cards */
-SequenceCard[selected="true"], CutCard[selected="true"] {
+EntityCard[selected="true"], CutCard[selected="true"], EntityTypeCard[selected="true"] {
     border: 1px solid #2C93E2;
     background-color: rgba(44, 147, 226, 25%);
 }
 /* Labels on Sequence cards */
-SequenceCard #title_label {
+EntityCard #title_label {
     font-weight: bold;
     font-size: 15px;
 }
-SequenceCard #status_label {
+EntityCard #status_label {
     font-weight: bold;
 }
 
@@ -144,7 +167,10 @@ QPushButton:enabled#select_button {
     background-color: #2C93E2;
 }
 /* Screens titles */
-QLabel#sequences_title_label, QLabel#cuts_title_label {
+QLabel#entity_picker_title_label_2,
+QLabel#entity_picker_title_label,
+QLabel#sequences_title_label,
+QLabel#cuts_title_label {
     font-size: 20px;
 }
 QLabel#cut_summary_title_label {
@@ -358,6 +384,49 @@ ExtendedThumbnail QToolTip {
     border-image: none;
     color: white;
 }
+CutDiffCard[repeated=true] #shot_name_line{
+    color: #A1A51A;
+}
+/*
+ Styling depending on the cut difference type
+*/
+CutDiffCard ExtendedThumbnail {
+    color: #A5A5A5;
+}
+CutDiffCard[cut_order_changed=true] ExtendedThumbnail {
+    color: #A1A51A;
+}
+CutDiffCard[diff_type="new"] #status_label,
+CutDiffCard[diff_type="new"]  ExtendedThumbnail
+{
+    color: #57B510;
+}
+CutDiffCard[diff_type="omitted"]  #status_label,
+CutDiffCard[diff_type="omitted"]  ExtendedThumbnail
+{
+    color: #FC6246;
+}
+CutDiffCard[diff_type="reinstated"]  #status_label,
+{
+    color: #A1A51A;
+}
+CutDiffCard[diff_type="rescan_needed"]  #status_label ,
+{
+    color: #57B510;
+}
+CutDiffCard[diff_type="cut_change"]  #status_label ,
+{
+}
+CutDiffCard[diff_type="no_change"]  #status_label ,
+{
+    color: #A5A5A5;
+}
+CutDiffCard[diff_type="no_link"]  #status_label ,
+{
+    color: #FC6246;
+}
+
+
 
 /* Progress window */
 #progress_page #progress_screen_title_label {

@@ -69,12 +69,13 @@ class DownloadRunner(QtCore.QRunnable):
             pass
 
 
-def download_url(self, url, location):
+def download_url(sg, url, location):
     """
     Downloads a file from a given url.
     This method will take into account any proxy settings which have
     been defined in the Shotgun connection parameters.
     
+    :param sg: a connected SG handle
     :param url: url to download
     :param location: path on disk where the payload should be written.
                      this path needs to exists and the current user needs
@@ -83,13 +84,13 @@ def download_url(self, url, location):
     """
 
     proxies = {}
-    if self.config.proxy_server:
+    if sg.config.proxy_server:
         # handle proxy auth
-        if self.config.proxy_user and self.config.proxy_pass:
-            auth_string = "%s:%s@" % (self.config.proxy_user, self.config.proxy_pass)
+        if sg.config.proxy_user and sg.config.proxy_pass:
+            auth_string = "%s:%s@" % (sg.config.proxy_user, sg.config.proxy_pass)
         else:
             auth_string = ""
-        proxy_addr = "http://%s%s:%d" % (auth_string, self.config.proxy_server, self.config.proxy_port)
+        proxy_addr = "http://%s%s:%d" % (auth_string, sg.config.proxy_server, sg.config.proxy_port)
         proxies["http"] = proxy_addr
         proxies["https"] = proxy_addr
     try:
