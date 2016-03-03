@@ -532,22 +532,27 @@ class EdlCut(QtCore.QObject):
             # they are lower cased, but the original shot names
             EntityLineWidget.set_known_list(x["code"] for x in sg_shots_dict.itervalues() if x["code"])
 
-            reel_names = set()
+            # Building a little dictionary for use in naming reels /
+            # CutItem Name / code (whatever you want to call it).
+            # Basically we add a 3 padded number to the end of any
+            # reel that has a name which is duplicated, so we add an
+            # iteration key and a dup key
+            reel_names = {}
             for edit in self._edl.edits:
-                # Ensure CutItems will have unique reel names
-                if edit.reel in reel_names:
-                    # Append a 3 digits number at the end
-                    suffix = 1
-                    reel_name = "%s%03d" % (edit.reel, suffix)
-                    while reel_name in reel_names:
-                        suffix += 1
-                        reel_name = "%s%03d" % (edit.reel, suffix)
-                    edit.reel_name = reel_name
+                if reel_names.get(edit.reel):
+                    reel_names[edit.reel]["dup"] = True
+                else:
+                    reel_names[edit.reel] = {}
+                    reel_names[edit.reel]["dup"] = False
+                reel_names[edit.reel]["iter"] = 1
+
+            for edit in self._edl.edits:
+                if reel_names[edit.reel]["dup"] == True:
+                    edit.reel_name = "%s%s" % (edit.reel, str(reel_names[edit.reel]["iter"]).zfill(3))
+                    reel_names[edit.reel]["iter"] += 1
                 else:
                     edit.reel_name = edit.reel
-                reel_names.add(edit.reel_name)
-
-                # todo: Stéphane moved this code to CutSummary, try moving again
+                # todo: Stephane moved this code to CutSummary, try moving again
                 # Store the edit_offset in the summary instance so we can
                 # calculate edit in/out relative to the Cut (frame 1) later on
                 if edit.id == 1:
@@ -557,6 +562,29 @@ class EdlCut(QtCore.QObject):
                     self._summary.tc_start = edit.record_in
                 if edit.id == len(self._edl.edits):
                     self._summary.tc_end = edit.record_out
+
+            #todo: Stephane moved this code to CutSummary but it doesn't
+            # work, investigate b/c it should be moved there
+            start_frame = edl.Timecode(
+                str(self._summary.tc_start), self._summary.fps).to_frame()
+            end_frame = edl.Timecode(
+                str(self._summary.tc_end), self._summary.fps).to_frame()
+            self._summary.duration = end_frame - start_frame + 1
+
+            # reel_names = set()
+            for edit in self._edl.edits:
+                # # Ensure CutItems will have unique reel names
+                # if edit.reel in reel_names:
+                #     # Append a 3 digits number at the end
+                #     suffix = 1
+                #     reel_name = "%s%03d" % (edit.reel, suffix)
+                #     while reel_name in reel_names:
+                #         suffix += 1
+                #         reel_name = "%s%03d" % (edit.reel, suffix)
+                #     edit.reel_name = reel_name
+                # else:
+                #     edit.reel_name = edit.reel
+                # reel_names.add(edit.reel_name)
 
                 shot_name = edit.get_shot_name()
                 if not shot_name:
@@ -607,14 +635,6 @@ class EdlCut(QtCore.QObject):
                             edit=edit,
                             sg_cut_item=matching_cut_item
                         )
-            
-            #todo: Stéphane moved this code to CutSummary but it doesn't
-            # work, investigate b/c it should be moved there
-            start_frame = edl.Timecode(
-                str(self._summary.tc_start), self._summary.fps).to_frame()
-            end_frame = edl.Timecode(
-                str(self._summary.tc_end), self._summary.fps).to_frame()
-            self._summary.duration = end_frame - start_frame
 
             # Process cut items left over
             for sg_cut_item in sg_cut_items:

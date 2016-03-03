@@ -268,7 +268,7 @@ class CutSummary(QtCore.QObject):
         self._duration = 0
         self._fps = 24.0
         
-        # todo: Stêphane moved the edit offset & duration code
+        # todo: Stephane moved the edit offset & duration code
         # here from show_cut_diff in edl_cut.py, but it doesn't
         # seem to be working, so I've switched it back temporarily
         # if self._tc_start is not None:
