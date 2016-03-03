@@ -8,8 +8,6 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-import requests
-
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore
@@ -54,7 +52,7 @@ class DownloadRunner(QtCore.QRunnable):
         sg = sgtk.platform.current_bundle().shotgun
         try :
             if isinstance(self._sg_attachment, str):
-                download_url(sg, self._sg_attachment, self._path)
+                sgtk.util.download_url(sg, self._sg_attachment, self._path)
             else:
                 # todo: test this code. But how do we create a situation
                 # where the thumbnail (is it always a thumbnail?) an
@@ -68,40 +66,3 @@ class DownloadRunner(QtCore.QRunnable):
         finally:
             pass
 
-
-def download_url(sg, url, location):
-    """
-    Downloads a file from a given url.
-    This method will take into account any proxy settings which have
-    been defined in the Shotgun connection parameters.
-    
-    :param sg: a connected SG handle
-    :param url: url to download
-    :param location: path on disk where the payload should be written.
-                     this path needs to exists and the current user needs
-                     to have write permissions
-    :returns: nothing
-    """
-
-    proxies = {}
-    if sg.config.proxy_server:
-        # handle proxy auth
-        if sg.config.proxy_user and sg.config.proxy_pass:
-            auth_string = "%s:%s@" % (sg.config.proxy_user, sg.config.proxy_pass)
-        else:
-            auth_string = ""
-        proxy_addr = "http://%s%s:%d" % (auth_string, sg.config.proxy_server, sg.config.proxy_port)
-        proxies["http"] = proxy_addr
-        proxies["https"] = proxy_addr
-    try:
-        response = requests.get(url, proxies=proxies)
-        response.raise_for_status()
-        # Write out the content into the given file
-        f = open(location, "wb")
-        try:
-            f.write(response.content)
-        finally:
-            f.close()
-    except Exception, e:
-        print "Could not download contents of url '%s'." % url
-        raise e

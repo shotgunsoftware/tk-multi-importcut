@@ -19,11 +19,8 @@ import ast
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-# Import needed Framework
-widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
-# Rename the drop area label to the name we chose in Designer when promoting our label
-DropAreaFrame = widgets.drop_area.DropAreaFrame
-AnimatedStackedWidget = widgets.animated_stacked_widget.AnimatedStackedWidget
+
+from .widgets import DropAreaFrame, AnimatedStackedWidget
 from .search_widget import SearchWidget
 from .entity_line_widget import EntityLineWidget
 from .extended_thumbnail import ExtendedThumbnail
