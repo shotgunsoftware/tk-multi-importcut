@@ -295,7 +295,7 @@ class CutDiff(QtCore.QObject):
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_head_in")
             return self._sg_shot.get("sg_head_in")
-        return None
+        return 1001 #None
 
     @property
     def shot_tail_out(self):
@@ -308,7 +308,7 @@ class CutDiff(QtCore.QObject):
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_tail_out")
             return self._sg_shot.get("sg_tail_out")
-        return None
+        return self.shot_head_in + self.new_duration + 15
 
     @property
     def head_in(self):
@@ -320,13 +320,15 @@ class CutDiff(QtCore.QObject):
         # todo: restore this if we bring it back as a field
         # if self._sg_cut_item:
         #     return self._sg_cut_item.get("sg_head_in")
-        return None
+        # return None
+        return self.shot_head_in
 
     @property
     def new_head_in(self):
         """
         Return the new head in value
         """
+        return self.shot_head_in
         # Special case if we are dealing with a repeated shot
         # Frames are relative to the earliest entry in our siblings
         # If we don't have any edit we don't need to do it and the
@@ -364,13 +366,15 @@ class CutDiff(QtCore.QObject):
         # todo: restore this if we bring it back as a field
         # if self._sg_cut_item:
         #     return self._sg_cut_item.get("sg_tail_out")
-        return None
+        # return None
+        return self.shot_tail_out
 
     @property
     def new_tail_out(self):
         """
         Return the new tail out value
         """
+        return self.shot_tail_out
         nt = self.shot_tail_out
         if nt is None:
             nt = self.default_tail_out
@@ -561,8 +565,9 @@ class CutDiff(QtCore.QObject):
         #todo: this will need to be fixed up, the head
         # in value should come from the version,
         # tmp hardcoding to get schema going
-        head_in = 9
+        # head_in = 9
         # head_in = self._sg_cut_item["sg_head_in"]
+        head_in = self.shot_head_in
         if cut_in is None or head_in is None:
             return None
         return cut_in - head_in
@@ -591,9 +596,8 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
-        # todo: bring this back if we restore duration to cut items
-        # if self._sg_cut_item:
-        #     return self._sg_cut_item["sg_cut_duration"]
+        if self._sg_cut_item:
+            return self._sg_cut_item["sg_sg_cut_duration"]
         return None
 
     @property
@@ -619,8 +623,9 @@ class CutDiff(QtCore.QObject):
         cut_out = self._sg_cut_item["cut_item_out"]
         # todo: this will have to come from the version
         # hardcoding this tmp to get schema going
-        tail_out = 9
+        # tail_out = 9
         # tail_out = self._sg_cut_item["sg_tail_out"]
+        tail_out = self.shot_tail_out
         if cut_out is None or tail_out is None:
             return None
         return  tail_out - cut_out
@@ -809,38 +814,38 @@ class CutDiff(QtCore.QObject):
             self._cut_changes_reasons.append("Cut order changed from %d to %d" % (self.cut_order, self.new_cut_order))
 
         # Check if some rescan is needed
-        if self.new_head_in < self.head_in:
-            self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Head extended %d frs" % (self.head_in-self.new_head_in))
+        # if self.new_head_in < self.head_in:
+        #     self._diff_type = _DIFF_TYPES.RESCAN
+        #     self._cut_changes_reasons.append("Head extended %d frs" % (self.head_in-self.new_head_in))
 
-        if self.new_head_duration < 0:
-            self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Head extended %d frs" % (-self.new_head_duration+self.head_duration))
+        # if self.new_head_duration < 0:
+        #     self._diff_type = _DIFF_TYPES.RESCAN
+        #     self._cut_changes_reasons.append("Head extended %d frs" % (-self.new_head_duration+self.head_duration))
 
-        if self.new_tail_out > self.tail_out:
-            self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Tail extended %d frs" % (self.new_tail_out-self.tail_out))
+        # if self.new_tail_out > self.tail_out:
+        #     self._diff_type = _DIFF_TYPES.RESCAN
+        #     self._cut_changes_reasons.append("Tail extended %d frs" % (self.new_tail_out-self.tail_out))
 
-        if self.new_tail_duration < 0:
-            self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Tail extended %d frs" % (-self.new_tail_duration+self.tail_duration))
+        # if self.new_tail_duration < 0:
+        #     self._diff_type = _DIFF_TYPES.RESCAN
+        #     self._cut_changes_reasons.append("Tail extended %d frs" % (-self.new_tail_duration+self.tail_duration))
 
         # Cut changes which does not imply a rescan
-        if self._diff_type != _DIFF_TYPES.RESCAN:
-            if self.new_head_duration != self.head_duration:
-                self._diff_type = _DIFF_TYPES.CUT_CHANGE
-                diff = self.new_head_duration-self.head_duration
-                if diff > 0:
-                    self._cut_changes_reasons.append("Head trimmed %d frs" % diff)
-                else:
-                    self._cut_changes_reasons.append("Head extended %d frs" % -diff)
-            if self.new_tail_duration != self.tail_duration:
-                self._diff_type = _DIFF_TYPES.CUT_CHANGE
-                diff = self.new_tail_duration-self.tail_duration
-                if diff > 0:
-                    self._cut_changes_reasons.append("Tail trimmed %d frs" % diff)
-                else:
-                    self._cut_changes_reasons.append("Tail extended %d frs" % -diff)
+        # if self._diff_type != _DIFF_TYPES.RESCAN:
+        #     if self.new_head_duration != self.head_duration:
+        #         self._diff_type = _DIFF_TYPES.CUT_CHANGE
+        #         diff = self.new_head_duration-self.head_duration
+        #         if diff > 0:
+        #             self._cut_changes_reasons.append("Head trimmed %d frs" % diff)
+        #         else:
+        #             self._cut_changes_reasons.append("Head extended %d frs" % -diff)
+        #     if self.new_tail_duration != self.tail_duration:
+        #         self._diff_type = _DIFF_TYPES.CUT_CHANGE
+        #         diff = self.new_tail_duration-self.tail_duration
+        #         if diff > 0:
+        #             self._cut_changes_reasons.append("Tail trimmed %d frs" % diff)
+        #         else:
+        #             self._cut_changes_reasons.append("Tail extended %d frs" % -diff)
     
     def set_repeated(self, repeated):
         """
@@ -893,15 +898,13 @@ class CutDiff(QtCore.QObject):
         if self.sg_cut_item:
             # todo: tc_in/out will need access to the cut entity
             # to get the framerate
-            # if self.sg_cut_item["sg_fps"] :
-            #     fps = self.sg_cut_item["sg_fps"]
-            #     tc_in = edl.Timecode(self.sg_cut_item["timecode_cut_item_in"], fps)
-            #     tc_out = edl.Timecode(self.sg_cut_item["sg_timecode_cut_out"], fps)
-            # else:
-            #     tc_in = "????"
-            #     tc_out = "????"
-            tc_in = "????"
-            tc_out = "????"
+            if self.sg_cut_item["cut.Cut.fps"] :
+                fps = self.sg_cut_item["cut.Cut.fps"]
+                tc_in = edl.Timecode(self.sg_cut_item["timecode_cut_item_in"], fps)
+                tc_out = edl.Timecode(self.sg_cut_item["timecode_cut_item_out"], fps)
+            else:
+                tc_in = "????"
+                tc_out = "????"
             # todo: bring back if duration is reinstated
             # "Cut Order %s, TC in %s, TC out %s, Cut In %s, Cut Out %s, Cut Duration %s" % (
             cut_item_details = \
