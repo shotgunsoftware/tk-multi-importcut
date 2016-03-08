@@ -1,469 +1,786 @@
-# -*- coding: utf-8 -*-
+# Copyright (c) 2015 Shotgun Software Inc.
+# 
+# CONFIDENTIAL AND PROPRIETARY
+# 
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+# Source Code License included in this distribution package. See LICENSE.
+# By accessing, using, copying or modifying this work you indicate your 
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# not expressly granted therein are reserved by Shotgun Software Inc.
 
-# Form implementation generated from reading ui file 'dialog.ui'
-#
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
-#
-# WARNING! All changes made in this file will be lost!
+import sgtk
+import os
+import sys
+import logging
+import logging.handlers
+import tempfile
+import ast
 
-from tank.platform.qt import QtCore, QtGui
+# by importing QT from sgtk rather than directly, we ensure that
+# the code will be compatible with both PySide and PyQt.
+from sgtk.platform.qt import QtCore, QtGui
 
-class Ui_Dialog(object):
-    def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
-        Dialog.resize(941, 581)
-        self.main_layout = QtGui.QVBoxLayout(Dialog)
-        self.main_layout.setSpacing(-1)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setObjectName("main_layout")
-        self.stackedWidget = AnimatedStackedWidget(Dialog)
-        self.stackedWidget.setObjectName("stackedWidget")
-        self.drop_page = QtGui.QWidget()
-        self.drop_page.setObjectName("drop_page")
-        self.verticalLayout_2 = QtGui.QVBoxLayout(self.drop_page)
-        self.verticalLayout_2.setContentsMargins(12, 12, 12, 0)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.drop_area_frame = DropAreaFrame(self.drop_page)
-        self.drop_area_frame.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.drop_area_frame.setFrameShadow(QtGui.QFrame.Raised)
-        self.drop_area_frame.setObjectName("drop_area_frame")
-        self.gridLayout = QtGui.QGridLayout(self.drop_area_frame)
-        self.gridLayout.setObjectName("gridLayout")
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout.addItem(spacerItem, 1, 0, 1, 1)
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout.addItem(spacerItem1, 1, 2, 1, 1)
-        self.drop_area_icon_label = QtGui.QLabel(self.drop_area_frame)
-        self.drop_area_icon_label.setMaximumSize(QtCore.QSize(200, 200))
-        self.drop_area_icon_label.setText("")
-        self.drop_area_icon_label.setPixmap(QtGui.QPixmap(":/tk_multi_importcut/edl_file.png"))
-        self.drop_area_icon_label.setScaledContents(True)
-        self.drop_area_icon_label.setObjectName("drop_area_icon_label")
-        self.gridLayout.addWidget(self.drop_area_icon_label, 1, 1, 1, 1)
-        self.drop_area_label = QtGui.QLabel(self.drop_area_frame)
-        self.drop_area_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.drop_area_label.setObjectName("drop_area_label")
-        self.gridLayout.addWidget(self.drop_area_label, 2, 1, 1, 1)
-        spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout.addItem(spacerItem2, 3, 1, 1, 1)
-        spacerItem3 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout.addItem(spacerItem3, 0, 1, 1, 1)
-        self.verticalLayout_2.addWidget(self.drop_area_frame)
-        self.stackedWidget.addWidget(self.drop_page)
-        self.sequence_list_page = QtGui.QWidget()
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sequence_list_page.sizePolicy().hasHeightForWidth())
-        self.sequence_list_page.setSizePolicy(sizePolicy)
-        self.sequence_list_page.setMinimumSize(QtCore.QSize(0, 0))
-        self.sequence_list_page.setObjectName("sequence_list_page")
-        self.verticalLayout_3 = QtGui.QVBoxLayout(self.sequence_list_page)
-        self.verticalLayout_3.setSpacing(0)
-        self.verticalLayout_3.setContentsMargins(12, 0, 12, 0)
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.horizontalLayout_7 = QtGui.QHBoxLayout()
-        self.horizontalLayout_7.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
-        self.horizontalLayout_7.setContentsMargins(12, 4, 12, 4)
-        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
-        self.sequences_label = QtGui.QLabel(self.sequence_list_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sequences_label.sizePolicy().hasHeightForWidth())
-        self.sequences_label.setSizePolicy(sizePolicy)
-        self.sequences_label.setMinimumSize(QtCore.QSize(200, 0))
-        self.sequences_label.setObjectName("sequences_label")
-        self.horizontalLayout_7.addWidget(self.sequences_label)
-        self.sequences_title_label = QtGui.QLabel(self.sequence_list_page)
-        self.sequences_title_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.sequences_title_label.setObjectName("sequences_title_label")
-        self.horizontalLayout_7.addWidget(self.sequences_title_label)
-        self.sequences_search_line_edit = SearchWidget(self.sequence_list_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sequences_search_line_edit.sizePolicy().hasHeightForWidth())
-        self.sequences_search_line_edit.setSizePolicy(sizePolicy)
-        self.sequences_search_line_edit.setMinimumSize(QtCore.QSize(200, 30))
-        self.sequences_search_line_edit.setBaseSize(QtCore.QSize(0, 0))
-        self.sequences_search_line_edit.setObjectName("sequences_search_line_edit")
-        self.horizontalLayout_7.addWidget(self.sequences_search_line_edit)
-        self.horizontalLayout_7.setStretch(1, 1)
-        self.verticalLayout_3.addLayout(self.horizontalLayout_7)
-        self.sequence_scroll_area = QtGui.QScrollArea(self.sequence_list_page)
-        self.sequence_scroll_area.setWidgetResizable(True)
-        self.sequence_scroll_area.setObjectName("sequence_scroll_area")
-        self.sequence_area = QtGui.QWidget()
-        self.sequence_area.setGeometry(QtCore.QRect(0, 0, 915, 445))
-        self.sequence_area.setStyleSheet("")
-        self.sequence_area.setObjectName("sequence_area")
-        self.sequence_grid = QtGui.QGridLayout(self.sequence_area)
-        self.sequence_grid.setContentsMargins(2, 2, 2, 2)
-        self.sequence_grid.setSpacing(2)
-        self.sequence_grid.setObjectName("sequence_grid")
-        spacerItem4 = QtGui.QSpacerItem(20, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.sequence_grid.addItem(spacerItem4, 0, 0, 1, 1)
-        self.sequence_scroll_area.setWidget(self.sequence_area)
-        self.verticalLayout_3.addWidget(self.sequence_scroll_area)
-        self.stackedWidget.addWidget(self.sequence_list_page)
-        self.cut_list_page = QtGui.QWidget()
-        self.cut_list_page.setObjectName("cut_list_page")
-        self.verticalLayout_6 = QtGui.QVBoxLayout(self.cut_list_page)
-        self.verticalLayout_6.setSpacing(0)
-        self.verticalLayout_6.setContentsMargins(12, 0, 12, 0)
-        self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.horizontalLayout_6 = QtGui.QHBoxLayout()
-        self.horizontalLayout_6.setContentsMargins(12, 4, 12, 4)
-        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.selected_sequence_label = QtGui.QLabel(self.cut_list_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.selected_sequence_label.sizePolicy().hasHeightForWidth())
-        self.selected_sequence_label.setSizePolicy(sizePolicy)
-        self.selected_sequence_label.setMinimumSize(QtCore.QSize(200, 0))
-        self.selected_sequence_label.setText("")
-        self.selected_sequence_label.setObjectName("selected_sequence_label")
-        self.horizontalLayout_6.addWidget(self.selected_sequence_label)
-        spacerItem5 = QtGui.QSpacerItem(90, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_6.addItem(spacerItem5)
-        self.cuts_title_label = QtGui.QLabel(self.cut_list_page)
-        self.cuts_title_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.cuts_title_label.setObjectName("cuts_title_label")
-        self.horizontalLayout_6.addWidget(self.cuts_title_label)
-        self.cuts_sort_button = QtGui.QPushButton(self.cut_list_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.cuts_sort_button.sizePolicy().hasHeightForWidth())
-        self.cuts_sort_button.setSizePolicy(sizePolicy)
-        self.cuts_sort_button.setMinimumSize(QtCore.QSize(90, 0))
-        self.cuts_sort_button.setBaseSize(QtCore.QSize(0, 0))
-        self.cuts_sort_button.setFlat(True)
-        self.cuts_sort_button.setObjectName("cuts_sort_button")
-        self.horizontalLayout_6.addWidget(self.cuts_sort_button)
-        self.search_line_edit = SearchWidget(self.cut_list_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.search_line_edit.sizePolicy().hasHeightForWidth())
-        self.search_line_edit.setSizePolicy(sizePolicy)
-        self.search_line_edit.setMinimumSize(QtCore.QSize(200, 30))
-        self.search_line_edit.setObjectName("search_line_edit")
-        self.horizontalLayout_6.addWidget(self.search_line_edit)
-        self.horizontalLayout_6.setStretch(2, 1)
-        self.verticalLayout_6.addLayout(self.horizontalLayout_6)
-        self.scrollArea_3 = QtGui.QScrollArea(self.cut_list_page)
-        self.scrollArea_3.setWidgetResizable(True)
-        self.scrollArea_3.setObjectName("scrollArea_3")
-        self.cuts_area = QtGui.QWidget()
-        self.cuts_area.setGeometry(QtCore.QRect(0, 0, 915, 443))
-        self.cuts_area.setObjectName("cuts_area")
-        self.cuts_grid = QtGui.QGridLayout(self.cuts_area)
-        self.cuts_grid.setContentsMargins(2, 2, 2, 2)
-        self.cuts_grid.setSpacing(2)
-        self.cuts_grid.setObjectName("cuts_grid")
-        spacerItem6 = QtGui.QSpacerItem(20, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.cuts_grid.addItem(spacerItem6, 1, 0, 1, 1)
-        self.scrollArea_3.setWidget(self.cuts_area)
-        self.verticalLayout_6.addWidget(self.scrollArea_3)
-        self.stackedWidget.addWidget(self.cut_list_page)
-        self.cut_summary_page = QtGui.QWidget()
-        self.cut_summary_page.setObjectName("cut_summary_page")
-        self.verticalLayout_4 = QtGui.QVBoxLayout(self.cut_summary_page)
-        self.verticalLayout_4.setSpacing(0)
-        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.cut_summary_selectors_frame = QtGui.QFrame(self.cut_summary_page)
-        self.cut_summary_selectors_frame.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.cut_summary_selectors_frame.setFrameShadow(QtGui.QFrame.Raised)
-        self.cut_summary_selectors_frame.setObjectName("cut_summary_selectors_frame")
-        self.horizontalLayout_8 = QtGui.QHBoxLayout(self.cut_summary_selectors_frame)
-        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
-        self.total_button = QtGui.QPushButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.total_button.sizePolicy().hasHeightForWidth())
-        self.total_button.setSizePolicy(sizePolicy)
-        self.total_button.setMinimumSize(QtCore.QSize(70, 20))
-        self.total_button.setBaseSize(QtCore.QSize(0, 70))
-        self.total_button.setCheckable(True)
-        self.total_button.setChecked(True)
-        self.total_button.setAutoExclusive(True)
-        self.total_button.setFlat(True)
-        self.total_button.setObjectName("total_button")
-        self.horizontalLayout_8.addWidget(self.total_button)
-        self.new_select_button = QtGui.QPushButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.new_select_button.sizePolicy().hasHeightForWidth())
-        self.new_select_button.setSizePolicy(sizePolicy)
-        self.new_select_button.setBaseSize(QtCore.QSize(0, 70))
-        self.new_select_button.setCheckable(True)
-        self.new_select_button.setChecked(False)
-        self.new_select_button.setAutoExclusive(True)
-        self.new_select_button.setFlat(True)
-        self.new_select_button.setObjectName("new_select_button")
-        self.horizontalLayout_8.addWidget(self.new_select_button)
-        self.omitted_select_button = QtGui.QPushButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.omitted_select_button.sizePolicy().hasHeightForWidth())
-        self.omitted_select_button.setSizePolicy(sizePolicy)
-        self.omitted_select_button.setBaseSize(QtCore.QSize(0, 70))
-        self.omitted_select_button.setCheckable(True)
-        self.omitted_select_button.setAutoExclusive(True)
-        self.omitted_select_button.setFlat(True)
-        self.omitted_select_button.setObjectName("omitted_select_button")
-        self.horizontalLayout_8.addWidget(self.omitted_select_button)
-        self.reinstated_select_button = QtGui.QPushButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.reinstated_select_button.sizePolicy().hasHeightForWidth())
-        self.reinstated_select_button.setSizePolicy(sizePolicy)
-        self.reinstated_select_button.setBaseSize(QtCore.QSize(0, 70))
-        self.reinstated_select_button.setCheckable(True)
-        self.reinstated_select_button.setAutoExclusive(True)
-        self.reinstated_select_button.setFlat(True)
-        self.reinstated_select_button.setObjectName("reinstated_select_button")
-        self.horizontalLayout_8.addWidget(self.reinstated_select_button)
-        self.cut_change_select_button = QtGui.QPushButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.cut_change_select_button.sizePolicy().hasHeightForWidth())
-        self.cut_change_select_button.setSizePolicy(sizePolicy)
-        self.cut_change_select_button.setBaseSize(QtCore.QSize(0, 70))
-        self.cut_change_select_button.setCheckable(True)
-        self.cut_change_select_button.setAutoExclusive(True)
-        self.cut_change_select_button.setFlat(True)
-        self.cut_change_select_button.setObjectName("cut_change_select_button")
-        self.horizontalLayout_8.addWidget(self.cut_change_select_button)
-        self.rescan_select_button = QtGui.QPushButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.rescan_select_button.sizePolicy().hasHeightForWidth())
-        self.rescan_select_button.setSizePolicy(sizePolicy)
-        self.rescan_select_button.setBaseSize(QtCore.QSize(0, 70))
-        self.rescan_select_button.setCheckable(True)
-        self.rescan_select_button.setAutoExclusive(True)
-        self.rescan_select_button.setFlat(True)
-        self.rescan_select_button.setObjectName("rescan_select_button")
-        self.horizontalLayout_8.addWidget(self.rescan_select_button)
-        spacerItem7 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_8.addItem(spacerItem7)
-        self.only_vfx_check_box = QtGui.QCheckBox(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.only_vfx_check_box.sizePolicy().hasHeightForWidth())
-        self.only_vfx_check_box.setSizePolicy(sizePolicy)
-        self.only_vfx_check_box.setObjectName("only_vfx_check_box")
-        self.horizontalLayout_8.addWidget(self.only_vfx_check_box)
-        self.horizontalLayout_8.setStretch(6, 1)
-        self.verticalLayout_4.addWidget(self.cut_summary_selectors_frame)
-        self.line_2 = QtGui.QFrame(self.cut_summary_page)
-        self.line_2.setFrameShape(QtGui.QFrame.HLine)
-        self.line_2.setFrameShadow(QtGui.QFrame.Sunken)
-        self.line_2.setObjectName("line_2")
-        self.verticalLayout_4.addWidget(self.line_2)
-        self.verticalLayout_7 = QtGui.QVBoxLayout()
-        self.verticalLayout_7.setContentsMargins(12, -1, 12, -1)
-        self.verticalLayout_7.setObjectName("verticalLayout_7")
-        self.cut_summary_title_label = QtGui.QLabel(self.cut_summary_page)
-        self.cut_summary_title_label.setMinimumSize(QtCore.QSize(0, 30))
-        self.cut_summary_title_label.setText("")
-        self.cut_summary_title_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.cut_summary_title_label.setObjectName("cut_summary_title_label")
-        self.verticalLayout_7.addWidget(self.cut_summary_title_label)
-        self.scrollArea_2 = QtGui.QScrollArea(self.cut_summary_page)
-        self.scrollArea_2.setWidgetResizable(True)
-        self.scrollArea_2.setObjectName("scrollArea_2")
-        self.cut_summary_widgets = QtGui.QWidget()
-        self.cut_summary_widgets.setGeometry(QtCore.QRect(0, 0, 915, 383))
-        self.cut_summary_widgets.setObjectName("cut_summary_widgets")
-        self.cutsummary_list = QtGui.QVBoxLayout(self.cut_summary_widgets)
-        self.cutsummary_list.setSpacing(2)
-        self.cutsummary_list.setContentsMargins(2, 2, 2, 2)
-        self.cutsummary_list.setObjectName("cutsummary_list")
-        spacerItem8 = QtGui.QSpacerItem(0, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
-        self.cutsummary_list.addItem(spacerItem8)
-        self.scrollArea_2.setWidget(self.cut_summary_widgets)
-        self.verticalLayout_7.addWidget(self.scrollArea_2)
-        self.verticalLayout_4.addLayout(self.verticalLayout_7)
-        self.stackedWidget.addWidget(self.cut_summary_page)
-        self.progress_page = QtGui.QWidget()
-        self.progress_page.setObjectName("progress_page")
-        self.gridLayout_2 = QtGui.QGridLayout(self.progress_page)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        spacerItem9 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout_2.addItem(spacerItem9, 2, 0, 1, 1)
-        spacerItem10 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout_2.addItem(spacerItem10, 2, 2, 1, 1)
-        self.progress_bar = QtGui.QProgressBar(self.progress_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.progress_bar.sizePolicy().hasHeightForWidth())
-        self.progress_bar.setSizePolicy(sizePolicy)
-        self.progress_bar.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.progress_bar.setProperty("value", 24)
-        self.progress_bar.setTextVisible(False)
-        self.progress_bar.setObjectName("progress_bar")
-        self.gridLayout_2.addWidget(self.progress_bar, 2, 1, 1, 1)
-        spacerItem11 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_2.addItem(spacerItem11, 4, 1, 1, 1)
-        spacerItem12 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_2.addItem(spacerItem12, 0, 1, 1, 1)
-        self.progress_bar_label = QtGui.QLabel(self.progress_page)
-        self.progress_bar_label.setText("")
-        self.progress_bar_label.setWordWrap(True)
-        self.progress_bar_label.setObjectName("progress_bar_label")
-        self.gridLayout_2.addWidget(self.progress_bar_label, 3, 1, 1, 1)
-        self.progress_screen_title_label = QtGui.QLabel(self.progress_page)
-        self.progress_screen_title_label.setObjectName("progress_screen_title_label")
-        self.gridLayout_2.addWidget(self.progress_screen_title_label, 1, 1, 1, 1)
-        self.gridLayout_2.setColumnStretch(0, 1)
-        self.gridLayout_2.setColumnStretch(1, 3)
-        self.gridLayout_2.setColumnStretch(2, 1)
-        self.stackedWidget.addWidget(self.progress_page)
-        self.success_page = QtGui.QWidget()
-        self.success_page.setObjectName("success_page")
-        self.horizontalLayout_3 = QtGui.QHBoxLayout(self.success_page)
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        spacerItem13 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_3.addItem(spacerItem13)
-        self.verticalLayout = QtGui.QVBoxLayout()
-        self.verticalLayout.setObjectName("verticalLayout")
-        spacerItem14 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem14)
-        self.success_frame = QtGui.QFrame(self.success_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.success_frame.sizePolicy().hasHeightForWidth())
-        self.success_frame.setSizePolicy(sizePolicy)
-        self.success_frame.setMinimumSize(QtCore.QSize(0, 0))
-        self.success_frame.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.success_frame.setFrameShadow(QtGui.QFrame.Raised)
-        self.success_frame.setObjectName("success_frame")
-        self.verticalLayout_5 = QtGui.QVBoxLayout(self.success_frame)
-        self.verticalLayout_5.setContentsMargins(12, 12, 12, 12)
-        self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.horizontalLayout_4 = QtGui.QHBoxLayout()
-        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.label = QtGui.QLabel(self.success_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
-        self.label.setSizePolicy(sizePolicy)
-        self.label.setMaximumSize(QtCore.QSize(100, 100))
-        self.label.setText("")
-        self.label.setPixmap(QtGui.QPixmap(":/tk_multi_importcut/icon_completed.png"))
-        self.label.setScaledContents(True)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setObjectName("label")
-        self.horizontalLayout_4.addWidget(self.label)
-        self.success_label = QtGui.QLabel(self.success_frame)
-        self.success_label.setObjectName("success_label")
-        self.horizontalLayout_4.addWidget(self.success_label)
-        self.verticalLayout_5.addLayout(self.horizontalLayout_4)
-        self.horizontalLayout_5 = QtGui.QHBoxLayout()
-        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        self.shotgun_button = QtGui.QPushButton(self.success_frame)
-        self.shotgun_button.setObjectName("shotgun_button")
-        self.horizontalLayout_5.addWidget(self.shotgun_button)
-        self.verticalLayout_5.addLayout(self.horizontalLayout_5)
-        self.verticalLayout.addWidget(self.success_frame)
-        spacerItem15 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem15)
-        self.horizontalLayout_3.addLayout(self.verticalLayout)
-        spacerItem16 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_3.addItem(spacerItem16)
-        self.stackedWidget.addWidget(self.success_page)
-        self.main_layout.addWidget(self.stackedWidget)
-        self.feedback_label = QtGui.QLabel(Dialog)
-        self.feedback_label.setFrameShape(QtGui.QFrame.NoFrame)
-        self.feedback_label.setFrameShadow(QtGui.QFrame.Plain)
-        self.feedback_label.setText("")
-        self.feedback_label.setWordWrap(True)
-        self.feedback_label.setMargin(0)
-        self.feedback_label.setIndent(10)
-        self.feedback_label.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
-        self.feedback_label.setObjectName("feedback_label")
-        self.main_layout.addWidget(self.feedback_label)
-        self.line = QtGui.QFrame(Dialog)
-        self.line.setFrameShape(QtGui.QFrame.HLine)
-        self.line.setFrameShadow(QtGui.QFrame.Sunken)
-        self.line.setObjectName("line")
-        self.main_layout.addWidget(self.line)
-        self.horizontalLayout = QtGui.QHBoxLayout()
-        self.horizontalLayout.setContentsMargins(12, 0, 12, 12)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.back_button = QtGui.QPushButton(Dialog)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/tk_multi_importcut/left_arrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.back_button.setIcon(icon)
-        self.back_button.setFlat(True)
-        self.back_button.setObjectName("back_button")
-        self.horizontalLayout.addWidget(self.back_button)
-        spacerItem17 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem17)
-        self.cancel_button = QtGui.QPushButton(Dialog)
-        self.cancel_button.setObjectName("cancel_button")
-        self.horizontalLayout.addWidget(self.cancel_button)
-        self.reset_button = QtGui.QPushButton(Dialog)
-        self.reset_button.setObjectName("reset_button")
-        self.horizontalLayout.addWidget(self.reset_button)
-        self.email_button = QtGui.QPushButton(Dialog)
-        self.email_button.setObjectName("email_button")
-        self.horizontalLayout.addWidget(self.email_button)
-        self.submit_button = QtGui.QPushButton(Dialog)
-        self.submit_button.setObjectName("submit_button")
-        self.horizontalLayout.addWidget(self.submit_button)
-        self.select_button = QtGui.QPushButton(Dialog)
-        self.select_button.setObjectName("select_button")
-        self.horizontalLayout.addWidget(self.select_button)
-        self.horizontalLayout.setStretch(1, 1)
-        self.main_layout.addLayout(self.horizontalLayout)
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
-        self.retranslateUi(Dialog)
-        self.stackedWidget.setCurrentIndex(3)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
+from .widgets import DropAreaFrame, AnimatedStackedWidget
+from .search_widget import SearchWidget
+from .entity_line_widget import EntityLineWidget
+from .extended_thumbnail import ExtendedThumbnail
 
-    def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
-        self.drop_area_label.setText(QtGui.QApplication.translate("Dialog", "DRAG & DROP\n"
-"EDL", None, QtGui.QApplication.UnicodeUTF8))
-        self.sequences_label.setText(QtGui.QApplication.translate("Dialog", "Treating blah.edl", None, QtGui.QApplication.UnicodeUTF8))
-        self.sequences_title_label.setText(QtGui.QApplication.translate("Dialog", "Select Sequence", None, QtGui.QApplication.UnicodeUTF8))
-        self.sequences_search_line_edit.setPlaceholderText(QtGui.QApplication.translate("Dialog", "Search Sequence", None, QtGui.QApplication.UnicodeUTF8))
-        self.cuts_title_label.setText(QtGui.QApplication.translate("Dialog", "Select Cut", None, QtGui.QApplication.UnicodeUTF8))
-        self.cuts_sort_button.setText(QtGui.QApplication.translate("Dialog", "Sort ...", None, QtGui.QApplication.UnicodeUTF8))
-        self.search_line_edit.setPlaceholderText(QtGui.QApplication.translate("Dialog", "Search Cut", None, QtGui.QApplication.UnicodeUTF8))
-        self.total_button.setText(QtGui.QApplication.translate("Dialog", "Total", None, QtGui.QApplication.UnicodeUTF8))
-        self.new_select_button.setText(QtGui.QApplication.translate("Dialog", "New", None, QtGui.QApplication.UnicodeUTF8))
-        self.omitted_select_button.setText(QtGui.QApplication.translate("Dialog", "Omitted", None, QtGui.QApplication.UnicodeUTF8))
-        self.reinstated_select_button.setText(QtGui.QApplication.translate("Dialog", "Reinstated", None, QtGui.QApplication.UnicodeUTF8))
-        self.cut_change_select_button.setText(QtGui.QApplication.translate("Dialog", "Cut Changes", None, QtGui.QApplication.UnicodeUTF8))
-        self.rescan_select_button.setText(QtGui.QApplication.translate("Dialog", "Rescan Needed", None, QtGui.QApplication.UnicodeUTF8))
-        self.only_vfx_check_box.setText(QtGui.QApplication.translate("Dialog", "Hide Non-VFX Shots", None, QtGui.QApplication.UnicodeUTF8))
-        self.progress_screen_title_label.setText(QtGui.QApplication.translate("Dialog", "Importing ....", None, QtGui.QApplication.UnicodeUTF8))
-        self.success_label.setText(QtGui.QApplication.translate("Dialog", "Cut Sucessfully Imported", None, QtGui.QApplication.UnicodeUTF8))
-        self.shotgun_button.setText(QtGui.QApplication.translate("Dialog", "View in Shotgun", None, QtGui.QApplication.UnicodeUTF8))
-        self.back_button.setText(QtGui.QApplication.translate("Dialog", "Back", None, QtGui.QApplication.UnicodeUTF8))
-        self.cancel_button.setText(QtGui.QApplication.translate("Dialog", "Close", None, QtGui.QApplication.UnicodeUTF8))
-        self.reset_button.setText(QtGui.QApplication.translate("Dialog", "Reset", None, QtGui.QApplication.UnicodeUTF8))
-        self.email_button.setText(QtGui.QApplication.translate("Dialog", "Email Summary", None, QtGui.QApplication.UnicodeUTF8))
-        self.submit_button.setText(QtGui.QApplication.translate("Dialog", "Import Cut", None, QtGui.QApplication.UnicodeUTF8))
-        self.select_button.setText(QtGui.QApplication.translate("Dialog", "Select", None, QtGui.QApplication.UnicodeUTF8))
+# Custom widgets must be imported before importing the UI
+from .ui.dialog import Ui_Dialog
 
-from ..dialog import SearchWidget, DropAreaFrame, AnimatedStackedWidget
-from . import resources_rc
+from .processor import Processor
+from .logger import BundleLogHandler, get_logger, ShortNameFilter
+from .entity_types_view import EntityTypesView
+from .entities_view import EntitiesView
+from .cuts_view import CutsView
+from .cut_diff import _DIFF_TYPES, CutDiff
+from .cut_diffs_view import CutDiffsView
+from .submit_dialog import SubmitDialog
+from .downloader import DownloadRunner
+
+# Different steps in the process
+from .constants import _DROP_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+
+def show_dialog(app_instance):
+    """
+    Shows the main dialog window.
+    """
+    # in order to handle UIs seamlessly, each toolkit engine has methods for launching
+    # different types of windows. By using these methods, your windows will be correctly
+    # decorated and handled in a consistent fashion by the system. 
+    
+    # print type(settings)
+    # print settings
+    # prefs = settings.UserSettings(app_instance)
+    # prefs.store("string1", "testing")
+    # pref = prefs.retrieve("string1")
+    # print type(pref)
+    # print pref
+    
+    # we pass the dialog class to this method and leave the actual construction
+    # to be carried out by toolkit.
+    app_instance.engine.show_dialog("Import Cut", app_instance, AppDialog)
+    
+def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
+    """
+    Run the app with a pre-selected edl file and SG entity
+    :param edl_file_path: Full path to an EDL file
+    :param sg_entity: A SG entity dictionary as a string, e.g. 
+                      '{"code" : "001", "id" : 19, "type" : "Sequence"}'
+    :param frame_rate: The frame rate for the EDL file
+    """
+    sg_entity_dict = None
+    # Convert the string representation to a regular dict
+    if sg_entity:
+        sg_entity_dict = ast.literal_eval(sg_entity)
+        if not isinstance(sg_entity_dict, dict):
+            raise ValueError("Invalid SG entity %s" % sg_entity)
+
+    app_instance.engine.show_dialog(
+        "Import Cut",
+        app_instance,
+        AppDialog,
+        edl_file_path=edl_file_path,
+        sg_entity=sg_entity_dict,
+        frame_rate=int(frame_rate),
+    )
+
+
+class AppDialog(QtGui.QWidget):
+    """
+    Main application dialog window
+    """
+    new_edl = QtCore.Signal(str)
+    get_entities = QtCore.Signal(str)
+    show_cuts_for_sequence = QtCore.Signal(dict)
+    show_cut_diff = QtCore.Signal(dict)
+
+    def __init__(self, edl_file_path=None, sg_entity=None, frame_rate=None):
+        """
+        Constructor
+        :param edl_file_path: Full path to an EDL file
+        :param sg_entity: A SG entity dictionary
+        :param frame_rate: Use a specific frame rate for the import 
+        """
+        # first, call the base class and let it do its thing.
+        QtGui.QWidget.__init__(self)
+        
+        # now load in the UI that was created in the UI designer
+        self.ui = Ui_Dialog() 
+        self.ui.setupUi(self)
+        
+        # most of the useful accessors are available through the Application class instance
+        # it is often handy to keep a reference to this. You can get it via the following method:
+        self._app = sgtk.platform.current_bundle()
+        
+        self._busy = False
+        # Current step being displayed
+        self._step = 0
+
+        # Selected sg entity per step : selection only happen in steps 1 and 2
+        # but we create entries for all steps allowing to index the list
+        # with the current step and blindly disable the select button on the
+        # value for each step
+        self._selected_sg_entity = [None]*(_LAST_STEP+1)
+        
+        # via the self._app handle we can for example access:
+        # - The engine, via self._app.engine
+        # - A Shotgun API instance, via self._app.shotgun
+        # - A tk API instance, via self._app.tk 
+        
+        # lastly, set up our very basic UI
+        self.set_custom_style()
+        self.set_logger(logging.INFO)
+
+        CutDiff.retrieve_default_timecode_frame_mapping()
+
+        # Keep this thread for UI stuff
+        # Handle data and processong in a separate thread
+        self._processor = Processor(frame_rate)
+        self.new_edl.connect(self._processor.new_edl)
+        self.get_entities.connect(self._processor.retrieve_entities)
+        self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
+        self.show_cut_diff.connect(self._processor.show_cut_diff)
+        self._processor.step_done.connect(self.step_done)
+        self._processor.step_failed.connect(self.step_failed)
+        self._processor.got_busy.connect(self.set_busy)
+        self._processor.got_idle.connect(self.set_idle)
+        self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
+        
+        # Let's do something when something is dropped
+        self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
+
+        # Instantiate a entity type view handler
+        self._entity_types_view = EntityTypesView(self.ui.entity_types_layout)
+        self._entity_types_view.new_info_message.connect(self.display_info_message)
+        self._entity_types_view.selection_changed.connect(self.selection_changed)
+        self._entity_types_view.entity_type_chosen.connect(self.show_entities)
+
+        # Instantiate a entities view handler
+        self._entities_view = EntitiesView(self.ui.sequence_grid)
+        self._entities_view.sequence_chosen.connect(self.show_entity)
+        self._entities_view.selection_changed.connect(self.selection_changed)
+        self._entities_view.new_info_message.connect(self.display_info_message)
+        self._processor.new_sg_entity.connect(self._entities_view.new_sg_entity)
+        self.ui.sequences_search_line_edit.search_edited.connect(self._entities_view.search)
+        self.ui.sequences_search_line_edit.search_changed.connect(self._entities_view.search)
+
+        # Instantiate a cuts view handler
+        self._cuts_view = CutsView(self.ui.cuts_grid, self.ui.cuts_sort_button)
+        self._cuts_view.show_cut_diff.connect(self.show_cut)
+        self._cuts_view.selection_changed.connect(self.selection_changed)
+        self._cuts_view.new_info_message.connect(self.display_info_message)
+        self._processor.new_sg_cut.connect(self._cuts_view.new_sg_cut)
+        self.ui.search_line_edit.search_edited.connect(self._cuts_view.search)
+        self.ui.search_line_edit.search_changed.connect(self._cuts_view.search)
+
+        # Instantiate a cut differences view handler
+        self._cut_diffs_view = CutDiffsView(self.ui.cutsummary_list)
+        self._cut_diffs_view.totals_changed.connect(self.set_cut_summary_view_selectors)
+        self._cut_diffs_view.new_info_message.connect(self.display_info_message)
+        self._processor.totals_changed.connect(self.set_cut_summary_view_selectors)
+        self._processor.new_cut_diff.connect(self._cut_diffs_view.new_cut_diff)
+        self._processor.delete_cut_diff.connect(self._cut_diffs_view.delete_cut_diff)
+
+        # Cut summary view selectors
+        self.ui.new_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.NEW))
+        self.ui.cut_change_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.CUT_CHANGE))
+        self.ui.omitted_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.OMITTED))
+        self.ui.reinstated_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.REINSTATED))
+        self.ui.rescan_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, 100))
+        self.ui.total_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, -1))
+        self.ui.only_vfx_check_box.toggled.connect(self._cut_diffs_view.display_vfx_cuts)
+
+        # Ensure we land on the startup screen
+        self.ui.stackedWidget.set_current_index(_DROP_STEP)
+        self.set_ui_for_step(_DROP_STEP)
+        
+        self.ui.back_button.clicked.connect(self.previous_page)
+        self.ui.stackedWidget.first_page_reached.connect(self.reset)
+        self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
+        self.ui.cancel_button.clicked.connect(self.close_dialog)
+        self.ui.select_button.clicked.connect(self.select_button_callback)
+        self.ui.reset_button.clicked.connect(self.do_reset)
+        self.ui.email_button.clicked.connect(self.email_cut_changes)
+        self.ui.submit_button.clicked.connect(self.import_cut)
+        self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
+
+        self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
+
+        if edl_file_path:
+            # Wait for the processor to be ready before doing anything
+            self._processor.ready.connect(lambda : self._preselected_input(
+                edl_file_path, sg_entity
+            ))
+
+        self._processor.start()
+
+    def _preselected_input(self, edl_file_path, sg_entity):
+        # Special mode for Premiere integration : load the given EDL
+        # and select the given SG entity
+        
+        self.new_edl.emit(edl_file_path)
+        if sg_entity:
+            self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
+            self.show_entities(sg_entity["type"])
+            self._selected_sg_entity[_ENTITY_STEP] = sg_entity
+            self.show_entity(sg_entity)
+            self.goto_step(_CUT_STEP)
+
+    @property
+    def no_cut_for_entity(self):
+        return self._processor.no_cut_for_entity
+
+    @property
+    def project_import(self):
+        return self._processor.project_import
+
+    @QtCore.Slot()
+    def do_reset(self):
+        """
+        Reset callback, going back to the first page
+        """
+        # Omly ask confirmation if the cut was not yet imported
+        if self._step != _LAST_STEP:
+            msg_box = QtGui.QMessageBox(self)
+            msg_box.setIcon(QtGui.QMessageBox.Warning)
+            msg_box.setText("<big><b>Are you sure you want to Reset ?</b></big>")
+            msg_box.setInformativeText("All Import Cut progress will be lost.")
+            msg_box.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+            msg_box.setDefaultButton(QtGui.QMessageBox.No)
+            ret = msg_box.exec_()
+        else:
+            ret = QtGui.QMessageBox.Yes
+
+        if ret == QtGui.QMessageBox.Yes:
+            self.goto_step(_DROP_STEP)
+
+    @QtCore.Slot()
+    def reset(self):
+        """
+        Called when the first page is reached
+        """
+        self.set_ui_for_step(_DROP_STEP)
+
+    @QtCore.Slot(int)
+    def step_failed(self, which):
+        """
+        Called when a step failed, and going back to previous page
+        should be allowed.
+        """
+        if which == _PROGRESS_STEP:
+            self.ui.progress_screen_title_label.setText(
+                "Import failed",
+            )
+            self.ui.back_button.show()
+
+    @QtCore.Slot(int)
+    def step_done(self, which):
+        """
+        Called when a step is done, and next page can be displayed
+        """
+        next_step = which+1
+        cur_step = self.ui.stackedWidget.currentIndex()
+        if next_step < cur_step:
+            return
+        # Check if we can skip some intermediate screens
+        if next_step == _ENTITY_TYPE_STEP and self._entity_types_view.select_and_skip():
+            # Skip single entity type screen, autoselecting the single entry
+            next_step += 1
+#        if next_step == _ENTITY_STEP and self._entities_view.select_and_skip():
+#            next_step += 1
+        self.goto_step(next_step)
+
+    @QtCore.Slot(list)
+    def process_drop(self, paths):
+        """
+        Process a drop event, paths can either be
+        local filesystem paths or SG urls
+        """
+        if len(paths) != 1:
+            QtGui.QMessageBox.warning(
+                self,
+                "Can't process drop",
+                "Please drop only one file at a time",
+            )
+            return
+        self.new_edl.emit(paths[0])
+        self.ui.sequences_label.setText("Importing %s" % os.path.basename(paths[0]))
+        self.ui.entity_picker_message_label.setText(
+            "Importing %s ..." % os.path.basename(paths[0]),
+        )
+        #self._logger.info( "Processing %s" % (paths[0] ))
+
+    @QtCore.Slot(int, str)
+    def new_message(self, levelno, message):
+        """
+        Display a new message in the feedback widget
+        """
+
+        if levelno == logging.ERROR or levelno == logging.CRITICAL:
+            self.ui.feedback_label.setProperty("level", "error")
+            self.ui.progress_bar_label.setProperty("level", "error")
+        else:
+            self.ui.feedback_label.setProperty("level", "info")
+            self.ui.progress_bar_label.setProperty("level", "info")
+
+        self.style().unpolish(self.ui.feedback_label)
+        self.style().polish(self.ui.feedback_label)
+        self.style().unpolish(self.ui.progress_bar_label)
+        self.style().polish(self.ui.progress_bar_label)
+        self.ui.feedback_label.setText(message)
+        self.ui.progress_bar_label.setText(message)
+
+    @QtCore.Slot(str)
+    def display_info_message(self, message):
+        self.ui.feedback_label.setProperty("level", "info")
+        self.style().unpolish(self.ui.feedback_label)
+        self.style().polish(self.ui.feedback_label)
+        self.ui.feedback_label.setText(message)
+
+    @QtCore.Slot()
+    def close_dialog(self):
+        """
+        Close this app
+        """
+        self.close()
+
+    @property
+    def hide_tk_title_bar(self):
+        return False
+
+
+    def is_busy(self):
+        """
+        Return True if the app is busy doing something,
+        False if idle
+        """
+        return self._busy
+
+    @QtCore.Slot()
+    @QtCore.Slot(int)
+    def set_busy(self, maximum=None):
+        """
+        Set the app as busy, disabling some widgets
+        Display a progress bar if a maximum is given
+        """
+        self._busy = True
+        # Prevent some buttons to be used
+        self.ui.back_button.setEnabled(False)
+        self.ui.reset_button.setEnabled(False)
+        self.ui.email_button.setEnabled(False)
+        self.ui.submit_button.setEnabled(False)
+        self.ui.select_button.setEnabled(False)
+        # Show the progress bar if a maximum was given
+        if maximum:
+            self.ui.progress_bar.setValue(0)
+            self.ui.progress_bar.setMaximum(maximum)
+            self.ui.progress_bar.show()
+
+    @QtCore.Slot()
+    def set_idle(self):
+        """
+        Set the app as idle, hide the progress bar if shown,
+        enable back some widgets.
+        """
+        self._busy = False
+        # Allow all buttons to be used
+        self.ui.back_button.setEnabled(True)
+        self.ui.reset_button.setEnabled(True)
+        self.ui.email_button.setEnabled(True)
+        self.ui.submit_button.setEnabled(True)
+        self.ui.select_button.setEnabled(bool(self._selected_sg_entity[self._step]))
+        self.ui.progress_bar.hide()
+
+    def goto_step(self, which):
+        """
+        Go to a particular step
+        """
+        self.set_ui_for_step(which)
+        self.ui.stackedWidget.goto_page(which)
+
+    @QtCore.Slot()
+    def previous_page(self):
+        """
+        Go back to previous page
+        Skip the cuts view page if needed
+        """
+        current_page = self.ui.stackedWidget.currentIndex()
+        previous_page = current_page-1
+
+        if previous_page == _CUT_STEP and self.no_cut_for_entity:
+            # Skip cut selection screen
+            previous_page = _ENTITY_STEP
+        
+        if previous_page == _ENTITY_STEP and self.project_import:
+            # Skip project selection
+            previous_page = _ENTITY_TYPE_STEP
+        
+        if previous_page == _ENTITY_TYPE_STEP and self._entity_types_view.count() < 2:
+            previous_page = _DROP_STEP
+
+        if previous_page < 0:
+            previous_page = _DROP_STEP
+
+        self.ui.stackedWidget.goto_page(previous_page)
+
+    @QtCore.Slot(int)
+    def set_ui_for_step(self, step):
+        """
+        Set the UI for the given step
+        """
+        self._step=step
+        # 0 : drag and drop
+        # 1 : sequence select
+        # 2 : cut select
+        # 3 : cut summary
+        # 4 : import completed
+        if step == _DROP_STEP:
+            # No previous screen
+            self.ui.back_button.hide()
+            # Nothing to reset
+            self.ui.reset_button.hide()
+            # Clear various things when we hit the first screen
+            # doing a reset
+            self._selected_sg_entity[_ENTITY_TYPE_STEP]=None
+        else:
+            # Allow reset and back from screens > 0
+            self.ui.reset_button.show()
+            self.ui.back_button.show()
+
+        if step < _ENTITY_STEP:
+            self.ui.sequences_search_line_edit.clear()
+            self.clear_sequence_view()
+            self._selected_sg_entity[_ENTITY_STEP]=None
+
+        if step < _CUT_STEP:
+            self._selected_sg_entity[_CUT_STEP]=None
+            # Reset the cut view
+            self.clear_cuts_view()
+            self.ui.search_line_edit.clear()
+            self._selected_sg_entity[_CUT_STEP]=None
+
+        if step < _SUMMARY_STEP:
+            # Reset the summary view
+            self.clear_cut_summary_view()
+            # Too early to submit anything
+            self.ui.email_button.hide()
+            self.ui.submit_button.hide()
+
+        # We can select things on intermediate screens
+        if step==_ENTITY_TYPE_STEP or step==_ENTITY_STEP or step==_CUT_STEP:
+            self.ui.select_button.show()
+            # Only enable it if there is a selection for this step
+            self.ui.select_button.setEnabled(bool(self._selected_sg_entity[step]))
+        else:
+            self.ui.select_button.hide()
+        
+        # Display info message in feedback line and other special things
+        # based on the current step
+        if step==_ENTITY_TYPE_STEP:
+            self.display_info_message(self._entity_types_view.info_message)
+        elif step==_ENTITY_STEP:
+            self.display_info_message(self._entities_view.info_message)
+        elif step==_CUT_STEP:
+            self.display_info_message(self._cuts_view.info_message)
+        elif step==_SUMMARY_STEP:
+            self.ui.email_button.show()
+            self.ui.submit_button.show()
+            self.display_info_message(self._cut_diffs_view.info_message)
+            if self._processor.sg_cut:
+                self.ui.cut_summary_title_label.setText(
+                    "Comparing %s and <b>%s</b> for %s <b>%s</b>" % (
+                    os.path.basename(self._processor.edl_file_path),
+                    self._processor.sg_cut["code"],
+                    self._processor.entity_type_name,
+                    self._processor.entity_name,
+                    )
+                )
+            else:
+                self.ui.cut_summary_title_label.setText(
+                    "Showing %s for %s <b>%s</b>" % (
+                    os.path.basename(self._processor.edl_file_path),
+                    self._processor.entity_type_name,
+                    self._processor.entity_name,
+                    )
+                )
+        elif step == _PROGRESS_STEP:
+            self.ui.progress_screen_title_label.setText(
+                "Importing %s ..." % os.path.basename(self._processor.edl_file_path),
+            )
+            self.ui.email_button.hide()
+            self.ui.submit_button.hide()
+        elif step == _LAST_STEP:
+            self.ui.success_label.setText(
+                "Cut %s successfully imported" % self._processor.sg_new_cut["code"]
+            )
+            self.ui.back_button.hide()
+            self.ui.email_button.hide()
+            self.ui.submit_button.hide()
+            # Clear info message
+            self.display_info_message("")
+
+    @QtCore.Slot(dict)
+    def selection_changed(self, sg_entity):
+        """
+        Called when selection changes in intermediate screens
+        :param sg_entity: The SG entity which was selected for the current step
+        """
+        # Keep trace of what is selected in different views
+        # so the select button at the bottom of the window can
+        # trigger next step with current selection
+        self._selected_sg_entity[self._step]=sg_entity
+        self.ui.select_button.setEnabled(True)
+
+    @QtCore.Slot()
+    def select_button_callback(self):
+        """
+        Callback for the select button
+        :raises: RuntimeError in cases of inconsistencies
+        """
+        if not self._selected_sg_entity[self._step]:
+            raise RuntimeError("No selection for current step %d" % self._step)
+        if self._step==_ENTITY_TYPE_STEP:
+            self.show_entities(self._selected_sg_entity[self._step])
+        elif self._step==_ENTITY_STEP:
+            self.show_entity(self._selected_sg_entity[self._step])
+        elif self._step==_CUT_STEP:
+            self.show_cut(self._selected_sg_entity[self._step])
+        else:
+            # Should never happen
+            raise RuntimeError("Invalid step %d for selection callback" % self._step)
+
+    @QtCore.Slot(str)
+    def show_entities(self, sg_entity_type):
+        """
+        Called when cuts needs to be shown for a particular sequence
+        """
+        # Retrieve the nice name instead of CustomEntity04
+        sg_entity_type_name = sgtk.util.get_entity_type_display_name(
+            sgtk.platform.current_bundle().sgtk,
+            sg_entity_type,
+        )
+        self._logger.info("Retrieving %s(s)" % sg_entity_type_name )
+        self.ui.sequences_title_label.setText("Select %s" % sg_entity_type_name)
+        self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
+        self.get_entities.emit(sg_entity_type)
+
+    @QtCore.Slot(dict)
+    def show_entity(self, sg_entity):
+        """
+        Called when cuts needs to be shown for a particular entity
+        """
+        name = sg_entity.get("code",
+            sg_entity.get("name",
+                sg_entity.get("title", "????")
+            )
+        )
+        type_name = sgtk.util.get_entity_type_display_name(
+            sgtk.platform.current_bundle().sgtk,
+            sg_entity["type"],
+        )
+        self._logger.info("Retrieving cuts for %s" % name )
+        self.ui.selected_sequence_label.setText(
+            "%s : <big><b>%s</big></b>" % (
+                sg_entity["type"],
+                name,
+        ))
+        self.show_cuts_for_sequence.emit(sg_entity)
+
+    @QtCore.Slot(dict)
+    def show_cut(self, sg_cut):
+        """
+        Called when cut changes needs to be shown for a particular sequence/cut
+        :param sg_cut: A Cut dictionary as retrieved from Shotgun
+        """
+        self._logger.info("Retrieving cut information for %s" % sg_cut["code"] )
+        self.show_cut_diff.emit(sg_cut)
+
+    @QtCore.Slot()
+    def set_cut_summary_view_selectors(self):
+        """
+        Set labels on top views selectors in Cut summary view, from the current 
+        cut summary
+        """
+        summary = self._processor.summary
+        self.ui.new_select_button.setText("New : %d" % summary.count_for_type(_DIFF_TYPES.NEW))
+        self.ui.cut_change_select_button.setText("Cut Changes : %d" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
+        self.ui.omitted_select_button.setText("Omitted : %d" % summary.count_for_type(_DIFF_TYPES.OMITTED))
+        self.ui.reinstated_select_button.setText("Reinstated : %d" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
+        self.ui.rescan_select_button.setText("Rescan Needed : %d" % summary.rescans_count)
+        self.ui.total_button.setText("Total : %d" % len(summary))
+
+    def clear_sequence_view(self):
+        """
+        Reset the page displaying available sequences
+        """
+        self._entities_view.clear()
+
+    def clear_cuts_view(self):
+        """
+        Reset the page displaying available cuts
+        """
+        self._cuts_view.clear()
+
+    def clear_cut_summary_view(self):
+        """
+        Reset the cut summary view page
+        """
+        self._cut_diffs_view.clear()
+        # Go back into "Show everything mode"
+        wsize = self.ui.total_button.size()
+        self.ui.total_button.setChecked(True)
+        self.ui.total_button.resize(wsize.width(), 100)
+        self.ui.only_vfx_check_box.setChecked(False)
+
+    @QtCore.Slot()
+    def import_cut(self):
+        """
+        Called when a the cut needs to be imported in Shotgun. Show a dialog where the
+        user can review changes before importing the cut.
+        """
+        dialog = SubmitDialog(
+            parent=self,
+            title=self._processor.title,
+            summary=self._processor.summary)
+        dialog.submit.connect(self._processor.import_cut)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+
+    @QtCore.Slot()
+    def email_cut_changes(self):
+        """
+        Called when the user click on the "Email Summary" button. Forge a mailto:
+        url and open it up.
+        """
+        if not self._processor.sg_entity:
+            self._logger.warning("No selected sequence ...")
+            return
+        links = ["%s/detail/%s/%s" % (
+            self._app.shotgun.base_url,
+            self._processor.sg_entity["type"],
+            self._processor.sg_entity["id"],
+        )]
+        subject, body = self._processor.summary.get_report(self._processor.title, links)
+        mail_url = QtCore.QUrl("mailto:?subject=%s&body=%s" % (subject, body))
+        self._logger.debug("Opening up %s" % mail_url )
+        QtGui.QDesktopServices.openUrl(mail_url)
+
+    @QtCore.Slot()
+    def show_in_shotgun(self):
+        sg_url = QtCore.QUrl(self._processor.sg_new_cut_url)
+        QtGui.QDesktopServices.openUrl(sg_url)
+        self.close()
+
+    @QtCore.Slot(str, list)
+    def display_exception(self, msg, exec_info):
+        """
+        Display a popup window with the error message
+        and the exec_info in the "details"
+        """
+        msg_box = QtGui.QMessageBox(
+            parent=self,
+            icon=QtGui.QMessageBox.Critical
+            )
+        msg_box.setText("The following error was reported :")
+        msg_box.setInformativeText(msg)
+        msg_box.setDetailedText("\n".join(exec_info))
+        msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+        msg_box.show()
+        msg_box.raise_()
+        msg_box.activateWindow()
+
+    def closeEvent(self, evt):
+        """
+        closeEvent handler
+
+        Warn the user if it's not safe to quit,
+        and leave the decision to him
+        """
+        if self.is_busy():
+            answer = QtGui.QMessageBox.warning(
+                self,
+                "Quit anyway ?",
+                "Busy, quit anyway ?",
+                QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
+            if answer != QtGui.QMessageBox.Ok:
+                evt.ignore() # For close event, ignore stop them to be processed
+                return
+        self._processor.quit()
+        self._processor.wait()
+        # Let the close happen
+        evt.accept()
+
+    def set_logger(self, level=logging.INFO):
+        """
+        Retrieve a logger
+        """
+        self._logger = get_logger()
+        handler = BundleLogHandler(self._app)
+        handler.new_message.connect(self.new_message)
+        handler.new_error_with_exc_info.connect(self.display_exception)
+        self._logger.addHandler(handler)
+
+        # Copied over from tk-desktop and tk-multi-ingestdelivery
+        if sys.platform == "darwin":
+            fname = os.path.join(os.path.expanduser("~"), "Library", "Logs", "Shotgun", "%s.log" % self._app.name)
+        elif sys.platform == "win32":
+            fname = os.path.join(os.environ.get("APPDATA", "APPDATA_NOT_SET"), "Shotgun", "%s.log" % self._app.name)
+        elif sys.platform.startswith("linux"):
+            fname = os.path.join(os.path.expanduser("~"), ".shotgun", "logs", "%s.log" % self._app.name)
+        else:
+            raise NotImplementedError("Unknown platform: %s" % sys.platform)
+
+        handler = logging.handlers.RotatingFileHandler(fname, maxBytes=1024*1024, backupCount=5)
+        handler.addFilter(ShortNameFilter())
+        handler.setFormatter(logging.Formatter(
+            "%(asctime)s %(levelname)s %(short_name)s %(message)s"
+        ))
+        self._logger.addHandler(handler)
+
+        self._logger.setLevel(level)
+
+    def set_custom_style(self):
+        """
+        Append our custom style to the inherited style sheet
+        """
+        self._css_watcher = None
+        this_folder = self._app.disk_location #os.path.abspath(os.path.dirname(__file__))
+        css_file = os.path.join(this_folder, "style.qss")
+        if os.path.exists(css_file):
+            self._load_css(css_file)
+            # Add a watcher to pickup changes only if the app was started from tk-shell
+            # usually clients use tk-desktop or tk-shotgun, so it should be safe to
+            # assume that this will cause any harm in production
+            if sgtk.platform.current_engine().name == "tk-shell":
+                self._css_watcher=QtCore.QFileSystemWatcher([css_file], self)
+                self._css_watcher.fileChanged.connect(self.reload_css)
+
+    def _load_css(self, css_file):
+        self.setStyleSheet("")
+        if os.path.exists(css_file):
+            try:
+                # Read css file
+                f = open(css_file)
+                css_data = f.read()
+                f.close()
+                # Append our add ons to current sytle sheet at the top widget
+                # level, children will inherit from it, without us affecting
+                # other apps for this engine
+                self.setStyleSheet(css_data)
+            except Exception,e:
+                self._app.log_warning( "Unable to read style sheet %s" % css_file )
+
+    @QtCore.Slot(str)
+    def reload_css(self, path):
+        self._logger.info("Reloading %s" % path)
+        self._load_css(path)
+        # Some code editors rename files on save, so the watcher will
+        # stop watching it. Check if the file watched, re-attach it if not
+        if self._css_watcher and path not in self._css_watcher.files():
+            self._css_watcher.addPath(path)
+        self._logger.info("%s loaded" % path)
+        self.update()
