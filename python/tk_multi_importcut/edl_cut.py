@@ -878,7 +878,8 @@ class EdlCut(QtCore.QObject):
                 "description"           : description,
                 "timecode_start"        : tc_start,
                 "timecode_end"          : tc_end,
-                "duration"              : self._summary.duration
+                "duration"              : self._summary.duration,
+                "revision_number"       : 1
             },
             ["id", "code"])
         # Upload edl file to the new cut record
