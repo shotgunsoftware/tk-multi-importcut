@@ -59,6 +59,7 @@ class EdlCut(QtCore.QObject):
         # Retrieve some settings
         self._omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
         self._cut_link_field = "entity" #self._app.get_setting("cut_link_field")
+        self._num_cuts = 0
 
     @property
     def entity_name(self):
@@ -366,6 +367,7 @@ class EdlCut(QtCore.QObject):
                 ],
                 order=[{"field_name" : "id", "direction" : "desc"}]
             )
+
             # If no cut, go directly to next step
             if not sg_cuts:
                 self.show_cut_diff({})
@@ -378,7 +380,8 @@ class EdlCut(QtCore.QObject):
                 if sg_cut["sg_status_list"] in status_dict:
                     sg_cut["_display_status"] = status_dict[sg_cut["sg_status_list"]]
                 self.new_sg_cut.emit(sg_cut)
-            self._logger.info("Retrieved %d Cuts." % len(sg_cuts))
+            self._num_cuts = len(sg_cuts)
+            self._logger.info("Retrieved %d Cuts." % self._num_cuts)
             self.step_done.emit(_ENTITY_STEP)
         except Exception, e :
             self._logger.exception(str(e))
@@ -879,7 +882,7 @@ class EdlCut(QtCore.QObject):
                 "timecode_start"        : tc_start,
                 "timecode_end"          : tc_end,
                 "duration"              : self._summary.duration,
-                "revision_number"       : 1
+                "revision_number"       : self._num_cuts + 1
             },
             ["id", "code"])
         # Upload edl file to the new cut record
