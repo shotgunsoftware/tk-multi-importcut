@@ -52,7 +52,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
@@ -88,16 +88,6 @@
      </property>
      <property name="text">
       <string>Send Cut Summary Note To:</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="email_group_line_edit">
-     <property name="geometry">
-      <rect>
-       <x>210</x>
-       <y>30</y>
-       <width>251</width>
-       <height>21</height>
-      </rect>
      </property>
     </widget>
     <widget class="QLabel" name="statuses_label">
@@ -180,7 +170,10 @@
       <enum>Qt::LeftToRight</enum>
      </property>
     </widget>
-    <widget class="QLabel" name="label_5">
+    <widget class="QLabel" name="omit_status_label">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>100</x>
@@ -193,7 +186,10 @@
       <string>Omit Status:</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_6">
+    <widget class="QLabel" name="reinstate_shot_if_status_is_label">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -225,7 +221,10 @@
       <enum>Qt::LeftToRight</enum>
      </property>
     </widget>
-    <widget class="QLabel" name="label_7">
+    <widget class="QLabel" name="reinstate_status_label">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>300</x>
@@ -238,7 +237,7 @@
       <string>Reinstate Status:</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="reinstate_combo_box">
+    <widget class="QComboBox" name="reinstate_status_combo_box">
      <property name="geometry">
       <rect>
        <x>410</x>
@@ -284,6 +283,25 @@
      </property>
      <property name="text">
       <string>Use &quot;Smart&quot; Fields</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="email_group_combo_box">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>30</y>
+       <width>104</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="whatsThis">
+      <string/>
+     </property>
+     <property name="accessibleName">
+      <string/>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
      </property>
     </widget>
    </widget>
@@ -418,7 +436,7 @@
       <string>Default Head In:</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit">
+    <widget class="QLineEdit" name="default_head_in_line_edit">
      <property name="geometry">
       <rect>
        <x>150</x>
@@ -441,7 +459,7 @@
       <string>Default Head Duration:</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_2">
+    <widget class="QLineEdit" name="default_head_duration_line_edit">
      <property name="geometry">
       <rect>
        <x>190</x>
@@ -464,7 +482,7 @@
       <string>Default Tail Duration:</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_3">
+    <widget class="QLineEdit" name="default_tail_duration_line_edit">
      <property name="geometry">
       <rect>
        <x>390</x>
@@ -474,7 +492,7 @@
       </rect>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_4">
+    <widget class="QLineEdit" name="default_frame_rate_line_edit">
      <property name="geometry">
       <rect>
        <x>170</x>

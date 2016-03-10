@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'dialog.ui'
 #
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -66,6 +66,9 @@ class Ui_Dialog(object):
         self.horizontalLayout_2.addWidget(self.entity_picker_title_label)
         spacerItem4 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem4)
+        self.settings_button = QtGui.QPushButton(self.entity_types_page)
+        self.settings_button.setObjectName("settings_button")
+        self.horizontalLayout_2.addWidget(self.settings_button)
         self.horizontalLayout_2.setStretch(0, 1)
         self.horizontalLayout_2.setStretch(1, 1)
         self.horizontalLayout_2.setStretch(2, 1)
@@ -139,12 +142,12 @@ class Ui_Dialog(object):
         self.sequence_scroll_area.setWidgetResizable(True)
         self.sequence_scroll_area.setObjectName("sequence_scroll_area")
         self.sequence_area = QtGui.QWidget()
-        self.sequence_area.setGeometry(QtCore.QRect(0, 0, 915, 445))
+        self.sequence_area.setGeometry(QtCore.QRect(0, 0, 98, 28))
         self.sequence_area.setStyleSheet("")
         self.sequence_area.setObjectName("sequence_area")
         self.sequence_grid = QtGui.QGridLayout(self.sequence_area)
-        self.sequence_grid.setContentsMargins(2, 2, 2, 2)
         self.sequence_grid.setSpacing(2)
+        self.sequence_grid.setContentsMargins(2, 2, 2, 2)
         self.sequence_grid.setObjectName("sequence_grid")
         spacerItem6 = QtGui.QSpacerItem(20, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.sequence_grid.addItem(spacerItem6, 0, 0, 1, 1)
@@ -205,8 +208,8 @@ class Ui_Dialog(object):
         self.cuts_area.setGeometry(QtCore.QRect(0, 0, 98, 28))
         self.cuts_area.setObjectName("cuts_area")
         self.cuts_grid = QtGui.QGridLayout(self.cuts_area)
-        self.cuts_grid.setContentsMargins(2, 2, 2, 2)
         self.cuts_grid.setSpacing(2)
+        self.cuts_grid.setContentsMargins(2, 2, 2, 2)
         self.cuts_grid.setObjectName("cuts_grid")
         spacerItem8 = QtGui.QSpacerItem(20, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.cuts_grid.addItem(spacerItem8, 1, 0, 1, 1)
@@ -488,6 +491,7 @@ class Ui_Dialog(object):
 "EDL", None, QtGui.QApplication.UnicodeUTF8))
         self.entity_picker_message_label.setText(QtGui.QApplication.translate("Dialog", "blah blah blah blah", None, QtGui.QApplication.UnicodeUTF8))
         self.entity_picker_title_label.setText(QtGui.QApplication.translate("Dialog", "Select Entity Type", None, QtGui.QApplication.UnicodeUTF8))
+        self.settings_button.setText(QtGui.QApplication.translate("Dialog", "set", None, QtGui.QApplication.UnicodeUTF8))
         self.entity_picker_title_label_2.setText(QtGui.QApplication.translate("Dialog", "What do you want to link this Cut to ?", None, QtGui.QApplication.UnicodeUTF8))
         self.sequences_label.setText(QtGui.QApplication.translate("Dialog", "Treating blah.edl", None, QtGui.QApplication.UnicodeUTF8))
         self.sequences_title_label.setText(QtGui.QApplication.translate("Dialog", "Select Sequence", None, QtGui.QApplication.UnicodeUTF8))

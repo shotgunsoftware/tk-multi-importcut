@@ -38,6 +38,7 @@ from .cuts_view import CutsView
 from .cut_diff import _DIFF_TYPES, CutDiff
 from .cut_diffs_view import CutDiffsView
 from .submit_dialog import SubmitDialog
+from .settings_dialog import SettingsDialog
 from .downloader import DownloadRunner
 
 # Different steps in the process
@@ -205,6 +206,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
+        self.ui.settings_button.clicked.connect(self.settings)
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
 
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
@@ -649,6 +651,19 @@ class AppDialog(QtGui.QWidget):
         dialog.show()
         dialog.raise_()
         dialog.activateWindow()
+
+    @QtCore.Slot()
+    def settings(self):
+        """
+        Add comment
+        """
+        settings = SettingsDialog(
+            parent=self,
+            title=self._processor.title)
+        # settings.submit.connect(self._processor.import_cut)
+        settings.show()
+        settings.raise_()
+        settings.activateWindow()
 
     @QtCore.Slot()
     def email_cut_changes(self):

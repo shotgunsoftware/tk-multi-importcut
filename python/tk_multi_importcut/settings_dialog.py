@@ -33,43 +33,65 @@ class SettingsDialog(QtGui.QDialog):
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
+        
         # Create a settings manager where we can pull and push prefs later
         self._user_settings = settings.UserSettings(self._app)
+        
         # Retrieve user settings and set UI values
-        # update_shot_fields = self._user_settings.retrieve("update_shot_fields", True)
-        # self.ui.update_shot_fields_checkbox.setChecked(update_shot_fields)
-
         buttons = self.ui.save_settings_button_box.buttons()
         apply_button = buttons[0]
         apply_button.setText("Apply")
-        
-        items_to_add = ["Absolute", "Automatic", "Relative"]
-        for item in items_to_add:
-            self.ui.timecode_to_frame_mapping_combo_box.addItem(item)
 
-        self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(self._user_settings.retrieve("timecode_to_frame_mapping", 0))
-        self.ui.email_group_line_edit.setText(self._user_settings.retrieve("email_group", None))
-        self.ui.update_shot_statuses_checkbox.setChecked(self._user_settings.retrieve("update_shot_statuses", False))
-        self.ui.use_smart_fields_checkbox.setChecked(self._user_settings.retrieve("use_smart_fields", False))
-        # self.ui.title_text.setText(title or "")
-        # if not summary:
-        #     # Just in case ...
-        #     raise ValueError("Can't import a cut without a summary")
-        # self.ui.from_label.setText(self._app.context.user["name"] if self._app.context.user else "")
-        # self.ui.to_text.setText(self._app.get_setting("report_to_group") or "")
-        # self.ui.total_shots_label.setText("%s" % len(summary))
-        # self.ui.cut_changes_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
-        # self.ui.new_shots_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.NEW))
-        # self.ui.rescans_label.setText("%s" % summary.rescans_count)
-        # self.ui.omitted_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.OMITTED))
-        # self.ui.reinstated_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
-        # self.ui.repeated_label.setText("%s" % summary.repeated_count)
-        # no_link_count=summary.count_for_type(_DIFF_TYPES.NO_LINK)
-        # if no_link_count:
-        #     self.ui.no_link_label.setText("%s" % no_link_count)
-        # else:
-        #     self.ui.no_link_label.hide()
-        #     self.ui.no_link_title_label.hide()
+        update_shot_statuses = self._user_settings.retrieve("update_shot_statuses", True)
+        self._set_enabled(update_shot_statuses)
+
+        # General tab
+        # self.ui.email_group_line_edit.setText(
+        #     self._user_settings.retrieve("email_group", None))
+        self.ui.update_shot_statuses_checkbox.setChecked(
+            update_shot_statuses)
+        self.ui.use_smart_fields_checkbox.setChecked(
+            self._user_settings.retrieve("use_smart_fields", False))
+        
+        self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
+
+        to_add = self._app.shotgun.schema_field_read("Shot")["sg_status_list"]["properties"]["display_values"]["value"]
+        for i in to_add:
+            status = to_add[i]
+            self.ui.omit_status_combo_box.addItem(status)
+            self.ui.reinstate_shot_if_status_is_combo_box.addItem(status)
+            self.ui.reinstate_status_combo_box.addItem(status)
+
+        self.ui.email_group_combo_box.addItem("")
+        to_add = self._app.shotgun.find("Group", [], ["code"])
+        for i in to_add:
+            self.ui.email_group_combo_box.addItem(i["code"])
+
+        self.ui.email_group_combo_box.setCurrentIndex(
+            self._user_settings.retrieve("email_group", 0))
+        self.ui.omit_status_combo_box.setCurrentIndex(
+            self._user_settings.retrieve("omit_status", 4))
+        self.ui.reinstate_shot_if_status_is_combo_box.setCurrentIndex(
+            self._user_settings.retrieve("reinstate_shot_if_status_is", 0))
+        self.ui.reinstate_status_combo_box.setCurrentIndex(
+            self._user_settings.retrieve("reinstate_status", 1))
+
+        # Timecode/Frames tab
+        self.ui.default_frame_rate_line_edit.setText(
+            self._user_settings.retrieve("default_frame_rate", "24"))
+        self.ui.timecode_to_frame_mapping_combo_box.addItems(
+            ["Absolute", "Automatic", "Relative"])        
+        self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(
+            self._user_settings.retrieve("timecode_to_frame_mapping", 0))
+
+        self.ui.default_head_in_line_edit.setText(
+            self._user_settings.retrieve("default_head_in", "1001"))
+        self.ui.default_head_duration_line_edit.setText(
+            self._user_settings.retrieve("default_head_duration", "8"))
+        self.ui.default_tail_duration_line_edit.setText(
+            self._user_settings.retrieve("default_tail_duration", "8"))
+
+        # Cancel or Save
         self.ui.save_settings_button_box.rejected.connect(self.close_dialog)
         self.ui.save_settings_button_box.accepted.connect(self.save_settings)
 
@@ -79,24 +101,7 @@ class SettingsDialog(QtGui.QDialog):
         Submit the cut import and close the dialog
         """
         self._save_settings()
-        # update_shot_fields = self.ui.update_shot_fields_checkbox.isChecked()
-        # title = self.ui.title_text.text()
-        # to = self.ui.to_text.text()
-        # sg = self._app.shotgun
-        # sg_group = sg.find_one("Group", [["code", "is", to]], ["code"])
-        # if not sg_group:
-        #     QtGui.QMessageBox.warning(
-        #         self,
-        #         "Unknown Shotgun Group",
-        #         "Couldn't retrieve a group named %s in Shotgun" % to,
-        #         buttons=QtGui.QMessageBox.Ok
-        #     )
-        #     return
-        # description = self.ui.description_text.toPlainText()
-        # user = self._app.context.user or {}
-        # self.submit.emit(title, user, sg_group, description, update_shot_fields)
-        # self.close_dialog()
-        self.close()
+        self.close_dialog()
 
     @QtCore.Slot()
     def close_dialog(self):
@@ -105,17 +110,22 @@ class SettingsDialog(QtGui.QDialog):
         """
         self.close()
 
+    def _set_enabled(self, state):
+        self.ui.omit_status_label.setEnabled(state)
+        self.ui.reinstate_shot_if_status_is_label.setEnabled(state)
+        self.ui.reinstate_status_label.setEnabled(state)
+        self.ui.omit_status_combo_box.setEnabled(state)
+        self.ui.reinstate_shot_if_status_is_combo_box.setEnabled(state)
+        self.ui.reinstate_status_combo_box.setEnabled(state)
+
     def _save_settings(self):
         """
         Save user settings from current UI values
         """
-        # Save the settings
-        # update_shot_fields = self.ui.update_shot_fields_checkbox.isChecked()
-        # self._user_settings.store("update_shot_fields", update_shot_fields)
-        print "saving stuff"
 
-        email_group = self.ui.email_group_line_edit.text()
-        self._user_settings.store("email_group", email_group)
+        # General tab
+        # email_group = self.ui.email_group_line_edit.text()
+        # self._user_settings.store("email_group", email_group)
         
         update_shot_statuses = self.ui.update_shot_statuses_checkbox.isChecked()
         self._user_settings.store("update_shot_statuses", update_shot_statuses)
@@ -123,5 +133,30 @@ class SettingsDialog(QtGui.QDialog):
         use_smart_fields = self.ui.use_smart_fields_checkbox.isChecked()
         self._user_settings.store("use_smart_fields", use_smart_fields)
 
+        email_group = self.ui.email_group_combo_box.currentIndex()
+        self._user_settings.store("email_group", email_group)
+
+        omit_status = self.ui.omit_status_combo_box.currentIndex()
+        self._user_settings.store("omit_status", omit_status)
+
+        reinstate_shot_if_status_is = self.ui.reinstate_shot_if_status_is_combo_box.currentIndex()
+        self._user_settings.store("reinstate_shot_if_status_is", reinstate_shot_if_status_is)
+
+        reinstate_status = self.ui.reinstate_status_combo_box.currentIndex()
+        self._user_settings.store("reinstate_status", reinstate_status)
+
+        # Timecode/Frames tab
+        default_frame_rate = self.ui.default_frame_rate_line_edit.text()
+        self._user_settings.store("default_frame_rate", default_frame_rate)
+
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
         self._user_settings.store("timecode_to_frame_mapping", timecode_to_frame_mapping)
+
+        default_head_in = self.ui.default_head_in_line_edit.text()
+        self._user_settings.store("default_head_in", default_head_in)
+
+        default_head_duration = self.ui.default_head_duration_line_edit.text()
+        self._user_settings.store("default_head_duration", default_head_duration)
+
+        default_tail_duration = self.ui.default_tail_duration_line_edit.text()
+        self._user_settings.store("default_tail_duration", default_tail_duration)

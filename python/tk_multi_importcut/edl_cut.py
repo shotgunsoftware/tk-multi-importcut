@@ -1106,7 +1106,7 @@ class EdlCut(QtCore.QObject):
                 edit = cut_diff.edit
                 if edit:
                     edit_in = edit.record_in.to_frame() - self._summary.edit_offset + 1
-                    edit_out = edit.record_out.to_frame() - self._summary.edit_offset + 1
+                    edit_out = edit.record_out.to_frame() - self._summary.edit_offset
                     sg_batch_data.append({
                         "request_type" : "create",
                         "entity_type" : cut_item_entity,
