@@ -657,9 +657,7 @@ class AppDialog(QtGui.QWidget):
         """
         Add comment
         """
-        settings = SettingsDialog(
-            parent=self,
-            title=self._processor.title)
+        settings = SettingsDialog(parent=self)
         # settings.submit.connect(self._processor.import_cut)
         settings.show()
         settings.raise_()

@@ -15,6 +15,7 @@ import tempfile
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 from .ui.cut_diff_card import Ui_CutDiffCard
 from .cut_diff import CutDiff, _DIFF_TYPES
@@ -64,8 +65,10 @@ class CutDiffCard(QtGui.QFrame):
         self.ui = Ui_CutDiffCard()
         self.ui.setupUi(self)
         
+        settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
+
         app = sgtk.platform.current_bundle()
-        self._use_smart_fields = app.get_setting("use_smart_fields") or False
+        self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
         self._thumbnail_requested = False
         cut_diff.type_changed.connect(self.diff_type_changed)
         cut_diff.repeated_changed.connect(self.repeated_changed)

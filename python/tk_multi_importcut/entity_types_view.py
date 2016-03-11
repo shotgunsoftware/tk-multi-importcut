@@ -169,7 +169,7 @@ class EntityTypesView(QtCore.QObject):
         
         # Retrieve all entity types which are accepted by Cut.sg_sequence field
         # in Shotgun
-        cut_link_field = sgtk.platform.current_bundle().get_setting("cut_link_field")
+        cut_link_field = "entity"
         sg = sgtk.platform.current_bundle().shotgun
         schema = sg.schema_field_read("Cut", cut_link_field)
         entity_types = schema[cut_link_field]["properties"]["valid_types"]["value"]

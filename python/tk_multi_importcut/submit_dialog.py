@@ -48,7 +48,9 @@ class SubmitDialog(QtGui.QDialog):
             # Just in case ...
             raise ValueError("Can't import a cut without a summary")
         self.ui.from_label.setText(self._app.context.user["name"] if self._app.context.user else "")
-        self.ui.to_text.setText(self._app.get_setting("report_to_group") or "")
+        # todo: this retrieves an index, so it doesn't work. we need to either
+        # store a string, or figure out what the index is pointing at here
+        # self.ui.to_text.setText(self._user_settings.retrieve("email_group"))
         self.ui.total_shots_label.setText("%s" % len(summary))
         self.ui.cut_changes_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
         self.ui.new_shots_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.NEW))

@@ -14,6 +14,8 @@
 import sgtk
 from sgtk.platform.qt import QtCore
 
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
+
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .logger import get_logger
 
@@ -260,7 +262,11 @@ class CutSummary(QtCore.QObject):
         self._counts = {}
         self._rescans_count = 0
         self._logger=get_logger()
-        self._omit_statuses = sgtk.platform.current_bundle().get_setting("omit_statuses") or ["omt"]
+        
+        app = settings.UserSettings(sgtk.platform.current_bundle())
+        self._user_settings = app
+
+        self._omit_statuses = [self._user_settings.retrieve("omit_status")]
 
         self._tc_start = tc_edit_in
         self._tc_end = tc_edit_out

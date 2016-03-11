@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QLabel" name="label">
+  <widget class="QLabel" name="settings_label">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -52,7 +52,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
@@ -256,7 +256,7 @@
       <enum>Qt::LeftToRight</enum>
      </property>
     </widget>
-    <widget class="QLabel" name="label_8">
+    <widget class="QLabel" name="cut_fields_on_shot_label">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -309,7 +309,7 @@
     <attribute name="title">
      <string>Timecode/Frames</string>
     </attribute>
-    <widget class="QLabel" name="label_9">
+    <widget class="QLabel" name="timecode_label">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -384,7 +384,7 @@
       <string>frames based on the frame rate. For example, at 24 fps 00:00:01:00 = frame 24.</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_14">
+    <widget class="QLabel" name="new_shots_label">
      <property name="geometry">
       <rect>
        <x>10</x>

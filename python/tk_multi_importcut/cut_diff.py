@@ -15,6 +15,7 @@ import sgtk
 from sgtk.platform.qt import QtCore
 # Import the EDL framework
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 # Define difference types as enums
 def diff_types(**enums):
@@ -114,15 +115,17 @@ class CutDiff(QtCore.QObject):
         self._sg_cut_item = sg_cut_item
         self._app = sgtk.platform.current_bundle()
 
+        self._user_settings = settings.UserSettings(self._app)
+
         self._repeated = False
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
         # default head in is not used at the moment, but I'm not sure the
         # timecode_frame_map thing is what is expected so keeping it around ...
-        self._default_head_in = self._app.get_setting("default_head_in")
-        self._default_head_in_duration = self._app.get_setting("default_head_in_duration")
-        self._default_tail_out_duration = self._app.get_setting("default_tail_out_duration")
-        self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
+        self._default_head_in = int(self._user_settings.retrieve("default_head_in"))
+        self._default_head_in_duration = int(self._user_settings.retrieve("default_head_duration"))
+        self._default_tail_out_duration = int(self._user_settings.retrieve("default_tail_duration"))
+        self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
 
         self._siblings = None # List of other entries for the same shot
         # Later we might want to allow users to edit the mapping, so
@@ -794,7 +797,7 @@ class CutDiff(QtCore.QObject):
                 self._diff_type = _DIFF_TYPES.OMITTED_IN_CUT
             return
         # We have both a shot and an edit
-        omit_statuses = self._app.get_setting("omit_statuses") or []
+        omit_statuses = [self._user_settings.retrieve("omit_status")] or []
         if self._sg_shot["sg_status_list"] in omit_statuses:
             self._diff_type = _DIFF_TYPES.REINSTATED
             return

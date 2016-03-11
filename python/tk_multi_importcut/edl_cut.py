@@ -15,6 +15,8 @@ from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
 from .entity_line_widget import EntityLineWidget
 
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
+
 # Different steps in the process
 from .constants import _DROP_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
@@ -41,6 +43,7 @@ class EdlCut(QtCore.QObject):
         Instantiate a new empty worker
         """
         super(EdlCut, self).__init__()
+
         self._edl_file_path = None
         self._edl = None
         self._sg_entity_type = None
@@ -51,14 +54,15 @@ class EdlCut(QtCore.QObject):
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
-        self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
         self._sg_new_cut = None
         self._no_cut_for_entity = False
         self._project_import = False
         self._frame_rate = frame_rate
         # Retrieve some settings
-        self._omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
-        self._cut_link_field = "entity" #self._app.get_setting("cut_link_field")
+        self._user_settings = settings.UserSettings(self._app)
+        self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
+        self._omit_statuses = [self._user_settings.retrieve("omit_status")]
+        self._cut_link_field = "entity"
         self._num_cuts = 0
 
     @property
@@ -447,7 +451,7 @@ class EdlCut(QtCore.QObject):
             sg_cut_items = []
             sg_shots_dict = {}
             if sg_cut:
-                sg_cut_item_entity = self._app.get_setting("sg_cut_item_entity")
+                sg_cut_item_entity = "CutItem"
                 # Retrieve all cut items linked to that cut
                 sg_cut_items = self._sg.find(sg_cut_item_entity,
                     [["cut", "is", sg_cut]], [
@@ -907,7 +911,7 @@ class EdlCut(QtCore.QObject):
         else:
             self._logger.info("Creating new shots ...")
         sg_batch_data = []
-        reinstate_status = self._app.get_setting("reinstate_status")
+        reinstate_status = self._user_settings.retrieve("reinstate_status")
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
             # Retrieve values for the shot, and the shot itself
@@ -1100,7 +1104,7 @@ class EdlCut(QtCore.QObject):
         # Loop through all edits and create CutItems for them
         self._logger.info("Creating cut items ...")
         sg_batch_data = []
-        cut_item_entity = self._app.get_setting("sg_cut_item_entity")
+        cut_item_entity = "CutItem"
         for shot_name, items in self._summary.iteritems():
             for cut_diff in items:
                 edit = cut_diff.edit

@@ -23,11 +23,10 @@ class SettingsDialog(QtGui.QDialog):
     Settings dialog...
     """
     submit = QtCore.Signal(str, dict, dict, str, bool)
-    def __init__(self, parent=None, title=None):
+    def __init__(self, parent=None):
         """
         Instantiate a new dialog
         :param parent: a QWidget
-        :param title: a string, used a imported Cut name
         """
         super(SettingsDialog, self).__init__(parent)
         self.ui = Ui_settings_dialog()
@@ -45,9 +44,15 @@ class SettingsDialog(QtGui.QDialog):
         update_shot_statuses = self._user_settings.retrieve("update_shot_statuses", True)
         self._set_enabled(update_shot_statuses)
 
+        # todo: store all the defaults if they have no value when
+        # app is first opened (not from settings_dialog!)
+        # do it!
+
+        # todo: the way omit_status is handled is dodgy, I'm only
+        # grabbing one status in the gui, but the code wants a list
+        # so remember to fix the code once the gui can supply a list
+
         # General tab
-        # self.ui.email_group_line_edit.setText(
-        #     self._user_settings.retrieve("email_group", None))
         self.ui.update_shot_statuses_checkbox.setChecked(
             update_shot_statuses)
         self.ui.use_smart_fields_checkbox.setChecked(
@@ -123,10 +128,7 @@ class SettingsDialog(QtGui.QDialog):
         Save user settings from current UI values
         """
 
-        # General tab
-        # email_group = self.ui.email_group_line_edit.text()
-        # self._user_settings.store("email_group", email_group)
-        
+        # General tab        
         update_shot_statuses = self.ui.update_shot_statuses_checkbox.isChecked()
         self._user_settings.store("update_shot_statuses", update_shot_statuses)
 

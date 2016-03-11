@@ -35,7 +35,7 @@ class PostInstall(Hook):
         app = self.parent
         sg = app.shotgun
         app.log_debug("Checking if required entities are available...")
-        sg_cut_item_entity = app.get_setting("sg_cut_item_entity")
+        sg_cut_item_entity = "CutItem"
         schema = None
         try:
             app.log_debug("Checking %s..." % sg_cut_item_entity)

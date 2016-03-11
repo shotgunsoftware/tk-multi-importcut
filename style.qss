@@ -22,8 +22,8 @@ CutDiffCard #version_name_label {
     margin: 0px;
 }
 /*
-Make the line edit looks like a QLabel 
-when not in edit mode 
+Make the line edit look like a QLabel 
+when not in edit mode
 */
 EntityLineWidget {
     border: 0px solid #2C93E2;
@@ -98,6 +98,15 @@ DropAreaFrame {
 /* Font size for the label in the drop area */
 DropAreaFrame QLabel {
     font-size: 30px;
+}
+
+/* Font size for "Settings" in Settings dialog */
+#settings_label {
+    font-size: 24px;
+}
+
+#note_addressing_label, #statuses_label, #cut_fields_on_shot_label, #timecode_label, #new_shots_label {
+    font-weight: bold;
 }
 
 /*
