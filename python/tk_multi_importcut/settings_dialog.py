@@ -59,8 +59,10 @@ class SettingsDialog(QtGui.QDialog):
             self._user_settings.retrieve("use_smart_fields", False))
         
         self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
+        self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(self._change_text)
 
-        to_add = self._app.shotgun.schema_field_read("Shot")["sg_status_list"]["properties"]["display_values"]["value"]
+        to_add = self._app.shotgun.schema_field_read("Shot")[
+            "sg_status_list"]["properties"]["display_values"]["value"]
         for i in to_add:
             status = to_add[i]
             self.ui.omit_status_combo_box.addItem(status)
@@ -88,6 +90,10 @@ class SettingsDialog(QtGui.QDialog):
             ["Absolute", "Automatic", "Relative"])        
         self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(
             self._user_settings.retrieve("timecode_to_frame_mapping", 0))
+        self.ui.timecode_mapping_line_edit.setText(
+            self._user_settings.retrieve("timecode_mapping", "01:00:00:00"))
+        self.ui.frame_mapping_line_edit.setText(
+            self._user_settings.retrieve("frame_mapping", "1000"))
 
         self.ui.default_head_in_line_edit.setText(
             self._user_settings.retrieve("default_head_in", "1001"))
@@ -123,6 +129,33 @@ class SettingsDialog(QtGui.QDialog):
         self.ui.reinstate_shot_if_status_is_combo_box.setEnabled(state)
         self.ui.reinstate_status_combo_box.setEnabled(state)
 
+    def _change_text(self, state):
+        if state == 0:
+            self.ui.timecode_to_frame_mapping_instructions_label.setText("In Absolute mode, \
+the app will map the timecode values from the EDL directly as frames based on the \
+frame rate. For example, at 24fps 00:00:01:00 = frame 24.")
+            self.ui.timecode_mapping_label.hide()
+            self.ui.timecode_mapping_line_edit.hide()
+            self.ui.frame_mapping_label.hide()
+            self.ui.frame_mapping_line_edit.hide()
+        if state == 1:
+            self.ui.timecode_to_frame_mapping_instructions_label.setText("In Automatic mode, \
+the app will map the timecode values from the EDL to the Head In value from the \
+Shot in Shotgun. If that field is empty, the Default Head In value set below \
+for New Shots will be used.")
+            self.ui.timecode_mapping_label.hide()
+            self.ui.timecode_mapping_line_edit.hide()
+            self.ui.frame_mapping_label.hide()
+            self.ui.frame_mapping_line_edit.hide()
+        if state == 2:
+            self.ui.timecode_to_frame_mapping_instructions_label.setText("In Relative mode, \
+the app will map the timecode values from the EDL to frames based on a specific timecode/frame \
+relationship.")
+            self.ui.timecode_mapping_label.show()
+            self.ui.timecode_mapping_line_edit.show()
+            self.ui.frame_mapping_label.show()
+            self.ui.frame_mapping_line_edit.show()
+
     def _save_settings(self):
         """
         Save user settings from current UI values
@@ -153,6 +186,12 @@ class SettingsDialog(QtGui.QDialog):
 
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
         self._user_settings.store("timecode_to_frame_mapping", timecode_to_frame_mapping)
+
+        timecode_mapping = self.ui.timecode_mapping_line_edit.text()
+        self._user_settings.store("timecode_mapping", timecode_mapping)
+
+        frame_mapping = self.ui.frame_mapping_line_edit.text()
+        self._user_settings.store("frame_mapping", frame_mapping)
 
         default_head_in = self.ui.default_head_in_line_edit.text()
         self._user_settings.store("default_head_in", default_head_in)

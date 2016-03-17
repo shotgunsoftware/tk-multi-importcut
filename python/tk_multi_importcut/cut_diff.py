@@ -97,6 +97,8 @@ class CutDiff(QtCore.QObject):
     # Emitted when this cut diff instance is discarded
     discarded=QtCore.Signal(QtCore.QObject)
 
+    _user_settings = settings.UserSettings(sgtk.platform.current_bundle())
+
     __default_timecode_frame_mapping = None
 
     def __init__(self, name, sg_shot=None, edit=None, sg_cut_item=None):
@@ -145,16 +147,18 @@ class CutDiff(QtCore.QObject):
     @classmethod
     def retrieve_default_timecode_frame_mapping(cls):
         sgtk.platform.current_bundle()
-        timecode_frame_mapping = sgtk.platform.current_bundle().get_setting("timecode_frame_mapping")
-        if not timecode_frame_mapping["timecode"] or timecode_frame_mapping["timecode"] == "automatic":
+        timecode_to_frame_mapping = cls._user_settings.retrieve("timecode_to_frame_mapping")
+        timecode_mapping = cls._user_settings.retrieve("timecode_mapping")
+        frame_mapping = int(cls._user_settings.retrieve("frame_mapping"))
+        if timecode_mapping == "" or timecode_to_frame_mapping == 1: # 1 is the index for "automatic"
             cls.__default_timecode_frame_mapping = (
                 None,
-                timecode_frame_mapping["frame"]
+                frame_mapping
             )
         else:
             cls.__default_timecode_frame_mapping = (
-                edl.Timecode(timecode_frame_mapping["timecode"]),
-                timecode_frame_mapping["frame"]
+                edl.Timecode(timecode_mapping),
+                frame_mapping
             )
 
     @property

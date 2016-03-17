@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="tk_multi_importcut">
+    <file>fonts/OpenSans-Bold.ttf</file>
+    <file>fonts/OpenSans-Light.ttf</file>
+    <file>fonts/OpenSans-CondLight.ttf</file>
+    <file>fonts/OpenSans-Regular.ttf</file>
     <file>edl_file.png</file>
     <file>clear_search.png</file>
     <file>clear_search_hover.png</file>

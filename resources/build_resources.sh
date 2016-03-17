@@ -43,6 +43,7 @@ build_ui sequence_card
 build_ui cut_card
 build_ui cut_diff_card
 build_ui submit_dialog
+build_ui settings_dialog
 
 # build resources
 echo "building resources..."

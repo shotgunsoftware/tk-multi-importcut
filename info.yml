@@ -17,19 +17,6 @@ configuration:
         parameters: []
         default_value: '{self}/post_install.py'
         description: "Hook that ensure needed entities and fields are available"
-    timecode_frame_mapping:
-        type: dict
-        items:
-            timecode: { type: str, default_value: "automatic" }
-            frame: { type: int, default_value: 1001 }
-        default_value: { timecode: 'automatic', frame: 1001 }
-        description: "Defines a mapping between timecodes and frame numbers.
-                      If the timecode is left empty or set to 'automatic',
-                      the mapping is automatically determined on first import
-                      from the timecode cut in and frame value + default head duration.
-                      Otherwise, it should contain a timecode and a frame. For
-                      example :
-                      { timecode: '00:00:00:00', frame: 0} to use absolute timecodes."
 
 # this app works in all engines - it does not contain
 # any host application specific commands
@@ -37,7 +24,7 @@ supported_engines:
 
 # the Shotgun fields that this engine needs in order to operate correctly
 requires_shotgun_fields:
-        
+
 # More verbose description of this item 
 display_name: "Cut Import"
 description: "An app to import cut changes."
@@ -51,5 +38,3 @@ requires_engine_version:
 frameworks:
     - {"name": "tk-framework-shotgunutils", "version": "v2.x.x"}
     - {"name": "tk-framework-editorial", "version": "v1.x.x"}
-
-    

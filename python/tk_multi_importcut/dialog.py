@@ -776,6 +776,15 @@ class AppDialog(QtGui.QWidget):
         self.setStyleSheet("")
         if os.path.exists(css_file):
             try:
+                # getting the path to fonts relative to this file
+                font_path = os.path.dirname(os.path.abspath(__file__))
+                split_font_path = os.path.split(os.path.split(font_path)[0])[0]
+                font_path = os.path.join(split_font_path, "resources", "fonts")
+                # load custom font
+                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Bold.ttf"))
+                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Regular.ttf"))
+                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-CondLight.ttf"))
+                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Light.ttf"))
                 # Read css file
                 f = open(css_file)
                 css_data = f.read()
