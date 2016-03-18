@@ -33,6 +33,7 @@ from .ui.dialog import Ui_Dialog
 from .processor import Processor
 from .logger import BundleLogHandler, get_logger, ShortNameFilter
 from .entity_types_view import EntityTypesView
+from .projects_view import ProjectsView
 from .entities_view import EntitiesView
 from .cuts_view import CutsView
 from .cut_diff import _DIFF_TYPES, CutDiff
@@ -42,7 +43,7 @@ from .settings_dialog import SettingsDialog
 from .downloader import DownloadRunner
 
 # Different steps in the process
-from .constants import _DROP_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 def show_dialog(app_instance):
     """
@@ -94,6 +95,7 @@ class AppDialog(QtGui.QWidget):
     Main application dialog window
     """
     new_edl = QtCore.Signal(str)
+    get_projects = QtCore.Signal(str)
     get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
@@ -141,6 +143,7 @@ class AppDialog(QtGui.QWidget):
         # Handle data and processong in a separate thread
         self._processor = Processor(frame_rate)
         self.new_edl.connect(self._processor.new_edl)
+        self.get_projects.connect(self._processor.retrieve_projects)
         self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
@@ -152,6 +155,15 @@ class AppDialog(QtGui.QWidget):
         
         # Let's do something when something is dropped
         self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
+
+        # Instantiate a projects view handler
+        self._projects_view = ProjectsView(self.ui.project_grid)
+        self._projects_view.project_chosen.connect(self.show_project)
+        self._projects_view.selection_changed.connect(self.selection_changed)
+        self._projects_view.new_info_message.connect(self.display_info_message)
+        self._processor.new_sg_project.connect(self._projects_view.new_sg_project)
+        self.ui.projects_search_line_edit.search_edited.connect(self._projects_view.search)
+        self.ui.projects_search_line_edit.search_changed.connect(self._projects_view.search)
 
         # Instantiate a entity type view handler
         self._entity_types_view = EntityTypesView(self.ui.entity_types_layout)
@@ -206,11 +218,8 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
-        self.ui.settings_page_1_button.clicked.connect(self.settings)
-        self.ui.settings_page_2_button.clicked.connect(self.settings)
-        self.ui.settings_page_3_button.clicked.connect(self.settings)
-        self.ui.settings_page_4_button.clicked.connect(self.settings)
-        self.ui.settings_page_5_button.clicked.connect(self.settings)
+        for i in range(1, 7):
+            eval("self.ui.settings_page_%s_button.clicked.connect(self.settings)" % i)
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
 
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
@@ -548,11 +557,13 @@ class AppDialog(QtGui.QWidget):
         """
         if not self._selected_sg_entity[self._step]:
             raise RuntimeError("No selection for current step %d" % self._step)
-        if self._step==_ENTITY_TYPE_STEP:
+        if self._step == _ENTITY_TYPE_STEP:
             self.show_entities(self._selected_sg_entity[self._step])
-        elif self._step==_ENTITY_STEP:
+        elif self._step == _PROJECT_STEP:
+            self.show_project(self._selected_sg_project[self._step])
+        elif self._step == _ENTITY_STEP:
             self.show_entity(self._selected_sg_entity[self._step])
-        elif self._step==_CUT_STEP:
+        elif self._step == _CUT_STEP:
             self.show_cut(self._selected_sg_entity[self._step])
         else:
             # Should never happen
@@ -594,6 +605,28 @@ class AppDialog(QtGui.QWidget):
                 name,
         ))
         self.show_cuts_for_sequence.emit(sg_entity)
+
+    @QtCore.Slot(dict)
+    def show_project(self, sg_project):
+        """
+        Called when cuts needs to be shown for a particular project
+        """
+        name = sg_project.get("code",
+            sg_project.get("name",
+                sg_project.get("title", "????")
+            )
+        )
+        type_name = sgtk.util.get_project_type_display_name(
+            sgtk.platform.current_bundle().sgtk,
+            sg_project["type"],
+        )
+        self._logger.info("Retrieving cuts for %s" % name )
+        self.ui.selected_sequence_label.setText(
+            "%s : <big><b>%s</big></b>" % (
+                sg_project["type"],
+                name,
+        ))
+        self.show_cuts_for_sequence.emit(sg_project)
 
     @QtCore.Slot(dict)
     def show_cut(self, sg_cut):

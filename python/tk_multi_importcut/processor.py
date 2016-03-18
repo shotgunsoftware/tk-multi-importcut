@@ -36,8 +36,10 @@ class Processor(QtCore.QThread):
     set_busy                = QtCore.Signal(bool)
     step_done               = QtCore.Signal(int)
     step_failed             = QtCore.Signal(int)
+    new_sg_project          = QtCore.Signal(dict)
     new_sg_entity           = QtCore.Signal(dict)
     new_sg_cut              = QtCore.Signal(dict)
+    retrieve_projects       = QtCore.Signal(str)
     retrieve_entities       = QtCore.Signal(str)
     retrieve_cuts           = QtCore.Signal(dict)
     show_cut_diff           = QtCore.Signal(dict)
@@ -172,6 +174,7 @@ class Processor(QtCore.QThread):
         # Orders we receive
         self.new_edl.connect(self._edl_cut.load_edl)
         self.reset.connect(self._edl_cut.reset)
+        self.retrieve_projects.connect(self._edl_cut.retrieve_projects)
         self.retrieve_entities.connect(self._edl_cut.retrieve_entities)
         self.retrieve_cuts.connect(self._edl_cut.retrieve_cuts)
         self.show_cut_diff.connect(self._edl_cut.show_cut_diff)
@@ -179,6 +182,7 @@ class Processor(QtCore.QThread):
         # Results / orders we send
         self._edl_cut.step_done.connect(self.step_done)
         self._edl_cut.step_failed.connect(self.step_failed)
+        self._edl_cut.new_sg_project.connect(self.new_sg_project)
         self._edl_cut.new_sg_entity.connect(self.new_sg_entity)
         self._edl_cut.new_sg_cut.connect(self.new_sg_cut)
         self._edl_cut.new_cut_diff.connect(self.new_cut_diff)

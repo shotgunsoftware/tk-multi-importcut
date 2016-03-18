@@ -248,7 +248,8 @@ QPushButton:enabled#select_button {
 QLabel#entity_picker_title_label_2,
 QLabel#entity_picker_title_label,
 QLabel#sequences_title_label,
-QLabel#cuts_title_label {
+QLabel#cuts_title_label,
+QLabel#select_project_label {
     font-size: 20px;
 }
 QLabel#cut_summary_title_label {
