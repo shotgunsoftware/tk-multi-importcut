@@ -100,27 +100,30 @@ DropAreaFrame QLabel {
     font-size: 30px;
 }
 
-
-
-
-
-
-
-
-/* testing */
 * {
     font-family: "Open Sans";
-    font-size: 12px;
-    color: #C8C8C8 ;
+    outline: 0;
+}
+
+/* general bg color for the whole settings_dialog */
+#settings_dialog {
     background-color: #3c3e42;
 }
 
-/* style the tab border */
+/* styling the tab border */
 #general_timecode_frames_tab::pane {
     border-top: 1px solid black;
     border-bottom: 1px solid #3c3e42;
 }
 
+/* getting fonts to be the right size */
+#description_1_label, #email_group_combo_box, #omit_status_combo_box, #reinstate_shot_if_status_is_combo_box, #reinstate_status_combo_box, #timecode_to_frame_mapping_combo_box, #timecode_to_frame_mapping_instructions_label, #description_2_label, #default_frame_rate_line_edit, #timecode_mapping_line_edit, #frame_mapping_line_edit, #default_head_in_line_edit, #default_head_duration_line_edit, #default_tail_duration_line_edit {
+    font-size: 12px;
+}
+
+/* todo: this is bad, it's going to style all QTabBar widgets
+try to figure out how to focus on just the one in the
+settings_dialog (doesn't really matter now cuz there is only one */
 QTabBar::tab {
     font-size: 14px;
     padding: 8px;
@@ -134,6 +137,7 @@ QTabBar::tab {
 
 }
 
+/* todo: same badness */
 QTabBar::tab:selected {
     color: #C8C8C8;
     border-bottom-color: #26beff;
@@ -155,19 +159,7 @@ QTabBar::tab:selected {
     color: #606060;
 }
 
-#save_settings_button_box::Ok {
-    background-color: red;
-}
-
-* {
-    outline: 0;
-}
-
-QDialogButtonBox::Ok {
-    background-color: red;
-}
-
-/* dimming certain text */
+/* dimming certain text for dramatic effect */
 #send_cut_summary_note_to_label, #update_shot_statuses_label, #omit_status_label, #reinstate_shot_if_status_is_label, #reinstate_status_label, #use_smart_fields_label, #default_frame_rate_label, #timecode_to_frame_mapping_label, #default_head_in_label, #default_head_duration_label, #default_tail_duration_label, #timecode_mapping_label, #frame_mapping_label {
     font-family: "Open Sans";
     font-size: 12px;
@@ -182,21 +174,9 @@ QDialogButtonBox::Ok {
 
 /* making section headings bold */
 #note_addressing_label, #statuses_label, #cut_fields_on_shot_label, #timecode_label, #new_shots_label {
+    font-size: 12px;
     font-weight: bold;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*
 Highlight the drop area when something is dragged over

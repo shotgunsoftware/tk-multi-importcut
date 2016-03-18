@@ -83,7 +83,7 @@
      <property name="tabsClosable">
       <bool>false</bool>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="general_tab">
       <property name="maximumSize">
        <size>
         <width>493</width>
@@ -117,7 +117,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="cut_summary_layout">
          <property name="topMargin">
           <number>2</number>
          </property>
@@ -624,7 +624,7 @@
           <number>2</number>
          </property>
          <item>
-          <widget class="QLabel" name="label_15">
+          <widget class="QLabel" name="description_2_label">
            <property name="text">
             <string>When creating new Shots in Shotgun, the app will use the following numbers for start frame and handles.</string>
            </property>
