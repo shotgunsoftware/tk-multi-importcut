@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>941</width>
+    <width>969</width>
     <height>581</height>
    </rect>
   </property>
@@ -32,7 +32,7 @@
    <item>
     <widget class="AnimatedStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="drop_page">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -48,6 +48,52 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <item>
+          <spacer name="horizontalSpacer_9">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="settings_page_1_button">
+           <property name="maximumSize">
+            <size>
+             <width>22</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="resources.qrc">
+             <normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>44</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item>
         <widget class="DropAreaFrame" name="drop_area_frame">
          <property name="frameShape">
@@ -147,12 +193,12 @@ EDL</string>
      <widget class="QWidget" name="entity_types_page">
       <layout class="QVBoxLayout" name="verticalLayout_8" stretch="0,1">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1,1,0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,1,1,0">
          <property name="leftMargin">
           <number>12</number>
          </property>
          <property name="rightMargin">
-          <number>12</number>
+          <number>0</number>
          </property>
          <item>
           <widget class="QLabel" name="entity_picker_message_label">
@@ -160,6 +206,19 @@ EDL</string>
             <string>blah blah blah blah</string>
            </property>
           </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_12">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
          <item>
           <widget class="QLabel" name="entity_picker_title_label">
@@ -185,9 +244,34 @@ EDL</string>
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="settings_button">
+          <widget class="QPushButton" name="settings_page_2_button">
+           <property name="maximumSize">
+            <size>
+             <width>30</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
            <property name="text">
-            <string>set</string>
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="resources.qrc">
+             <normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>44</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="default">
+            <bool>false</bool>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -271,7 +355,10 @@ EDL</string>
         <number>0</number>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,1,0">
+        <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,1,0,0">
+         <property name="spacing">
+          <number>12</number>
+         </property>
          <property name="sizeConstraint">
           <enum>QLayout::SetDefaultConstraint</enum>
          </property>
@@ -282,7 +369,7 @@ EDL</string>
           <number>4</number>
          </property>
          <property name="rightMargin">
-          <number>12</number>
+          <number>0</number>
          </property>
          <property name="bottomMargin">
           <number>4</number>
@@ -341,6 +428,32 @@ EDL</string>
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="settings_page_3_button">
+           <property name="maximumSize">
+            <size>
+             <width>22</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="resources.qrc">
+             <normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>22</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -353,8 +466,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>915</width>
+            <height>442</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -413,7 +526,10 @@ EDL</string>
         <number>0</number>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,0,1,0,0">
+        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,0,1,0,0,0">
+         <property name="spacing">
+          <number>12</number>
+         </property>
          <property name="leftMargin">
           <number>12</number>
          </property>
@@ -421,7 +537,7 @@ EDL</string>
           <number>4</number>
          </property>
          <property name="rightMargin">
-          <number>12</number>
+          <number>0</number>
          </property>
          <property name="bottomMargin">
           <number>4</number>
@@ -518,6 +634,32 @@ EDL</string>
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="settings_page_4_button">
+           <property name="maximumSize">
+            <size>
+             <width>22</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="resources.qrc">
+             <normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>22</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -530,8 +672,8 @@ EDL</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>915</width>
+            <height>440</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="cuts_grid">
@@ -597,7 +739,10 @@ EDL</string>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0,0,0,0,0,1,0">
+         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0,0,0,0,0,1,0,0">
+          <property name="spacing">
+           <number>12</number>
+          </property>
           <item>
            <widget class="QPushButton" name="total_button">
             <property name="sizePolicy">
@@ -804,6 +949,32 @@ EDL</string>
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="settings_page_5_button">
+            <property name="maximumSize">
+             <size>
+              <width>22</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>22</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -848,8 +1019,8 @@ EDL</string>
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>98</width>
-              <height>28</height>
+              <width>943</width>
+              <height>380</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">

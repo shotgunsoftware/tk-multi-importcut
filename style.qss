@@ -123,7 +123,7 @@ DropAreaFrame QLabel {
 
 /* todo: this is bad, it's going to style all QTabBar widgets
 try to figure out how to focus on just the one in the
-settings_dialog (doesn't really matter now cuz there is only one */
+settings_dialog (doesn't really matter now cuz there is only one) */
 QTabBar::tab {
     font-size: 14px;
     padding: 8px;

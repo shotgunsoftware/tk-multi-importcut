@@ -206,7 +206,11 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
-        self.ui.settings_button.clicked.connect(self.settings)
+        self.ui.settings_page_1_button.clicked.connect(self.settings)
+        self.ui.settings_page_2_button.clicked.connect(self.settings)
+        self.ui.settings_page_3_button.clicked.connect(self.settings)
+        self.ui.settings_page_4_button.clicked.connect(self.settings)
+        self.ui.settings_page_5_button.clicked.connect(self.settings)
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
 
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
