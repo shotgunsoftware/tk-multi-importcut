@@ -55,6 +55,7 @@ class EdlCut(QtCore.QObject):
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
+        self._project = self._ctx.project
         self._sg_new_cut = None
         self._no_cut_for_entity = False
         self._project_import = False
@@ -208,7 +209,7 @@ class EdlCut(QtCore.QObject):
             if versions_names:
                 sg_versions = self._sg.find(
                     "Version", [
-                        ["project", "is", self._ctx.project],
+                        ["project", "is", self._project],
                         ["code", "in", versions_names.keys()],
                     ],
                     ["code", "entity", "entity.Shot.code", "image"]
@@ -227,6 +228,7 @@ class EdlCut(QtCore.QObject):
                             edit._shot_name = sg_version["entity.Shot.code"]
             #self.retrieve_entities()
             # Can go to next step
+            print 'emitting %s' % _DROP_STEP
             self.step_done.emit(_DROP_STEP)
         except Exception, e:
             self._edl = None
@@ -255,7 +257,7 @@ class EdlCut(QtCore.QObject):
                 r, g, b = sg_status["bg_color"].split(",")
                 sg_status["_bg_hex_color"] = "#%02x%02x%02x" % (int(r), int(g), int(b))
             status_dict[sg_status["code"]] = sg_status
-        self._logger.info("Retrieving %s(s) for project %s ..." % (entity_type, self._ctx.project["name"]))
+        self._logger.info("Retrieving %s(s) for project %s ..." % (entity_type, self._project["name"]))
         self.got_busy.emit(None)
         try:
             # Retrieve a "link" field on Shots which accepts our entity type
@@ -287,21 +289,21 @@ class EdlCut(QtCore.QObject):
                 ))
             if entity_type == "Project":
                 sg_entities = self._sg.find("Project",
-                    [["id", "is", self._ctx.project["id"]]],
+                    [["id", "is", self._project["id"]]],
                     [ "name", "id", "sg_status", "image", "sg_description"],
                     order=[{"field_name" : "name", "direction" : "asc"}]
                 )
             else:
                 sg_entities = self._sg.find(
                     entity_type,
-                    [["project", "is", self._ctx.project]],
+                    [["project", "is", self._project]],
                     [ "code", "name", "title", "id", "sg_status_list", "image", "description"],
                     order=[{"field_name" : "code", "direction" : "asc"}]
                 )
             if not sg_entities:
                 raise RuntimeWarning("Couldn't retrieve any %s for project %s" % (
                     entity_type,
-                    self._ctx.project["name"],
+                    self._project["name"],
                 ))
             for sg_entity in sg_entities:
                 # Project uses sg_status and not sg_status_list
@@ -338,91 +340,15 @@ class EdlCut(QtCore.QObject):
 
         :param entity_type: A Shotgun entity type name, e.g. "Sequence"
         """
-        if entity_type == "Project":
-            self._project_import = True
-        else:
-            self._project_import = False
-        self._sg_entity_type = entity_type
-        self._sg_shot_link_field_name = None
-        # Retrieve display names and colors for statuses
-        sg_statuses = self._sg.find("Status", [], ["code", "name", "icon", "bg_color"])
-        status_dict = {}
-        for sg_status in sg_statuses:
-            if sg_status["bg_color"]:
-                r, g, b = sg_status["bg_color"].split(",")
-                sg_status["_bg_hex_color"] = "#%02x%02x%02x" % (int(r), int(g), int(b))
-            status_dict[sg_status["code"]] = sg_status
-        self._logger.info("Retrieving %s(s) for project %s ..." % (entity_type, self._ctx.project["name"]))
         self.got_busy.emit(None)
         try:
-            # Retrieve a "link" field on Shots which accepts our entity type
-            shot_schema = self._sg.schema_field_read("Shot")
-            # Prefer a sg_<entity type> field if available
-            entity_type_name = sgtk.util.get_entity_type_display_name(
-                sgtk.platform.current_bundle().sgtk, entity_type,
-            )
-            field_name = "sg_%s" % entity_type_name.lower()
-            field = shot_schema.get(field_name)
-            if field and field["data_type"]["value"] == "entity" and self._sg_entity_type in field["properties"]["valid_types"]["value"]:
-                self._logger.debug("Using preferred shot field %s" % field_name)
-                self._sg_shot_link_field_name = field_name
-            else:
-                # General lookup
-                for field_name, field in shot_schema.iteritems():
-                    if field["data_type"]["value"] == "entity":
-                        if self._sg_entity_type in field["properties"]["valid_types"]["value"]:
-                            self._sg_shot_link_field_name = field_name
-                            break
-            if not self._sg_shot_link_field_name:
-                self._logger.warning("Couldn't retrieve a field accepting %s on shots" % (
-                    self._sg_entity_type,
-                ))
-            else:
-                self._logger.info("Will use field %s to link %s to shots" % (
-                    self._sg_shot_link_field_name,
-                    self._sg_entity_type
-                ))
-            if entity_type == "Project":
-                sg_projects = self._sg.find("Project",
-                    [["id", "is", self._ctx.project["id"]]],
-                    [ "name", "id", "sg_status", "image", "sg_description"],
-                    order=[{"field_name" : "name", "direction" : "asc"}]
-                )
-            else:
-                sg_projects = self._sg.find(
-                    entity_type,
-                    [["project", "is", self._ctx.project]],
-                    [ "code", "name", "title", "id", "sg_status_list", "image", "description"],
-                    order=[{"field_name" : "code", "direction" : "asc"}]
-                )
-            if not sg_projects:
-                raise RuntimeWarning("Couldn't retrieve any %s for project %s" % (
-                    entity_type,
-                    self._ctx.project["name"],
-                ))
-            for sg_entity in sg_projects:
-                # Project uses sg_status and not sg_status_list
-                status = sg_entity.get("sg_status_list",
-                    sg_entity.get("sg_status", "")
-                ) or ""
-                # Register a display status if one available, with the color from SG
-                if status in status_dict:
-                    sg_entity["_display_status"] = status_dict[status]
-                else:
-                    # Project uses a list of strings, not actual statuses
-                    sg_entity["_display_status"] = {
-                        "name" : status.title(),
-                    }
-                self.new_sg_entity.emit(sg_entity)
-            self._logger.info("Retrieved %d %s." % (
-                len(sg_projects),
-                entity_type,
-            ))
-            if entity_type == "Project":
-                # Skip project selection screen
-                self.retrieve_cuts(sg_projects[0])
-            else:
-                self.step_done.emit(_ENTITY_TYPE_STEP)
+            fields = ["name", "id", "sg_status", "image", "sg_description"]
+            order = [{"field_name" : "name", "direction" : "asc"}]
+            sg_projects = self._sg.find("Project", [["is_template", "is", False]], fields, order=order)
+            self._logger.info("Retrieved %d Projects." % (len(sg_projects)))
+            for sg_project in sg_projects:
+                self.new_sg_project.emit(sg_project)
+            # self.step_done.emit(_ENTITY_TYPE_STEP)
         except Exception, e :
             self._logger.exception(str(e))
         finally:
@@ -624,7 +550,7 @@ class EdlCut(QtCore.QObject):
             if more_shot_names:
                 sg_more_shots = self._sg.find(
                     "Shot",
-                    [["project", "is", self._ctx.project], ["code", "in", list(more_shot_names)]],
+                    [["project", "is", self._project], ["code", "in", list(more_shot_names)]],
                     shot_fields,
                 )
                 for sg_shot in sg_more_shots:
@@ -945,7 +871,7 @@ class EdlCut(QtCore.QObject):
         subject, body = summary.get_report(title, links)
         contents = "%s\n%s" % (description, body)
         data = {
-            "project" : self._ctx.project,
+            "project" : self._project,
             "subject" : subject,
             "content": contents,
             "note_links": [self._sg_entity] + (sg_links if sg_links else []),
@@ -974,7 +900,7 @@ class EdlCut(QtCore.QObject):
             tc_end = str(tc_end)
         sg_cut = self._sg.create(
             "Cut", {
-                "project"               : self._ctx.project,
+                "project"               : self._project,
                 "code"                  : title,
                 self._cut_link_field    : self._sg_entity,
                 "fps"                   : float(self._edl.fps),
@@ -1031,7 +957,7 @@ class EdlCut(QtCore.QObject):
                     self.entity_name
                 ))
                 data = {
-                    "project" : self._ctx.project,
+                    "project" : self._project,
                     "code" : cut_diff.name,
                     "updated_by" : self._ctx.user,
                     "sg_cut_order" : min_cut_order,
@@ -1164,7 +1090,7 @@ class EdlCut(QtCore.QObject):
                             "request_type" : "create",
                             "entity_type" : "Version",
                             "data" : {
-                                "project" : self._ctx.project,
+                                "project" : self._project,
                                 "code" : version_name,
                                 "entity" : cut_diff.sg_shot,
                                 "updated_by" : self._ctx.user,
@@ -1213,7 +1139,7 @@ class EdlCut(QtCore.QObject):
                         "request_type" : "create",
                         "entity_type" : cut_item_entity,
                         "data" : {
-                            "project" : self._ctx.project,
+                            "project" : self._project,
                             "code" : edit.reel_name,
                             "cut" : sg_cut,
                             "cut_order" : edit.id,

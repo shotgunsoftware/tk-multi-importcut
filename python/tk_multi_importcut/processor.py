@@ -7,6 +7,7 @@
 # By accessing, using, copying or modifying this work you indicate your 
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
 # not expressly granted therein are reserved by Shotgun Software Inc.
+import sys
 import sgtk
 from sgtk.platform.qt import QtCore
 from .logger import get_logger
@@ -159,6 +160,9 @@ class Processor(QtCore.QThread):
     @property
     def project_import(self):
         return self._edl_cut._project_import
+
+    def set_project(self, sg_project):
+        self._edl_cut._project = sg_project
 
     def run(self):
         """

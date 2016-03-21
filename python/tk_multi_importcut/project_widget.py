@@ -16,21 +16,21 @@ from sgtk.platform.qt import QtCore, QtGui
 from .downloader import DownloadRunner
 from .logger import get_logger
 
-from .ui.sequence_card import Ui_SequenceCard
+from .ui.project_card import Ui_ProjectCard
 
 from .constants import _COLORS, _STATUS_COLORS
 
 class ProjectCard(QtGui.QFrame):
     """
-    Widget displaying a Shotgun Sequence
+    Widget displaying a Shotgun Project
     """
-    # Emitted when cut changes for the attached Sequence should be displayed
-    show_sequence = QtCore.Signal(dict)
+    # Emitted when cut changes for the attached Project should be displayed
+    show_project = QtCore.Signal(dict)
     # Emitted when this card wants to be selected
     highlight_selected = QtCore.Signal(QtGui.QWidget)
     def __init__(self, parent, sg_project):
         """
-        Instantiate a new ProjectCard for the given Shotgun Sequence
+        Instantiate a new ProjectCard for the given Shotgun Project
         :param parent: A parent QWidget
         :param sg_project: A Shotgun project, as a dictionary, to display
         """
@@ -39,18 +39,18 @@ class ProjectCard(QtGui.QFrame):
         self._sg_project = sg_project
         self._logger = get_logger()
 
-        self.ui = Ui_SequenceCard()
+        self.ui = Ui_ProjectCard()
         self.ui.setupUi(self)
         self.ui.title_label.setText("%s" % self.project_name)
-        if self._sg_project["_display_status"]:
-            self.ui.status_label.setText(
-                "<font color=%s>%s</font>" % (
-                    _STATUS_COLORS.get(self.project_status, _COLORS["lgrey"]),
-                    self._sg_project["_display_status"]["name"].upper(),
-                )
-            )
-        else:
-            self.ui.status_label.setText(self.project_status)
+        # if self._sg_project["_display_status"]:
+        #     self.ui.status_label.setText(
+        #         "<font color=%s>%s</font>" % (
+        #             _STATUS_COLORS.get(self.project_status, _COLORS["lgrey"]),
+        #             self._sg_project["_display_status"]["name"].upper(),
+        #         )
+        #     )
+        # else:
+        #     self.ui.status_label.setText(self.project_status)
         self.ui.details_label.setText("%s" % (self.project_description or ""))
         self.ui.select_button.setVisible(False)
         self.ui.select_button.clicked.connect(self.show_selected)
@@ -118,10 +118,10 @@ class ProjectCard(QtGui.QFrame):
     @QtCore.Slot()
     def show_selected(self):
         """
-        Gently ask to show cut summary for the attached Shotgun sequence
+        Gently ask to show cut summary for the attached Shotgun project
         """
         self.highlight_selected.emit(self)
-        self.show_sequence.emit(self._sg_project)
+        self.show_project.emit(self._sg_project)
         self.ui.select_button.setVisible(False)
 
     @QtCore.Slot(str)
@@ -134,7 +134,7 @@ class ProjectCard(QtGui.QFrame):
 
     def mouseDoubleClickEvent(self, event):
         """
-        Handle double clicks : show cut changes for the attached sequence
+        Handle double clicks : show cut changes for the attached project
         """
         self.show_selected()
 
