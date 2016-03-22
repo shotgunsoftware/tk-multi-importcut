@@ -221,22 +221,22 @@ EntityTypeCard #icon_label {
     min-height: 100px;
 }
 
-EntityCard, CutCard, CutDiffCard {
+EntityCard, CutCard, CutDiffCard, ProjectCard {
     border: 1px none black;
     background-color: #525252;
     border-radius: 2px;
 }
 /* Highlight selected cards */
-EntityCard[selected="true"], CutCard[selected="true"], EntityTypeCard[selected="true"] {
+ProjectCard[selected="true"], EntityCard[selected="true"], CutCard[selected="true"], EntityTypeCard[selected="true"] {
     border: 1px solid #2C93E2;
     background-color: rgba(44, 147, 226, 25%);
 }
 /* Labels on Sequence cards */
-EntityCard #title_label {
+ProjectCard #title_label, EntityCard #title_label {
     font-weight: bold;
     font-size: 15px;
 }
-EntityCard #status_label {
+ProjectCard #status_label, EntityCard #status_label {
     font-weight: bold;
 }
 
@@ -272,7 +272,7 @@ widgets so the QScrollArea backgroun-color is used, making it yellow
 so it's obbvious it is a "dummy" color. Not setting it or setting it
 to anything else than a real color doesn't work ...
 */
-#sequence_area, #cuts_area, #cut_summary_widgets {
+#project_area, #sequence_area, #cuts_area, #cut_summary_widgets {
     background-color: yellow;
 }
 

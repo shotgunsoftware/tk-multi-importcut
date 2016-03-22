@@ -331,15 +331,9 @@ class AppDialog(QtGui.QWidget):
         self.ui.entity_picker_message_label.setText(
             "Importing %s ..." % os.path.basename(paths[0]),
         )
-        # todo: make sure it does in fact get set to None
-        # and not an empty dict of some kind
-        # if self._ctx.project == None or self._ctx.project == {}:
-        if 1 == 1:
-            self.show_projects()
-        else:
-            # todo
-            # some code here to skip the project selection screen
-            pass
+        self.show_projects()
+        if self._ctx.project != None:
+            self.goto_step(_ENTITY_TYPE_STEP)
         #self._logger.info( "Processing %s" % (paths[0] ))
 
     @QtCore.Slot(int, str)
