@@ -41,12 +41,8 @@ class SettingsDialog(QtGui.QDialog):
         apply_button = buttons[0]
         apply_button.setText("Apply")
 
-        update_shot_statuses = self._user_settings.retrieve("update_shot_statuses", True)
+        update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
         self._set_enabled(update_shot_statuses)
-
-        # todo: store all the defaults if they have no value when
-        # app is first opened (not from settings_dialog!)
-        # do it!
 
         # todo: the way omit_status is handled is dodgy, I'm only
         # grabbing one status in the gui, but the code wants a list
@@ -56,7 +52,7 @@ class SettingsDialog(QtGui.QDialog):
         self.ui.update_shot_statuses_checkbox.setChecked(
             update_shot_statuses)
         self.ui.use_smart_fields_checkbox.setChecked(
-            self._user_settings.retrieve("use_smart_fields", False))
+            self._user_settings.retrieve("use_smart_fields"))
         
         self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
         self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(self._change_text)
@@ -75,13 +71,13 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.email_group_combo_box.addItem(i["code"])
 
         self.ui.email_group_combo_box.setCurrentIndex(
-            self._user_settings.retrieve("email_group", 0))
+            self._user_settings.retrieve("email_group"))
         self.ui.omit_status_combo_box.setCurrentIndex(
-            self._user_settings.retrieve("omit_status", 4))
+            self._user_settings.retrieve("omit_status"))
         self.ui.reinstate_shot_if_status_is_combo_box.setCurrentIndex(
-            self._user_settings.retrieve("reinstate_shot_if_status_is", 0))
+            self._user_settings.retrieve("reinstate_shot_if_status_is"))
         self.ui.reinstate_status_combo_box.setCurrentIndex(
-            self._user_settings.retrieve("reinstate_status", 1))
+            self._user_settings.retrieve("reinstate_status"))
 
         # Timecode/Frames tab
         self.ui.default_frame_rate_line_edit.setText(
@@ -89,7 +85,7 @@ class SettingsDialog(QtGui.QDialog):
         self.ui.timecode_to_frame_mapping_combo_box.addItems(
             ["Absolute", "Automatic", "Relative"])        
         self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(
-            self._user_settings.retrieve("timecode_to_frame_mapping", 0))
+            self._user_settings.retrieve("timecode_to_frame_mapping"))
         self.ui.timecode_mapping_line_edit.setText(
             self._user_settings.retrieve("timecode_mapping", "01:00:00:00"))
         self.ui.frame_mapping_line_edit.setText(

@@ -119,6 +119,36 @@ class AppDialog(QtGui.QWidget):
         self._app = sgtk.platform.current_bundle()
         self._ctx = self._app.context
         
+        self._user_settings = settings.UserSettings(self._app)
+
+        # set defaults, but don't override user settings
+        if self._user_settings.retrieve("update_shot_statuses") == None:
+            self._user_settings.store("update_shot_statuses", True)
+        if self._user_settings.retrieve("use_smart_fields") == None:
+            self._user_settings.store("use_smart_fields", False)
+        if self._user_settings.retrieve("email_group") == None:
+            self._user_settings.store("email_group", 0)
+        if self._user_settings.retrieve("omit_status") == None:
+            self._user_settings.store("omit_status", 4)
+        if self._user_settings.retrieve("reinstate_shot_if_status_is") == None:
+            self._user_settings.store("reinstate_shot_if_status_is", 4)
+        if self._user_settings.retrieve("reinstate_status") == None:
+            self._user_settings.store("reinstate_status", 1)
+        if self._user_settings.retrieve("default_frame_rate") == None:
+            self._user_settings.store("default_frame_rate", "24")
+        if self._user_settings.retrieve("timecode_to_frame_mapping") == None:
+            self._user_settings.store("timecode_to_frame_mapping", 0)
+        if self._user_settings.retrieve("timecode_mapping") == None:
+            self._user_settings.store("timecode_mapping", "01:00:00:00")
+        if self._user_settings.retrieve("frame_mapping") == None:
+            self._user_settings.store("frame_mapping", "1000")
+        if self._user_settings.retrieve("default_head_in") == None:
+            self._user_settings.store("default_head_in", "1001")
+        if self._user_settings.retrieve("default_head_duration") == None:
+            self._user_settings.store("default_head_duration", "24")
+        if self._user_settings.retrieve("default_tail_duration") == None:
+            self._user_settings.store("default_tail_duration", "24")
+
         self._busy = False
         # Current step being displayed
         self._step = 0
