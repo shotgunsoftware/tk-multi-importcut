@@ -614,7 +614,7 @@ class AppDialog(QtGui.QWidget):
         if self._step == _ENTITY_TYPE_STEP:
             self.show_entities(self._selected_sg_entity[self._step])
         elif self._step == _PROJECT_STEP:
-            self.show_projects(self._selected_sg_entity[self._step])
+            self.show_projects()
         elif self._step == _ENTITY_STEP:
             self.show_entity(self._selected_sg_entity[self._step])
         elif self._step == _CUT_STEP:
