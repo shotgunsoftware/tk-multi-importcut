@@ -59,9 +59,12 @@ class EdlCut(QtCore.QObject):
         self._sg_new_cut = None
         self._no_cut_for_entity = False
         self._project_import = False
-        self._frame_rate = frame_rate
         # Retrieve some settings
         self._user_settings = settings.UserSettings(self._app)
+        if frame_rate != None:
+            self._frame_rate = frame_rate
+        else:
+            self._frame_rate = float(self._user_settings.retrieve("default_frame_rate"))
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
         self._omit_statuses = [self._user_settings.retrieve("omit_status")]
         self._cut_link_field = "entity"
@@ -827,7 +830,10 @@ class EdlCut(QtCore.QObject):
             self._sg_new_cut = self.create_sg_cut(title, description)
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
-            self.update_sg_versions()
+            # todo: this should be set as an option somewhere; we don't
+            # want to roll this out with nab, but wb and other studio
+            # clients may rely on this happening
+            # self.update_sg_versions()
             self.progress_changed.emit(2)
             self.create_sg_cut_items(self._sg_new_cut)
             self.progress_changed.emit(3)

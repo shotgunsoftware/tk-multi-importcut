@@ -272,7 +272,7 @@ class CutSummary(QtCore.QObject):
         self._tc_end = tc_edit_out
         self._edit_offset = 0
         self._duration = 0
-        self._fps = 24.0
+        self._fps = float(self._user_settings.retrieve("default_frame_rate"))
         
         # todo: Stephane moved the edit offset & duration code
         # here from show_cut_diff in edl_cut.py, but it doesn't

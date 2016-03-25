@@ -81,22 +81,22 @@ class SettingsDialog(QtGui.QDialog):
 
         # Timecode/Frames tab
         self.ui.default_frame_rate_line_edit.setText(
-            self._user_settings.retrieve("default_frame_rate", "24"))
+            self._user_settings.retrieve("default_frame_rate"))
         self.ui.timecode_to_frame_mapping_combo_box.addItems(
             ["Absolute", "Automatic", "Relative"])        
         self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(
             self._user_settings.retrieve("timecode_to_frame_mapping"))
         self.ui.timecode_mapping_line_edit.setText(
-            self._user_settings.retrieve("timecode_mapping", "01:00:00:00"))
+            self._user_settings.retrieve("timecode_mapping"))
         self.ui.frame_mapping_line_edit.setText(
-            self._user_settings.retrieve("frame_mapping", "1000"))
+            self._user_settings.retrieve("frame_mapping"))
 
         self.ui.default_head_in_line_edit.setText(
-            self._user_settings.retrieve("default_head_in", "1001"))
+            self._user_settings.retrieve("default_head_in"))
         self.ui.default_head_duration_line_edit.setText(
-            self._user_settings.retrieve("default_head_duration", "8"))
+            self._user_settings.retrieve("default_head_duration"))
         self.ui.default_tail_duration_line_edit.setText(
-            self._user_settings.retrieve("default_tail_duration", "8"))
+            self._user_settings.retrieve("default_tail_duration"))
 
         # Cancel or Save
         self.ui.save_settings_button_box.rejected.connect(self.close_dialog)

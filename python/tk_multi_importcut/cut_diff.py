@@ -157,7 +157,10 @@ class CutDiff(QtCore.QObject):
             )
         else:
             cls.__default_timecode_frame_mapping = (
-                edl.Timecode(timecode_mapping),
+                edl.Timecode(
+                    timecode_mapping,
+                    fps=int(cls._user_settings.retrieve("default_frame_rate"))
+                    ),
                 frame_mapping
             )
 
