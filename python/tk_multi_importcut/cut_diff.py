@@ -97,6 +97,7 @@ class CutDiff(QtCore.QObject):
     # Emitted when this cut diff instance is discarded
     discarded=QtCore.Signal(QtCore.QObject)
 
+    # User settings for class methods
     _user_settings = settings.UserSettings(sgtk.platform.current_bundle())
 
     __default_timecode_frame_mapping = None
@@ -117,6 +118,7 @@ class CutDiff(QtCore.QObject):
         self._sg_cut_item = sg_cut_item
         self._app = sgtk.platform.current_bundle()
 
+        # User settings for non-class methods
         self._user_settings = settings.UserSettings(self._app)
 
         self._repeated = False
