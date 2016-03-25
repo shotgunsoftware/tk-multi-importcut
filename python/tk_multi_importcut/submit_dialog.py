@@ -50,7 +50,9 @@ class SubmitDialog(QtGui.QDialog):
         self.ui.from_label.setText(self._app.context.user["name"] if self._app.context.user else "")
         # todo: this retrieves an index, so it doesn't work. we need to either
         # store a string, or figure out what the index is pointing at here
-        # self.ui.to_text.setText(self._user_settings.retrieve("email_group"))
+        email_groups = self._app.shotgun.find("Group", [], ["code"])
+        email_group = email_groups[self._user_settings.retrieve("email_group") - 1]["code"]
+        self.ui.to_text.setText(email_group)
         self.ui.total_shots_label.setText("%s" % len(summary))
         self.ui.cut_changes_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
         self.ui.new_shots_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.NEW))

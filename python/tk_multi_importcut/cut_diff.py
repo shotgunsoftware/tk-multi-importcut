@@ -178,7 +178,7 @@ class CutDiff(QtCore.QObject):
         Set the SG shot associated with this CutDiff
         :param sg_shot: A SG shot dictionary, or None
         """
-        self._sg_shot=sg_shot
+        self._sg_shot = sg_shot
 
     @property
     def sg_cut_item(self):
@@ -192,7 +192,7 @@ class CutDiff(QtCore.QObject):
         Set the SG cut item for this CutDiff
         :param sg_cut_item: A SG CutItem dictionary or None
         """
-        self._sg_cut_item=sg_cut_item
+        self._sg_cut_item = sg_cut_item
 
     @property
     def edit(self):
@@ -227,7 +227,7 @@ class CutDiff(QtCore.QObject):
         :param name: A string
         :raises: RuntimeError if the name is not editable
         """
-        if name==self._name:
+        if name == self._name:
             return
         if not self.is_name_editable:
             raise RuntimeErrror("Attempting to change a read only name")
@@ -237,7 +237,7 @@ class CutDiff(QtCore.QObject):
         # - need to check the new diff type
         # - need to check if shots are repeated or not
         self.name_changed.emit(self, self._name, name)
-        self._name=name
+        self._name = name
 
     @property
     def version_name(self):
@@ -286,6 +286,7 @@ class CutDiff(QtCore.QObject):
         raise RuntimeErrror("This is deprecated and shouldn't be used")
         return self._default_head_in
 
+    # suspect
     @property
     def default_tail_out(self):
         """
@@ -551,7 +552,7 @@ class CutDiff(QtCore.QObject):
         if cut_in is None:
             return None
         if self._edit:
-            return cut_in + self._edit.source_duration -1
+            return cut_in + self._edit.source_duration
         return None
 
     @property
