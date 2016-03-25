@@ -15,62 +15,85 @@ import tempfile
 from sgtk.platform.qt import QtCore, QtGui
 from .downloader import DownloadRunner
 from .logger import get_logger
-from datetime import datetime
 
-from .ui.cut_card import Ui_CutCard
+from .ui.project_card import Ui_ProjectCard
+
 from .constants import _COLORS, _STATUS_COLORS
 
-class CutCard(QtGui.QFrame):
+class ProjectCard(QtGui.QFrame):
     """
-    Widget displaying a Shotgun Cut
+    Widget displaying a Shotgun Project
     """
-    # Emitted when cut changes for the attached Sequence should be displayed
-    show_cut = QtCore.Signal(dict)
+    # Emitted when cut changes for the attached Project should be displayed
+    show_project = QtCore.Signal(dict)
     # Emitted when this card wants to be selected
     highlight_selected = QtCore.Signal(QtGui.QWidget)
-    def __init__(self, parent, sg_cut):
+    def __init__(self, parent, sg_project):
         """
-        Instantiate a new CutCard for the given Shotgun cut
+        Instantiate a new ProjectCard for the given Shotgun Project
         :param parent: A parent QWidget
-        :param sg_cut: A Shotgun cut, as a dictionary, to display
+        :param sg_project: A Shotgun project, as a dictionary, to display
         """
-        super(CutCard, self).__init__(parent)
+        super(ProjectCard, self).__init__(parent)
         self._thumbnail_requested = False
-        self._sg_cut = sg_cut
+        self._sg_project = sg_project
         self._logger = get_logger()
 
-        self.ui = Ui_CutCard()
+        self.ui = Ui_ProjectCard()
         self.ui.setupUi(self)
-        self.ui.title_label.setText("<big><b>%s</b></big>" % sg_cut["code"])
-        if self._sg_cut["_display_status"]:
-            self.ui.status_label.setText(
-                "<b><font color=%s>%s</font></b>" % (
-                    _STATUS_COLORS.get(self._sg_cut["sg_status_list"], _COLORS["lgrey"]),
-                    self._sg_cut["_display_status"]["name"].upper(),
-                )
-            )
-        else:
-            self.ui.status_label.setText(sg_cut["sg_status_list"])
-
-        self.ui.date_label.setText(sg_cut["created_at"].strftime("%m/%d/%y %I:%M %p"))
-        #self.ui.details_label.setText("<small>%s</small>" % sg_cut["description"])
-        if sg_cut["description"]:
-            self.setToolTip(sg_cut["description"])
-        self.ui.details_label.setVisible(False)
+        self.ui.title_label.setText("%s" % self.project_name)
+        # if self._sg_project["_display_status"]:
+        #     self.ui.status_label.setText(
+        #         "<font color=%s>%s</font>" % (
+        #             _STATUS_COLORS.get(self.project_status, _COLORS["lgrey"]),
+        #             self._sg_project["_display_status"]["name"].upper(),
+        #         )
+        #     )
+        # else:
+        #     self.ui.status_label.setText(self.project_status)
+        self.ui.details_label.setText("%s" % (self.project_description or ""))
         self.ui.select_button.setVisible(False)
         self.ui.select_button.clicked.connect(self.show_selected)
-        self.set_thumbnail(":/tk_multi_importcut/sg_sequence_thumbnail.png")
-#        from random import randint
-#        self.set_thumbnail( [
-#            "/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/resources/no_thumbnail.png",
-#            "/Users/steph/Pictures/microsoftazurelogo.png",
-#            "/Users/steph/Pictures/IMG_4720.jpg"
-#        ][randint(0, 2)])
+        self.set_thumbnail(":/tk_multi_importcut/sg_%s_thumbnail.png" % (
+            self._sg_project["type"].lower()
+        ))
 
     @property
-    def sg_entity(self):
-        return self._sg_cut
+    def sg_project(self):
+        return self._sg_project
 
+    @property
+    def project_name(self):
+        """
+        Return the name of the attached project
+        """
+        # Deal with name field not being consistent in SG
+        return self._sg_project.get("code",
+            self._sg_project.get("name",
+                self._sg_project.get("title", "")
+            )
+        )
+
+    @property
+    def project_status(self):
+        """
+        Return the status of the attached project
+        """
+        # Deal with status field not being consistent in SG
+        return self._sg_project.get("sg_status_list",
+            self._sg_project.get("sg_status")
+        )
+
+    @property
+    def project_description(self):
+        """
+        Return the description of the attached project
+        """
+        # Deal with status field not being consistent in SG
+        return self._sg_project.get("description",
+            self._sg_project.get("sg_description")
+        )
+    
     @QtCore.Slot()
     def select(self):
         """
@@ -90,14 +113,15 @@ class CutCard(QtGui.QFrame):
         self.style().unpolish(self)
         self.style().polish(self)
         self.ui.select_button.setVisible(False)
+        self.setStyleSheet("")
 
     @QtCore.Slot()
     def show_selected(self):
         """
-        Gently ask to show cut summary for the attached Shotgun sequence/cut
+        Gently ask to show cut summary for the attached Shotgun project
         """
         self.highlight_selected.emit(self)
-        self.show_cut.emit(self._sg_cut)
+        self.show_project.emit(self._sg_project)
         self.ui.select_button.setVisible(False)
 
     @QtCore.Slot(str)
@@ -105,12 +129,12 @@ class CutCard(QtGui.QFrame):
         """
         Called when a new thumbnail is available for this card
         """
-        self._logger.debug("Loading thumbnail %s for %s" % (path, self._sg_cut["code"]))
+        self._logger.debug("Loading thumbnail %s for %s" % (path, self.project_name))
         self.set_thumbnail(path)
 
     def mouseDoubleClickEvent(self, event):
         """
-        Handle double clicks : show cut changes for the attached sequence
+        Handle double clicks : show cut changes for the attached project
         """
         self.show_selected()
 
@@ -141,18 +165,18 @@ class CutCard(QtGui.QFrame):
             event.ignore()
             return
         self._thumbnail_requested = True
-        if self._sg_cut and self._sg_cut["image"]:
-            self._logger.debug("Requesting %s for %s" % ( self._sg_cut["image"], self._sg_cut["code"]))
+        if self._sg_project and self._sg_project["image"]:
+            self._logger.debug("Requesting %s for %s" % ( self._sg_project["image"], self.project_name))
             _, path = tempfile.mkstemp()
             downloader = DownloadRunner(
-                sg_attachment=self._sg_cut["image"],
+                sg_attachment=self._sg_project["image"],
                 path=path,
             )
             downloader.file_downloaded.connect(self.new_thumbnail)
             QtCore.QThreadPool.globalInstance().start(downloader)
 
         event.ignore()
-
+    
     def set_thumbnail(self, thumb_path):
         """
         Build a pixmap from the given file path and use it as icon, resizing it to 
@@ -169,7 +193,7 @@ class CutCard(QtGui.QFrame):
             self._logger.debug("Null pixmap %s %d %d for %s" % (
                 thumb_path,
                 pixmap.size().width(), pixmap.size().height(),
-                self._sg_cut["code"]))
+                self.project_name))
             return
         psize = pixmap.size()
         pratio = psize.width() / float(psize.height())

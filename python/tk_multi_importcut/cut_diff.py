@@ -15,6 +15,7 @@ import sgtk
 from sgtk.platform.qt import QtCore
 # Import the EDL framework
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 # Define difference types as enums
 def diff_types(**enums):
@@ -28,6 +29,8 @@ _DIFF_TYPES = diff_types(
     CUT_CHANGE=4,       # Some values changed, but don't fall in previous categories
     NO_CHANGE=5,        # Values are identical to previous ones
     NO_LINK=6,          # Related shot name couldn't be found
+    NEW_IN_CUT=7,       # A new repeated shot entry is added, but the shot already exists
+    OMITTED_IN_CUT=8,   # A repeated shot entry was removed
 )
 # Display names for cut diff types
 _DIFF_LABELS = {
@@ -38,22 +41,67 @@ _DIFF_LABELS = {
     _DIFF_TYPES.CUT_CHANGE : "Cut Change",
     _DIFF_TYPES.NO_CHANGE : "",
     _DIFF_TYPES.NO_LINK : "",
+    _DIFF_TYPES.NEW_IN_CUT : "New in Cut",
+    _DIFF_TYPES.OMITTED_IN_CUT : "Omitted",
 }
 
 class CutDiff(QtCore.QObject):
     """
+    A class to retrieve differences between a previous cut and a new one.
+
     A cut difference is based on :
-    - An EDL entry
-    - A Shotgun cut item
-    - A Shotgun shot
-    At least one of them needs to be set
+    - An EDL entry : a line from an EDL file
+    - A Shotgun cut item : a previously registered cut value for an EDL entry
+    - A Shotgun shot : Corresponding shot in Shotgun
+
+    At least one of them needs to be set. A CutDiff is able to retrieve
+    previous cut values and compute new values, from the EDL entry ( a line
+    in the EDL file ) and the cut item ( previous value registered in SG ).
+    
+    The schema below shows values which are retrieved, mapping time code values
+    to frame values.
+
+                        tc cut in               tc cut out
+        -----------------------------------------------------------------
+        |<- head duration ->|<-      duration     ->|<- tail duration ->|
+        |                   |                       |                   |
+        -----------------------------------------------------------------
+     head in              cut in                 cut out             tail out
+
+    If a shot is repeated, that is, appears more than once in the cut (e.g. for
+    flashback effects ), a single "media" is associated with all the entries
+    linked to this shot. All frames values are relative to the earliest entry
+    head in value.
+        --------------------------
+        |       instance 1       |
+        --------------------------
+        ^   --------------------
+        |   |   instance 2     |
+            --------------------
+        |  ---------------------------------
+           |      instance 3               |
+        |  ---------------------------------
+                                           ^
+        |                                  |
+        ------------------------------------
+        |  media covering all instances    |
+        ------------------------------------
+
     """
     # Emitted when the (shot) name for this item is changed
     name_changed=QtCore.Signal(QtCore.QObject, str, str)
     # Emitted when the diff type for this item is changed
     type_changed=QtCore.Signal(QtCore.QObject, int, int)
+    # Emitted when the diff type for this item is changed
+    repeated_changed=QtCore.Signal(QtCore.QObject, bool, bool)
     # Emitted when this cut diff instance is discarded
     discarded=QtCore.Signal(QtCore.QObject)
+
+    # User settings for class methods
+    _user_settings = settings.UserSettings(sgtk.platform.current_bundle())
+
+    __default_timecode_frame_mapping = None
+
     def __init__(self, name, sg_shot=None, edit=None, sg_cut_item=None):
         """
         Instantiate a new cut difference
@@ -70,13 +118,23 @@ class CutDiff(QtCore.QObject):
         self._sg_cut_item = sg_cut_item
         self._app = sgtk.platform.current_bundle()
 
+        # User settings for non-class methods
+        self._user_settings = settings.UserSettings(self._app)
+
         self._repeated = False
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
-        self._default_head_in = self._app.get_setting("default_head_in")
-        self._default_head_in_duration = self._app.get_setting("default_head_in_duration")
-        self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
+        # default head in is not used at the moment, but I'm not sure the
+        # timecode_frame_map thing is what is expected so keeping it around ...
+        self._default_head_in = int(self._user_settings.retrieve("default_head_in"))
+        self._default_head_in_duration = int(self._user_settings.retrieve("default_head_duration"))
+        self._default_tail_out_duration = int(self._user_settings.retrieve("default_tail_duration"))
+        self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
 
+        self._siblings = None # List of other entries for the same shot
+        # Later we might want to allow users to edit the mapping, so
+        # so let's make a copy of defaults in this instance
+        self._timecode_frame_map = self.__default_timecode_frame_mapping
         # Retrieve the cut diff type from the given params
         self._check_changes()
 
@@ -87,6 +145,26 @@ class CutDiff(QtCore.QObject):
         :param diff_type: A _DIFF_TYPES entry
         """
         return _DIFF_LABELS[diff_type]
+
+    @classmethod
+    def retrieve_default_timecode_frame_mapping(cls):
+        sgtk.platform.current_bundle()
+        timecode_to_frame_mapping = cls._user_settings.retrieve("timecode_to_frame_mapping")
+        timecode_mapping = cls._user_settings.retrieve("timecode_mapping")
+        frame_mapping = int(cls._user_settings.retrieve("frame_mapping"))
+        if timecode_mapping == "" or timecode_to_frame_mapping == 1: # 1 is the index for "automatic"
+            cls.__default_timecode_frame_mapping = (
+                None,
+                frame_mapping
+            )
+        else:
+            cls.__default_timecode_frame_mapping = (
+                edl.Timecode(
+                    timecode_mapping,
+                    fps=int(cls._user_settings.retrieve("default_frame_rate"))
+                    ),
+                frame_mapping
+            )
 
     @property
     def sg_shot(self):
@@ -139,7 +217,7 @@ class CutDiff(QtCore.QObject):
         if not self._edit:
             return False
         # And only if there is no version linked to it
-        if self._sg_cut_item and self._sg_cut_item["sg_version.Version.code"]:
+        if self._sg_cut_item and self._sg_cut_item["version.Version.code"]:
             return False
         return True
 
@@ -157,6 +235,7 @@ class CutDiff(QtCore.QObject):
         # - need to check the sg_shot we are linked to
         # - need to check the sg_cutitem we are linked to
         # - need to check the new diff type
+        # - need to check if shots are repeated or not
         self.name_changed.emit(self, self._name, name)
         self._name=name
 
@@ -165,44 +244,54 @@ class CutDiff(QtCore.QObject):
         """
         Return the version name for this diff, if any
         """
-        if self._edit:
-            return self._edit.get_version_name()
-        if self._sg_cut_item and self._sg_cut_item["sg_version.Version.code"]:
-            return self._sg_cut_item["sg_version.Version.code"]
+        # if self._edit:
+        #     return self._edit.get_version_name()
+        # if self._sg_cut_item and self._sg_cut_item["version.Version.code"]:
+        #     return self._sg_cut_item["version.Version.code"]
+        # todo: for now, we're just shutting this off completely
         return None
 
     @property
     def sg_version(self):
         """
         Return the Shotgun version for this diff, if any
+
+        :returns: A SG Version dictionary or None
         """
-        if self._edit:
-            return self._edit.get_sg_version()
-        if self._sg_cut_item and self._sg_cut_item["sg_version"]:
-            return self._sg_cut_item["sg_version"]
+        # if self._edit:
+        #     return self._edit.get_sg_version()
+        # if self._sg_cut_item and self._sg_cut_item["version"]:
+        #     return self._sg_cut_item["version"]
+        # todo: for now, we're just shutting this off completely
         return None
 
     def set_sg_version(self, sg_version):
         """
         Set the Shotgun version associated with this diff
+
         :param sg_version: A SG version, as a dictionary
         :raises: ValueError if no EditEvent is associated to this diff
         """
-        if not self._edit:
-            raise ValueError("Can't set Shotgun version without an edit entry")
-        self._edit._sg_version = sg_version
+        # if not self._edit:
+        #     raise ValueError("Can't set Shotgun version without an edit entry")
+        # self._edit._sg_version = sg_version
+        # todo: for now, we're just shutting this off completely
+        self._edit._sg_version = None
     
     @property
     def default_head_in(self):
         """
         Return the default head in value, e.g. 1001
         """
+        raise RuntimeErrror("This is deprecated and shouldn't be used")
         return self._default_head_in
 
     @property
     def default_tail_out(self):
         """
         Return the default tail out value, computed from new cut values, or None
+
+        :returns: An integer or None
         """
         new_tail_duration = self.new_tail_duration
         if new_tail_duration is None:
@@ -216,57 +305,93 @@ class CutDiff(QtCore.QObject):
     def shot_head_in(self):
         """
         Return the head in value from associated shot, or None
+
+        :returns: An integer or None
         """
         if self._sg_shot:
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_head_in")
             return self._sg_shot.get("sg_head_in")
-        return None
+        return self._default_head_in
 
     @property
     def shot_tail_out(self):
         """
         Return the tail out value from associated shot, or None
+
+        :returns: An integer or None
         """
         if self._sg_shot:
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_tail_out")
             return self._sg_shot.get("sg_tail_out")
-        return None
+        return self.shot_head_in + self.new_duration + (
+            self._default_tail_out_duration + self._default_head_in_duration)
 
     @property
     def head_in(self):
         """
         Return the current head in from the associated cut item, or None
+
+        :returns: An integer or None
         """
-        if self._sg_cut_item:
-            return self._sg_cut_item.get("sg_head_in")
-        return None
+        # todo: restore this if we bring it back as a field
+        # if self._sg_cut_item:
+        #     return self._sg_cut_item.get("sg_head_in")
+        # return None
+        return self.shot_head_in
 
     @property
     def new_head_in(self):
         """
         Return the new head in value
         """
+        # Special case if we are dealing with a repeated shot
+        # Frames are relative to the earliest entry in our siblings
+        # If we don't have any edit we don't need to do it and the
+        # earliest entry might be None, as it is based on tc cut in,
+        # and this is not defined without edits
+        if self._edit and self.repeated:
+            # Get the head in for the earliest entry
+            earliest = self._siblings.earliest
+            if not earliest:
+                raise ValueError("%s is repeated but does not have an earliest entry defined" % self)
+            if earliest != self: # We are not the earliest
+                return earliest.new_head_in
+        # If we don't have a previous entry, we need to retrieve the initial value
+        # Default case : retrieve the value from the shot
+        # or fall back to the default one
         nh = self.shot_head_in
         if nh is None:
-            nh = self.default_head_in
+            if self._timecode_frame_map[0] is not None: # Explicit timecode
+                base_tc = self._timecode_frame_map[0]
+                base_frame = self._timecode_frame_map[1]
+                cut_in = self.new_tc_cut_in.to_frame() - base_tc.to_frame() + base_frame
+                nh = cut_in - self._default_head_in_duration
+            else:
+                # Use the frame number as default head in
+                nh = self._timecode_frame_map[1]
         return nh
 
     @property
     def tail_out(self):
         """
         Return the current tail out value from the associated cut item, or None
+
+        :returns: An integer or None
         """
-        if self._sg_cut_item:
-            return self._sg_cut_item.get("sg_tail_out")
-        return None
+        # todo: restore this if we bring it back as a field
+        # if self._sg_cut_item:
+        #     return self._sg_cut_item.get("sg_tail_out")
+        # return None
+        return self.shot_tail_out
 
     @property
     def new_tail_out(self):
         """
         Return the new tail out value
         """
+        return self.shot_tail_out
         nt = self.shot_tail_out
         if nt is None:
             nt = self.default_tail_out
@@ -276,18 +401,52 @@ class CutDiff(QtCore.QObject):
     def cut_in(self):
         """
         Return the current cut in value from the associated cut item, or None
+
+        :returns: An integer or None
         """
         if self._sg_cut_item:
-            return self._sg_cut_item["sg_cut_in"]
+            return self._sg_cut_item["cut_item_in"]
+        return None
+
+    @property
+    def tc_cut_in(self):
+        """
+        Return the timecode associated with the current cut in value from the
+        associated cut item, or none
+
+        :returns: A Timecode instance or None
+        """
+        if self._sg_cut_item:
+            return edl.Timecode(
+                self._sg_cut_item["timecode_cut_item_in"],
+                self._sg_cut_item["cut.Cut.fps"]
+            )
+        return None
+
+    @property
+    def tc_cut_out(self):
+        """
+        Return the timecode associated with the current cut out value from the
+        associated cut item, or none
+
+        :returns: A Timecode instance or None
+        """
+        if self._sg_cut_item:
+            return edl.Timecode(
+                self._sg_cut_item["timecode_cut_item_out"],
+                self._sg_cut_item["cut.Cut.fps"]
+            )
         return None
 
     @property
     def cut_out(self):
         """
         Return the current cut out value from the associated cut item, or None
+
+        :returns: An integer or None
         """
         if self._sg_cut_item:
-            return self._sg_cut_item["sg_cut_out"]
+            return self._sg_cut_item["cut_item_out"]
         return None
 
     @property
@@ -295,9 +454,11 @@ class CutDiff(QtCore.QObject):
         """
         Return the current cut order value from the associated cut item, 
         or associated shot, or None
+
+        :returns: An integer or None
         """
         if self._sg_cut_item:
-            return self._sg_cut_item["sg_cut_order"]
+            return self._sg_cut_item["cut_order"]
         if self._sg_shot:
             return self._sg_shot["sg_cut_order"]
         return None
@@ -306,6 +467,8 @@ class CutDiff(QtCore.QObject):
     def new_cut_order(self):
         """
         Return the new cut order value from the associated EditEvent, or None
+
+        :returns: An integer or None
         """
         if self._edit:
             return self._edit.id
@@ -315,32 +478,74 @@ class CutDiff(QtCore.QObject):
     def new_cut_in(self):
         """
         Return the new cut in value, or None
+
+        :returns: An integer or None
         """
+        # If we don't have any edit entry, then we don't have
+        # any new cut in by definition
         if not self._edit:
             return None
-        new_head_in = self.shot_head_in
-        if new_head_in is None:
-            new_head_in = self.default_head_in
         if self._sg_cut_item:
             head_in = self.head_in
-            cut_in = self._sg_cut_item["sg_cut_in"]
-            tc_cut_in = edl.Timecode(self._sg_cut_item["sg_timecode_cut_in"], self._sg_cut_item["sg_fps"])
+            cut_in = self._sg_cut_item["cut_item_in"]
+            tc_cut_in = self.tc_cut_in
             if cut_in is not None and tc_cut_in is not None:
                 # Calculate the cut offset
                 offset = self._edit.source_in.to_frame() - tc_cut_in.to_frame()
-                # Calculate the head offset
-                #offset += new_head_in - head_in
-                # new_cut_in = previous cut in + cut offset
+                # Just apply the offset to the old cut in
                 return cut_in + offset
-        head_in = self.shot_head_in
-        if head_in is None:
-            head_in = self.default_head_in
-        return self.default_head_in + self._default_head_in_duration
+        # If we don't have a previous cut item, we can't just compute an offset
+        # from the previous cut values, so we need to compute brand new values
+        # If repeated our cut in is relative to the earliest entry
+        if self.repeated:
+            # Get the head in for the earliest entry
+            earliest = self._siblings.earliest
+            if not earliest:
+                raise ValueError("%s is repeated but does not have an earliest entry defined" % self)
+            # If we are the earliest, we will fall back to the default case below
+            if earliest != self: # We are not the earliest
+                # get its tc_cut_in
+                earliest_tc_cut_in = self._siblings.min_tc_cut_in
+                if earliest_tc_cut_in is None:
+                    raise ValueError("Earliest %s is not able to compute tc cut in" % earliest_tc_cut_in)
+                # Compute the difference with ours
+                offset = self.new_tc_cut_in.to_frame() - earliest_tc_cut_in.to_frame()
+                # add it the earliest head in
+                return self._siblings.min_cut_in + offset
+        # Not repeated or earliest entry case
+        # If we don't have a previous entry, retrieve default values
+        # and return an arbitrary value
+        if self._timecode_frame_map[0] is not None:
+            base_tc = self._timecode_frame_map[0]
+            base_frame = self._timecode_frame_map[1]
+            cut_in = self.new_tc_cut_in.to_frame() - base_tc.to_frame() + base_frame
+            return cut_in
+        else:
+            head_in = self.new_head_in
+            head_duration = self._default_head_in_duration
+            return head_in + head_duration
+
+    @property
+    def new_tc_cut_in(self):
+        """
+        Return the new timecode cut in, or None.
+        The new value is retrieved from the edit source timecode in,
+        if there is an edit.
+
+        :returns: A Timecode instance or None
+        """
+        # If we don't have any edit entry, then we don't have
+        # any new tc cut in by definition
+        if not self._edit:
+            return None
+        return self._edit.source_in
 
     @property
     def new_cut_out(self):
         """
         Return the new cut out value, or None
+
+        :returns: An integer or None
         """
         cut_in = self.new_cut_in
         if cut_in is None:
@@ -350,14 +555,32 @@ class CutDiff(QtCore.QObject):
         return None
 
     @property
+    def new_tc_cut_out(self):
+        """
+        Return the new timecode cut out, or None.
+        The new value is retrieved from the edit source timecode out,
+        if there is an edit.
+
+        :returns: A Timecode instance or None
+        """
+        # If we don't have any edit entry, then we don't have
+        # any new tc cut in by definition
+        if not self._edit:
+            return None
+        return self._edit.source_out
+
+    @property
     def head_duration(self):
         """
         Return the current head duration, or None
+
+        :returns: An integer or None
         """
         if not self._sg_cut_item:
             return None
-        cut_in = self._sg_cut_item["sg_cut_in"]
-        head_in = self._sg_cut_item["sg_head_in"]
+        cut_in = self._sg_cut_item["cut_item_in"]
+        # head_in = self._sg_cut_item["sg_head_in"]
+        head_in = self.shot_head_in
         if cut_in is None or head_in is None:
             return None
         return cut_in - head_in
@@ -366,6 +589,8 @@ class CutDiff(QtCore.QObject):
     def new_head_duration(self):
         """
         Return the new head duration, or None
+
+        :returns: An integer or None
         """
         if self._edit:
             new_cut_in = self.new_cut_in
@@ -381,15 +606,19 @@ class CutDiff(QtCore.QObject):
     def duration(self):
         """
         Return the current duration from the associated cut item, or None
+
+        :returns: An integer or None
         """
         if self._sg_cut_item:
-            return self._sg_cut_item["sg_cut_duration"]
+            return self._sg_cut_item["sg_sg_cut_duration"]
         return None
 
     @property
     def new_duration(self):
         """
         Return the new duration, or None
+
+        :returns: An integer or None
         """
         if self._edit:
             return self._edit.source_duration
@@ -399,11 +628,14 @@ class CutDiff(QtCore.QObject):
     def tail_duration(self):
         """
         Return the current tail duration, or None
+
+        :returns: An integer or None
         """
         if not self._sg_cut_item:
             return None
-        cut_out = self._sg_cut_item["sg_cut_out"]
-        tail_out = self._sg_cut_item["sg_tail_out"]
+        cut_out = self._sg_cut_item["cut_item_out"]
+        # tail_out = self._sg_cut_item["sg_tail_out"]
+        tail_out = self.shot_tail_out
         if cut_out is None or tail_out is None:
             return None
         return  tail_out - cut_out
@@ -412,16 +644,29 @@ class CutDiff(QtCore.QObject):
     def new_tail_duration(self):
         """
         Return the new tail duration, or None
+
+        :returns: An integer or None
         """
+        if not self._edit: # No new value
+            return None
         cut_out = self.new_cut_out
         if cut_out is None:
             return None
         tail_out = self.shot_tail_out
         if tail_out is None:
+            # Special case if we have an edit and are repeated
+            # if we don't have an edit, the new_tail_duration is irrelevant
+            if self._edit and self.repeated:
+                latest = self._siblings.latest
+                if not latest:
+                    raise ValueError("Couldn't get latest entry for repeated shot %s" % self)
+                if latest != self:
+                    # If we are not ourself the latest entry
+                    tail_out = latest.new_tail_out
+        if tail_out is None:
+            # Fallback to defaults
             return self._app.get_setting("default_tail_out_duration")
-        if self._edit:
-            return tail_out - cut_out
-        return None
+        return tail_out - cut_out
 
     @property
     def diff_type(self):
@@ -459,6 +704,15 @@ class CutDiff(QtCore.QObject):
         Return true if the associated shot appears more than once in the 
         cut summary
         """
+#        if not self._siblings or len(self._siblings) < 2:
+#            return False
+#        return True
+        # We use an explicit flag for repeated shots and don't rely
+        # on the self._siblings list containing more then one entry
+        # as this is controlled by the cut summary and can be changed
+        # without us being notified. The cut summary will call set_repeated
+        # explicitely when changing our flag, giving us a chance to compare the
+        # new value with the old one.
         return self._repeated
 
     @property
@@ -478,6 +732,45 @@ class CutDiff(QtCore.QObject):
             return True
         # Return True if the edit has a shot name
         return bool(self._name)
+
+    def set_siblings(self, siblings):
+        """
+        Set our list of siblings, which is other entries for the same shot
+        :param siblings: a ShotCutDiffList or None
+        """
+        self._siblings  = siblings
+
+    def is_earliest(self):
+        """
+        Return True if this CutDiff is the earliest in repeated shots.
+        If the shot is not repeated, this entry is the earliest.
+        :returns: True of False
+        """
+        if not self._siblings:
+            return True
+        if self._siblings.earliest == self:
+            return True
+        return False
+
+    @property
+    def interpreted_diff_type(self):
+        """
+        Some difference types are grouped under a common type, return this group type 
+        for the current difference type.
+        :returns: A _DIFF_TYPES
+        """
+        # Please note that a loop is done over all siblings, so this must be used
+        # with care as it can be inefficient
+        if self.diff_type == _DIFF_TYPES.OMITTED_IN_CUT and self.repeated:
+            # Check if all our siblings are omitted_in_cut as well
+            all_omitted = all( x._diff_type == _DIFF_TYPES.OMITTED_IN_CUT for x in self._siblings)
+            if all_omitted:
+                return _DIFF_TYPES.OMITTED
+
+        if self.diff_type in [_DIFF_TYPES.NEW_IN_CUT, _DIFF_TYPES.OMITTED_IN_CUT]:
+            return _DIFF_TYPES.CUT_CHANGE
+        # Fall back to reality !
+        return self.diff_type
 
     def check_changes(self):
         """
@@ -502,14 +795,23 @@ class CutDiff(QtCore.QObject):
         if not self._sg_shot:
             self._diff_type = _DIFF_TYPES.NEW
             return
+
         if not self._edit:
-            self._diff_type = _DIFF_TYPES.OMITTED
+            if not self.repeated:
+                self._diff_type = _DIFF_TYPES.OMITTED
+            else:
+                self._diff_type = _DIFF_TYPES.OMITTED_IN_CUT
             return
         # We have both a shot and an edit
-        omit_statuses = self._app.get_setting("omit_statuses") or []
+        omit_statuses = [self._user_settings.retrieve("omit_status")] or []
         if self._sg_shot["sg_status_list"] in omit_statuses:
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
+
+        if self.repeated and not self._sg_cut_item:
+            self._diff_type = _DIFF_TYPES.NEW_IN_CUT
+            return
+
         # Check if we have a difference
         # If any of the previous value is not set, then assume all changed ( initial import )
         if self.cut_order is None or self.cut_in is None or self.cut_out is None or\
@@ -560,7 +862,17 @@ class CutDiff(QtCore.QObject):
         Set this cut difference as repeated
         :param repeated: A boolean
         """
-        self._repeated = repeated
+        # This is set explicetely by the cut summary, so we have a chance to
+        # compare the new value with the old one
+        if repeated != self.repeated:
+            old_repeated = self._repeated
+            self._repeated = repeated
+            self.repeated_changed.emit(self, old_repeated, self._repeated)
+            # Cut in / out values are affected by repeated changes
+            old_type=self._diff_type
+            self._check_changes()
+            if old_type != self._diff_type:
+                self.type_changed.emit(self, old_type, self._diff_type)
 
     def summary(self):
         """
@@ -594,21 +906,21 @@ class CutDiff(QtCore.QObject):
                 )
         cut_item_details = ""
         if self.sg_cut_item:
-            if self.sg_cut_item["sg_fps"] :
-                fps = self.sg_cut_item["sg_fps"]
-                tc_in = edl.Timecode(self.sg_cut_item["sg_timecode_cut_in"], fps)
-                tc_out = edl.Timecode(self.sg_cut_item["sg_timecode_cut_out"], fps)
+            if self.sg_cut_item["cut.Cut.fps"] :
+                fps = self.sg_cut_item["cut.Cut.fps"]
+                tc_in = edl.Timecode(self.sg_cut_item["timecode_cut_item_in"], fps)
+                tc_out = edl.Timecode(self.sg_cut_item["timecode_cut_item_out"], fps)
             else:
                 tc_in = "????"
                 tc_out = "????"
             cut_item_details = \
             "Cut Order %s, TC in %s, TC out %s, Cut In %s, Cut Out %s, Cut Duration %s" % (
-                self.sg_cut_item["sg_cut_order"],
+                self.sg_cut_item["cut_order"],
                 tc_in,
                 tc_out,
-                self.sg_cut_item["sg_cut_in"],
-                self.sg_cut_item["sg_cut_out"],
-                self.sg_cut_item["sg_cut_duration"],
+                self.sg_cut_item["cut_item_in"],
+                self.sg_cut_item["cut_item_out"],
+                self.sg_cut_item["sg_sg_cut_duration"]
             )
         version_details = ""
         sg_version = self.sg_version
