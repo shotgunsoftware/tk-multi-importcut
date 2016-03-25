@@ -427,7 +427,7 @@ class CutSummary(QtCore.QObject):
             for cdiff in self._cut_diffs[new_shot_key]:
                 self._logger.debug("%s %s %s %s" % cdiff.summary())
             count=len(self._cut_diffs[new_shot_key])
-            self._logger.debug("%d Entries for new shot key %s" % (count, new_shot_key))
+            self._logger.debug("%d Entrie(s) for new shot key %s" % (count, new_shot_key))
             if count == 1 and not self._cut_diffs[new_shot_key][0].edit:
                 self._logger.debug("Single omitted entry for new shot key %s" % new_shot_key)
                 # If only one entry, that could be an omitted shot ( no edit )

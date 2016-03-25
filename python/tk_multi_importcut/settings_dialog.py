@@ -20,7 +20,9 @@ from .ui.settings_dialog import Ui_settings_dialog
 from .cut_diff import _DIFF_TYPES
 class SettingsDialog(QtGui.QDialog):
     """
-    Settings dialog...
+    Settings dialog, available on almost each page of the animated stacked
+    widget. Gives users access to app settings via a gui interface, stores those
+    settings locally per user.
     """
     submit = QtCore.Signal(str, dict, dict, str, bool)
     def __init__(self, parent=None):
@@ -36,40 +38,40 @@ class SettingsDialog(QtGui.QDialog):
         # Create a settings manager where we can pull and push prefs later
         self._user_settings = settings.UserSettings(self._app)
         
+        # todo: the way omit_status is handled is tmp, I'm only
+        # grabbing one status in the gui, but the code wants a list
+        # so remember to fix the code once the gui can supply a list
+        
         # Retrieve user settings and set UI values
         buttons = self.ui.save_settings_button_box.buttons()
         apply_button = buttons[0]
         apply_button.setText("Apply")
 
+        # General tab
         update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
         self._set_enabled(update_shot_statuses)
-
-        # todo: the way omit_status is handled is dodgy, I'm only
-        # grabbing one status in the gui, but the code wants a list
-        # so remember to fix the code once the gui can supply a list
-
-        # General tab
+        
         self.ui.update_shot_statuses_checkbox.setChecked(
             update_shot_statuses)
         self.ui.use_smart_fields_checkbox.setChecked(
             self._user_settings.retrieve("use_smart_fields"))
-        
         self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
+        
         self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(self._change_text)
-
-        to_add = self._app.shotgun.schema_field_read("Shot")[
+        
+        shot_statuses = self._app.shotgun.schema_field_read("Shot")[
             "sg_status_list"]["properties"]["display_values"]["value"]
-        for i in to_add:
-            status = to_add[i]
+        for status in shot_statuses:
+            status = shot_statuses[status]
             self.ui.omit_status_combo_box.addItem(status)
             self.ui.reinstate_shot_if_status_is_combo_box.addItem(status)
             self.ui.reinstate_status_combo_box.addItem(status)
-
+        
         self.ui.email_group_combo_box.addItem("")
-        to_add = self._app.shotgun.find("Group", [], ["code"])
-        for i in to_add:
-            self.ui.email_group_combo_box.addItem(i["code"])
-
+        email_groups = self._app.shotgun.find("Group", [], ["code"])
+        for group in email_groups:
+            self.ui.email_group_combo_box.addItem(group["code"])
+        
         self.ui.email_group_combo_box.setCurrentIndex(
             self._user_settings.retrieve("email_group"))
         self.ui.omit_status_combo_box.setCurrentIndex(
@@ -90,7 +92,6 @@ class SettingsDialog(QtGui.QDialog):
             self._user_settings.retrieve("timecode_mapping"))
         self.ui.frame_mapping_line_edit.setText(
             self._user_settings.retrieve("frame_mapping"))
-
         self.ui.default_head_in_line_edit.setText(
             self._user_settings.retrieve("default_head_in"))
         self.ui.default_head_duration_line_edit.setText(
@@ -118,6 +119,11 @@ class SettingsDialog(QtGui.QDialog):
         self.close()
 
     def _set_enabled(self, state):
+        """
+        Enables or disables widgets based on a state.
+
+        :param state: bool, whether or not the widget is enabled
+        """
         self.ui.omit_status_label.setEnabled(state)
         self.ui.reinstate_shot_if_status_is_label.setEnabled(state)
         self.ui.reinstate_status_label.setEnabled(state)
@@ -126,6 +132,12 @@ class SettingsDialog(QtGui.QDialog):
         self.ui.reinstate_status_combo_box.setEnabled(state)
 
     def _change_text(self, state):
+        """
+        Sets text and enables/disables certain widgets when user chooses a
+        specific timecode mapping mode
+
+        :param state: int representing index of choices (Absolute, Automatic, Relative)
+        """
         if state == 0:
             self.ui.timecode_to_frame_mapping_instructions_label.setText("In Absolute mode, \
 the app will map the timecode values from the EDL directly as frames based on the \

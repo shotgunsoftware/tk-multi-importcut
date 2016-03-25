@@ -55,12 +55,18 @@ class EdlCut(QtCore.QObject):
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
+        # we won't use context.project directly so we can change the Project if
+        # we want (this is specifically for RV integration where it's possible to
+        # launch without a Project context
         self._project = self._ctx.project
         self._sg_new_cut = None
         self._no_cut_for_entity = False
         self._project_import = False
         # Retrieve some settings
         self._user_settings = settings.UserSettings(self._app)
+        # todo: this will need to be rethought if we're able to extract fps
+        # from an EDL. Basically this is redundant now b/c the frame_rate coming
+        # in is almost definitely set by user settings default_frame_rate
         if frame_rate != None:
             self._frame_rate = frame_rate
         else:
@@ -337,21 +343,18 @@ class EdlCut(QtCore.QObject):
             self.got_idle.emit()
 
     @QtCore.Slot(str)
-    def retrieve_projects(self, entity_type):
+    def retrieve_projects(self):
         """
-        Retrieve all projects with the given type for the current project
-
-        :param entity_type: A Shotgun entity type name, e.g. "Sequence"
+        Retrieve all Projects for the Shotgun site
         """
-        self.got_busy.emit(None)
         try:
             fields = ["name", "id", "sg_status", "image", "sg_description"]
             order = [{"field_name" : "name", "direction" : "asc"}]
+            #todo: do we want to filter for active projects?
             sg_projects = self._sg.find("Project", [["is_template", "is", False]], fields, order=order)
             self._logger.info("Retrieved %d Projects." % (len(sg_projects)))
             for sg_project in sg_projects:
                 self.new_sg_project.emit(sg_project)
-            # self.step_done.emit(_ENTITY_TYPE_STEP)
         except Exception, e :
             self._logger.exception(str(e))
         finally:
@@ -433,6 +436,9 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Retrieving cut summary for %s" % ( self.entity_name))
         self.got_busy.emit(None)
         self._sg_cut=sg_cut
+        
+        # We've got an opportunity here to set the tc start/end values on
+        # CutSummary, so lets do that so we can set it on the Cut record too
         tc_start = None
         tc_end = None
         if self._edl.edits:
@@ -498,9 +504,6 @@ class EdlCut(QtCore.QObject):
                         "version.Version.image",
                      ]
                 )
-                # Take fps for Cut entity from first CutItem entity
-                if self._summary.fps == None:
-                    self._summary.fps = sg_cut_items[0]["cut.Cut.fps"]
                 # Consolidate versions retrieved from cut items
                 # Because of a bug in the Shotgun API, we can't use two levels of
                 # redirection, with "sg_version.Version.entity.Shot.code",
@@ -570,7 +573,7 @@ class EdlCut(QtCore.QObject):
             # Building a little dictionary for use in naming reels /
             # CutItem Name / code (whatever you want to call it).
             # Basically we add a 3 padded number to the end of any
-            # reel that has a name which is duplicated, so we add an
+            # reel that has a name which is duplicated, so we need an
             # iteration key and a dup key
             reel_names = {}
             for edit in self._edl.edits:
@@ -587,7 +590,7 @@ class EdlCut(QtCore.QObject):
                     reel_names[edit.reel]["iter"] += 1
                 else:
                     edit.reel_name = edit.reel
-                # todo: Stephane moved this code to CutSummary, try moving again
+                # todo: Stephane moved this code to CutSummary, try moving again.
                 # Store the edit_offset in the summary instance so we can
                 # calculate edit in/out relative to the Cut (frame 1) later on
                 if edit.id == 1:
@@ -598,7 +601,7 @@ class EdlCut(QtCore.QObject):
                 if edit.id == len(self._edl.edits):
                     self._summary.tc_end = edit.record_out
 
-            #todo: Stephane moved this code to CutSummary but it doesn't
+            # todo: Stephane moved this code to CutSummary but it doesn't
             # work, investigate b/c it should be moved there
             start_frame = edl.Timecode(
                 str(self._summary.tc_start), self._summary.fps).to_frame()
@@ -608,6 +611,8 @@ class EdlCut(QtCore.QObject):
 
             # reel_names = set()
             for edit in self._edl.edits:
+                # todo: more of Stephane's code that I had to put on hold for
+                # a bit; this code doesn't correctly set the first CutItem's name
                 # # Ensure CutItems will have unique reel names
                 # if edit.reel in reel_names:
                 #     # Append a 3 digits number at the end
@@ -830,9 +835,9 @@ class EdlCut(QtCore.QObject):
             self._sg_new_cut = self.create_sg_cut(title, description)
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
-            # todo: this should be set as an option somewhere; we don't
+            # todo: should this be set as an option somewhere? We don't
             # want to roll this out with nab, but wb and other studio
-            # clients may rely on this happening
+            # clients may rely on this happening...
             # self.update_sg_versions()
             self.progress_changed.emit(2)
             self.create_sg_cut_items(self._sg_new_cut)
@@ -1159,7 +1164,7 @@ class EdlCut(QtCore.QObject):
                             "edit_out" : edit_out,
                             "sg_sg_cut_duration" : cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
                             "shot" : cut_diff.sg_shot,
-                            "version" : edit.get_sg_version(),
+                            # "version" : edit.get_sg_version(),
                             "created_by" : self._ctx.user,
                             "updated_by" : self._ctx.user,
                         }

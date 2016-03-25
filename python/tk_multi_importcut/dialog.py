@@ -53,14 +53,6 @@ def show_dialog(app_instance):
     # different types of windows. By using these methods, your windows will be correctly
     # decorated and handled in a consistent fashion by the system. 
     
-    # print type(settings)
-    # print settings
-    # prefs = settings.UserSettings(app_instance)
-    # prefs.store("string1", "testing")
-    # pref = prefs.retrieve("string1")
-    # print type(pref)
-    # print pref
-    
     # we pass the dialog class to this method and leave the actual construction
     # to be carried out by toolkit.
     app_instance.engine.show_dialog("Import Cut", app_instance, AppDialog)
@@ -121,7 +113,9 @@ class AppDialog(QtGui.QWidget):
         
         self._user_settings = settings.UserSettings(self._app)
 
-        # set defaults, but don't override user settings
+        # set defaults, but don't override user settings. These defaults
+        # should eventually be stored somewhere else -- the official word
+        # from Ryan is "someday toolkit will provide a way to push the settings out"
         if self._user_settings.retrieve("update_shot_statuses") == None:
             self._user_settings.store("update_shot_statuses", True)
         if self._user_settings.retrieve("use_smart_fields") == None:
@@ -251,6 +245,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
+        # We have a different settings button on each page of the stacked widget
         for i in range(1, 7):
             eval("self.ui.settings_page_%s_button.clicked.connect(self.settings)" % i)
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
@@ -330,8 +325,6 @@ class AppDialog(QtGui.QWidget):
         Called when a step is done, and next page can be displayed
         """
         next_step = which + 1
-        # if which == 0:
-        #     next_step = which + 2
         cur_step = self.ui.stackedWidget.currentIndex()
         if next_step < cur_step:
             return
@@ -461,9 +454,7 @@ class AppDialog(QtGui.QWidget):
         Skip the cuts view page if needed
         """
         current_page = self.ui.stackedWidget.currentIndex()
-        previous_page = current_page-1
-
-        # todo: some kind of selector here for the projects view
+        previous_page = current_page - 1
 
         if previous_page == _CUT_STEP and self.no_cut_for_entity:
             # Skip cut selection screen
@@ -474,6 +465,7 @@ class AppDialog(QtGui.QWidget):
             previous_page = _ENTITY_TYPE_STEP
         
         if previous_page == _ENTITY_TYPE_STEP and self._entity_types_view.count() < 2:
+            # If only one entity is available, no need to choose it
             previous_page = _DROP_STEP
 
         if previous_page < 0:
@@ -549,7 +541,7 @@ class AppDialog(QtGui.QWidget):
         if step == _ENTITY_TYPE_STEP:
             self.display_info_message(self._entity_types_view.info_message)
         elif step == _PROJECT_STEP:
-            self.display_info_message("put something here about projects")
+            self.display_info_message(self._entity_types_view.info_message)
         elif step == _ENTITY_STEP:
             self.display_info_message(self._entities_view.info_message)
         elif step == _CUT_STEP:
@@ -641,7 +633,7 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(str)
     def show_projects(self):
         """
-        Called when cuts needs to be shown for a particular sequence
+        Called when projects need to be shown
         """
         self._logger.info("Retrieving Project(s)")
         self.get_projects.emit("sg_project")
@@ -649,7 +641,9 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot()
     def show_entity_types(self, sg_project):
         """
-        Called when cuts needs to be shown for a particular sequence
+        Called when entities needs to be shown for a project
+
+        :param sg_project: The Shogtun Project dict to check for entities with
         """
         self._processor.set_project(sg_project)
         self.goto_step(_ENTITY_TYPE_STEP)
@@ -657,7 +651,7 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(dict)
     def show_entity(self, sg_entity):
         """
-        Called when cuts needs to be shown for a particular entity
+        Called when cuts needs to be shown for an entity
         """
         name = sg_entity.get("code",
             sg_entity.get("name",
@@ -707,7 +701,7 @@ class AppDialog(QtGui.QWidget):
 
     def clear_project_view(self):
         """
-        Reset the page displaying available sequences
+        Reset the page displaying available projects
         """
         self._projects_view.clear()
 
@@ -746,10 +740,10 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot()
     def settings(self):
         """
-        Add comment
+        Called when the settings dialog needs to be presented to the user. This can
+        happen on almost every page of the animated stacked widget.
         """
         settings = SettingsDialog(parent=self)
-        # settings.submit.connect(self._processor.import_cut)
         settings.show()
         settings.raise_()
         settings.activateWindow()
@@ -867,6 +861,9 @@ class AppDialog(QtGui.QWidget):
         self.setStyleSheet("")
         if os.path.exists(css_file):
             try:
+                # todo: changing the default font to OpenSans should really
+                # happen in Toolkit, so app Studio apps inherit the font, instead
+                # of hanving to manually change it like this for each app
                 # getting the path to fonts relative to this file
                 font_path = os.path.dirname(os.path.abspath(__file__))
                 split_font_path = os.path.split(os.path.split(font_path)[0])[0]

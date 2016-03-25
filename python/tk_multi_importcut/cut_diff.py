@@ -244,10 +244,11 @@ class CutDiff(QtCore.QObject):
         """
         Return the version name for this diff, if any
         """
-        if self._edit:
-            return self._edit.get_version_name()
-        if self._sg_cut_item and self._sg_cut_item["version.Version.code"]:
-            return self._sg_cut_item["version.Version.code"]
+        # if self._edit:
+        #     return self._edit.get_version_name()
+        # if self._sg_cut_item and self._sg_cut_item["version.Version.code"]:
+        #     return self._sg_cut_item["version.Version.code"]
+        # todo: for now, we're just shutting this off completely
         return None
 
     @property
@@ -257,10 +258,11 @@ class CutDiff(QtCore.QObject):
 
         :returns: A SG Version dictionary or None
         """
-        if self._edit:
-            return self._edit.get_sg_version()
-        if self._sg_cut_item and self._sg_cut_item["version"]:
-            return self._sg_cut_item["version"]
+        # if self._edit:
+        #     return self._edit.get_sg_version()
+        # if self._sg_cut_item and self._sg_cut_item["version"]:
+        #     return self._sg_cut_item["version"]
+        # todo: for now, we're just shutting this off completely
         return None
 
     def set_sg_version(self, sg_version):
@@ -270,9 +272,11 @@ class CutDiff(QtCore.QObject):
         :param sg_version: A SG version, as a dictionary
         :raises: ValueError if no EditEvent is associated to this diff
         """
-        if not self._edit:
-            raise ValueError("Can't set Shotgun version without an edit entry")
-        self._edit._sg_version = sg_version
+        # if not self._edit:
+        #     raise ValueError("Can't set Shotgun version without an edit entry")
+        # self._edit._sg_version = sg_version
+        # todo: for now, we're just shutting this off completely
+        self._edit._sg_version = None
     
     @property
     def default_head_in(self):
@@ -575,10 +579,6 @@ class CutDiff(QtCore.QObject):
         if not self._sg_cut_item:
             return None
         cut_in = self._sg_cut_item["cut_item_in"]
-        #todo: this will need to be fixed up, the head
-        # in value should come from the version,
-        # tmp hardcoding to get schema going
-        # head_in = 9
         # head_in = self._sg_cut_item["sg_head_in"]
         head_in = self.shot_head_in
         if cut_in is None or head_in is None:
@@ -634,9 +634,6 @@ class CutDiff(QtCore.QObject):
         if not self._sg_cut_item:
             return None
         cut_out = self._sg_cut_item["cut_item_out"]
-        # todo: this will have to come from the version
-        # hardcoding this tmp to get schema going
-        # tail_out = 9
         # tail_out = self._sg_cut_item["sg_tail_out"]
         tail_out = self.shot_tail_out
         if cut_out is None or tail_out is None:
