@@ -19,11 +19,10 @@ import ast
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-# Import needed Framework
-widgets = sgtk.platform.import_framework("tk-framework-wb", "widgets")
-# Rename the drop area label to the name we chose in Designer when promoting our label
-DropAreaFrame = widgets.drop_area.DropAreaFrame
-AnimatedStackedWidget = widgets.animated_stacked_widget.AnimatedStackedWidget
+
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
+
+from .widgets import DropAreaFrame, AnimatedStackedWidget
 from .search_widget import SearchWidget
 from .entity_line_widget import EntityLineWidget
 from .extended_thumbnail import ExtendedThumbnail
@@ -34,15 +33,17 @@ from .ui.dialog import Ui_Dialog
 from .processor import Processor
 from .logger import BundleLogHandler, get_logger, ShortNameFilter
 from .entity_types_view import EntityTypesView
+from .projects_view import ProjectsView
 from .entities_view import EntitiesView
 from .cuts_view import CutsView
 from .cut_diff import _DIFF_TYPES, CutDiff
 from .cut_diffs_view import CutDiffsView
 from .submit_dialog import SubmitDialog
+from .settings_dialog import SettingsDialog
 from .downloader import DownloadRunner
 
 # Different steps in the process
-from .constants import _DROP_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 def show_dialog(app_instance):
     """
@@ -86,6 +87,7 @@ class AppDialog(QtGui.QWidget):
     Main application dialog window
     """
     new_edl = QtCore.Signal(str)
+    get_projects = QtCore.Signal(str)
     get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
@@ -107,7 +109,40 @@ class AppDialog(QtGui.QWidget):
         # most of the useful accessors are available through the Application class instance
         # it is often handy to keep a reference to this. You can get it via the following method:
         self._app = sgtk.platform.current_bundle()
+        self._ctx = self._app.context
         
+        self._user_settings = settings.UserSettings(self._app)
+
+        # set defaults, but don't override user settings. These defaults
+        # should eventually be stored somewhere else -- the official word
+        # from Ryan is "someday toolkit will provide a way to push the settings out"
+        if self._user_settings.retrieve("update_shot_statuses") == None:
+            self._user_settings.store("update_shot_statuses", True)
+        if self._user_settings.retrieve("use_smart_fields") == None:
+            self._user_settings.store("use_smart_fields", False)
+        if self._user_settings.retrieve("email_group") == None:
+            self._user_settings.store("email_group", 0)
+        if self._user_settings.retrieve("omit_status") == None:
+            self._user_settings.store("omit_status", 4)
+        if self._user_settings.retrieve("reinstate_shot_if_status_is") == None:
+            self._user_settings.store("reinstate_shot_if_status_is", 4)
+        if self._user_settings.retrieve("reinstate_status") == None:
+            self._user_settings.store("reinstate_status", 1)
+        if self._user_settings.retrieve("default_frame_rate") == None:
+            self._user_settings.store("default_frame_rate", "24")
+        if self._user_settings.retrieve("timecode_to_frame_mapping") == None:
+            self._user_settings.store("timecode_to_frame_mapping", 0)
+        if self._user_settings.retrieve("timecode_mapping") == None:
+            self._user_settings.store("timecode_mapping", "01:00:00:00")
+        if self._user_settings.retrieve("frame_mapping") == None:
+            self._user_settings.store("frame_mapping", "1000")
+        if self._user_settings.retrieve("default_head_in") == None:
+            self._user_settings.store("default_head_in", "1001")
+        if self._user_settings.retrieve("default_head_duration") == None:
+            self._user_settings.store("default_head_duration", "24")
+        if self._user_settings.retrieve("default_tail_duration") == None:
+            self._user_settings.store("default_tail_duration", "24")
+
         self._busy = False
         # Current step being displayed
         self._step = 0
@@ -132,18 +167,30 @@ class AppDialog(QtGui.QWidget):
         # Keep this thread for UI stuff
         # Handle data and processong in a separate thread
         self._processor = Processor(frame_rate)
+        
         self.new_edl.connect(self._processor.new_edl)
+        self.get_projects.connect(self._processor.retrieve_projects)
         self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
+        
         self._processor.step_done.connect(self.step_done)
         self._processor.step_failed.connect(self.step_failed)
         self._processor.got_busy.connect(self.set_busy)
         self._processor.got_idle.connect(self.set_idle)
         self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
-        
+
         # Let's do something when something is dropped
         self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
+
+        # Instantiate a projects view handler
+        self._projects_view = ProjectsView(self.ui.project_grid)
+        self._projects_view.project_chosen.connect(self.show_entity_types)
+        self._projects_view.selection_changed.connect(self.selection_changed)
+        self._projects_view.new_info_message.connect(self.display_info_message)
+        self._processor.new_sg_project.connect(self._projects_view.new_sg_project)
+        self.ui.projects_search_line_edit.search_edited.connect(self._projects_view.search)
+        self.ui.projects_search_line_edit.search_changed.connect(self._projects_view.search)
 
         # Instantiate a entity type view handler
         self._entity_types_view = EntityTypesView(self.ui.entity_types_layout)
@@ -198,6 +245,9 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
+        # We have a different settings button on each page of the stacked widget
+        for i in range(1, 7):
+            eval("self.ui.settings_page_%s_button.clicked.connect(self.settings)" % i)
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
 
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
@@ -274,7 +324,7 @@ class AppDialog(QtGui.QWidget):
         """
         Called when a step is done, and next page can be displayed
         """
-        next_step = which+1
+        next_step = which + 1
         cur_step = self.ui.stackedWidget.currentIndex()
         if next_step < cur_step:
             return
@@ -304,6 +354,9 @@ class AppDialog(QtGui.QWidget):
         self.ui.entity_picker_message_label.setText(
             "Importing %s ..." % os.path.basename(paths[0]),
         )
+        self.show_projects()
+        if self._ctx.project != None:
+            self.goto_step(_ENTITY_TYPE_STEP)
         #self._logger.info( "Processing %s" % (paths[0] ))
 
     @QtCore.Slot(int, str)
@@ -401,7 +454,7 @@ class AppDialog(QtGui.QWidget):
         Skip the cuts view page if needed
         """
         current_page = self.ui.stackedWidget.currentIndex()
-        previous_page = current_page-1
+        previous_page = current_page - 1
 
         if previous_page == _CUT_STEP and self.no_cut_for_entity:
             # Skip cut selection screen
@@ -412,6 +465,7 @@ class AppDialog(QtGui.QWidget):
             previous_page = _ENTITY_TYPE_STEP
         
         if previous_page == _ENTITY_TYPE_STEP and self._entity_types_view.count() < 2:
+            # If only one entity is available, no need to choose it
             previous_page = _DROP_STEP
 
         if previous_page < 0:
@@ -424,12 +478,13 @@ class AppDialog(QtGui.QWidget):
         """
         Set the UI for the given step
         """
-        self._step=step
+        self._step = step
         # 0 : drag and drop
-        # 1 : sequence select
-        # 2 : cut select
-        # 3 : cut summary
-        # 4 : import completed
+        # 1 : project select
+        # 2 : sequence select
+        # 3 : cut select
+        # 4 : cut summary
+        # 5 : import completed
         if step == _DROP_STEP:
             # No previous screen
             self.ui.back_button.hide()
@@ -437,23 +492,29 @@ class AppDialog(QtGui.QWidget):
             self.ui.reset_button.hide()
             # Clear various things when we hit the first screen
             # doing a reset
-            self._selected_sg_entity[_ENTITY_TYPE_STEP]=None
+            self._selected_sg_entity[_ENTITY_TYPE_STEP] = None
         else:
             # Allow reset and back from screens > 0
             self.ui.reset_button.show()
             self.ui.back_button.show()
 
+        if step < _PROJECT_STEP:
+            self.ui.projects_search_line_edit.clear()
+            self.clear_project_view()
+            self._selected_sg_entity[_PROJECT_STEP] = None
+
         if step < _ENTITY_STEP:
             self.ui.sequences_search_line_edit.clear()
             self.clear_sequence_view()
-            self._selected_sg_entity[_ENTITY_STEP]=None
+            self._selected_sg_entity[_ENTITY_STEP] = None
 
         if step < _CUT_STEP:
-            self._selected_sg_entity[_CUT_STEP]=None
+            # todo: this line looks like a duplicate, cut?
+            self._selected_sg_entity[_CUT_STEP] = None
             # Reset the cut view
             self.clear_cuts_view()
             self.ui.search_line_edit.clear()
-            self._selected_sg_entity[_CUT_STEP]=None
+            self._selected_sg_entity[_CUT_STEP] = None
 
         if step < _SUMMARY_STEP:
             # Reset the summary view
@@ -463,7 +524,12 @@ class AppDialog(QtGui.QWidget):
             self.ui.submit_button.hide()
 
         # We can select things on intermediate screens
-        if step==_ENTITY_TYPE_STEP or step==_ENTITY_STEP or step==_CUT_STEP:
+        if (
+            step == _ENTITY_TYPE_STEP or
+            step == _PROJECT_STEP or
+            step == _ENTITY_STEP or
+            step == _CUT_STEP
+            ):
             self.ui.select_button.show()
             # Only enable it if there is a selection for this step
             self.ui.select_button.setEnabled(bool(self._selected_sg_entity[step]))
@@ -472,13 +538,15 @@ class AppDialog(QtGui.QWidget):
         
         # Display info message in feedback line and other special things
         # based on the current step
-        if step==_ENTITY_TYPE_STEP:
+        if step == _ENTITY_TYPE_STEP:
             self.display_info_message(self._entity_types_view.info_message)
-        elif step==_ENTITY_STEP:
+        elif step == _PROJECT_STEP:
+            self.display_info_message(self._entity_types_view.info_message)
+        elif step == _ENTITY_STEP:
             self.display_info_message(self._entities_view.info_message)
-        elif step==_CUT_STEP:
+        elif step == _CUT_STEP:
             self.display_info_message(self._cuts_view.info_message)
-        elif step==_SUMMARY_STEP:
+        elif step == _SUMMARY_STEP:
             self.ui.email_button.show()
             self.ui.submit_button.show()
             self.display_info_message(self._cut_diffs_view.info_message)
@@ -521,7 +589,7 @@ class AppDialog(QtGui.QWidget):
         Called when selection changes in intermediate screens
         :param sg_entity: The SG entity which was selected for the current step
         """
-        # Keep trace of what is selected in different views
+        # Keep track of what is selected in different views
         # so the select button at the bottom of the window can
         # trigger next step with current selection
         self._selected_sg_entity[self._step]=sg_entity
@@ -535,11 +603,13 @@ class AppDialog(QtGui.QWidget):
         """
         if not self._selected_sg_entity[self._step]:
             raise RuntimeError("No selection for current step %d" % self._step)
-        if self._step==_ENTITY_TYPE_STEP:
+        if self._step == _ENTITY_TYPE_STEP:
             self.show_entities(self._selected_sg_entity[self._step])
-        elif self._step==_ENTITY_STEP:
+        elif self._step == _PROJECT_STEP:
+            self.show_projects()
+        elif self._step == _ENTITY_STEP:
             self.show_entity(self._selected_sg_entity[self._step])
-        elif self._step==_CUT_STEP:
+        elif self._step == _CUT_STEP:
             self.show_cut(self._selected_sg_entity[self._step])
         else:
             # Should never happen
@@ -560,10 +630,28 @@ class AppDialog(QtGui.QWidget):
         self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
         self.get_entities.emit(sg_entity_type)
 
+    @QtCore.Slot(str)
+    def show_projects(self):
+        """
+        Called when projects need to be shown
+        """
+        self._logger.info("Retrieving Project(s)")
+        self.get_projects.emit("sg_project")
+
+    @QtCore.Slot()
+    def show_entity_types(self, sg_project):
+        """
+        Called when entities needs to be shown for a project
+
+        :param sg_project: The Shogtun Project dict to check for entities with
+        """
+        self._processor.set_project(sg_project)
+        self.goto_step(_ENTITY_TYPE_STEP)
+
     @QtCore.Slot(dict)
     def show_entity(self, sg_entity):
         """
-        Called when cuts needs to be shown for a particular entity
+        Called when cuts needs to be shown for an entity
         """
         name = sg_entity.get("code",
             sg_entity.get("name",
@@ -611,6 +699,12 @@ class AppDialog(QtGui.QWidget):
         """
         self._entities_view.clear()
 
+    def clear_project_view(self):
+        """
+        Reset the page displaying available projects
+        """
+        self._projects_view.clear()
+
     def clear_cuts_view(self):
         """
         Reset the page displaying available cuts
@@ -642,6 +736,17 @@ class AppDialog(QtGui.QWidget):
         dialog.show()
         dialog.raise_()
         dialog.activateWindow()
+
+    @QtCore.Slot()
+    def settings(self):
+        """
+        Called when the settings dialog needs to be presented to the user. This can
+        happen on almost every page of the animated stacked widget.
+        """
+        settings = SettingsDialog(parent=self)
+        settings.show()
+        settings.raise_()
+        settings.activateWindow()
 
     @QtCore.Slot()
     def email_cut_changes(self):
@@ -756,6 +861,18 @@ class AppDialog(QtGui.QWidget):
         self.setStyleSheet("")
         if os.path.exists(css_file):
             try:
+                # todo: changing the default font to OpenSans should really
+                # happen in Toolkit, so app Studio apps inherit the font, instead
+                # of hanving to manually change it like this for each app
+                # getting the path to fonts relative to this file
+                font_path = os.path.dirname(os.path.abspath(__file__))
+                split_font_path = os.path.split(os.path.split(font_path)[0])[0]
+                font_path = os.path.join(split_font_path, "resources", "fonts")
+                # load custom font
+                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Bold.ttf"))
+                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Regular.ttf"))
+                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-CondLight.ttf"))
+                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Light.ttf"))
                 # Read css file
                 f = open(css_file)
                 css_data = f.read()

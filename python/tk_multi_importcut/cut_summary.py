@@ -14,6 +14,8 @@
 import sgtk
 from sgtk.platform.qt import QtCore
 
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
+
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .logger import get_logger
 
@@ -249,16 +251,76 @@ class CutSummary(QtCore.QObject):
     totals_changed = QtCore.Signal()
     delete_cut_diff = QtCore.Signal(CutDiff)
 
-    def __init__(self):
+    def __init__(self, tc_edit_in=None, tc_edit_out=None):
         """
         Create a new empty CutSummary
+        :param tc_edit_in: A Timecode instance, first edit timecode in
+        :param tc_edit_out: A Timecode instance, very last edit timecode out
         """
-        super(CutSummary,self).__init__()
+        super(CutSummary, self).__init__()
         self._cut_diffs = {}
         self._counts = {}
         self._rescans_count = 0
         self._logger=get_logger()
-        self._omit_statuses = sgtk.platform.current_bundle().get_setting("omit_statuses") or ["omt"]
+        
+        app = settings.UserSettings(sgtk.platform.current_bundle())
+        self._user_settings = app
+
+        self._omit_statuses = [self._user_settings.retrieve("omit_status")]
+
+        self._tc_start = tc_edit_in
+        self._tc_end = tc_edit_out
+        self._edit_offset = 0
+        self._duration = 0
+        self._fps = float(self._user_settings.retrieve("default_frame_rate"))
+        
+        # todo: Stephane moved the edit offset & duration code
+        # here from show_cut_diff in edl_cut.py, but it doesn't
+        # seem to be working, so I've switched it back temporarily
+        # if self._tc_start is not None:
+        #     self._edit_offset = tc_edit_in.to_frame()
+        #     if self._tc_end is not None:
+        #         self._duration = tc_edit_out.to_frame() - self._edit_offset
+
+    @property
+    def timecode_start(self):
+        return self._tc_start
+
+    @property
+    def timecode_end(self):
+        return self._tc_end
+
+    @property
+    def duration(self):
+        return self._duration
+
+    @property
+    def edit_offset(self):
+        return self._edit_offset
+
+    @property
+    def fps(self):
+        return self._fps
+    
+    @timecode_start.setter
+    def timecode_start(self, value):
+        self._tc_start = value
+
+    @timecode_end.setter
+    def timecode_end(self, value):
+        self._tc_end = value
+
+    @duration.setter
+    def duration(self, value):
+        self._duration = value
+
+    @edit_offset.setter
+    def edit_offset(self, value):
+        self._edit_offset = value
+
+    @fps.setter
+    def fps(self, value):
+        self._fps = value
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
@@ -365,7 +427,7 @@ class CutSummary(QtCore.QObject):
             for cdiff in self._cut_diffs[new_shot_key]:
                 self._logger.debug("%s %s %s %s" % cdiff.summary())
             count=len(self._cut_diffs[new_shot_key])
-            self._logger.debug("%d Entries for new shot key %s" % (count, new_shot_key))
+            self._logger.debug("%d Entrie(s) for new shot key %s" % (count, new_shot_key))
             if count == 1 and not self._cut_diffs[new_shot_key][0].edit:
                 self._logger.debug("Single omitted entry for new shot key %s" % new_shot_key)
                 # If only one entry, that could be an omitted shot ( no edit )
@@ -541,7 +603,7 @@ class CutSummary(QtCore.QObject):
 
     def iteritems(self):
         """
-        Iterate over shot names for this summary, yielding (name, CutDiffs list )
+        Iterate over shot names for this summary, yielding (name, CutDiffs list)
         tuple
         """
         for name, items in self._cut_diffs.iteritems():

@@ -22,8 +22,8 @@ CutDiffCard #version_name_label {
     margin: 0px;
 }
 /*
-Make the line edit looks like a QLabel 
-when not in edit mode 
+Make the line edit look like a QLabel 
+when not in edit mode
 */
 EntityLineWidget {
     border: 0px solid #2C93E2;
@@ -100,6 +100,84 @@ DropAreaFrame QLabel {
     font-size: 30px;
 }
 
+* {
+    font-family: "Open Sans";
+    outline: 0;
+}
+
+/* general bg color for the whole settings_dialog */
+#settings_dialog {
+    background-color: #3c3e42;
+}
+
+/* styling the tab border */
+#general_timecode_frames_tab::pane {
+    border-top: 1px solid black;
+    border-bottom: 1px solid #3c3e42;
+}
+
+/* getting fonts to be the right size */
+#description_1_label, #email_group_combo_box, #omit_status_combo_box, #reinstate_shot_if_status_is_combo_box, #reinstate_status_combo_box, #timecode_to_frame_mapping_combo_box, #timecode_to_frame_mapping_instructions_label, #description_2_label, #default_frame_rate_line_edit, #timecode_mapping_line_edit, #frame_mapping_line_edit, #default_head_in_line_edit, #default_head_duration_line_edit, #default_tail_duration_line_edit {
+    font-size: 12px;
+}
+
+/* todo: this is bad, it's going to style all QTabBar widgets
+try to figure out how to focus on just the one in the
+settings_dialog (doesn't really matter now cuz there is only one) */
+QTabBar::tab {
+    font-size: 14px;
+    padding: 8px;
+    background-color: #3c3e42;
+    width: 120px;
+    right: 30px;
+    color: #A0A0A0 ;
+    border: 2px solid #3c3e42;
+    border-bottom-color: #3c3e42;
+    border-bottom-width: 2px;
+
+}
+
+/* todo: same badness */
+QTabBar::tab:selected {
+    color: #C8C8C8;
+    border-bottom-color: #26beff;
+}
+
+/* darkening the bg for selection widgets */
+#email_group_combo_box, #update_shot_statuses_checkbox, #omit_status_combo_box, #reinstate_shot_if_status_is_combo_box, #reinstate_status_combo_box, #use_smart_fields_checkbox, #default_frame_rate_line_edit, #timecode_to_frame_mapping_combo_box, #default_head_in_line_edit, #default_head_duration_line_edit, #default_tail_duration_line_edit, #timecode_mapping_line_edit, #frame_mapping_line_edit {
+    background-color: #2a2a2a;
+}
+
+/* fading out widgets that aren't enabled */
+#omit_status_combo_box:!enabled, #reinstate_shot_if_status_is_combo_box:!enabled, #reinstate_status_combo_box:!enabled {
+    background-color: #3c3e42;
+    color: #3c3e42;
+}
+
+/* fading out text that isn't enabled */
+#omit_status_label:!enabled, #reinstate_shot_if_status_is_label:!enabled, #reinstate_status_label:!enabled {
+    color: #606060;
+}
+
+/* dimming certain text for dramatic effect */
+#send_cut_summary_note_to_label, #update_shot_statuses_label, #omit_status_label, #reinstate_shot_if_status_is_label, #reinstate_status_label, #use_smart_fields_label, #default_frame_rate_label, #timecode_to_frame_mapping_label, #default_head_in_label, #default_head_duration_label, #default_tail_duration_label, #timecode_mapping_label, #frame_mapping_label {
+    font-family: "Open Sans";
+    font-size: 12px;
+    color: #A8A8A8;
+}
+
+/* Font size for "Settings" in Settings dialog */
+#settings_label {
+    font-size: 22px;
+    color: #909090 ;
+}
+
+/* making section headings bold */
+#note_addressing_label, #statuses_label, #cut_fields_on_shot_label, #timecode_label, #new_shots_label {
+    font-size: 12px;
+    font-weight: bold;
+}
+
 /*
 Highlight the drop area when something is dragged over
 */
@@ -143,22 +221,22 @@ EntityTypeCard #icon_label {
     min-height: 100px;
 }
 
-EntityCard, CutCard, CutDiffCard {
+EntityCard, CutCard, CutDiffCard, ProjectCard {
     border: 1px none black;
     background-color: #525252;
     border-radius: 2px;
 }
 /* Highlight selected cards */
-EntityCard[selected="true"], CutCard[selected="true"], EntityTypeCard[selected="true"] {
+ProjectCard[selected="true"], EntityCard[selected="true"], CutCard[selected="true"], EntityTypeCard[selected="true"] {
     border: 1px solid #2C93E2;
     background-color: rgba(44, 147, 226, 25%);
 }
 /* Labels on Sequence cards */
-EntityCard #title_label {
+ProjectCard #title_label, EntityCard #title_label {
     font-weight: bold;
     font-size: 15px;
 }
-EntityCard #status_label {
+ProjectCard #status_label, EntityCard #status_label {
     font-weight: bold;
 }
 
@@ -170,7 +248,8 @@ QPushButton:enabled#select_button {
 QLabel#entity_picker_title_label_2,
 QLabel#entity_picker_title_label,
 QLabel#sequences_title_label,
-QLabel#cuts_title_label {
+QLabel#cuts_title_label,
+QLabel#select_project_label {
     font-size: 20px;
 }
 QLabel#cut_summary_title_label {
@@ -193,7 +272,7 @@ widgets so the QScrollArea backgroun-color is used, making it yellow
 so it's obbvious it is a "dummy" color. Not setting it or setting it
 to anything else than a real color doesn't work ...
 */
-#sequence_area, #cuts_area, #cut_summary_widgets {
+#project_area, #sequence_area, #cuts_area, #cut_summary_widgets {
     background-color: yellow;
 }
 

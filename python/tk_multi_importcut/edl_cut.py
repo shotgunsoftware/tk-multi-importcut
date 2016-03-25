@@ -15,8 +15,10 @@ from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
 from .entity_line_widget import EntityLineWidget
 
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
+
 # Different steps in the process
-from .constants import _DROP_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 import re
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
@@ -27,6 +29,7 @@ class EdlCut(QtCore.QObject):
     """
     step_done           = QtCore.Signal(int)
     step_failed         = QtCore.Signal(int)
+    new_sg_project      = QtCore.Signal(dict)
     new_sg_entity       = QtCore.Signal(dict)
     new_sg_cut          = QtCore.Signal(dict)
     new_cut_diff        = QtCore.Signal(CutDiff)
@@ -41,6 +44,7 @@ class EdlCut(QtCore.QObject):
         Instantiate a new empty worker
         """
         super(EdlCut, self).__init__()
+
         self._edl_file_path = None
         self._edl = None
         self._sg_entity_type = None
@@ -51,14 +55,26 @@ class EdlCut(QtCore.QObject):
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
-        self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
+        # we won't use context.project directly so we can change the Project if
+        # we want (this is specifically for RV integration where it's possible to
+        # launch without a Project context
+        self._project = self._ctx.project
         self._sg_new_cut = None
         self._no_cut_for_entity = False
         self._project_import = False
-        self._frame_rate = frame_rate
         # Retrieve some settings
-        self._omit_statuses = self._app.get_setting("omit_statuses") or ["omt"]
-        self._cut_link_field = self._app.get_setting("cut_link_field")
+        self._user_settings = settings.UserSettings(self._app)
+        # todo: this will need to be rethought if we're able to extract fps
+        # from an EDL. Basically this is redundant now b/c the frame_rate coming
+        # in is almost definitely set by user settings default_frame_rate
+        if frame_rate != None:
+            self._frame_rate = frame_rate
+        else:
+            self._frame_rate = float(self._user_settings.retrieve("default_frame_rate"))
+        self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
+        self._omit_statuses = [self._user_settings.retrieve("omit_status")]
+        self._cut_link_field = "entity"
+        self._num_cuts = 0
 
     @property
     def entity_name(self):
@@ -192,7 +208,7 @@ class EdlCut(QtCore.QObject):
                 if v_name:
                     # SG find method is case insensitive, don't have to worry
                     # about upper / lower case names match
-                    # but we use lowerkeys keys
+                    # but we use lowercase keys
                     v_name = v_name.lower()
                     if v_name not in versions_names:
                         versions_names[v_name] = [edit]
@@ -202,7 +218,7 @@ class EdlCut(QtCore.QObject):
             if versions_names:
                 sg_versions = self._sg.find(
                     "Version", [
-                        ["project", "is", self._ctx.project],
+                        ["project", "is", self._project],
                         ["code", "in", versions_names.keys()],
                     ],
                     ["code", "entity", "entity.Shot.code", "image"]
@@ -221,6 +237,7 @@ class EdlCut(QtCore.QObject):
                             edit._shot_name = sg_version["entity.Shot.code"]
             #self.retrieve_entities()
             # Can go to next step
+            print 'emitting %s' % _DROP_STEP
             self.step_done.emit(_DROP_STEP)
         except Exception, e:
             self._edl = None
@@ -249,7 +266,7 @@ class EdlCut(QtCore.QObject):
                 r, g, b = sg_status["bg_color"].split(",")
                 sg_status["_bg_hex_color"] = "#%02x%02x%02x" % (int(r), int(g), int(b))
             status_dict[sg_status["code"]] = sg_status
-        self._logger.info("Retrieving %s(s) for project %s ..." % (entity_type, self._ctx.project["name"]))
+        self._logger.info("Retrieving %s(s) for project %s ..." % (entity_type, self._project["name"]))
         self.got_busy.emit(None)
         try:
             # Retrieve a "link" field on Shots which accepts our entity type
@@ -281,21 +298,21 @@ class EdlCut(QtCore.QObject):
                 ))
             if entity_type == "Project":
                 sg_entities = self._sg.find("Project",
-                    [["id", "is", self._ctx.project["id"]]],
+                    [["id", "is", self._project["id"]]],
                     [ "name", "id", "sg_status", "image", "sg_description"],
                     order=[{"field_name" : "name", "direction" : "asc"}]
                 )
             else:
                 sg_entities = self._sg.find(
                     entity_type,
-                    [["project", "is", self._ctx.project]],
+                    [["project", "is", self._project]],
                     [ "code", "name", "title", "id", "sg_status_list", "image", "description"],
                     order=[{"field_name" : "code", "direction" : "asc"}]
                 )
             if not sg_entities:
                 raise RuntimeWarning("Couldn't retrieve any %s for project %s" % (
                     entity_type,
-                    self._ctx.project["name"],
+                    self._project["name"],
                 ))
             for sg_entity in sg_entities:
                 # Project uses sg_status and not sg_status_list
@@ -320,6 +337,24 @@ class EdlCut(QtCore.QObject):
                 self.retrieve_cuts(sg_entities[0])
             else:
                 self.step_done.emit(_ENTITY_TYPE_STEP)
+        except Exception, e :
+            self._logger.exception(str(e))
+        finally:
+            self.got_idle.emit()
+
+    @QtCore.Slot(str)
+    def retrieve_projects(self):
+        """
+        Retrieve all Projects for the Shotgun site
+        """
+        try:
+            fields = ["name", "id", "sg_status", "image", "sg_description"]
+            order = [{"field_name" : "name", "direction" : "asc"}]
+            #todo: do we want to filter for active projects?
+            sg_projects = self._sg.find("Project", [["is_template", "is", False]], fields, order=order)
+            self._logger.info("Retrieved %d Projects." % (len(sg_projects)))
+            for sg_project in sg_projects:
+                self.new_sg_project.emit(sg_project)
         except Exception, e :
             self._logger.exception(str(e))
         finally:
@@ -366,6 +401,7 @@ class EdlCut(QtCore.QObject):
                 ],
                 order=[{"field_name" : "id", "direction" : "desc"}]
             )
+
             # If no cut, go directly to next step
             if not sg_cuts:
                 self.show_cut_diff({})
@@ -378,7 +414,8 @@ class EdlCut(QtCore.QObject):
                 if sg_cut["sg_status_list"] in status_dict:
                     sg_cut["_display_status"] = status_dict[sg_cut["sg_status_list"]]
                 self.new_sg_cut.emit(sg_cut)
-            self._logger.info("Retrieved %d Cuts." % len(sg_cuts))
+            self._num_cuts = len(sg_cuts)
+            self._logger.info("Retrieved %d Cuts." % self._num_cuts)
             self.step_done.emit(_ENTITY_STEP)
         except Exception, e :
             self._logger.exception(str(e))
@@ -399,7 +436,18 @@ class EdlCut(QtCore.QObject):
         self._logger.info("Retrieving cut summary for %s" % ( self.entity_name))
         self.got_busy.emit(None)
         self._sg_cut=sg_cut
-        self._summary = CutSummary()
+        
+        # We've got an opportunity here to set the tc start/end values on
+        # CutSummary, so lets do that so we can set it on the Cut record too
+        tc_start = None
+        tc_end = None
+        if self._edl.edits:
+            tc_start = self._edl.edits[0].record_in
+            tc_end = self._edl.edits[-1].record_out
+        self._summary = CutSummary(
+            tc_start,
+            tc_end
+        )
         # Connect CutSummary signals to ours as pass through, so any listener
         # on our signals will receive signals emitted by the CutSummary
         self._summary.new_cut_diff.connect(self.new_cut_diff)
@@ -436,33 +484,32 @@ class EdlCut(QtCore.QObject):
             sg_cut_items = []
             sg_shots_dict = {}
             if sg_cut:
-                sg_cut_item_entity = self._app.get_setting("sg_cut_item_entity")
+                sg_cut_item_entity = "CutItem"
                 # Retrieve all cut items linked to that cut
                 sg_cut_items = self._sg.find(sg_cut_item_entity,
-                    [["sg_cut", "is", sg_cut]], [
-                        "sg_cut",
-                        "sg_timecode_cut_in",
-                        "sg_timecode_cut_out",
-                        "sg_head_in",
-                        "sg_tail_out",
-                        "sg_cut_order",
-                        "sg_cut_in",
-                        "sg_cut_out",
-                        "sg_link",
-                        "sg_cut_duration",
-                        "sg_fps",
-                        "sg_version",
-                        "sg_version.Version.code",
-                        "sg_version.Version.entity",
-                        "sg_version.Version.image",
-                    ]
+                    [["cut", "is", sg_cut]], [
+                        "cut",
+                        "timecode_cut_item_in",
+                        "timecode_cut_item_out",
+                        "cut_order",
+                        "cut_item_in",
+                        "cut_item_out",
+                        "shot",
+                        "cut_duration",
+                        "sg_sg_cut_duration",
+                        "cut.Cut.fps",
+                        "version",
+                        "version.Version.code",
+                        "version.Version.entity",
+                        "version.Version.image",
+                     ]
                 )
                 # Consolidate versions retrieved from cut items
                 # Because of a bug in the Shotgun API, we can't use two levels of
                 # redirection, with "sg_version.Version.entity.Shot.code",
                 # to retrieve the Shot linked to the Version, a CRUD
                 # error will happen if one of the CutItem does not have version linked
-                sg_cut_item_version_ids = [ x["sg_version"]["id"] for x in sg_cut_items if x["sg_version"]]
+                sg_cut_item_version_ids = [ x["version"]["id"] for x in sg_cut_items if x["version"]]
                 sg_cut_item_versions = {}
                 if sg_cut_item_version_ids:
                     sg_cut_item_versions_list = self._sg.find(
@@ -477,17 +524,17 @@ class EdlCut(QtCore.QObject):
                 # And collect a list of shots while we loop over cut items
                 sg_known_shot_ids = set()
                 for sg_cut_item in sg_cut_items:
-                    if sg_cut_item["sg_link"] and sg_cut_item["sg_link"]["type"] == "Shot":
-                        sg_known_shot_ids.add(sg_cut_item["sg_link"]["id"])
-                    if sg_cut_item["sg_version"]:
-                        sg_cut_item["sg_version"]["code"] = sg_cut_item["sg_version.Version.code"]
-                        sg_cut_item["sg_version"]["entity"] = sg_cut_item["sg_version.Version.entity"]
-                        sg_cut_item["sg_version"]["image"] = sg_cut_item["sg_version.Version.image"]
-                        item_version = sg_cut_item_versions.get(sg_cut_item["sg_version"]["id"])
+                    if sg_cut_item["shot"] and sg_cut_item["shot"]["type"] == "Shot":
+                        sg_known_shot_ids.add(sg_cut_item["shot"]["id"])
+                    if sg_cut_item["version"]:
+                        sg_cut_item["version"]["code"] = sg_cut_item["version.Version.code"]
+                        sg_cut_item["version"]["entity"] = sg_cut_item["version.Version.entity"]
+                        sg_cut_item["version"]["image"] = sg_cut_item["version.Version.image"]
+                        item_version = sg_cut_item_versions.get(sg_cut_item["version"]["id"])
                         if item_version:
-                            sg_cut_item["sg_version"]["entity.Shot.code"] = item_version["entity.Shot.code"]
+                            sg_cut_item["version"]["entity.Shot.code"] = item_version["entity.Shot.code"]
                         else:
-                            sg_cut_item["sg_version"]["entity.Shot.code"] = None
+                            sg_cut_item["version"]["entity.Shot.code"] = None
                 # Retrieve details for shots linked to the cut items
                 if sg_known_shot_ids:
                     sg_shots = self._sg.find(
@@ -509,7 +556,7 @@ class EdlCut(QtCore.QObject):
             if more_shot_names:
                 sg_more_shots = self._sg.find(
                     "Shot",
-                    [["project", "is", self._ctx.project], ["code", "in", list(more_shot_names)]],
+                    [["project", "is", self._project], ["code", "in", list(more_shot_names)]],
                     shot_fields,
                 )
                 for sg_shot in sg_more_shots:
@@ -522,7 +569,63 @@ class EdlCut(QtCore.QObject):
             # Record the list of shots for completion purpose, we don't use the keys as
             # they are lower cased, but the original shot names
             EntityLineWidget.set_known_list(x["code"] for x in sg_shots_dict.itervalues() if x["code"])
+
+            # Building a little dictionary for use in naming reels /
+            # CutItem Name / code (whatever you want to call it).
+            # Basically we add a 3 padded number to the end of any
+            # reel that has a name which is duplicated, so we need an
+            # iteration key and a dup key
+            reel_names = {}
             for edit in self._edl.edits:
+                if reel_names.get(edit.reel):
+                    reel_names[edit.reel]["dup"] = True
+                else:
+                    reel_names[edit.reel] = {}
+                    reel_names[edit.reel]["dup"] = False
+                reel_names[edit.reel]["iter"] = 1
+
+            for edit in self._edl.edits:
+                if reel_names[edit.reel]["dup"] == True:
+                    edit.reel_name = "%s%s" % (edit.reel, str(reel_names[edit.reel]["iter"]).zfill(3))
+                    reel_names[edit.reel]["iter"] += 1
+                else:
+                    edit.reel_name = edit.reel
+                # todo: Stephane moved this code to CutSummary, try moving again.
+                # Store the edit_offset in the summary instance so we can
+                # calculate edit in/out relative to the Cut (frame 1) later on
+                if edit.id == 1:
+                    # todo: replace with fps from Cut entity
+                    self._summary.edit_offset = edl.Timecode(
+                        str(edit.record_in), self._summary.fps).to_frame()
+                    self._summary.tc_start = edit.record_in
+                if edit.id == len(self._edl.edits):
+                    self._summary.tc_end = edit.record_out
+
+            # todo: Stephane moved this code to CutSummary but it doesn't
+            # work, investigate b/c it should be moved there
+            start_frame = edl.Timecode(
+                str(self._summary.tc_start), self._summary.fps).to_frame()
+            end_frame = edl.Timecode(
+                str(self._summary.tc_end), self._summary.fps).to_frame()
+            self._summary.duration = end_frame - start_frame + 1
+
+            # reel_names = set()
+            for edit in self._edl.edits:
+                # todo: more of Stephane's code that I had to put on hold for
+                # a bit; this code doesn't correctly set the first CutItem's name
+                # # Ensure CutItems will have unique reel names
+                # if edit.reel in reel_names:
+                #     # Append a 3 digits number at the end
+                #     suffix = 1
+                #     reel_name = "%s%03d" % (edit.reel, suffix)
+                #     while reel_name in reel_names:
+                #         suffix += 1
+                #         reel_name = "%s%03d" % (edit.reel, suffix)
+                #     edit.reel_name = reel_name
+                # else:
+                #     edit.reel_name = edit.reel
+                # reel_names.add(edit.reel_name)
+
                 shot_name = edit.get_shot_name()
                 if not shot_name:
                     # If we don't have a shot name, we can't match
@@ -572,15 +675,16 @@ class EdlCut(QtCore.QObject):
                             edit=edit,
                             sg_cut_item=matching_cut_item
                         )
+
             # Process cut items left over
             for sg_cut_item in sg_cut_items:
                 # If not compliant to what we expect, just ignore it
-                if sg_cut_item["sg_link"] and sg_cut_item["sg_link"]["id"] and \
-                sg_cut_item["sg_link"]["type"] == "Shot":
+                if sg_cut_item["shot"] and sg_cut_item["shot"]["id"] and \
+                sg_cut_item["shot"]["type"] == "Shot":
                     shot_name = "No Link"
                     matching_shot = None
                     for sg_shot in sg_shots_dict.itervalues():
-                        if sg_shot["id"] == sg_cut_item["sg_link"]["id"]:
+                        if sg_shot["id"] == sg_cut_item["shot"]["id"]:
                             # yes we do
                             self._logger.debug("Found matching existing shot %s" % shot_name)
                             shot_name = sg_shot["code"]
@@ -640,9 +744,9 @@ class EdlCut(QtCore.QObject):
         potential_matches = []
         for sg_cut_item in sg_cut_items:
             # Is it linked to the given shot ?
-            if sg_cut_item["sg_link"] and sg_shot and \
-                sg_cut_item["sg_link"]["id"] == sg_shot["id"] \
-                and sg_cut_item["sg_link"]["type"] == sg_shot["type"]:
+            if sg_cut_item["shot"] and sg_shot and \
+                sg_cut_item["shot"]["id"] == sg_shot["id"] \
+                and sg_cut_item["shot"]["type"] == sg_shot["type"]:
                     # We can have multiple cut items for the same shot
                     # use the linked version to pick the right one, if
                     # available
@@ -654,8 +758,8 @@ class EdlCut(QtCore.QObject):
                             sg_cut_item,
                             100 + self._get_cut_item_score(sg_cut_item, edit)
                             ))
-                    elif sg_cut_item["sg_version"]:
-                            if sg_version["id"] == sg_cut_item["sg_version"]["id"]:
+                    elif sg_cut_item["version"]:
+                            if sg_version["id"] == sg_cut_item["version"]["id"]:
                                 # Give a bonus to score as we matched the right
                                 # version
                                 potential_matches.append((
@@ -701,18 +805,18 @@ class EdlCut(QtCore.QObject):
             return 0
         score = 0
         # Compute the cut order difference
-        diff = edit.id - sg_cut_item["sg_cut_order"]
+        diff = edit.id - sg_cut_item["cut_order"]
         if diff == 0:
             score += 1
         diff = edit.source_in - edl.Timecode(
-                                    sg_cut_item["sg_timecode_cut_in"],
-                                    sg_cut_item["sg_fps"]
+                                    sg_cut_item["timecode_cut_item_in"],
+                                    sg_cut_item["cut.Cut.fps"]
                                 ).to_frame()
         if diff == 0:
             score += 1
         diff = edit.source_out - edl.Timecode(
-                                    sg_cut_item["sg_timecode_cut_out"],
-                                    sg_cut_item["sg_fps"]
+                                    sg_cut_item["timecode_cut_item_out"],
+                                    sg_cut_item["cut.Cut.fps"]
                                 ).to_frame()
 
         if diff == 0:
@@ -731,7 +835,10 @@ class EdlCut(QtCore.QObject):
             self._sg_new_cut = self.create_sg_cut(title, description)
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
-            self.update_sg_versions()
+            # todo: should this be set as an option somewhere? We don't
+            # want to roll this out with nab, but wb and other studio
+            # clients may rely on this happening...
+            # self.update_sg_versions()
             self.progress_changed.emit(2)
             self.create_sg_cut_items(self._sg_new_cut)
             self.progress_changed.emit(3)
@@ -775,7 +882,7 @@ class EdlCut(QtCore.QObject):
         subject, body = summary.get_report(title, links)
         contents = "%s\n%s" % (description, body)
         data = {
-            "project" : self._ctx.project,
+            "project" : self._project,
             "subject" : subject,
             "content": contents,
             "note_links": [self._sg_entity] + (sg_links if sg_links else []),
@@ -793,16 +900,35 @@ class EdlCut(QtCore.QObject):
         """
         # Create a new cut
         self._logger.info("Creating cut %s ..." % title)
+        # If start and end timcodes are not defined, we keep them as is,
+        # so no value will be set when creating the Cut. We convert them
+        # to string otherwise
+        tc_start = self._summary.timecode_start
+        if tc_start is not None:
+            tc_start = str(tc_start)
+        tc_end = self._summary.timecode_end
+        if tc_end is not None:
+            tc_end = str(tc_end)
         sg_cut = self._sg.create(
             "Cut", {
-                "project"               : self._ctx.project,
+                "project"               : self._project,
                 "code"                  : title,
                 self._cut_link_field    : self._sg_entity,
+                "fps"                   : float(self._edl.fps),
                 "created_by"            : self._ctx.user,
                 "updated_by"            : self._ctx.user,
                 "description"           : description,
+                "timecode_start"        : tc_start,
+                "timecode_end"          : tc_end,
+                "duration"              : self._summary.duration,
+                "revision_number"       : self._num_cuts + 1
             },
             ["id", "code"])
+        # Upload edl file to the new cut record
+        self._sg.upload(
+            sg_cut["type"], sg_cut["id"],
+            self._edl_file_path, "attachments"
+        )
         return sg_cut
 
     def update_sg_shots(self, update_shots):
@@ -820,7 +946,7 @@ class EdlCut(QtCore.QObject):
         else:
             self._logger.info("Creating new shots ...")
         sg_batch_data = []
-        reinstate_status = self._app.get_setting("reinstate_status")
+        reinstate_status = self._user_settings.retrieve("reinstate_status")
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
             # Retrieve values for the shot, and the shot itself
@@ -842,7 +968,7 @@ class EdlCut(QtCore.QObject):
                     self.entity_name
                 ))
                 data = {
-                    "project" : self._ctx.project,
+                    "project" : self._project,
                     "code" : cut_diff.name,
                     "updated_by" : self._ctx.user,
                     "sg_cut_order" : min_cut_order,
@@ -975,7 +1101,7 @@ class EdlCut(QtCore.QObject):
                             "request_type" : "create",
                             "entity_type" : "Version",
                             "data" : {
-                                "project" : self._ctx.project,
+                                "project" : self._project,
                                 "code" : version_name,
                                 "entity" : cut_diff.sg_shot,
                                 "updated_by" : self._ctx.user,
@@ -1013,32 +1139,32 @@ class EdlCut(QtCore.QObject):
         # Loop through all edits and create CutItems for them
         self._logger.info("Creating cut items ...")
         sg_batch_data = []
-        cut_item_entity = self._app.get_setting("sg_cut_item_entity")
+        cut_item_entity = "CutItem"
         for shot_name, items in self._summary.iteritems():
             for cut_diff in items:
                 edit = cut_diff.edit
                 if edit:
-                    tc_cut_in = edit.source_in.to_frame()
+                    edit_in = edit.record_in.to_frame() - self._summary.edit_offset + 1
+                    edit_out = edit.record_out.to_frame() - self._summary.edit_offset
                     sg_batch_data.append({
                         "request_type" : "create",
                         "entity_type" : cut_item_entity,
                         "data" : {
-                            "project" : self._ctx.project,
-                            "code" : edit.reel,
-                            "sg_cut" : sg_cut,
-                            "sg_cut_order" : edit.id,
-                            "sg_timecode_cut_in" : str(edit.source_in),
-                            "sg_timecode_cut_out" : str(edit.source_out),
-                            "sg_timecode_edl_in" : str(edit.record_in),
-                            "sg_timecode_edl_out" : str(edit.record_out),
-                            "sg_cut_in" : cut_diff.new_cut_in,
-                            "sg_cut_out" : cut_diff.new_cut_out,
-                            "sg_head_in" : cut_diff.new_head_in,
-                            "sg_tail_out" : cut_diff.new_tail_out,
-                            "sg_cut_duration" : cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
-                            "sg_link" : cut_diff.sg_shot,
-                            "sg_version" : edit.get_sg_version(),
-                            "sg_fps" : self._edl.fps,
+                            "project" : self._project,
+                            "code" : edit.reel_name,
+                            "cut" : sg_cut,
+                            "cut_order" : edit.id,
+                            "timecode_cut_item_in" : str(edit.source_in),
+                            "timecode_cut_item_out" : str(edit.source_out),
+                            "timecode_edit_in" : str(edit.record_in),
+                            "timecode_edit_out" : str(edit.record_out),
+                            "cut_item_in" : cut_diff.new_cut_in,
+                            "cut_item_out" : cut_diff.new_cut_out,
+                            "edit_in" : edit_in,
+                            "edit_out" : edit_out,
+                            "sg_sg_cut_duration" : cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
+                            "shot" : cut_diff.sg_shot,
+                            # "version" : edit.get_sg_version(),
                             "created_by" : self._ctx.user,
                             "updated_by" : self._ctx.user,
                         }

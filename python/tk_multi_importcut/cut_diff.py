@@ -15,6 +15,7 @@ import sgtk
 from sgtk.platform.qt import QtCore
 # Import the EDL framework
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 # Define difference types as enums
 def diff_types(**enums):
@@ -96,6 +97,9 @@ class CutDiff(QtCore.QObject):
     # Emitted when this cut diff instance is discarded
     discarded=QtCore.Signal(QtCore.QObject)
 
+    # User settings for class methods
+    _user_settings = settings.UserSettings(sgtk.platform.current_bundle())
+
     __default_timecode_frame_mapping = None
 
     def __init__(self, name, sg_shot=None, edit=None, sg_cut_item=None):
@@ -114,14 +118,18 @@ class CutDiff(QtCore.QObject):
         self._sg_cut_item = sg_cut_item
         self._app = sgtk.platform.current_bundle()
 
+        # User settings for non-class methods
+        self._user_settings = settings.UserSettings(self._app)
+
         self._repeated = False
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
         # default head in is not used at the moment, but I'm not sure the
         # timecode_frame_map thing is what is expected so keeping it around ...
-        self._default_head_in = self._app.get_setting("default_head_in")
-        self._default_head_in_duration = self._app.get_setting("default_head_in_duration")
-        self._use_smart_fields = self._app.get_setting("use_smart_fields") or False
+        self._default_head_in = int(self._user_settings.retrieve("default_head_in"))
+        self._default_head_in_duration = int(self._user_settings.retrieve("default_head_duration"))
+        self._default_tail_out_duration = int(self._user_settings.retrieve("default_tail_duration"))
+        self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
 
         self._siblings = None # List of other entries for the same shot
         # Later we might want to allow users to edit the mapping, so
@@ -141,16 +149,21 @@ class CutDiff(QtCore.QObject):
     @classmethod
     def retrieve_default_timecode_frame_mapping(cls):
         sgtk.platform.current_bundle()
-        timecode_frame_mapping = sgtk.platform.current_bundle().get_setting("timecode_frame_mapping")
-        if not timecode_frame_mapping["timecode"] or timecode_frame_mapping["timecode"] == "automatic":
+        timecode_to_frame_mapping = cls._user_settings.retrieve("timecode_to_frame_mapping")
+        timecode_mapping = cls._user_settings.retrieve("timecode_mapping")
+        frame_mapping = int(cls._user_settings.retrieve("frame_mapping"))
+        if timecode_mapping == "" or timecode_to_frame_mapping == 1: # 1 is the index for "automatic"
             cls.__default_timecode_frame_mapping = (
                 None,
-                timecode_frame_mapping["frame"]
+                frame_mapping
             )
         else:
             cls.__default_timecode_frame_mapping = (
-                edl.Timecode(timecode_frame_mapping["timecode"]),
-                timecode_frame_mapping["frame"]
+                edl.Timecode(
+                    timecode_mapping,
+                    fps=int(cls._user_settings.retrieve("default_frame_rate"))
+                    ),
+                frame_mapping
             )
 
     @property
@@ -204,7 +217,7 @@ class CutDiff(QtCore.QObject):
         if not self._edit:
             return False
         # And only if there is no version linked to it
-        if self._sg_cut_item and self._sg_cut_item["sg_version.Version.code"]:
+        if self._sg_cut_item and self._sg_cut_item["version.Version.code"]:
             return False
         return True
 
@@ -231,10 +244,11 @@ class CutDiff(QtCore.QObject):
         """
         Return the version name for this diff, if any
         """
-        if self._edit:
-            return self._edit.get_version_name()
-        if self._sg_cut_item and self._sg_cut_item["sg_version.Version.code"]:
-            return self._sg_cut_item["sg_version.Version.code"]
+        # if self._edit:
+        #     return self._edit.get_version_name()
+        # if self._sg_cut_item and self._sg_cut_item["version.Version.code"]:
+        #     return self._sg_cut_item["version.Version.code"]
+        # todo: for now, we're just shutting this off completely
         return None
 
     @property
@@ -244,10 +258,11 @@ class CutDiff(QtCore.QObject):
 
         :returns: A SG Version dictionary or None
         """
-        if self._edit:
-            return self._edit.get_sg_version()
-        if self._sg_cut_item and self._sg_cut_item["sg_version"]:
-            return self._sg_cut_item["sg_version"]
+        # if self._edit:
+        #     return self._edit.get_sg_version()
+        # if self._sg_cut_item and self._sg_cut_item["version"]:
+        #     return self._sg_cut_item["version"]
+        # todo: for now, we're just shutting this off completely
         return None
 
     def set_sg_version(self, sg_version):
@@ -257,9 +272,11 @@ class CutDiff(QtCore.QObject):
         :param sg_version: A SG version, as a dictionary
         :raises: ValueError if no EditEvent is associated to this diff
         """
-        if not self._edit:
-            raise ValueError("Can't set Shotgun version without an edit entry")
-        self._edit._sg_version = sg_version
+        # if not self._edit:
+        #     raise ValueError("Can't set Shotgun version without an edit entry")
+        # self._edit._sg_version = sg_version
+        # todo: for now, we're just shutting this off completely
+        self._edit._sg_version = None
     
     @property
     def default_head_in(self):
@@ -295,7 +312,7 @@ class CutDiff(QtCore.QObject):
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_head_in")
             return self._sg_shot.get("sg_head_in")
-        return None
+        return self._default_head_in
 
     @property
     def shot_tail_out(self):
@@ -308,7 +325,8 @@ class CutDiff(QtCore.QObject):
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_tail_out")
             return self._sg_shot.get("sg_tail_out")
-        return None
+        return self.shot_head_in + self.new_duration + (
+            self._default_tail_out_duration + self._default_head_in_duration)
 
     @property
     def head_in(self):
@@ -317,9 +335,11 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
-        if self._sg_cut_item:
-            return self._sg_cut_item.get("sg_head_in")
-        return None
+        # todo: restore this if we bring it back as a field
+        # if self._sg_cut_item:
+        #     return self._sg_cut_item.get("sg_head_in")
+        # return None
+        return self.shot_head_in
 
     @property
     def new_head_in(self):
@@ -360,15 +380,18 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
-        if self._sg_cut_item:
-            return self._sg_cut_item.get("sg_tail_out")
-        return None
+        # todo: restore this if we bring it back as a field
+        # if self._sg_cut_item:
+        #     return self._sg_cut_item.get("sg_tail_out")
+        # return None
+        return self.shot_tail_out
 
     @property
     def new_tail_out(self):
         """
         Return the new tail out value
         """
+        return self.shot_tail_out
         nt = self.shot_tail_out
         if nt is None:
             nt = self.default_tail_out
@@ -382,7 +405,7 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._sg_cut_item:
-            return self._sg_cut_item["sg_cut_in"]
+            return self._sg_cut_item["cut_item_in"]
         return None
 
     @property
@@ -395,8 +418,8 @@ class CutDiff(QtCore.QObject):
         """
         if self._sg_cut_item:
             return edl.Timecode(
-                self._sg_cut_item["sg_timecode_cut_in"],
-                self._sg_cut_item["sg_fps"]
+                self._sg_cut_item["timecode_cut_item_in"],
+                self._sg_cut_item["cut.Cut.fps"]
             )
         return None
 
@@ -410,8 +433,8 @@ class CutDiff(QtCore.QObject):
         """
         if self._sg_cut_item:
             return edl.Timecode(
-                self._sg_cut_item["sg_timecode_cut_out"],
-                self._sg_cut_item["sg_fps"]
+                self._sg_cut_item["timecode_cut_item_out"],
+                self._sg_cut_item["cut.Cut.fps"]
             )
         return None
 
@@ -423,7 +446,7 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._sg_cut_item:
-            return self._sg_cut_item["sg_cut_out"]
+            return self._sg_cut_item["cut_item_out"]
         return None
 
     @property
@@ -435,7 +458,7 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._sg_cut_item:
-            return self._sg_cut_item["sg_cut_order"]
+            return self._sg_cut_item["cut_order"]
         if self._sg_shot:
             return self._sg_shot["sg_cut_order"]
         return None
@@ -464,7 +487,7 @@ class CutDiff(QtCore.QObject):
             return None
         if self._sg_cut_item:
             head_in = self.head_in
-            cut_in = self._sg_cut_item["sg_cut_in"]
+            cut_in = self._sg_cut_item["cut_item_in"]
             tc_cut_in = self.tc_cut_in
             if cut_in is not None and tc_cut_in is not None:
                 # Calculate the cut offset
@@ -555,8 +578,9 @@ class CutDiff(QtCore.QObject):
         """
         if not self._sg_cut_item:
             return None
-        cut_in = self._sg_cut_item["sg_cut_in"]
-        head_in = self._sg_cut_item["sg_head_in"]
+        cut_in = self._sg_cut_item["cut_item_in"]
+        # head_in = self._sg_cut_item["sg_head_in"]
+        head_in = self.shot_head_in
         if cut_in is None or head_in is None:
             return None
         return cut_in - head_in
@@ -586,7 +610,7 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._sg_cut_item:
-            return self._sg_cut_item["sg_cut_duration"]
+            return self._sg_cut_item["sg_sg_cut_duration"]
         return None
 
     @property
@@ -609,8 +633,9 @@ class CutDiff(QtCore.QObject):
         """
         if not self._sg_cut_item:
             return None
-        cut_out = self._sg_cut_item["sg_cut_out"]
-        tail_out = self._sg_cut_item["sg_tail_out"]
+        cut_out = self._sg_cut_item["cut_item_out"]
+        # tail_out = self._sg_cut_item["sg_tail_out"]
+        tail_out = self.shot_tail_out
         if cut_out is None or tail_out is None:
             return None
         return  tail_out - cut_out
@@ -778,7 +803,7 @@ class CutDiff(QtCore.QObject):
                 self._diff_type = _DIFF_TYPES.OMITTED_IN_CUT
             return
         # We have both a shot and an edit
-        omit_statuses = self._app.get_setting("omit_statuses") or []
+        omit_statuses = [self._user_settings.retrieve("omit_status")] or []
         if self._sg_shot["sg_status_list"] in omit_statuses:
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
@@ -881,21 +906,21 @@ class CutDiff(QtCore.QObject):
                 )
         cut_item_details = ""
         if self.sg_cut_item:
-            if self.sg_cut_item["sg_fps"] :
-                fps = self.sg_cut_item["sg_fps"]
-                tc_in = edl.Timecode(self.sg_cut_item["sg_timecode_cut_in"], fps)
-                tc_out = edl.Timecode(self.sg_cut_item["sg_timecode_cut_out"], fps)
+            if self.sg_cut_item["cut.Cut.fps"] :
+                fps = self.sg_cut_item["cut.Cut.fps"]
+                tc_in = edl.Timecode(self.sg_cut_item["timecode_cut_item_in"], fps)
+                tc_out = edl.Timecode(self.sg_cut_item["timecode_cut_item_out"], fps)
             else:
                 tc_in = "????"
                 tc_out = "????"
             cut_item_details = \
             "Cut Order %s, TC in %s, TC out %s, Cut In %s, Cut Out %s, Cut Duration %s" % (
-                self.sg_cut_item["sg_cut_order"],
+                self.sg_cut_item["cut_order"],
                 tc_in,
                 tc_out,
-                self.sg_cut_item["sg_cut_in"],
-                self.sg_cut_item["sg_cut_out"],
-                self.sg_cut_item["sg_cut_duration"],
+                self.sg_cut_item["cut_item_in"],
+                self.sg_cut_item["cut_item_out"],
+                self.sg_cut_item["sg_sg_cut_duration"]
             )
         version_details = ""
         sg_version = self.sg_version
