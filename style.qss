@@ -368,6 +368,12 @@ CutDiffCard #version_title_label {
     color: #2C93E2;
     font-weight: bold;
 }
+
+/* Hiding VERSION label for now
+CutDiffCard #version_title_label {
+    color: #525252;
+}
+
 /* Set font size for some labels */
 CutDiffCard #shot_title_label,
 CutDiffCard #version_title_label,
