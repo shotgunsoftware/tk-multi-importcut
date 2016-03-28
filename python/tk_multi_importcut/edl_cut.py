@@ -607,7 +607,7 @@ class EdlCut(QtCore.QObject):
                 str(self._summary.tc_start), self._summary.fps).to_frame()
             end_frame = edl.Timecode(
                 str(self._summary.tc_end), self._summary.fps).to_frame()
-            self._summary.duration = end_frame - start_frame + 1
+            self._summary.duration = end_frame - start_frame
 
             # reel_names = set()
             for edit in self._edl.edits:

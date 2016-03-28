@@ -11,6 +11,8 @@
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 
+import sys
+
 import sgtk
 from sgtk.platform.qt import QtCore
 # Import the EDL framework
@@ -126,6 +128,7 @@ class CutDiff(QtCore.QObject):
         self._cut_changes_reasons = []
         # default head in is not used at the moment, but I'm not sure the
         # timecode_frame_map thing is what is expected so keeping it around ...
+        self._timecode_to_frame_mapping = self._user_settings.retrieve("timecode_to_frame_mapping")
         self._default_head_in = int(self._user_settings.retrieve("default_head_in"))
         self._default_head_in_duration = int(self._user_settings.retrieve("default_head_duration"))
         self._default_tail_out_duration = int(self._user_settings.retrieve("default_tail_duration"))
@@ -150,10 +153,15 @@ class CutDiff(QtCore.QObject):
     def retrieve_default_timecode_frame_mapping(cls):
         sgtk.platform.current_bundle()
         timecode_to_frame_mapping = cls._user_settings.retrieve("timecode_to_frame_mapping")
-        timecode_mapping = cls._user_settings.retrieve("timecode_mapping")
-        frame_mapping = int(cls._user_settings.retrieve("frame_mapping"))
+        if timecode_to_frame_mapping == 0:
+            timecode_mapping = "00:00:00:00"
+            frame_mapping = 0
+        else:
+            timecode_mapping = cls._user_settings.retrieve("timecode_mapping")
+            frame_mapping = int(cls._user_settings.retrieve("frame_mapping"))
         default_head_in = int(cls._user_settings.retrieve("default_head_in"))
-        if timecode_mapping == "" or timecode_to_frame_mapping == 1: # 1 is the index for "automatic"
+
+        if timecode_to_frame_mapping == 1: # 1 is the index for "automatic"
             cls.__default_timecode_frame_mapping = (
                 None,
                 default_head_in
@@ -285,6 +293,7 @@ class CutDiff(QtCore.QObject):
         Return the default head in value, e.g. 1001
         """
         raise RuntimeErrror("This is deprecated and shouldn't be used")
+        print "1, %s" % self._default_head_in
         return self._default_head_in
 
     @property
@@ -300,6 +309,7 @@ class CutDiff(QtCore.QObject):
         new_cut_out = self.new_cut_out
         if new_cut_out is None:
             return None
+        print "2, %s" % (new_cut_out + new_tail_duration)
         return new_cut_out + new_tail_duration
 
     @property
@@ -312,6 +322,7 @@ class CutDiff(QtCore.QObject):
         if self._sg_shot:
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_head_in")
+            print "3, %s" % self._sg_shot.get("sg_head_in")
             return self._sg_shot.get("sg_head_in")
         return None
 
@@ -325,6 +336,7 @@ class CutDiff(QtCore.QObject):
         if self._sg_shot:
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_tail_out")
+            print "4, %s" % self._sg_shot.get("sg_tail_out")
             return self._sg_shot.get("sg_tail_out")
         return None
         # return self.shot_head_in + self.new_duration + (
@@ -359,20 +371,25 @@ class CutDiff(QtCore.QObject):
             if not earliest:
                 raise ValueError("%s is repeated but does not have an earliest entry defined" % self)
             if earliest != self: # We are not the earliest
+                print "5, %s" % earliest.new_head_in
                 return earliest.new_head_in
         # If we don't have a previous entry, we need to retrieve the initial value
         # Default case : retrieve the value from the shot
         # or fall back to the default one
         nh = self.shot_head_in
         if nh is None:
-            if self._timecode_frame_map[0] is not None: # Explicit timecode
+            if self._timecode_to_frame_mapping != 1:
+            # if self._timecode_frame_map[0] is not None: # Explicit timecode
+                print "boo"
                 base_tc = self._timecode_frame_map[0]
                 base_frame = self._timecode_frame_map[1]
                 cut_in = self.new_tc_cut_in.to_frame() - base_tc.to_frame() + base_frame
                 nh = cut_in - self._default_head_in_duration
             else:
                 # Use the frame number as default head in
+                print "yay"
                 nh = self._timecode_frame_map[1]
+        print "6, %s" % nh
         return nh
 
     # @property
@@ -395,7 +412,9 @@ class CutDiff(QtCore.QObject):
         """
         nt = self.shot_tail_out
         if nt is None:
+            print "7, %s" % nt
             nt = self.default_tail_out
+        print "8, %s" % nt
         return nt
 
     @property
@@ -406,6 +425,7 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._sg_cut_item:
+            # print "9, %s" % self._sg_cut_item["cut_item_in"]
             return self._sg_cut_item["cut_item_in"]
         return None
 
@@ -418,6 +438,10 @@ class CutDiff(QtCore.QObject):
         :returns: A Timecode instance or None
         """
         if self._sg_cut_item:
+            print "10, %s" % edl.Timecode(
+                self._sg_cut_item["timecode_cut_item_in"],
+                self._sg_cut_item["cut.Cut.fps"]
+            )
             return edl.Timecode(
                 self._sg_cut_item["timecode_cut_item_in"],
                 self._sg_cut_item["cut.Cut.fps"]
@@ -433,6 +457,10 @@ class CutDiff(QtCore.QObject):
         :returns: A Timecode instance or None
         """
         if self._sg_cut_item:
+            print "11 %s" % edl.Timecode(
+                self._sg_cut_item["timecode_cut_item_out"],
+                self._sg_cut_item["cut.Cut.fps"]
+            )
             return edl.Timecode(
                 self._sg_cut_item["timecode_cut_item_out"],
                 self._sg_cut_item["cut.Cut.fps"]
@@ -447,6 +475,7 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._sg_cut_item:
+            print "12, %s" % self._sg_cut_item["cut_item_out"]
             return self._sg_cut_item["cut_item_out"]
         return None
 
@@ -459,8 +488,10 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._sg_cut_item:
+            print "13, %s" % self._sg_cut_item["cut_order"]
             return self._sg_cut_item["cut_order"]
         if self._sg_shot:
+            print "14, %s" % self._sg_shot["sg_cut_order"]
             return self._sg_shot["sg_cut_order"]
         return None
 
@@ -472,6 +503,7 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._edit:
+            print "15, %s" % self._edit.id
             return self._edit.id
         return None
 
@@ -494,6 +526,7 @@ class CutDiff(QtCore.QObject):
                 # Calculate the cut offset
                 offset = self._edit.source_in.to_frame() - tc_cut_in.to_frame()
                 # Just apply the offset to the old cut in
+                print "16, %s" % (cut_in + offset)
                 return cut_in + offset
         # If we don't have a previous cut item, we can't just compute an offset
         # from the previous cut values, so we need to compute brand new values
@@ -512,6 +545,7 @@ class CutDiff(QtCore.QObject):
                 # Compute the difference with ours
                 offset = self.new_tc_cut_in.to_frame() - earliest_tc_cut_in.to_frame()
                 # add it the earliest head in
+                print "17, %s" % (self._siblings.min_cut_in + offset)
                 return self._siblings.min_cut_in + offset
         # Not repeated or earliest entry case
         # If we don't have a previous entry, retrieve default values
@@ -519,11 +553,18 @@ class CutDiff(QtCore.QObject):
         if self._timecode_frame_map[0] is not None:
             base_tc = self._timecode_frame_map[0]
             base_frame = self._timecode_frame_map[1]
+            # print self.new_tc_cut_in.to_frame()
+            # print base_tc
+            # print base_tc.to_frame()
+            # print base_frame
             cut_in = self.new_tc_cut_in.to_frame() - base_tc.to_frame() + base_frame
+            print "18, %s" % cut_in
+            # sys.exit(0)
             return cut_in
         else:
             head_in = self.new_head_in
             head_duration = self._default_head_in_duration
+            print "19, %s" % (head_in + head_duration)
             return head_in + head_duration
 
     @property
@@ -539,6 +580,7 @@ class CutDiff(QtCore.QObject):
         # any new tc cut in by definition
         if not self._edit:
             return None
+        print "20, %s" % self._edit.source_in
         return self._edit.source_in
 
     @property
@@ -552,6 +594,7 @@ class CutDiff(QtCore.QObject):
         if cut_in is None:
             return None
         if self._edit:
+            print "21, %s" % (cut_in + self._edit.source_duration)
             return cut_in + self._edit.source_duration
         return None
 
@@ -568,6 +611,7 @@ class CutDiff(QtCore.QObject):
         # any new tc cut in by definition
         if not self._edit:
             return None
+        print "22, %s" % self._edit.source_out
         return self._edit.source_out
 
     @property
@@ -584,6 +628,7 @@ class CutDiff(QtCore.QObject):
         head_in = self.shot_head_in
         if cut_in is None or head_in is None:
             return None
+        print "23, %s" % (cut_in - head_in)
         return cut_in - head_in
 
     @property
@@ -600,6 +645,7 @@ class CutDiff(QtCore.QObject):
             head_in = self.new_head_in
             if head_in is None:
                 return None
+            print "24, %s" % (new_cut_in - head_in)
             return new_cut_in - head_in
         return None
 
@@ -611,6 +657,7 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._sg_cut_item:
+            print "25, %s" % self._sg_cut_item["sg_sg_cut_duration"]
             return self._sg_cut_item["sg_sg_cut_duration"]
         return None
 
@@ -622,6 +669,7 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._edit:
+            print "26, %s" % self._edit.source_duration
             return self._edit.source_duration
         return None
 
@@ -639,7 +687,8 @@ class CutDiff(QtCore.QObject):
         tail_out = self.shot_tail_out
         if cut_out is None or tail_out is None:
             return None
-        return  tail_out - cut_out
+        print "27, %s" % (tail_out - cut_out)
+        return tail_out - cut_out
 
     @property
     def new_tail_duration(self):
@@ -666,7 +715,9 @@ class CutDiff(QtCore.QObject):
                     tail_out = latest.new_tail_out
         if tail_out is None:
             # Fallback to defaults
+            print "28, %s" % self._default_tail_out_duration
             return self._default_tail_out_duration
+        print "29, %s" % (tail_out - cut_out)
         return tail_out - cut_out
 
     @property
