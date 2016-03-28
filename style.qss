@@ -155,7 +155,7 @@ QTabBar::tab:selected {
 }
 
 /* fading out text that isn't enabled */
-#omit_status_label:!enabled, #reinstate_shot_if_status_is_label:!enabled, #reinstate_status_label:!enabled {
+#omit_status_label:!enabled, #reinstate_shot_if_status_is_label:!enabled, #reinstate_status_label:!enabled, #default_head_in_label:!enabled, #default_head_in_line_edit:!enabled {
     color: #606060;
 }
 

@@ -146,6 +146,8 @@ frame rate. For example, at 24fps 00:00:01:00 = frame 24.")
             self.ui.timecode_mapping_line_edit.hide()
             self.ui.frame_mapping_label.hide()
             self.ui.frame_mapping_line_edit.hide()
+            self.ui.default_head_in_line_edit.setEnabled(False)
+            self.ui.default_head_in_label.setEnabled(False)
         if state == 1:
             self.ui.timecode_to_frame_mapping_instructions_label.setText("In Automatic mode, \
 the app will map the timecode values from the EDL to the Head In value from the \
@@ -155,6 +157,8 @@ for New Shots will be used.")
             self.ui.timecode_mapping_line_edit.hide()
             self.ui.frame_mapping_label.hide()
             self.ui.frame_mapping_line_edit.hide()
+            self.ui.default_head_in_line_edit.setEnabled(True)
+            self.ui.default_head_in_label.setEnabled(True)
         if state == 2:
             self.ui.timecode_to_frame_mapping_instructions_label.setText("In Relative mode, \
 the app will map the timecode values from the EDL to frames based on a specific timecode/frame \
@@ -163,6 +167,8 @@ relationship.")
             self.ui.timecode_mapping_line_edit.show()
             self.ui.frame_mapping_label.show()
             self.ui.frame_mapping_line_edit.show()
+            self.ui.default_head_in_line_edit.setEnabled(False)
+            self.ui.default_head_in_label.setEnabled(False)
 
     def _save_settings(self):
         """
