@@ -48,7 +48,7 @@ class Processor(QtCore.QThread):
     got_busy                = QtCore.Signal(int)
     got_idle                = QtCore.Signal()
     progress_changed        = QtCore.Signal(int)
-    import_cut              = QtCore.Signal(str,dict,dict, str, bool)
+    import_cut              = QtCore.Signal(str, dict, dict, str, bool)
     totals_changed          = QtCore.Signal()
     delete_cut_diff         = QtCore.Signal(CutDiff)
     ready                   = QtCore.Signal()

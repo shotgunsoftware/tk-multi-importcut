@@ -161,11 +161,11 @@ class CutDiffCard(QtGui.QFrame):
         else:
             self.ui.version_name_label.setText(self._cut_diff.version_name)
 
-        value = self._cut_diff.head_in
+        value = self._cut_diff.shot_head_in
         new_value = self._cut_diff.new_head_in
         self.display_values(self.ui.shot_head_in_label, new_value, value)
 
-        value = self._cut_diff.tail_out
+        value = self._cut_diff.shot_tail_out
         new_value = self._cut_diff.new_tail_out
         self.display_values(self.ui.shot_tail_out_label, new_value, value)
 

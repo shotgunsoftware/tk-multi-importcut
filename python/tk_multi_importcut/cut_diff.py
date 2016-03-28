@@ -89,13 +89,13 @@ class CutDiff(QtCore.QObject):
 
     """
     # Emitted when the (shot) name for this item is changed
-    name_changed=QtCore.Signal(QtCore.QObject, str, str)
+    name_changed = QtCore.Signal(QtCore.QObject, str, str)
     # Emitted when the diff type for this item is changed
-    type_changed=QtCore.Signal(QtCore.QObject, int, int)
+    type_changed = QtCore.Signal(QtCore.QObject, int, int)
     # Emitted when the diff type for this item is changed
-    repeated_changed=QtCore.Signal(QtCore.QObject, bool, bool)
+    repeated_changed = QtCore.Signal(QtCore.QObject, bool, bool)
     # Emitted when this cut diff instance is discarded
-    discarded=QtCore.Signal(QtCore.QObject)
+    discarded = QtCore.Signal(QtCore.QObject)
 
     # User settings for class methods
     _user_settings = settings.UserSettings(sgtk.platform.current_bundle())
@@ -152,10 +152,11 @@ class CutDiff(QtCore.QObject):
         timecode_to_frame_mapping = cls._user_settings.retrieve("timecode_to_frame_mapping")
         timecode_mapping = cls._user_settings.retrieve("timecode_mapping")
         frame_mapping = int(cls._user_settings.retrieve("frame_mapping"))
+        default_head_in = int(cls._user_settings.retrieve("default_head_in"))
         if timecode_mapping == "" or timecode_to_frame_mapping == 1: # 1 is the index for "automatic"
             cls.__default_timecode_frame_mapping = (
                 None,
-                frame_mapping
+                default_head_in
             )
         else:
             cls.__default_timecode_frame_mapping = (
@@ -286,7 +287,6 @@ class CutDiff(QtCore.QObject):
         raise RuntimeErrror("This is deprecated and shouldn't be used")
         return self._default_head_in
 
-    # suspect
     @property
     def default_tail_out(self):
         """
@@ -313,7 +313,7 @@ class CutDiff(QtCore.QObject):
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_head_in")
             return self._sg_shot.get("sg_head_in")
-        return self._default_head_in
+        return None
 
     @property
     def shot_tail_out(self):
@@ -326,21 +326,22 @@ class CutDiff(QtCore.QObject):
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_tail_out")
             return self._sg_shot.get("sg_tail_out")
-        return self.shot_head_in + self.new_duration + (
-            self._default_tail_out_duration + self._default_head_in_duration)
+        return None
+        # return self.shot_head_in + self.new_duration + (
+        #     self._default_tail_out_duration + self._default_head_in_duration)
 
-    @property
-    def head_in(self):
-        """
-        Return the current head in from the associated cut item, or None
+    # @property
+    # def head_in(self):
+    #     """
+    #     Return the current head in from the associated cut item, or None
 
-        :returns: An integer or None
-        """
-        # todo: restore this if we bring it back as a field
-        # if self._sg_cut_item:
-        #     return self._sg_cut_item.get("sg_head_in")
-        # return None
-        return self.shot_head_in
+    #     :returns: An integer or None
+    #     """
+    #     # todo: restore this if we bring it back as a field
+    #     # if self._sg_cut_item:
+    #     #     return self._sg_cut_item.get("sg_head_in")
+    #     # return None
+    #     return self.shot_head_in
 
     @property
     def new_head_in(self):
@@ -374,25 +375,24 @@ class CutDiff(QtCore.QObject):
                 nh = self._timecode_frame_map[1]
         return nh
 
-    @property
-    def tail_out(self):
-        """
-        Return the current tail out value from the associated cut item, or None
+    # @property
+    # def tail_out(self):
+    #     """
+    #     Return the current tail out value from the associated cut item, or None
 
-        :returns: An integer or None
-        """
-        # todo: restore this if we bring it back as a field
-        # if self._sg_cut_item:
-        #     return self._sg_cut_item.get("sg_tail_out")
-        # return None
-        return self.shot_tail_out
+    #     :returns: An integer or None
+    #     """
+    #     # todo: restore this if we bring it back as a field
+    #     # if self._sg_cut_item:
+    #     #     return self._sg_cut_item.get("sg_tail_out")
+    #     # return None
+    #     return self.shot_tail_out
 
     @property
     def new_tail_out(self):
         """
         Return the new tail out value
         """
-        return self.shot_tail_out
         nt = self.shot_tail_out
         if nt is None:
             nt = self.default_tail_out
@@ -487,7 +487,7 @@ class CutDiff(QtCore.QObject):
         if not self._edit:
             return None
         if self._sg_cut_item:
-            head_in = self.head_in
+            head_in = self.shot_head_in
             cut_in = self._sg_cut_item["cut_item_in"]
             tc_cut_in = self.tc_cut_in
             if cut_in is not None and tc_cut_in is not None:
@@ -666,7 +666,7 @@ class CutDiff(QtCore.QObject):
                     tail_out = latest.new_tail_out
         if tail_out is None:
             # Fallback to defaults
-            return self._app.get_setting("default_tail_out_duration")
+            return self._default_tail_out_duration
         return tail_out - cut_out
 
     @property
@@ -778,7 +778,7 @@ class CutDiff(QtCore.QObject):
         Set the cut difference type for this cut difference
         Emit a type_changed if the value changed
         """
-        old_type=self._diff_type
+        old_type = self._diff_type
         self._check_changes()
         if old_type != self._diff_type:
             self.type_changed.emit(self, old_type, self._diff_type)
@@ -825,21 +825,21 @@ class CutDiff(QtCore.QObject):
             self._cut_changes_reasons.append("Cut order changed from %d to %d" % (self.cut_order, self.new_cut_order))
 
         # Check if some rescan is needed
-        if self.new_head_in < self.head_in:
+        if self.new_head_in < self.shot_head_in:
             self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Head extended %d frs" % (self.head_in-self.new_head_in))
+            self._cut_changes_reasons.append("Head extended %d frs" % (self.shot_head_in - self.new_head_in))
 
         if self.new_head_duration < 0:
             self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Head extended %d frs" % (-self.new_head_duration+self.head_duration))
+            self._cut_changes_reasons.append("Head extended %d frs" % (-self.new_head_duration + self.head_duration))
 
-        if self.new_tail_out > self.tail_out:
+        if self.new_tail_out > self.shot_tail_out:
             self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Tail extended %d frs" % (self.new_tail_out-self.tail_out))
+            self._cut_changes_reasons.append("Tail extended %d frs" % (self.new_tail_out - self.tail_out))
 
         if self.new_tail_duration < 0:
             self._diff_type = _DIFF_TYPES.RESCAN
-            self._cut_changes_reasons.append("Tail extended %d frs" % (-self.new_tail_duration+self.tail_duration))
+            self._cut_changes_reasons.append("Tail extended %d frs" % (-self.new_tail_duration + self.tail_duration))
 
         # Cut changes which does not imply a rescan
         if self._diff_type != _DIFF_TYPES.RESCAN:
@@ -870,7 +870,7 @@ class CutDiff(QtCore.QObject):
             self._repeated = repeated
             self.repeated_changed.emit(self, old_repeated, self._repeated)
             # Cut in / out values are affected by repeated changes
-            old_type=self._diff_type
+            old_type = self._diff_type
             self._check_changes()
             if old_type != self._diff_type:
                 self.type_changed.emit(self, old_type, self._diff_type)
