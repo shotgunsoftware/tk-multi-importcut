@@ -369,7 +369,7 @@ CutDiffCard #version_title_label {
     font-weight: bold;
 }
 
-/* Hiding VERSION label for now
+/* Hiding VERSION label for now */
 CutDiffCard #version_title_label {
     color: #525252;
 }
