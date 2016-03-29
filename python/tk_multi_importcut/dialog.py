@@ -113,9 +113,7 @@ class AppDialog(QtGui.QWidget):
         
         self._user_settings = settings.UserSettings(self._app)
 
-        # set defaults, but don't override user settings. These defaults
-        # should eventually be stored somewhere else -- the official word
-        # from Ryan is "someday toolkit will provide a way to push the settings out"
+        # set defaults, but don't override user settings.
         if self._user_settings.retrieve("update_shot_statuses") == None:
             self._user_settings.store("update_shot_statuses", True)
         if self._user_settings.retrieve("use_smart_fields") == None:
@@ -643,7 +641,7 @@ class AppDialog(QtGui.QWidget):
         """
         Called when entities needs to be shown for a project
 
-        :param sg_project: The Shogtun Project dict to check for entities with
+        :param sg_project: The Shotgun Project dict to check for entities with
         """
         self._processor.set_project(sg_project)
         self.goto_step(_ENTITY_TYPE_STEP)
@@ -863,7 +861,7 @@ class AppDialog(QtGui.QWidget):
             try:
                 # todo: changing the default font to OpenSans should really
                 # happen in Toolkit, so app Studio apps inherit the font, instead
-                # of hanving to manually change it like this for each app
+                # of having to manually change it like this for each app
                 # getting the path to fonts relative to this file
                 font_path = os.path.dirname(os.path.abspath(__file__))
                 split_font_path = os.path.split(os.path.split(font_path)[0])[0]

@@ -263,8 +263,8 @@ class CutSummary(QtCore.QObject):
         self._rescans_count = 0
         self._logger=get_logger()
         
-        app = settings.UserSettings(sgtk.platform.current_bundle())
-        self._user_settings = app
+        app = sgtk.platform.current_bundle()
+        self._user_settings = settings.UserSettings(app)
 
         self._omit_statuses = [self._user_settings.retrieve("omit_status")]
 

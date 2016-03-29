@@ -47,6 +47,8 @@ _DIFF_LABELS = {
     _DIFF_TYPES.OMITTED_IN_CUT : "Omitted",
 }
 
+_ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE = range(3)
+
 class CutDiff(QtCore.QObject):
     """
     A class to retrieve differences between a previous cut and a new one.
@@ -100,7 +102,7 @@ class CutDiff(QtCore.QObject):
     discarded = QtCore.Signal(QtCore.QObject)
 
     # User settings for class methods
-    _user_settings = settings.UserSettings(sgtk.platform.current_bundle())
+    __user_settings = settings.UserSettings(sgtk.platform.current_bundle())
 
     __default_timecode_frame_mapping = None
 
@@ -152,27 +154,25 @@ class CutDiff(QtCore.QObject):
     @classmethod
     def retrieve_default_timecode_frame_mapping(cls):
         sgtk.platform.current_bundle()
-        timecode_to_frame_mapping = cls._user_settings.retrieve("timecode_to_frame_mapping")
-        if timecode_to_frame_mapping == 0:
-            timecode_mapping = "00:00:00:00"
-            frame_mapping = 0
-        else:
-            timecode_mapping = cls._user_settings.retrieve("timecode_mapping")
-            frame_mapping = int(cls._user_settings.retrieve("frame_mapping"))
-        default_head_in = int(cls._user_settings.retrieve("default_head_in"))
-
-        if timecode_to_frame_mapping == 1: # 1 is the index for "automatic"
+        timecode_to_frame_mapping = cls.__user_settings.retrieve("timecode_to_frame_mapping")
+        default_frame_rate = int(cls.__user_settings.retrieve("default_frame_rate"))
+        if timecode_to_frame_mapping == _ABSOLUTE_MODE:
+            # if we're in absolute mode, we need to reset our tc/frame values to 0
+            cls.__default_timecode_frame_mapping = (
+                edl.Timecode("00:00:00:00", fps=default_frame_rate), 0)
+        elif timecode_to_frame_mapping == _RELATIVE_MODE:
+            # the values from users settings are only used in relative mode
+            timecode_mapping = cls.__user_settings.retrieve("timecode_mapping")
+            frame_mapping = int(cls.__user_settings.retrieve("frame_mapping"))
+            cls.__default_timecode_frame_mapping = (
+                edl.Timecode(timecode_mapping, fps=default_frame_rate),
+                frame_mapping
+            )
+        elif timecode_to_frame_mapping == _AUTOMATIC_MODE:
+            default_head_in = int(cls.__user_settings.retrieve("default_head_in"))
             cls.__default_timecode_frame_mapping = (
                 None,
                 default_head_in
-            )
-        else:
-            cls.__default_timecode_frame_mapping = (
-                edl.Timecode(
-                    timecode_mapping,
-                    fps=int(cls._user_settings.retrieve("default_frame_rate"))
-                    ),
-                frame_mapping
             )
 
     @property
@@ -335,21 +335,6 @@ class CutDiff(QtCore.QObject):
                 return self._sg_shot.get("smart_tail_out")
             return self._sg_shot.get("sg_tail_out")
         return None
-        # return self.shot_head_in + self.new_duration + (
-        #     self._default_tail_out_duration + self._default_head_in_duration)
-
-    # @property
-    # def head_in(self):
-    #     """
-    #     Return the current head in from the associated cut item, or None
-
-    #     :returns: An integer or None
-    #     """
-    #     # todo: restore this if we bring it back as a field
-    #     # if self._sg_cut_item:
-    #     #     return self._sg_cut_item.get("sg_head_in")
-    #     # return None
-    #     return self.shot_head_in
 
     @property
     def new_head_in(self):
@@ -373,7 +358,7 @@ class CutDiff(QtCore.QObject):
         # or fall back to the default one
         nh = self.shot_head_in
         if nh is None:
-            if self._timecode_to_frame_mapping != 1:
+            if self._timecode_to_frame_mapping != _AUTOMATIC_MODE:
             # if self._timecode_frame_map[0] is not None: # Explicit timecode
                 base_tc = self._timecode_frame_map[0]
                 base_frame = self._timecode_frame_map[1]
@@ -383,19 +368,6 @@ class CutDiff(QtCore.QObject):
                 # Use the frame number as default head in
                 nh = self._timecode_frame_map[1]
         return nh
-
-    # @property
-    # def tail_out(self):
-    #     """
-    #     Return the current tail out value from the associated cut item, or None
-
-    #     :returns: An integer or None
-    #     """
-    #     # todo: restore this if we bring it back as a field
-    #     # if self._sg_cut_item:
-    #     #     return self._sg_cut_item.get("sg_tail_out")
-    #     # return None
-    #     return self.shot_tail_out
 
     @property
     def new_tail_out(self):
@@ -529,7 +501,6 @@ class CutDiff(QtCore.QObject):
             base_tc = self._timecode_frame_map[0]
             base_frame = self._timecode_frame_map[1]
             cut_in = self.new_tc_cut_in.to_frame() - base_tc.to_frame() + base_frame
-            # sys.exit(0)
             return cut_in
         else:
             head_in = self.new_head_in
@@ -645,7 +616,6 @@ class CutDiff(QtCore.QObject):
         if not self._sg_cut_item:
             return None
         cut_out = self._sg_cut_item["cut_item_out"]
-        # tail_out = self._sg_cut_item["sg_tail_out"]
         tail_out = self.shot_tail_out
         if cut_out is None or tail_out is None:
             return None
@@ -917,13 +887,9 @@ class CutDiff(QtCore.QObject):
                 )
         cut_item_details = ""
         if self.sg_cut_item:
-            if self.sg_cut_item["cut.Cut.fps"] :
-                fps = self.sg_cut_item["cut.Cut.fps"]
-                tc_in = edl.Timecode(self.sg_cut_item["timecode_cut_item_in"], fps)
-                tc_out = edl.Timecode(self.sg_cut_item["timecode_cut_item_out"], fps)
-            else:
-                tc_in = "????"
-                tc_out = "????"
+            fps = self.sg_cut_item["cut.Cut.fps"]
+            tc_in = edl.Timecode(self.sg_cut_item["timecode_cut_item_in"], fps)
+            tc_out = edl.Timecode(self.sg_cut_item["timecode_cut_item_out"], fps)
             cut_item_details = \
             "Cut Order %s, TC in %s, TC out %s, Cut In %s, Cut Out %s, Cut Duration %s" % (
                 self.sg_cut_item["cut_order"],
