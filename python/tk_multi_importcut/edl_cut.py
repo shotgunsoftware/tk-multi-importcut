@@ -23,6 +23,7 @@ from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STE
 import re
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
+
 class EdlCut(QtCore.QObject):
     """
     Worker which handles all data
@@ -129,26 +130,26 @@ class EdlCut(QtCore.QObject):
             # Shot name was not retrieved from standard approach
             # try to extract it from comments which don't include any
             # known keywords
-            prefered_match=None
-            match=None
+            prefered_match = None
+            match = None
             for comment in edit.pure_comments:
                 # Match :
                 # * COMMENT : shot-name_001
                 # * shot-name_001
                 # Most recent patterns are cached by Python so we don't need
                 # to worry about compiling it ourself for performances consideration
-                m=re.match(r"\*(\s*COMMENT\s*:)?\s*([a-z0-9A-Z_-]+)$", comment)
+                m = re.match(r"\*(\s*COMMENT\s*:)?\s*([a-z0-9A-Z_-]+)$", comment)
                 if m:
                     if m.group(1):
                         # Priority is given to matches from line beginning with
                         # * COMMENT
-                        prefered_match=m.group(2)
+                        prefered_match = m.group(2)
                     else:
-                        match=m.group(2)
+                        match = m.group(2)
                 if prefered_match:
-                    edit._shot_name=prefered_match
+                    edit._shot_name = prefered_match
                 elif match:
-                    edit._shot_name=match
+                    edit._shot_name = match
         if not edit.get_shot_name() and not edit.get_version_name():
             raise RuntimeError("Couldn't extract a shot name nor a version name, one of them is required")
 
@@ -235,9 +236,8 @@ class EdlCut(QtCore.QObject):
                         edit._sg_version = sg_version
                         if not edit.get_shot_name() and sg_version["entity.Shot.code"]:
                             edit._shot_name = sg_version["entity.Shot.code"]
-            #self.retrieve_entities()
+            # self.retrieve_entities()
             # Can go to next step
-            print 'emitting %s' % _DROP_STEP
             self.step_done.emit(_DROP_STEP)
         except Exception, e:
             self._edl = None
@@ -900,7 +900,7 @@ class EdlCut(QtCore.QObject):
         """
         # Create a new cut
         self._logger.info("Creating cut %s ..." % title)
-        # If start and end timcodes are not defined, we keep them as is,
+        # If start and end timecodes are not defined, we keep them as is,
         # so no value will be set when creating the Cut. We convert them
         # to string otherwise
         tc_start = self._summary.timecode_start
@@ -1144,6 +1144,8 @@ class EdlCut(QtCore.QObject):
             for cut_diff in items:
                 edit = cut_diff.edit
                 if edit:
+                    # note: since we're calculating these values from timecode which is
+                    # inclusive, we have to make it exclusive when going to frames
                     edit_in = edit.record_in.to_frame() - self._summary.edit_offset + 1
                     edit_out = edit.record_out.to_frame() - self._summary.edit_offset
                     sg_batch_data.append({

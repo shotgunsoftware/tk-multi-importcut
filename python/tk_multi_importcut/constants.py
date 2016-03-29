@@ -11,6 +11,8 @@
 # Different steps in the process
 _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP = range(8)
 
+_ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE = range(3)
+
 # Some colors used in various places
 _COLORS = {
     "sg_blue"   :   "#2C93E2",

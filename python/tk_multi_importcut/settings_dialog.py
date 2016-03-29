@@ -17,7 +17,22 @@ from sgtk.platform.qt import QtCore, QtGui
 settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 from .ui.settings_dialog import Ui_settings_dialog
-from .cut_diff import _DIFF_TYPES
+
+# Different frame mapping modes
+from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
+
+_ABSOLUTE_INSTRUCTIONS = """In Absolute mode, the app will map the timecode \
+values from the EDL directly as frames based on the frame rate. For example, \
+at 24fps 00:00:01:00 = frame 24."""
+
+_AUTOMATIC_INSTRUCTIONS = """In Automatic mode, the app will map the timecode \
+values from the EDL to the Head In value from the Shot in Shotgun. If that \
+field is empty, the Default Head In value set below for New Shots will be used."""
+
+_RELATIVE_INSTRUCTIONS = """In Relative mode, the app will map the timecode \
+values from the EDL to frames based on a specific timecode/frame relationship."""
+
+
 class SettingsDialog(QtGui.QDialog):
     """
     Settings dialog, available on almost each page of the animated stacked
@@ -138,31 +153,24 @@ class SettingsDialog(QtGui.QDialog):
 
         :param state: int representing index of choices (Absolute, Automatic, Relative)
         """
-        if state == 0:
-            self.ui.timecode_to_frame_mapping_instructions_label.setText("In Absolute mode, \
-the app will map the timecode values from the EDL directly as frames based on the \
-frame rate. For example, at 24fps 00:00:01:00 = frame 24.")
+        if state == _ABSOLUTE_MODE:
+            self.ui.timecode_to_frame_mapping_instructions_label.setText(_ABSOLUTE_INSTRUCTIONS)
             self.ui.timecode_mapping_label.hide()
             self.ui.timecode_mapping_line_edit.hide()
             self.ui.frame_mapping_label.hide()
             self.ui.frame_mapping_line_edit.hide()
             self.ui.default_head_in_line_edit.setEnabled(False)
             self.ui.default_head_in_label.setEnabled(False)
-        if state == 1:
-            self.ui.timecode_to_frame_mapping_instructions_label.setText("In Automatic mode, \
-the app will map the timecode values from the EDL to the Head In value from the \
-Shot in Shotgun. If that field is empty, the Default Head In value set below \
-for New Shots will be used.")
+        if state == _AUTOMATIC_MODE:
+            self.ui.timecode_to_frame_mapping_instructions_label.setText(_AUTOMATIC_INSTRUCTIONS)
             self.ui.timecode_mapping_label.hide()
             self.ui.timecode_mapping_line_edit.hide()
             self.ui.frame_mapping_label.hide()
             self.ui.frame_mapping_line_edit.hide()
             self.ui.default_head_in_line_edit.setEnabled(True)
             self.ui.default_head_in_label.setEnabled(True)
-        if state == 2:
-            self.ui.timecode_to_frame_mapping_instructions_label.setText("In Relative mode, \
-the app will map the timecode values from the EDL to frames based on a specific timecode/frame \
-relationship.")
+        if state == _RELATIVE_MODE:
+            self.ui.timecode_to_frame_mapping_instructions_label.setText(_RELATIVE_INSTRUCTIONS)
             self.ui.timecode_mapping_label.show()
             self.ui.timecode_mapping_line_edit.show()
             self.ui.frame_mapping_label.show()

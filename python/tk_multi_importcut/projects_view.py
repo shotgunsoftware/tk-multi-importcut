@@ -13,6 +13,7 @@ from .logger import get_logger
 
 from .project_widget import ProjectCard
 
+
 class ProjectsView(QtCore.QObject):
     """
     Projects view page handler
@@ -20,10 +21,9 @@ class ProjectsView(QtCore.QObject):
     # Emitted when a project is chosen for next step
     project_chosen = QtCore.Signal(dict)
     # Emitted when a different project is selected
-    selection_changed=QtCore.Signal(dict)
-
+    selection_changed = QtCore.Signal(dict)
     # Emitted when the info message changed
-    new_info_message=QtCore.Signal(str)
+    new_info_message = QtCore.Signal(str)
 
     def __init__(self, grid_widget):
         super(ProjectsView, self).__init__()
@@ -162,5 +162,4 @@ class ProjectsView(QtCore.QObject):
             witem = self._grid_widget.takeAt(i)
             widget = witem.widget()
             widget.close()
-        # print self._grid_widget.count()
 

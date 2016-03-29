@@ -11,17 +11,20 @@
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 
-import sys
-
 import sgtk
 from sgtk.platform.qt import QtCore
+
 # Import the EDL framework
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
+# Different frame mapping modes
+from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
+
 # Define difference types as enums
 def diff_types(**enums):
     return type("CutDiffType", (), enums)
+
 # Values for cut diff types
 _DIFF_TYPES = diff_types(
     NEW=0,              # A new shot will be created
@@ -34,6 +37,7 @@ _DIFF_TYPES = diff_types(
     NEW_IN_CUT=7,       # A new repeated shot entry is added, but the shot already exists
     OMITTED_IN_CUT=8,   # A repeated shot entry was removed
 )
+
 # Display names for cut diff types
 _DIFF_LABELS = {
     _DIFF_TYPES.NEW : "New",
@@ -47,7 +51,6 @@ _DIFF_LABELS = {
     _DIFF_TYPES.OMITTED_IN_CUT : "Omitted",
 }
 
-_ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE = range(3)
 
 class CutDiff(QtCore.QObject):
     """
