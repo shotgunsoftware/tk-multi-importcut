@@ -133,15 +133,15 @@ class AppDialog(QtGui.QWidget):
         if self._user_settings.retrieve("timecode_to_frame_mapping") == None:
             self._user_settings.store("timecode_to_frame_mapping", 0)
         if self._user_settings.retrieve("timecode_mapping") == None:
-            self._user_settings.store("timecode_mapping", "01:00:00:00")
+            self._user_settings.store("timecode_mapping", "00:00:00:00")
         if self._user_settings.retrieve("frame_mapping") == None:
             self._user_settings.store("frame_mapping", "1000")
         if self._user_settings.retrieve("default_head_in") == None:
             self._user_settings.store("default_head_in", "1001")
         if self._user_settings.retrieve("default_head_duration") == None:
-            self._user_settings.store("default_head_duration", "24")
+            self._user_settings.store("default_head_duration", "8")
         if self._user_settings.retrieve("default_tail_duration") == None:
-            self._user_settings.store("default_tail_duration", "24")
+            self._user_settings.store("default_tail_duration", "8")
 
         self._busy = False
         # Current step being displayed
