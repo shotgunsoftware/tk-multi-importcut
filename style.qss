@@ -370,7 +370,7 @@ CutDiffCard #version_title_label {
 }
 
 /* Hiding VERSION label for now */
-CutDiffCard #version_title_label {
+CutDiffCard #version_title_label, #version_name_label {
     color: #525252;
 }
 

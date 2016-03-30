@@ -45,6 +45,9 @@ from .downloader import DownloadRunner
 # Different steps in the process
 from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
+# Different frame mapping modes
+from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
+
 def show_dialog(app_instance):
     """
     Shows the main dialog window.
@@ -129,7 +132,7 @@ class AppDialog(QtGui.QWidget):
         if self._user_settings.retrieve("default_frame_rate") == None:
             self._user_settings.store("default_frame_rate", "24")
         if self._user_settings.retrieve("timecode_to_frame_mapping") == None:
-            self._user_settings.store("timecode_to_frame_mapping", 0)
+            self._user_settings.store("timecode_to_frame_mapping", _ABSOLUTE_MODE)
         if self._user_settings.retrieve("timecode_mapping") == None:
             self._user_settings.store("timecode_mapping", "00:00:00:00")
         if self._user_settings.retrieve("frame_mapping") == None:
@@ -245,7 +248,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.submit_button.clicked.connect(self.import_cut)
         # We have a different settings button on each page of the stacked widget
         for i in range(1, 7):
-            eval("self.ui.settings_page_%s_button.clicked.connect(self.settings)" % i)
+            eval("self.ui.settings_page_%s_button.clicked.connect(self.show_settings_dialog)" % i)
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
 
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
@@ -352,9 +355,13 @@ class AppDialog(QtGui.QWidget):
         self.ui.entity_picker_message_label.setText(
             "Importing %s ..." % os.path.basename(paths[0]),
         )
+        # todo: this show_projects() call shouldn't be necessary
         self.show_projects()
         if self._ctx.project != None:
             self.goto_step(_ENTITY_TYPE_STEP)
+        else:
+            # The user needs to pickup a project first
+            self.goto_step(_PROJECT_STEP)
         #self._logger.info( "Processing %s" % (paths[0] ))
 
     @QtCore.Slot(int, str)
@@ -522,12 +529,7 @@ class AppDialog(QtGui.QWidget):
             self.ui.submit_button.hide()
 
         # We can select things on intermediate screens
-        if (
-            step == _ENTITY_TYPE_STEP or
-            step == _PROJECT_STEP or
-            step == _ENTITY_STEP or
-            step == _CUT_STEP
-            ):
+        if step in [_ENTITY_TYPE_STEP, _PROJECT_STEP, _ENTITY_STEP, _CUT_STEP]:
             self.ui.select_button.show()
             # Only enable it if there is a selection for this step
             self.ui.select_button.setEnabled(bool(self._selected_sg_entity[step]))
@@ -736,15 +738,15 @@ class AppDialog(QtGui.QWidget):
         dialog.activateWindow()
 
     @QtCore.Slot()
-    def settings(self):
+    def show_settings_dialog(self):
         """
         Called when the settings dialog needs to be presented to the user. This can
         happen on almost every page of the animated stacked widget.
         """
-        settings = SettingsDialog(parent=self)
-        settings.show()
-        settings.raise_()
-        settings.activateWindow()
+        show_settings_dialog = SettingsDialog(parent=self)
+        show_settings_dialog.show()
+        show_settings_dialog.raise_()
+        show_settings_dialog.activateWindow()
 
     @QtCore.Slot()
     def email_cut_changes(self):
@@ -863,9 +865,10 @@ class AppDialog(QtGui.QWidget):
                 # happen in Toolkit, so app Studio apps inherit the font, instead
                 # of having to manually change it like this for each app
                 # getting the path to fonts relative to this file
-                font_path = os.path.dirname(os.path.abspath(__file__))
-                split_font_path = os.path.split(os.path.split(font_path)[0])[0]
-                font_path = os.path.join(split_font_path, "resources", "fonts")
+                # print self._app.disk_location
+                font_path = self._app.disk_location
+                font_path = os.path.join(font_path, "resources", "fonts")
+                print font_path
                 # load custom font
                 QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Bold.ttf"))
                 QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Regular.ttf"))

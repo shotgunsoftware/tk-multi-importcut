@@ -48,8 +48,6 @@ class SubmitDialog(QtGui.QDialog):
             # Just in case ...
             raise ValueError("Can't import a cut without a summary")
         self.ui.from_label.setText(self._app.context.user["name"] if self._app.context.user else "")
-        # todo: this retrieves an index, so it doesn't work. we need to either
-        # store a string, or figure out what the index is pointing at here
         email_groups = self._app.shotgun.find("Group", [], ["code"])
         email_group = email_groups[self._user_settings.retrieve("email_group") - 1]["code"]
         self.ui.to_text.setText(email_group)

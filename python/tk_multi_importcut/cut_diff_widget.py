@@ -134,35 +134,6 @@ class CutDiffCard(QtGui.QFrame):
         else:
             self.ui.status_label.setText("%s" % reasons)
 
-        sg_version = self._cut_diff.sg_version
-        self.ui.version_name_label.setToolTip(None)
-        if not sg_version:
-            # todo: hiding version for now
-            # No Version
-            # self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
-            #     _COLORS["yellow"],
-            #     self._cut_diff.version_name or "No Version",
-            # ))
-            self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
-                _COLORS["yellow"],
-                self._cut_diff.version_name or "",
-            ))
-        elif sg_version.get("entity.Shot.code") != self._cut_diff.name:
-            # Version linked to another shot
-            self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
-                _COLORS["sg_red"],
-                self._cut_diff.version_name,
-            ))
-            self.ui.version_name_label.setToolTip(
-                "Version %s is linked to Shot %s, instead of %s" % (
-                    self._cut_diff.version_name,
-                    sg_version.get("entity.Shot.code"),
-                    self._cut_diff.name,
-                )
-            )
-        else:
-            self.ui.version_name_label.setText(self._cut_diff.version_name)
-
         value = self._cut_diff.shot_head_in
         new_value = self._cut_diff.new_head_in
         self.display_values(self.ui.shot_head_in_label, new_value, value)
@@ -337,9 +308,7 @@ class CutDiffCard(QtGui.QFrame):
         asynchronous thumbnail download if it is the case
         """
         thumb_url = None
-        if self._cut_diff.sg_version and self._cut_diff.sg_version.get("image"):
-            thumb_url = self._cut_diff.sg_version["image"]
-        elif self._cut_diff.sg_shot and self._cut_diff.sg_shot.get("image"):
+        if self._cut_diff.sg_shot and self._cut_diff.sg_shot.get("image"):
             thumb_url = self._cut_diff.sg_shot["image"]
         if thumb_url:
             _, path = tempfile.mkstemp()
