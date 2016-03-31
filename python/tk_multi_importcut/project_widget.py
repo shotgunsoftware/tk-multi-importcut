@@ -69,14 +69,7 @@ class ProjectCard(QtGui.QFrame):
         """
         Return the name of the attached project
         """
-        # Deal with name field not being consistent in SG
-        return self._sg_project.get(
-            "code",
-            self._sg_project.get(
-                "name",
-                self._sg_project.get("title", "")
-            )
-        )
+        return self._sg_project.get("name", self._sg_project.get("title", ""))
 
     @property
     def project_status(self):
@@ -95,10 +88,7 @@ class ProjectCard(QtGui.QFrame):
         Return the description of the attached project
         """
         # Deal with status field not being consistent in SG
-        return self._sg_project.get(
-            "description",
-            self._sg_project.get("sg_description")
-        )
+        return self._sg_project.get("sg_description")
 
     @QtCore.Slot()
     def select(self):

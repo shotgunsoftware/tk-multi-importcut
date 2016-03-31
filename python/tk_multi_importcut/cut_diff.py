@@ -495,7 +495,7 @@ class CutDiff(QtCore.QObject):
         if cut_in is None:
             return None
         if self._edit:
-            return cut_in + self._edit.source_duration
+            return cut_in + self._edit.source_duration - 1
         return None
 
     @property

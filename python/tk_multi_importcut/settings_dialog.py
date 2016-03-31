@@ -17,6 +17,7 @@ from .ui.settings_dialog import Ui_settings_dialog
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 from sgtk.platform.qt import QtCore, QtGui
+from .logger import get_logger
 
 settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
@@ -46,6 +47,7 @@ class SettingsDialog(QtGui.QDialog):
         :param parent: a QWidget
         """
         super(SettingsDialog, self).__init__(parent)
+        self._logger = get_logger()
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
@@ -198,7 +200,11 @@ class SettingsDialog(QtGui.QDialog):
         self._user_settings.store("reinstate_status", reinstate_status)
         # Timecode/Frames tab
         default_frame_rate = self.ui.default_frame_rate_line_edit.text()
-        self._user_settings.store("default_frame_rate", default_frame_rate)
+        try:
+            int(default_frame_rate)
+            self._user_settings.store("default_frame_rate", default_frame_rate)
+        except Exception, e:
+            self._logger.error('Could not set frame rate "%s": %s' % (default_frame_rate, e))
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
         self._user_settings.store("timecode_to_frame_mapping", timecode_to_frame_mapping)
         timecode_mapping = self.ui.timecode_mapping_line_edit.text()

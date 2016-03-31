@@ -496,9 +496,8 @@ class EdlCut(QtCore.QObject):
             sg_cut_items = []
             sg_shots_dict = {}
             if sg_cut:
-                sg_cut_item_entity = "CutItem"
                 # Retrieve all cut items linked to that cut
-                sg_cut_items = self._sg.find(sg_cut_item_entity,
+                sg_cut_items = self._sg.find("CutItem",
                                              [["cut", "is", sg_cut]], [
                                                 "cut",
                                                 "timecode_cut_item_in",
@@ -848,10 +847,6 @@ class EdlCut(QtCore.QObject):
             self._sg_new_cut = self.create_sg_cut(title, description)
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
-            # todo: should this be set as an option somewhere? We don't
-            # want to roll this out with nab, but wb and other studio
-            # clients may rely on this happening...
-            # self.update_sg_versions()
             self.progress_changed.emit(2)
             self.create_sg_cut_items(self._sg_new_cut)
             self.progress_changed.emit(3)
@@ -1046,7 +1041,8 @@ class EdlCut(QtCore.QObject):
                     })
                 else:  # Cut change or rescan or no change.
                     data = {
-                        # Add code and status in the update so it will be returned with batch results.
+                        # Add code and status in the update so it will be
+                        # returned with batch results.
                         "sg_status_list": sg_shot["sg_status_list"],
                         "sg_cut_order": min_cut_order,
                         "code": sg_shot["code"],
@@ -1085,71 +1081,6 @@ class EdlCut(QtCore.QObject):
                     else:
                         cut_diff._sg_shot = sg_shot
 
-    def update_sg_versions(self):
-        """
-        Create versions in Shotgun for each shot which needs one
-        """
-        # Temporary helper to create versions in SG for initial
-        # testing. Should be commented out before going into production
-        # unless it becomes part of the specs
-        self._logger.info("Updating versions ...")
-        sg_batch_data = []
-        requested_versions = {}
-        for shot_name, items in self._summary.iteritems():
-            for cut_diff in items:
-                edit = cut_diff.edit
-                if edit and not edit.get_sg_version() and edit.get_version_name():
-                    version_name = edit.get_version_name()
-                    if version_name in requested_versions:  # Already have a request for it
-                        # Check we don't have a shot mismatch, and don't request the same version
-                        # twice
-                        if cut_diff.sg_shot != requested_versions[version_name]["data"]["entity"]:
-                            raise ValueError(
-                                "Can't link the same version %s to different shots %s and %s" % (
-                                    version_name,
-                                    cut_diff.sg_shot["code"],
-                                    requested_versions[version_name]["data"]["entity"]["code"],
-                                )
-                            )
-                    else:
-                        # Not yet requested, time to do it !
-                        request = {
-                            "request_type": "create",
-                            "entity_type": "Version",
-                            "data": {
-                                "project": self._project,
-                                "code": version_name,
-                                "entity": cut_diff.sg_shot,
-                                "updated_by": self._ctx.user,
-                                "created_by": self._ctx.user,
-                            },
-                            "return_fields": [
-                                "entity.Shot.code",
-                            ]
-                        }
-                        sg_batch_data.append(request)
-                        requested_versions[version_name] = request
-        if sg_batch_data:
-            res = self._sg.batch(sg_batch_data)
-            self._logger.info("Created %d new versions." % len(res))
-            # Build a dictionary with version names as keys, please note
-            # that this works only because we prevent version with the same names
-            # to be created and linked to different shots
-            new_versions = {}
-            for r in res:
-                new_versions[r["code"]] = r
-            for shot_name, items in self._summary.iteritems():
-                for cut_diff in items:
-                    edit = cut_diff.edit
-                    if edit and not edit.get_sg_version() and edit.get_version_name():
-                        # Creation order should match
-                        version_name = edit.get_version_name()
-                        if version_name not in new_versions:
-                            raise RuntimeError(
-                                "Couldn't retrieve version %s in created ones" %
-                                version_name)
-                        cut_diff.set_sg_version(new_versions[version_name])
-
     def create_sg_cut_items(self, sg_cut):
         """
         Create the cut items in Shotgun, linked to the given cut
@@ -1182,7 +1113,7 @@ class EdlCut(QtCore.QObject):
                             "cut_item_out": cut_diff.new_cut_out,
                             "edit_in": edit_in,
                             "edit_out": edit_out,
-                            "sg_sg_cut_duration": cut_diff.new_cut_out - cut_diff.new_cut_in,
+                            "sg_sg_cut_duration": cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
                             "shot": cut_diff.sg_shot,
                             # "version": edit.get_sg_version(),
                             "created_by": self._ctx.user,

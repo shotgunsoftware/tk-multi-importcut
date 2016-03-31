@@ -256,10 +256,15 @@ class AppDialog(QtGui.QWidget):
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
         # We have a different settings button on each page of the stacked widget
-        for i in range(1, 7):
-            eval("self.ui.settings_page_%s_button.clicked.connect(self.show_settings_dialog)" % i)
+        num_pages = self.ui.stackedWidget.count()
+        if num_pages > 0:
+            for i in range(1, num_pages):
+                try:
+                    eval("self.ui.settings_page_%s_button.clicked.connect(\
+                        self.show_settings_dialog)" % i)
+                except:
+                    pass
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
-
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
 
         if edl_file_path:
@@ -479,7 +484,11 @@ class AppDialog(QtGui.QWidget):
 
         if previous_page == _ENTITY_TYPE_STEP and self._entity_types_view.count() < 2:
             # If only one entity is available, no need to choose it
-            previous_page = _DROP_STEP
+            previous_page = _PROJECT_STEP
+
+        # todo: This should work, but does the opposite of what we want.
+        # if previous_page == _PROJECT_STEP:
+        #     previous_page = _DROP_STEP
 
         if previous_page < 0:
             previous_page = _DROP_STEP
