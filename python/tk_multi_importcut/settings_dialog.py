@@ -11,6 +11,7 @@
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 
+import re
 import sgtk
 
 from .ui.settings_dialog import Ui_settings_dialog
@@ -185,6 +186,8 @@ class SettingsDialog(QtGui.QDialog):
         Save user settings from current UI values
         """
 
+        error = False
+
         # General tab
         update_shot_statuses = self.ui.update_shot_statuses_checkbox.isChecked()
         self._user_settings.store("update_shot_statuses", update_shot_statuses)
@@ -198,22 +201,60 @@ class SettingsDialog(QtGui.QDialog):
         self._user_settings.store("reinstate_shot_if_status_is", reinstate_shot_if_status_is)
         reinstate_status = self.ui.reinstate_status_combo_box.currentIndex()
         self._user_settings.store("reinstate_status", reinstate_status)
+        
         # Timecode/Frames tab
         default_frame_rate = self.ui.default_frame_rate_line_edit.text()
         try:
             int(default_frame_rate)
             self._user_settings.store("default_frame_rate", default_frame_rate)
         except Exception, e:
+            error = True
             self._logger.error('Could not set frame rate "%s": %s' % (default_frame_rate, e))
+
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
         self._user_settings.store("timecode_to_frame_mapping", timecode_to_frame_mapping)
+
         timecode_mapping = self.ui.timecode_mapping_line_edit.text()
-        self._user_settings.store("timecode_mapping", timecode_mapping)
+        if re.search("^\d{2}:\d{2}:\d{2}[:.;]\d{2}$", timecode_mapping):
+            self._user_settings.store("timecode_mapping", timecode_mapping)
+        else:
+            error = True
+            self._logger.error('Could not set timecode mapping "%s": %s' % (
+                timecode_mapping, "Did not match pattern 00:00:00:00."))
+
         frame_mapping = self.ui.frame_mapping_line_edit.text()
-        self._user_settings.store("frame_mapping", frame_mapping)
+        try:
+            int(frame_mapping)
+            self._user_settings.store("frame_mapping", frame_mapping)
+        except Exception, e:
+            error = True
+            self._logger.error('Could not set frame mapping "%s": %s' % (frame_mapping, e))
+
         default_head_in = self.ui.default_head_in_line_edit.text()
-        self._user_settings.store("default_head_in", default_head_in)
+        try:
+            int(default_head_in)
+            self._user_settings.store("default_head_in", default_head_in)
+        except Exception, e:
+            error = True
+            self._logger.error('Could not set default head in "%s": %s' % (default_head_in, e))
+
         default_head_duration = self.ui.default_head_duration_line_edit.text()
-        self._user_settings.store("default_head_duration", default_head_duration)
+        try:
+            int(default_head_duration)
+            self._user_settings.store("default_head_duration", default_head_duration)
+        except Exception, e:
+            error = True
+            self._logger.error('Could not set default head duration "%s": %s' % (
+                default_head_duration, e))
+
         default_tail_duration = self.ui.default_tail_duration_line_edit.text()
-        self._user_settings.store("default_tail_duration", default_tail_duration)
+        try:
+            int(default_tail_duration)
+            self._user_settings.store("default_tail_duration", default_tail_duration)
+        except Exception, e:
+            error = True
+            self._logger.error('Could not set default head duration "%s": %s' % (
+                default_head_duration, e))
+
+        if error is False:
+            self._logger.info("User settings saved.")
