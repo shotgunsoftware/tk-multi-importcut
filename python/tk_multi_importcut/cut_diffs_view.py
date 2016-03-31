@@ -71,7 +71,7 @@ class CutDiffsView(QtCore.QObject):
         """
         cut_order = widget.cut_order
         count = self._list_widget.count()
-        # Shortcut : instead of looping over all entries, check if we can simply
+        # Shortcut: instead of looping over all entries, check if we can simply
         # insert it at the end
         if count > 1:  # A widget + the stretcher
             witem = self._list_widget.itemAt(count-2)

@@ -70,8 +70,10 @@ class ProjectCard(QtGui.QFrame):
         Return the name of the attached project
         """
         # Deal with name field not being consistent in SG
-        return self._sg_project.get("code",
-            self._sg_project.get("name",
+        return self._sg_project.get(
+            "code",
+            self._sg_project.get(
+                "name",
                 self._sg_project.get("title", "")
             )
         )
@@ -82,7 +84,8 @@ class ProjectCard(QtGui.QFrame):
         Return the status of the attached project
         """
         # Deal with status field not being consistent in SG
-        return self._sg_project.get("sg_status_list",
+        return self._sg_project.get(
+            "sg_status_list",
             self._sg_project.get("sg_status")
         )
 
@@ -92,7 +95,8 @@ class ProjectCard(QtGui.QFrame):
         Return the description of the attached project
         """
         # Deal with status field not being consistent in SG
-        return self._sg_project.get("description",
+        return self._sg_project.get(
+            "description",
             self._sg_project.get("sg_description")
         )
 

@@ -85,8 +85,10 @@ class EdlCut(QtCore.QObject):
         if not self._sg_entity:
             return None
         # Deal with name field not being consistent in SG
-        return self._sg_entity.get("code",
-            self._sg_entity.get("name",
+        return self._sg_entity.get(
+            "code",
+            self._sg_entity.get(
+                "name",
                 self._sg_entity.get("title", "????")
             )
         )
@@ -657,7 +659,7 @@ class EdlCut(QtCore.QObject):
                                 edit
                             )
                         )
-                    else :
+                    else:
                         matching_cut_item = None
                         # Do we have a matching shot in SG ?
                         matching_shot = sg_shots_dict.get(lower_shot_name)
@@ -690,7 +692,8 @@ class EdlCut(QtCore.QObject):
                         for sg_shot in sg_shots_dict.itervalues():
                             if sg_shot["id"] == sg_cut_item["shot"]["id"]:
                                 # yes we do
-                                self._logger.debug("Found matching existing shot %s" % shot_name)
+                                self._logger.debug("Found matching existing shot %s" %
+                                                   shot_name)
                                 shot_name = sg_shot["code"]
                                 matching_shot = sg_shot
                                 # Remove this entry from the list
@@ -1006,8 +1009,8 @@ class EdlCut(QtCore.QObject):
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
                         "data": {
-                            "sg_status_list": self._omit_statuses[-1],  # Arbitrarily pick the last one
-                            # Add code in the update so it will be returned with batch results
+                            "sg_status_list": self._omit_statuses[-1],  # Arbitrarily pick the last one.
+                            # Add code in the update so it will be returned with batch results.
                             "code": sg_shot["code"],
                         }
                     })
@@ -1015,7 +1018,7 @@ class EdlCut(QtCore.QObject):
                     data = {
                         "sg_status_list": reinstate_status,
                         "sg_cut_order": min_cut_order,
-                        # Add code in the update so it will be returned with batch results
+                        # Add code in the update so it will be returned with batch results.
                         "code": sg_shot["code"],
                     }
                     if self._use_smart_fields:
@@ -1035,9 +1038,9 @@ class EdlCut(QtCore.QObject):
                         "entity_id": sg_shot["id"],
                         "data": data
                     })
-                else:  # Cut change or rescan or no change
+                else:  # Cut change or rescan or no change.
                     data = {
-                        # Add code and status in the update so it will be returned with batch results
+                        # Add code and status in the update so it will be returned with batch results.
                         "sg_status_list": sg_shot["sg_status_list"],
                         "sg_cut_order": min_cut_order,
                         "code": sg_shot["code"],
@@ -1067,7 +1070,8 @@ class EdlCut(QtCore.QObject):
                 shot_name = sg_shot["code"].lower()
                 if shot_name not in self._summary:
                     raise RuntimeError(
-                        "Created shot %s, but couldn't retrieve it in our list" % shot_name)
+                        "Created shot %s, but couldn't retrieve it in our list" %
+                        shot_name)
                 for cut_diff in self._summary[shot_name]:
                     if cut_diff.sg_shot:
                         # Update with new values
@@ -1136,7 +1140,8 @@ class EdlCut(QtCore.QObject):
                         version_name = edit.get_version_name()
                         if version_name not in new_versions:
                             raise RuntimeError(
-                                "Couldn't retrieve version %s in created ones" % version_name)
+                                "Couldn't retrieve version %s in created ones" %
+                                version_name)
                         cut_diff.set_sg_version(new_versions[version_name])
 
     def create_sg_cut_items(self, sg_cut):

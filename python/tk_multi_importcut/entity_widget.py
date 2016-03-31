@@ -68,8 +68,10 @@ class EntityCard(QtGui.QFrame):
         Return the name of the attached entity
         """
         # Deal with name field not being consistent in SG
-        return self._sg_entity.get("code",
-            self._sg_entity.get("name",
+        return self._sg_entity.get(
+            "code",
+            self._sg_entity.get(
+                "name",
                 self._sg_entity.get("title", "")
             )
         )
