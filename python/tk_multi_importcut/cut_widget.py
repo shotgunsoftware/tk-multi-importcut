@@ -1,11 +1,11 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import tempfile
@@ -20,6 +20,7 @@ from datetime import datetime
 from .ui.cut_card import Ui_CutCard
 from .constants import _COLORS, _STATUS_COLORS
 
+
 class CutCard(QtGui.QFrame):
     """
     Widget displaying a Shotgun Cut
@@ -28,6 +29,7 @@ class CutCard(QtGui.QFrame):
     show_cut = QtCore.Signal(dict)
     # Emitted when this card wants to be selected
     highlight_selected = QtCore.Signal(QtGui.QWidget)
+
     def __init__(self, parent, sg_cut):
         """
         Instantiate a new CutCard for the given Shotgun cut
@@ -53,7 +55,7 @@ class CutCard(QtGui.QFrame):
             self.ui.status_label.setText(sg_cut["sg_status_list"])
 
         self.ui.date_label.setText(sg_cut["created_at"].strftime("%m/%d/%y %I:%M %p"))
-        #self.ui.details_label.setText("<small>%s</small>" % sg_cut["description"])
+        # self.ui.details_label.setText("<small>%s</small>" % sg_cut["description"])
         if sg_cut["description"]:
             self.setToolTip(sg_cut["description"])
         self.ui.details_label.setVisible(False)
@@ -134,7 +136,7 @@ class CutCard(QtGui.QFrame):
 
     def showEvent(self, event):
         """
-        Request an async thumbnail download on first expose, if a thumbnail is 
+        Request an async thumbnail download on first expose, if a thumbnail is
         avalaible in SG.
         """
         if self._thumbnail_requested:
@@ -142,7 +144,8 @@ class CutCard(QtGui.QFrame):
             return
         self._thumbnail_requested = True
         if self._sg_cut and self._sg_cut["image"]:
-            self._logger.debug("Requesting %s for %s" % ( self._sg_cut["image"], self._sg_cut["code"]))
+            self._logger.debug("Requesting %s for %s" %
+                               (self._sg_cut["image"], self._sg_cut["code"]))
             _, path = tempfile.mkstemp()
             downloader = DownloadRunner(
                 sg_attachment=self._sg_cut["image"],
@@ -155,16 +158,16 @@ class CutCard(QtGui.QFrame):
 
     def set_thumbnail(self, thumb_path):
         """
-        Build a pixmap from the given file path and use it as icon, resizing it to 
+        Build a pixmap from the given file path and use it as icon, resizing it to
         fit into the widget icon size
-        
+
         :param thumb_path: Full path to an image to use as thumbnail
         """
         size = self.ui.icon_label.size()
         ratio = size.width() / float(size.height())
         pixmap = QtGui.QPixmap(thumb_path)
         qimage = QtGui.QImage()
-        #print QtGui.QImageReader.supportedImageFormats()
+        # print QtGui.QImageReader.supportedImageFormats()
         if pixmap.isNull():
             self._logger.debug("Null pixmap %s %d %d for %s" % (
                 thumb_path,
@@ -181,4 +184,3 @@ class CutCard(QtGui.QFrame):
             self.ui.icon_label.setPixmap(
                 pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
             )
-

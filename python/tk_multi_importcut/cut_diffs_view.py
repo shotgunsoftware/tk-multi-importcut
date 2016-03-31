@@ -1,11 +1,11 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 from sgtk.platform.qt import QtCore, QtGui
@@ -13,18 +13,19 @@ from .logger import get_logger
 from .cut_diff_widget import CutDiffCard
 from .cut_diff import CutDiff, _DIFF_TYPES
 
+
 class CutDiffsView(QtCore.QObject):
     """
     Handle CutDiffWidget view
     """
     totals_changed = QtCore.Signal()
-    
+
     # Emitted when the info message changed
-    new_info_message=QtCore.Signal(str)
+    new_info_message = QtCore.Signal(str)
 
     def __init__(self, list_widget):
         """
-        Construct a new CutDiffsView, using the given list_widget as widgets 
+        Construct a new CutDiffsView, using the given list_widget as widgets
         container
 
         :param list_widget: A QVBoxLayout
@@ -33,10 +34,10 @@ class CutDiffsView(QtCore.QObject):
         self._list_widget = list_widget
         self._logger = get_logger()
         self._cuts_display_repeated = False
-        self._vfx_shots_only=False
+        self._vfx_shots_only = False
         self._cuts_display_mode = -1
-         # A one line message which can be displayed when the view is visible
-        self._info_message=""
+        # A one line message which can be displayed when the view is visible
+        self._info_message = ""
 
     @property
     def info_message(self):
@@ -45,9 +46,8 @@ class CutDiffsView(QtCore.QObject):
     @QtCore.Slot(CutDiff)
     def new_cut_diff(self, cut_diff):
         """
-        Called when a new cut diff card widget needs to be added to the list of retrieved
-        changes
-
+        Called when a new cut diff card widget needs to be added to the list
+        of retrieved changes
         :param cut_diff: A CutDiff instance for whose a widget needs to be added
         """
         self._logger.debug("Adding %s" % cut_diff.name)
@@ -56,12 +56,12 @@ class CutDiffsView(QtCore.QObject):
 
         cut_order = widget.cut_order
         count = self._list_widget.count()
-        insert_index=self._get_insert_index(widget)
+        insert_index = self._get_insert_index(widget)
         self._list_widget.insertWidget(insert_index, widget)
         self._list_widget.setStretch(self._list_widget.count()-1, 1)
         # Redisplay widgets
         self._display_for_summary_mode()
-        self._info_message="%d Cut Item(s)" % count
+        self._info_message = "%d Cut Item(s)" % count
         self.new_info_message.emit(self._info_message)
 
     def _get_insert_index(self, widget):
@@ -73,7 +73,7 @@ class CutDiffsView(QtCore.QObject):
         count = self._list_widget.count()
         # Shortcut : instead of looping over all entries, check if we can simply
         # insert it at the end
-        if count > 1: # A widget + the stretcher
+        if count > 1:  # A widget + the stretcher
             witem = self._list_widget.itemAt(count-2)
             if cut_order > witem.widget().cut_order:
                 return (count-1)
@@ -86,7 +86,7 @@ class CutDiffsView(QtCore.QObject):
                     return i
                 else:
                     return (i+1)
-            elif witem.widget().cut_order > cut_order: # Insert before next widget
+            elif witem.widget().cut_order > cut_order:  # Insert before next widget
                 return i
         # Insert at the end
         return (count-1)
@@ -95,7 +95,6 @@ class CutDiffsView(QtCore.QObject):
     def delete_cut_diff(self, cut_diff):
         """
         Delete the widget associated with the given CutDiff instance
-
         :param cut_diff: A CutDiff instance
         """
         # Retrieve the widget we can delete
@@ -104,9 +103,9 @@ class CutDiffsView(QtCore.QObject):
         for i in range(0, count-1):
             witem = self._list_widget.itemAt(i)
             widget = witem.widget()
-            if widget.cut_diff==cut_diff: # Found it
+            if widget.cut_diff == cut_diff:  # Found it
                 witem = self._list_widget.takeAt(i)
-                widget=witem.widget()
+                widget = witem.widget()
                 widget.setParent(None)
                 widget.deleteLater()
                 break
@@ -154,15 +153,15 @@ class CutDiffsView(QtCore.QObject):
         Hide / show CutDiff widgets depending on the current mode
         """
         show_only_repeated = self._cuts_display_repeated
-        show_only_vfx=self._vfx_shots_only
-        count = self._list_widget.count() -1 # We have stretcher
-        match_count=0
-        if self._cuts_display_mode == -1: # Show everything
+        show_only_vfx = self._vfx_shots_only
+        count = self._list_widget.count() - 1  # We have stretcher
+        match_count = 0
+        if self._cuts_display_mode == -1:  # Show everything
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 widget.setVisible(not show_only_vfx or widget.is_vfx_shot)
-            match_count=count
-        elif self._cuts_display_mode > 99: # Show "Need Rescan"
+            match_count = count
+        elif self._cuts_display_mode > 99:  # Show "Need Rescan"
             for i in range(0, count):
                 widget = self._list_widget.itemAt(i).widget()
                 if widget.need_rescan:
@@ -187,18 +186,17 @@ class CutDiffsView(QtCore.QObject):
             wsize = self._list_widget.itemAt(0).widget().size()
             self._list_widget.parentWidget().resize(
                 self._list_widget.parentWidget().size().width(),
-                wsize.height()* count)
+                wsize.height() * count)
 
-        self._info_message="%d Cut Item(s)" % match_count
+        self._info_message = "%d Cut Item(s)" % match_count
         self.new_info_message.emit(self._info_message)
 
     def clear(self):
         """
         Reset the cut summary view page
         """
-        count = self._list_widget.count() -1 # We have stretcher
+        count = self._list_widget.count() - 1  # We have stretcher
         for i in range(count-1, -1, -1):
             witem = self._list_widget.takeAt(i)
             widget = witem.widget()
             widget.close()
-

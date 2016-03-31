@@ -1,11 +1,11 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 # by importing QT from sgtk rather than directly, we ensure that
@@ -13,13 +13,12 @@
 
 import sgtk
 
-from sgtk.platform.qt import QtCore, QtGui
-settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
-
 from .ui.settings_dialog import Ui_settings_dialog
-
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
+from sgtk.platform.qt import QtCore, QtGui
+
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 _ABSOLUTE_INSTRUCTIONS = """In Absolute mode, the app will map the timecode \
 values from the EDL directly as frames based on the frame rate. For example, \
@@ -40,6 +39,7 @@ class SettingsDialog(QtGui.QDialog):
     settings locally per user.
     """
     submit = QtCore.Signal(str, dict, dict, str, bool)
+
     def __init__(self, parent=None):
         """
         Instantiate a new dialog
@@ -49,14 +49,14 @@ class SettingsDialog(QtGui.QDialog):
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
-        
+
         # Create a settings manager where we can pull and push prefs later
         self._user_settings = settings.UserSettings(self._app)
-        
+
         # todo: the way omit_status is handled is tmp, I'm only
         # grabbing one status in the gui, but the code wants a list
         # so remember to fix the code once the gui can supply a list
-        
+
         # Retrieve user settings and set UI values
         buttons = self.ui.save_settings_button_box.buttons()
         apply_button = buttons[0]
@@ -65,15 +65,15 @@ class SettingsDialog(QtGui.QDialog):
         # General tab
         update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
         self._set_enabled(update_shot_statuses)
-        
+
         self.ui.update_shot_statuses_checkbox.setChecked(
             update_shot_statuses)
         self.ui.use_smart_fields_checkbox.setChecked(
             self._user_settings.retrieve("use_smart_fields"))
         self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
-        
+
         self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(self._change_text)
-        
+
         shot_statuses = self._app.shotgun.schema_field_read("Shot")[
             "sg_status_list"]["properties"]["display_values"]["value"]
         for status in shot_statuses:
@@ -81,12 +81,12 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.omit_status_combo_box.addItem(status)
             self.ui.reinstate_shot_if_status_is_combo_box.addItem(status)
             self.ui.reinstate_status_combo_box.addItem(status)
-        
+
         self.ui.email_group_combo_box.addItem("")
         email_groups = self._app.shotgun.find("Group", [], ["code"])
         for group in email_groups:
             self.ui.email_group_combo_box.addItem(group["code"])
-        
+
         self.ui.email_group_combo_box.setCurrentIndex(
             self._user_settings.retrieve("email_group"))
         self.ui.omit_status_combo_box.setCurrentIndex(
@@ -100,7 +100,7 @@ class SettingsDialog(QtGui.QDialog):
         self.ui.default_frame_rate_line_edit.setText(
             self._user_settings.retrieve("default_frame_rate"))
         self.ui.timecode_to_frame_mapping_combo_box.addItems(
-            ["Absolute", "Automatic", "Relative"])        
+            ["Absolute", "Automatic", "Relative"])
         self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(
             self._user_settings.retrieve("timecode_to_frame_mapping"))
         self.ui.timecode_mapping_line_edit.setText(
@@ -183,43 +183,31 @@ class SettingsDialog(QtGui.QDialog):
         Save user settings from current UI values
         """
 
-        # General tab        
+        # General tab
         update_shot_statuses = self.ui.update_shot_statuses_checkbox.isChecked()
         self._user_settings.store("update_shot_statuses", update_shot_statuses)
-
         use_smart_fields = self.ui.use_smart_fields_checkbox.isChecked()
         self._user_settings.store("use_smart_fields", use_smart_fields)
-
         email_group = self.ui.email_group_combo_box.currentIndex()
         self._user_settings.store("email_group", email_group)
-
         omit_status = self.ui.omit_status_combo_box.currentIndex()
         self._user_settings.store("omit_status", omit_status)
-
         reinstate_shot_if_status_is = self.ui.reinstate_shot_if_status_is_combo_box.currentIndex()
         self._user_settings.store("reinstate_shot_if_status_is", reinstate_shot_if_status_is)
-
         reinstate_status = self.ui.reinstate_status_combo_box.currentIndex()
         self._user_settings.store("reinstate_status", reinstate_status)
-
         # Timecode/Frames tab
         default_frame_rate = self.ui.default_frame_rate_line_edit.text()
         self._user_settings.store("default_frame_rate", default_frame_rate)
-
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
         self._user_settings.store("timecode_to_frame_mapping", timecode_to_frame_mapping)
-
         timecode_mapping = self.ui.timecode_mapping_line_edit.text()
         self._user_settings.store("timecode_mapping", timecode_mapping)
-
         frame_mapping = self.ui.frame_mapping_line_edit.text()
         self._user_settings.store("frame_mapping", frame_mapping)
-
         default_head_in = self.ui.default_head_in_line_edit.text()
         self._user_settings.store("default_head_in", default_head_in)
-
         default_head_duration = self.ui.default_head_duration_line_edit.text()
         self._user_settings.store("default_head_duration", default_head_duration)
-
         default_tail_duration = self.ui.default_tail_duration_line_edit.text()
         self._user_settings.store("default_tail_duration", default_tail_duration)

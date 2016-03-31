@@ -1,38 +1,38 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import sgtk
 import tempfile
-
-# by importing QT from sgtk rather than directly, we ensure that
-# the code will be compatible with both PySide and PyQt.
-from sgtk.platform.qt import QtCore, QtGui
-edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
 from .ui.cut_diff_card import Ui_CutDiffCard
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .downloader import DownloadRunner
 from .constants import _COLORS
 
+# by importing QT from sgtk rather than directly, we ensure that
+# the code will be compatible with both PySide and PyQt.
+from sgtk.platform.qt import QtCore, QtGui
+edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
+
 # diff_type property values which are set on the widget
 # and can be use in a style sheet
 _DIFF_TYPES_PROPERTIES = {
-    _DIFF_TYPES.NEW : "new",
-    _DIFF_TYPES.OMITTED : "omitted",
-    _DIFF_TYPES.REINSTATED : "reinstated",
-    _DIFF_TYPES.RESCAN : "rescan_needed",
-    _DIFF_TYPES.CUT_CHANGE : "cut_change",
-    _DIFF_TYPES.NO_CHANGE : "no_change",
-    _DIFF_TYPES.NO_LINK : "no_link",
-    _DIFF_TYPES.NEW_IN_CUT : "new_in_cut",
-    _DIFF_TYPES.OMITTED_IN_CUT : "omitted",
+    _DIFF_TYPES.NEW: "new",
+    _DIFF_TYPES.OMITTED: "omitted",
+    _DIFF_TYPES.REINSTATED: "reinstated",
+    _DIFF_TYPES.RESCAN: "rescan_needed",
+    _DIFF_TYPES.CUT_CHANGE: "cut_change",
+    _DIFF_TYPES.NO_CHANGE: "no_change",
+    _DIFF_TYPES.NO_LINK: "no_link",
+    _DIFF_TYPES.NEW_IN_CUT: "new_in_cut",
+    _DIFF_TYPES.OMITTED_IN_CUT: "omitted",
 }
 
 # Format string for tooltips
@@ -47,12 +47,14 @@ Edit :
 \t%s
 """
 
+
 class CutDiffCard(QtGui.QFrame):
     """
     A widget showing cut differences
     """
     # Emitted when the CutDiff instance changed its type
-    type_changed=QtCore.Signal()
+    type_changed = QtCore.Signal()
+
     def __init__(self, parent, cut_diff):
         """
         Instantiate a new cut diff card for the given CutDiff instance
@@ -92,7 +94,7 @@ class CutDiffCard(QtGui.QFrame):
         for w in widgets:
             self.style().unpolish(w)
             self.style().polish(w)
-    
+
     def _set_ui_values(self):
         """
         Set UI values, colors, etc ... from the CutDiff instance being displayed
@@ -120,7 +122,7 @@ class CutDiffCard(QtGui.QFrame):
 
         self.ui.icon_label.set_text(
             cut_order,
-            None, # use default color from styling
+            None,  # use default color from styling
             bool(self._cut_diff.diff_type == _DIFF_TYPES.OMITTED)
         )
         # Difference and reasons
@@ -141,7 +143,6 @@ class CutDiffCard(QtGui.QFrame):
         value = self._cut_diff.shot_tail_out
         new_value = self._cut_diff.new_tail_out
         self.display_values(self.ui.shot_tail_out_label, new_value, value)
-
 
         value = self._cut_diff.cut_in
         new_value = self._cut_diff.new_cut_in
@@ -164,7 +165,7 @@ class CutDiffCard(QtGui.QFrame):
         self.display_values(self.ui.tail_duration_label, new_value, value)
 
         self.set_tool_tip()
-        
+
         self.set_thumbnail(":/tk_multi_importcut/sg_shot_thumbnail.png")
 
     @QtCore.Slot(str)
@@ -236,7 +237,7 @@ class CutDiffCard(QtGui.QFrame):
         Return the CutDiff instance this widget is showing
         """
         return self._cut_diff
-    
+
     def __getattr__(self, attr_name):
         """
         Allow access to attached cut diff, it will be called by Python only
@@ -262,7 +263,8 @@ class CutDiffCard(QtGui.QFrame):
             if old_value is not None:
                 widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], old_value))
             else:
-                # Old values are retrieved from cut items, we can have omitted shots without cut items
+                # Old values are retrieved from cut items,
+                # we can have omitted shots without cut items
                 widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], ""))
         else:
             if new_value != old_value:
@@ -291,7 +293,7 @@ class CutDiffCard(QtGui.QFrame):
 
     def showEvent(self, event):
         """
-        Request an async thumbnail download on first expose, if a thumbnail is 
+        Request an async thumbnail download on first expose, if a thumbnail is
         avalaible in SG.
         """
         if self._thumbnail_requested:
@@ -321,7 +323,7 @@ class CutDiffCard(QtGui.QFrame):
 
     def set_thumbnail(self, thumb_path):
         """
-        Build a pixmap from the given file path and use it as icon, resizing it to 
+        Build a pixmap from the given file path and use it as icon, resizing it to
         fit into the widget icon size
 
         :param thumb_path: Full path to an image to use as thumbnail
@@ -341,4 +343,3 @@ class CutDiffCard(QtGui.QFrame):
             self.ui.icon_label.setPixmap(
                 pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
             )
-

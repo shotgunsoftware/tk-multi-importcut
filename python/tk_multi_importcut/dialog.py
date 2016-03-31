@@ -1,11 +1,11 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import sgtk
@@ -19,8 +19,6 @@ import ast
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-
-settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 from .widgets import DropAreaFrame, AnimatedStackedWidget
 from .search_widget import SearchWidget
@@ -43,10 +41,14 @@ from .settings_dialog import SettingsDialog
 from .downloader import DownloadRunner
 
 # Different steps in the process
-from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, \
+    _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
+
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
+
 
 def show_dialog(app_instance):
     """
@@ -54,17 +56,18 @@ def show_dialog(app_instance):
     """
     # in order to handle UIs seamlessly, each toolkit engine has methods for launching
     # different types of windows. By using these methods, your windows will be correctly
-    # decorated and handled in a consistent fashion by the system. 
-    
+    # decorated and handled in a consistent fashion by the system.
+
     # we pass the dialog class to this method and leave the actual construction
     # to be carried out by toolkit.
     app_instance.engine.show_dialog("Import Cut", app_instance, AppDialog)
-    
+
+
 def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
     """
     Run the app with a pre-selected edl file and SG entity
     :param edl_file_path: Full path to an EDL file
-    :param sg_entity: A SG entity dictionary as a string, e.g. 
+    :param sg_entity: A SG entity dictionary as a string, e.g.
                       '{"code" : "001", "id" : 19, "type" : "Sequence"}'
     :param frame_rate: The frame rate for the EDL file
     """
@@ -100,48 +103,48 @@ class AppDialog(QtGui.QWidget):
         Constructor
         :param edl_file_path: Full path to an EDL file
         :param sg_entity: A SG entity dictionary
-        :param frame_rate: Use a specific frame rate for the import 
+        :param frame_rate: Use a specific frame rate for the import
         """
         # first, call the base class and let it do its thing.
         QtGui.QWidget.__init__(self)
-        
+
         # now load in the UI that was created in the UI designer
-        self.ui = Ui_Dialog() 
+        self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # most of the useful accessors are available through the Application class instance
         # it is often handy to keep a reference to this. You can get it via the following method:
         self._app = sgtk.platform.current_bundle()
         self._ctx = self._app.context
-        
+
         self._user_settings = settings.UserSettings(self._app)
 
         # set defaults, but don't override user settings.
-        if self._user_settings.retrieve("update_shot_statuses") == None:
+        if self._user_settings.retrieve("update_shot_statuses") is None:
             self._user_settings.store("update_shot_statuses", True)
-        if self._user_settings.retrieve("use_smart_fields") == None:
+        if self._user_settings.retrieve("use_smart_fields") is None:
             self._user_settings.store("use_smart_fields", False)
-        if self._user_settings.retrieve("email_group") == None:
+        if self._user_settings.retrieve("email_group") is None:
             self._user_settings.store("email_group", 0)
-        if self._user_settings.retrieve("omit_status") == None:
+        if self._user_settings.retrieve("omit_status") is None:
             self._user_settings.store("omit_status", 4)
-        if self._user_settings.retrieve("reinstate_shot_if_status_is") == None:
+        if self._user_settings.retrieve("reinstate_shot_if_status_is") is None:
             self._user_settings.store("reinstate_shot_if_status_is", 4)
-        if self._user_settings.retrieve("reinstate_status") == None:
+        if self._user_settings.retrieve("reinstate_status") is None:
             self._user_settings.store("reinstate_status", 1)
-        if self._user_settings.retrieve("default_frame_rate") == None:
+        if self._user_settings.retrieve("default_frame_rate") is None:
             self._user_settings.store("default_frame_rate", "24")
-        if self._user_settings.retrieve("timecode_to_frame_mapping") == None:
+        if self._user_settings.retrieve("timecode_to_frame_mapping") is None:
             self._user_settings.store("timecode_to_frame_mapping", _ABSOLUTE_MODE)
-        if self._user_settings.retrieve("timecode_mapping") == None:
+        if self._user_settings.retrieve("timecode_mapping") is None:
             self._user_settings.store("timecode_mapping", "00:00:00:00")
-        if self._user_settings.retrieve("frame_mapping") == None:
+        if self._user_settings.retrieve("frame_mapping") is None:
             self._user_settings.store("frame_mapping", "1000")
-        if self._user_settings.retrieve("default_head_in") == None:
+        if self._user_settings.retrieve("default_head_in") is None:
             self._user_settings.store("default_head_in", "1001")
-        if self._user_settings.retrieve("default_head_duration") == None:
+        if self._user_settings.retrieve("default_head_duration") is None:
             self._user_settings.store("default_head_duration", "8")
-        if self._user_settings.retrieve("default_tail_duration") == None:
+        if self._user_settings.retrieve("default_tail_duration") is None:
             self._user_settings.store("default_tail_duration", "8")
 
         self._busy = False
@@ -153,12 +156,12 @@ class AppDialog(QtGui.QWidget):
         # with the current step and blindly disable the select button on the
         # value for each step
         self._selected_sg_entity = [None]*(_LAST_STEP+1)
-        
+
         # via the self._app handle we can for example access:
         # - The engine, via self._app.engine
         # - A Shotgun API instance, via self._app.shotgun
-        # - A tk API instance, via self._app.tk 
-        
+        # - A tk API instance, via self._app.tk
+
         # lastly, set up our very basic UI
         self.set_custom_style()
         self.set_logger(logging.INFO)
@@ -168,13 +171,13 @@ class AppDialog(QtGui.QWidget):
         # Keep this thread for UI stuff
         # Handle data and processong in a separate thread
         self._processor = Processor(frame_rate)
-        
+
         self.new_edl.connect(self._processor.new_edl)
         self.get_projects.connect(self._processor.retrieve_projects)
         self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
-        
+
         self._processor.step_done.connect(self.step_done)
         self._processor.step_failed.connect(self.step_failed)
         self._processor.got_busy.connect(self.set_busy)
@@ -226,18 +229,24 @@ class AppDialog(QtGui.QWidget):
         self._processor.delete_cut_diff.connect(self._cut_diffs_view.delete_cut_diff)
 
         # Cut summary view selectors
-        self.ui.new_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.NEW))
-        self.ui.cut_change_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.CUT_CHANGE))
-        self.ui.omitted_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.OMITTED))
-        self.ui.reinstated_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.REINSTATED))
-        self.ui.rescan_select_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, 100))
-        self.ui.total_button.toggled.connect( lambda x : self._cut_diffs_view.set_display_summary_mode(x, -1))
+        self.ui.new_select_button.toggled.connect(
+            lambda x: self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.NEW))
+        self.ui.cut_change_select_button.toggled.connect(
+            lambda x: self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.CUT_CHANGE))
+        self.ui.omitted_select_button.toggled.connect(
+            lambda x: self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.OMITTED))
+        self.ui.reinstated_select_button.toggled.connect(
+            lambda x: self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.REINSTATED))
+        self.ui.rescan_select_button.toggled.connect(
+            lambda x: self._cut_diffs_view.set_display_summary_mode(x, 100))
+        self.ui.total_button.toggled.connect(
+            lambda x: self._cut_diffs_view.set_display_summary_mode(x, -1))
         self.ui.only_vfx_check_box.toggled.connect(self._cut_diffs_view.display_vfx_cuts)
 
         # Ensure we land on the startup screen
         self.ui.stackedWidget.set_current_index(_DROP_STEP)
         self.set_ui_for_step(_DROP_STEP)
-        
+
         self.ui.back_button.clicked.connect(self.previous_page)
         self.ui.stackedWidget.first_page_reached.connect(self.reset)
         self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
@@ -255,7 +264,7 @@ class AppDialog(QtGui.QWidget):
 
         if edl_file_path:
             # Wait for the processor to be ready before doing anything
-            self._processor.ready.connect(lambda : self._preselected_input(
+            self._processor.ready.connect(lambda: self._preselected_input(
                 edl_file_path, sg_entity
             ))
 
@@ -264,7 +273,7 @@ class AppDialog(QtGui.QWidget):
     def _preselected_input(self, edl_file_path, sg_entity):
         # Special mode for Premiere integration : load the given EDL
         # and select the given SG entity
-        
+
         self.new_edl.emit(edl_file_path)
         if sg_entity:
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
@@ -357,12 +366,12 @@ class AppDialog(QtGui.QWidget):
         )
         # todo: this show_projects() call shouldn't be necessary
         self.show_projects()
-        if self._ctx.project != None:
+        if self._ctx.project is not None:
             self.goto_step(_ENTITY_TYPE_STEP)
         else:
             # The user needs to pickup a project first
             self.goto_step(_PROJECT_STEP)
-        #self._logger.info( "Processing %s" % (paths[0] ))
+        # self._logger.info( "Processing %s" % (paths[0] ))
 
     @QtCore.Slot(int, str)
     def new_message(self, levelno, message):
@@ -401,7 +410,6 @@ class AppDialog(QtGui.QWidget):
     @property
     def hide_tk_title_bar(self):
         return False
-
 
     def is_busy(self):
         """
@@ -464,11 +472,11 @@ class AppDialog(QtGui.QWidget):
         if previous_page == _CUT_STEP and self.no_cut_for_entity:
             # Skip cut selection screen
             previous_page = _ENTITY_STEP
-        
+
         if previous_page == _ENTITY_STEP and self.project_import:
             # Skip project selection
             previous_page = _ENTITY_TYPE_STEP
-        
+
         if previous_page == _ENTITY_TYPE_STEP and self._entity_types_view.count() < 2:
             # If only one entity is available, no need to choose it
             previous_page = _DROP_STEP
@@ -535,7 +543,7 @@ class AppDialog(QtGui.QWidget):
             self.ui.select_button.setEnabled(bool(self._selected_sg_entity[step]))
         else:
             self.ui.select_button.hide()
-        
+
         # Display info message in feedback line and other special things
         # based on the current step
         if step == _ENTITY_TYPE_STEP:
@@ -553,18 +561,18 @@ class AppDialog(QtGui.QWidget):
             if self._processor.sg_cut:
                 self.ui.cut_summary_title_label.setText(
                     "Comparing %s and <b>%s</b> for %s <b>%s</b>" % (
-                    os.path.basename(self._processor.edl_file_path),
-                    self._processor.sg_cut["code"],
-                    self._processor.entity_type_name,
-                    self._processor.entity_name,
+                        os.path.basename(self._processor.edl_file_path),
+                        self._processor.sg_cut["code"],
+                        self._processor.entity_type_name,
+                        self._processor.entity_name,
                     )
                 )
             else:
                 self.ui.cut_summary_title_label.setText(
                     "Showing %s for %s <b>%s</b>" % (
-                    os.path.basename(self._processor.edl_file_path),
-                    self._processor.entity_type_name,
-                    self._processor.entity_name,
+                        os.path.basename(self._processor.edl_file_path),
+                        self._processor.entity_type_name,
+                        self._processor.entity_name,
                     )
                 )
         elif step == _PROGRESS_STEP:
@@ -592,7 +600,7 @@ class AppDialog(QtGui.QWidget):
         # Keep track of what is selected in different views
         # so the select button at the bottom of the window can
         # trigger next step with current selection
-        self._selected_sg_entity[self._step]=sg_entity
+        self._selected_sg_entity[self._step] = sg_entity
         self.ui.select_button.setEnabled(True)
 
     @QtCore.Slot()
@@ -625,7 +633,7 @@ class AppDialog(QtGui.QWidget):
             sgtk.platform.current_bundle().sgtk,
             sg_entity_type,
         )
-        self._logger.info("Retrieving %s(s)" % sg_entity_type_name )
+        self._logger.info("Retrieving %s(s)" % sg_entity_type_name)
         self.ui.sequences_title_label.setText("Select %s" % sg_entity_type_name)
         self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
         self.get_entities.emit(sg_entity_type)
@@ -654,20 +662,21 @@ class AppDialog(QtGui.QWidget):
         Called when cuts needs to be shown for an entity
         """
         name = sg_entity.get("code",
-            sg_entity.get("name",
-                sg_entity.get("title", "????")
-            )
-        )
+                             sg_entity.get("name",
+                                           sg_entity.get("title", "????")
+                                           )
+                             )
         type_name = sgtk.util.get_entity_type_display_name(
             sgtk.platform.current_bundle().sgtk,
             sg_entity["type"],
         )
-        self._logger.info("Retrieving cuts for %s" % name )
+        self._logger.info("Retrieving cuts for %s" % name)
         self.ui.selected_sequence_label.setText(
             "%s : <big><b>%s</big></b>" % (
                 sg_entity["type"],
                 name,
-        ))
+            )
+        )
         self.show_cuts_for_sequence.emit(sg_entity)
 
     @QtCore.Slot(dict)
@@ -676,20 +685,23 @@ class AppDialog(QtGui.QWidget):
         Called when cut changes needs to be shown for a particular sequence/cut
         :param sg_cut: A Cut dictionary as retrieved from Shotgun
         """
-        self._logger.info("Retrieving cut information for %s" % sg_cut["code"] )
+        self._logger.info("Retrieving cut information for %s" % sg_cut["code"])
         self.show_cut_diff.emit(sg_cut)
 
     @QtCore.Slot()
     def set_cut_summary_view_selectors(self):
         """
-        Set labels on top views selectors in Cut summary view, from the current 
+        Set labels on top views selectors in Cut summary view, from the current
         cut summary
         """
         summary = self._processor.summary
         self.ui.new_select_button.setText("New : %d" % summary.count_for_type(_DIFF_TYPES.NEW))
-        self.ui.cut_change_select_button.setText("Cut Changes : %d" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
-        self.ui.omitted_select_button.setText("Omitted : %d" % summary.count_for_type(_DIFF_TYPES.OMITTED))
-        self.ui.reinstated_select_button.setText("Reinstated : %d" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
+        self.ui.cut_change_select_button.setText(
+            "Cut Changes : %d" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
+        self.ui.omitted_select_button.setText(
+            "Omitted : %d" % summary.count_for_type(_DIFF_TYPES.OMITTED))
+        self.ui.reinstated_select_button.setText(
+            "Reinstated : %d" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
         self.ui.rescan_select_button.setText("Rescan Needed : %d" % summary.rescans_count)
         self.ui.total_button.setText("Total : %d" % len(summary))
 
@@ -764,7 +776,7 @@ class AppDialog(QtGui.QWidget):
         )]
         subject, body = self._processor.summary.get_report(self._processor.title, links)
         mail_url = QtCore.QUrl("mailto:?subject=%s&body=%s" % (subject, body))
-        self._logger.debug("Opening up %s" % mail_url )
+        self._logger.debug("Opening up %s" % mail_url)
         QtGui.QDesktopServices.openUrl(mail_url)
 
     @QtCore.Slot()
@@ -805,7 +817,7 @@ class AppDialog(QtGui.QWidget):
                 "Busy, quit anyway ?",
                 QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
             if answer != QtGui.QMessageBox.Ok:
-                evt.ignore() # For close event, ignore stop them to be processed
+                evt.ignore()  # For close event, ignore stop them to be processed
                 return
         self._processor.quit()
         self._processor.wait()
@@ -824,11 +836,14 @@ class AppDialog(QtGui.QWidget):
 
         # Copied over from tk-desktop and tk-multi-ingestdelivery
         if sys.platform == "darwin":
-            fname = os.path.join(os.path.expanduser("~"), "Library", "Logs", "Shotgun", "%s.log" % self._app.name)
+            fname = os.path.join(
+                os.path.expanduser("~"), "Library", "Logs", "Shotgun", "%s.log" % self._app.name)
         elif sys.platform == "win32":
-            fname = os.path.join(os.environ.get("APPDATA", "APPDATA_NOT_SET"), "Shotgun", "%s.log" % self._app.name)
+            fname = os.path.join(
+                os.environ.get("APPDATA", "APPDATA_NOT_SET"), "Shotgun", "%s.log" % self._app.name)
         elif sys.platform.startswith("linux"):
-            fname = os.path.join(os.path.expanduser("~"), ".shotgun", "logs", "%s.log" % self._app.name)
+            fname = os.path.join(
+                os.path.expanduser("~"), ".shotgun", "logs", "%s.log" % self._app.name)
         else:
             raise NotImplementedError("Unknown platform: %s" % sys.platform)
 
@@ -846,7 +861,7 @@ class AppDialog(QtGui.QWidget):
         Append our custom style to the inherited style sheet
         """
         self._css_watcher = None
-        this_folder = self._app.disk_location #os.path.abspath(os.path.dirname(__file__))
+        this_folder = self._app.disk_location  # os.path.abspath(os.path.dirname(__file__))
         css_file = os.path.join(this_folder, "style.qss")
         if os.path.exists(css_file):
             self._load_css(css_file)
@@ -854,7 +869,7 @@ class AppDialog(QtGui.QWidget):
             # usually clients use tk-desktop or tk-shotgun, so it should be safe to
             # assume that this will cause any harm in production
             if sgtk.platform.current_engine().name == "tk-shell":
-                self._css_watcher=QtCore.QFileSystemWatcher([css_file], self)
+                self._css_watcher = QtCore.QFileSystemWatcher([css_file], self)
                 self._css_watcher.fileChanged.connect(self.reload_css)
 
     def _load_css(self, css_file):
@@ -865,15 +880,17 @@ class AppDialog(QtGui.QWidget):
                 # happen in Toolkit, so app Studio apps inherit the font, instead
                 # of having to manually change it like this for each app
                 # getting the path to fonts relative to this file
-                # print self._app.disk_location
                 font_path = self._app.disk_location
                 font_path = os.path.join(font_path, "resources", "fonts")
-                print font_path
                 # load custom font
-                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Bold.ttf"))
-                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Regular.ttf"))
-                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-CondLight.ttf"))
-                QtGui.QFontDatabase.addApplicationFont(os.path.join(font_path, "OpenSans-Light.ttf"))
+                QtGui.QFontDatabase.addApplicationFont(
+                    os.path.join(font_path, "OpenSans-Bold.ttf"))
+                QtGui.QFontDatabase.addApplicationFont(
+                    os.path.join(font_path, "OpenSans-Regular.ttf"))
+                QtGui.QFontDatabase.addApplicationFont(
+                    os.path.join(font_path, "OpenSans-CondLight.ttf"))
+                QtGui.QFontDatabase.addApplicationFont(
+                    os.path.join(font_path, "OpenSans-Light.ttf"))
                 # Read css file
                 f = open(css_file)
                 css_data = f.read()
@@ -882,8 +899,8 @@ class AppDialog(QtGui.QWidget):
                 # level, children will inherit from it, without us affecting
                 # other apps for this engine
                 self.setStyleSheet(css_data)
-            except Exception,e:
-                self._app.log_warning( "Unable to read style sheet %s" % css_file )
+            except Exception, e:
+                self._app.log_warning("Unable to read style sheet %s" % css_file)
 
     @QtCore.Slot(str)
     def reload_css(self, path):

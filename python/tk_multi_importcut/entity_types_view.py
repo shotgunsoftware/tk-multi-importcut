@@ -1,21 +1,22 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import sgtk
+import tempfile
+
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
 from .downloader import DownloadRunner
-import tempfile
 from operator import attrgetter
-
 from .ui.entity_type_card import Ui_entity_type_frame
+
 
 class EntityTypeCard(QtGui.QFrame):
     """
@@ -51,7 +52,7 @@ class EntityTypeCard(QtGui.QFrame):
                 ["image"]
             )
             if sg_project and sg_project["image"]:
-                self._logger.debug("Requesting %s" % ( sg_project["image"]))
+                self._logger.debug("Requesting %s" % (sg_project["image"]))
             _, path = tempfile.mkstemp()
             downloader = DownloadRunner(
                 sg_attachment=sg_project["image"],
@@ -59,7 +60,6 @@ class EntityTypeCard(QtGui.QFrame):
             )
             downloader.file_downloaded.connect(self.new_thumbnail)
             QtCore.QThreadPool.globalInstance().start(downloader)
-
 
     @property
     def entity_type(self):
@@ -117,7 +117,7 @@ class EntityTypeCard(QtGui.QFrame):
 
     def set_thumbnail(self, thumb_path, resize_to_fit=False):
         """
-        Build a pixmap from the given file path and use it as icon, resizing it to 
+        Build a pixmap from the given file path and use it as icon, resizingit to
         fit into the widget icon size
 
         :param thumb_path: Full path to an image to use as thumbnail
@@ -146,6 +146,7 @@ class EntityTypeCard(QtGui.QFrame):
                     pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
                 )
 
+
 class EntityTypesView(QtCore.QObject):
     """
     Entity types view page handler
@@ -153,10 +154,10 @@ class EntityTypesView(QtCore.QObject):
     # Emitted when a entity type is chosen for next step
     entity_type_chosen = QtCore.Signal(str)
     # Emitted when a different entity type is selected
-    selection_changed=QtCore.Signal(str)
+    selection_changed = QtCore.Signal(str)
 
     # Emitted when the info message changed
-    new_info_message=QtCore.Signal(str)
+    new_info_message = QtCore.Signal(str)
 
     def __init__(self, layout):
         super(EntityTypesView, self).__init__()
@@ -164,9 +165,9 @@ class EntityTypesView(QtCore.QObject):
         self._selected_entity_type = None
         self._entity_type_cards = []
         self._logger = get_logger()
-         # A one line message which can be displayed when the view is visible
-        self._info_message=""
-        
+        # A one line message which can be displayed when the view is visible
+        self._info_message = ""
+
         # Retrieve all entity types which are accepted by Cut.sg_sequence field
         # in Shotgun
         cut_link_field = "entity"
@@ -205,7 +206,7 @@ class EntityTypesView(QtCore.QObject):
         Return the number of entity types which can be used
         """
         return len(self._entity_type_cards)
-    
+
     def select_and_skip(self):
         """
         If there is a single entry automatically select it and return True if

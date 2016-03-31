@@ -1,11 +1,11 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 # by importing QT from sgtk rather than directly, we ensure that
@@ -14,15 +14,18 @@
 import sgtk
 
 from sgtk.platform.qt import QtCore, QtGui
-settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
-
 from .ui.submit_dialog import Ui_submit_dialog
 from .cut_diff import _DIFF_TYPES
+
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
+
+
 class SubmitDialog(QtGui.QDialog):
     """
     Submit dialog, offering a summary and a couple of options to the user
     """
     submit = QtCore.Signal(str, dict, dict, str, bool)
+
     def __init__(self, parent=None, title=None, summary=None):
         """
         Instantiate a new dialog
@@ -58,7 +61,7 @@ class SubmitDialog(QtGui.QDialog):
         self.ui.omitted_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.OMITTED))
         self.ui.reinstated_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
         self.ui.repeated_label.setText("%s" % summary.repeated_count)
-        no_link_count=summary.count_for_type(_DIFF_TYPES.NO_LINK)
+        no_link_count = summary.count_for_type(_DIFF_TYPES.NO_LINK)
         if no_link_count:
             self.ui.no_link_label.setText("%s" % no_link_count)
         else:

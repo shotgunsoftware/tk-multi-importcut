@@ -1,15 +1,16 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
+
 from sgtk.platform.qt import QtCore
 import sgtk
 
@@ -28,7 +29,7 @@ class DownloadRunner(QtCore.QRunnable):
     def __init__(self, sg_attachment, path):
         """
         Instantiate a new download runner
-        
+
         :param sg_attachment: Either a Shotgun URL or an attachment dictionary
         :param path: Full file path to save the downloaded data
         """
@@ -50,7 +51,7 @@ class DownloadRunner(QtCore.QRunnable):
         Actually run the runner
         """
         sg = sgtk.platform.current_bundle().shotgun
-        try :
+        try:
             if isinstance(self._sg_attachment, str):
                 sgtk.util.download_url(sg, self._sg_attachment, self._path)
             else:
@@ -61,8 +62,7 @@ class DownloadRunner(QtCore.QRunnable):
                     attachment=self._sg_attachment,
                     file_path=self._path)
             self._notifier.file_downloaded.emit(self._path)
-        except Exception,e:
+        except Exception, e:
             raise
         finally:
             pass
-

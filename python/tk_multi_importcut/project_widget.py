@@ -1,11 +1,11 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import tempfile
@@ -20,6 +20,7 @@ from .ui.project_card import Ui_ProjectCard
 
 from .constants import _COLORS, _STATUS_COLORS
 
+
 class ProjectCard(QtGui.QFrame):
     """
     Widget displaying a Shotgun Project
@@ -28,6 +29,7 @@ class ProjectCard(QtGui.QFrame):
     show_project = QtCore.Signal(dict)
     # Emitted when this card wants to be selected
     highlight_selected = QtCore.Signal(QtGui.QWidget)
+
     def __init__(self, parent, sg_project):
         """
         Instantiate a new ProjectCard for the given Shotgun Project
@@ -93,7 +95,7 @@ class ProjectCard(QtGui.QFrame):
         return self._sg_project.get("description",
             self._sg_project.get("sg_description")
         )
-    
+
     @QtCore.Slot()
     def select(self):
         """
@@ -158,7 +160,7 @@ class ProjectCard(QtGui.QFrame):
 
     def showEvent(self, event):
         """
-        Request an async thumbnail download on first expose, if a thumbnail is 
+        Request an async thumbnail download on first expose, if a thumbnail is
         avalaible in SG.
         """
         if self._thumbnail_requested:
@@ -166,7 +168,8 @@ class ProjectCard(QtGui.QFrame):
             return
         self._thumbnail_requested = True
         if self._sg_project and self._sg_project["image"]:
-            self._logger.debug("Requesting %s for %s" % ( self._sg_project["image"], self.project_name))
+            self._logger.debug("Requesting %s for %s" %
+                               (self._sg_project["image"], self.project_name))
             _, path = tempfile.mkstemp()
             downloader = DownloadRunner(
                 sg_attachment=self._sg_project["image"],
@@ -176,19 +179,19 @@ class ProjectCard(QtGui.QFrame):
             QtCore.QThreadPool.globalInstance().start(downloader)
 
         event.ignore()
-    
+
     def set_thumbnail(self, thumb_path):
         """
-        Build a pixmap from the given file path and use it as icon, resizing it to 
+        Build a pixmap from the given file path and use it as icon, resizing it to
         fit into the widget icon size
-        
+
         :param thumb_path: Full path to an image to use as thumbnail
         """
         size = self.ui.icon_label.size()
         ratio = size.width() / float(size.height())
         pixmap = QtGui.QPixmap(thumb_path)
         qimage = QtGui.QImage()
-        #print QtGui.QImageReader.supportedImageFormats()
+        # print QtGui.QImageReader.supportedImageFormats()
         if pixmap.isNull():
             self._logger.debug("Null pixmap %s %d %d for %s" % (
                 thumb_path,
@@ -205,4 +208,3 @@ class ProjectCard(QtGui.QFrame):
             self.ui.icon_label.setPixmap(
                 pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
             )
-

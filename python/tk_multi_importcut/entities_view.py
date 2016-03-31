@@ -1,17 +1,17 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
-
 from .entity_widget import EntityCard
+
 
 class EntitiesView(QtCore.QObject):
     """
@@ -20,18 +20,18 @@ class EntitiesView(QtCore.QObject):
     # Emitted when a sequence is chosen for next step
     sequence_chosen = QtCore.Signal(dict)
     # Emitted when a different sequence is selected
-    selection_changed=QtCore.Signal(dict)
+    selection_changed = QtCore.Signal(dict)
 
     # Emitted when the info message changed
-    new_info_message=QtCore.Signal(str)
+    new_info_message = QtCore.Signal(str)
 
     def __init__(self, grid_widget):
         super(EntitiesView, self).__init__()
         self._grid_widget = grid_widget
         self._selected_entity_card = None
         self._logger = get_logger()
-         # A one line message which can be displayed when the view is visible
-        self._info_message=""
+        # A one line message which can be displayed when the view is visible
+        self._info_message = ""
 
     @property
     def info_message(self):
@@ -43,21 +43,21 @@ class EntitiesView(QtCore.QObject):
         Called when a new entity card widget needs to be added to the list
         of retrieved entities
         """
-        i = self._grid_widget.count() -1 # We have a stretcher
+        i = self._grid_widget.count() - 1  # We have a stretcher
         # Remove it
         spacer = self._grid_widget.takeAt(i)
         row = i / 2
         column = i % 2
-        self._logger.debug("Adding %s at %d %d %d" % ( sg_entity, i, row, column))
+        self._logger.debug("Adding %s at %d %d %d" % (sg_entity, i, row, column))
         widget = EntityCard(None, sg_entity)
         widget.highlight_selected.connect(self.entity_selected)
         widget.show_sequence.connect(self.sequence_chosen)
         self._grid_widget.addWidget(widget, row, column, )
         self._grid_widget.setRowStretch(row, 0)
         # Put the stretcher back
-        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2 )
+        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
         self._grid_widget.setRowStretch(row+1, 1)
-        self._info_message="%d %s(s)" % ((i+1), sg_entity["type"])
+        self._info_message = "%d %s(s)" % ((i+1), sg_entity["type"])
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(QtGui.QWidget)
@@ -83,18 +83,18 @@ class EntitiesView(QtCore.QObject):
         :param text: A string to match
         """
         self._logger.debug("Searching for %s" % text)
-        count = self._grid_widget.count() -1 # We have stretcher
+        count = self._grid_widget.count() - 1  # We have stretcher
         if not count:
             # Avoid 0 sequences message to be emitted if we don't have
             # anything ... yet
             return
-        match_count=0
-        if not text: # Show everything
+        match_count = 0
+        if not text:  # Show everything
             for i in range(count-1, -1, -1):
                 witem = self._grid_widget.itemAt(i)
                 widget = witem.widget()
                 widget.setVisible(True)
-            match_count=count
+            match_count = count
         else:
             for i in range(count-1, -1, -1):
                 witem = self._grid_widget.itemAt(i)
@@ -107,7 +107,7 @@ class EntitiesView(QtCore.QObject):
         # Sort widgets so visible ones will be first, with rows
         # distribution re-arranged
         self.sort_changed()
-        self._info_message="%d Entitie(s)" % match_count
+        self._info_message = "%d Entitie(s)" % match_count
         self.new_info_message.emit(self._info_message)
 
     def sort_changed(self):
@@ -115,8 +115,8 @@ class EntitiesView(QtCore.QObject):
         Called when sequences need to be sorted again
         """
         method = 0
-        count = self._grid_widget.count() -1 # We have stretcher
-        if count < 2: # Not a lot of things that we can do ...
+        count = self._grid_widget.count() - 1  # We have stretcher
+        if count < 2:  # Not a lot of things that we can do ...
             return
         # Remove the stretcher
         spacer = self._grid_widget.takeAt(count)
@@ -142,25 +142,23 @@ class EntitiesView(QtCore.QObject):
             self._grid_widget.setRowStretch(row, 0)
 
         # Put back the stretcher
-        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2 )
+        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
         self._grid_widget.setRowStretch(row+1, 1)
         # Avoid flashes and jittering by resizing the grid widget to a size
         # suitable to hold all cards
         wsize = widgets[0].size()
         self._grid_widget.parentWidget().resize(
             self._grid_widget.parentWidget().size().width(),
-            wsize.height()* row_count)
-
+            wsize.height() * row_count)
 
     def clear(self):
         """
         Reset the page displaying available sequences
         """
         self._selected_entity_card = None
-        count = self._grid_widget.count() -1 # We have stretcher
+        count = self._grid_widget.count() - 1  # We have stretcher
         for i in range(count-1, -1, -1):
             witem = self._grid_widget.takeAt(i)
             widget = witem.widget()
             widget.close()
         # print self._grid_widget.count()
-
