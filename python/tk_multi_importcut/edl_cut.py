@@ -63,6 +63,12 @@ class EdlCut(QtCore.QObject):
         self._sg_new_cut = None
         self._no_cut_for_entity = False
         self._project_import = False
+        # todo: tmp code until we get a proper status selection widget.
+        shot_statuses = self._sg.schema_field_read("Shot")[
+            "sg_status_list"]["properties"]["display_values"]["value"]
+        self._shot_status_list = []
+        for status in shot_statuses:
+            self._shot_status_list.append(status)
         # Retrieve some settings
         self._user_settings = settings.UserSettings(self._app)
         # todo: this will need to be rethought if we're able to extract fps
@@ -73,7 +79,7 @@ class EdlCut(QtCore.QObject):
         else:
             self._frame_rate = float(self._user_settings.retrieve("default_frame_rate"))
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
-        self._omit_statuses = [self._user_settings.retrieve("omit_status")]
+        self._omit_statuses = [self._shot_status_list[self._user_settings.retrieve("omit_status")]]
         self._cut_link_field = "entity"
         self._num_cuts = 0
 
@@ -952,7 +958,7 @@ class EdlCut(QtCore.QObject):
         else:
             self._logger.info("Creating new shots ...")
         sg_batch_data = []
-        reinstate_status = self._user_settings.retrieve("reinstate_status")
+        reinstate_status = self._shot_status_list[self._user_settings.retrieve("reinstate_status")]
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
             # Retrieve values for the shot, and the shot itself
