@@ -20,8 +20,6 @@ from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
 
-settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
-
 _ABSOLUTE_INSTRUCTIONS = """In Absolute mode, the app will map the timecode \
 values from the EDL directly as frames based on the frame rate. For example, \
 at 24fps 00:00:01:00 = frame 24."""
@@ -52,9 +50,7 @@ class SettingsDialog(QtGui.QDialog):
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
-
-        # Create a settings manager where we can pull and push prefs later
-        self._user_settings = settings.UserSettings(self._app)
+        self._user_settings = self._app.user_settings
 
         # todo: the way omit_status is handled is tmp, I'm only
         # grabbing one status in the gui, but the code wants a list

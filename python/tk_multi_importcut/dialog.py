@@ -58,6 +58,9 @@ def show_dialog(app_instance):
     # different types of windows. By using these methods, your windows will be correctly
     # decorated and handled in a consistent fashion by the system.
 
+    # Create a settings manager where we can pull and push prefs later
+    app_instance.user_settings = settings.UserSettings(sgtk.platform.current_bundle())
+
     # we pass the dialog class to this method and leave the actual construction
     # to be carried out by toolkit.
     app_instance.engine.show_dialog("Import Cut", app_instance, AppDialog)
@@ -116,8 +119,7 @@ class AppDialog(QtGui.QWidget):
         # it is often handy to keep a reference to this. You can get it via the following method:
         self._app = sgtk.platform.current_bundle()
         self._ctx = self._app.context
-
-        self._user_settings = settings.UserSettings(self._app)
+        self._user_settings = self._app.user_settings
 
         # set defaults, but don't override user settings.
         if self._user_settings.retrieve("update_shot_statuses") is None:

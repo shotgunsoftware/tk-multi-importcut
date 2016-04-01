@@ -16,8 +16,6 @@ from sgtk.platform.qt import QtCore
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .logger import get_logger
 
-settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
-
 _BODY_REPORT_FORMAT = """
 %s
 Links : %s
@@ -270,24 +268,15 @@ class CutSummary(QtCore.QObject):
         self._rescans_count = 0
         self._logger = get_logger()
 
-        app = sgtk.platform.current_bundle()
-        self._user_settings = settings.UserSettings(app)
+        user_settings = sgtk.platform.current_bundle().user_settings
 
-        self._omit_statuses = [self._user_settings.retrieve("omit_status")]
+        self._omit_statuses = [user_settings.retrieve("omit_status")]
 
         self._tc_start = tc_edit_in
         self._tc_end = tc_edit_out
         self._edit_offset = 0
         self._duration = 0
-        self._fps = float(self._user_settings.retrieve("default_frame_rate"))
-
-        # todo: Stephane moved the edit offset & duration code
-        # here from show_cut_diff in edl_cut.py, but it doesn't
-        # seem to be working, so I've switched it back temporarily
-        # if self._tc_start is not None:
-        #     self._edit_offset = tc_edit_in.to_frame()
-        #     if self._tc_end is not None:
-        #         self._duration = tc_edit_out.to_frame() - self._edit_offset
+        self._fps = float(user_settings.retrieve("default_frame_rate"))
 
     @property
     def timecode_start(self):

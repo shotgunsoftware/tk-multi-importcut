@@ -17,8 +17,6 @@ from sgtk.platform.qt import QtCore, QtGui
 from .ui.submit_dialog import Ui_submit_dialog
 from .cut_diff import _DIFF_TYPES
 
-settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
-
 
 class SubmitDialog(QtGui.QDialog):
     """
@@ -38,7 +36,7 @@ class SubmitDialog(QtGui.QDialog):
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
         # Create a settings manager where we can pull and push prefs later
-        self._user_settings = settings.UserSettings(self._app)
+        self._user_settings = self._app.user_settings
         # Retrieve user settings and set UI values
         update_shot_fields = self._user_settings.retrieve("update_shot_fields", True)
         self.ui.update_shot_fields_checkbox.setChecked(update_shot_fields)

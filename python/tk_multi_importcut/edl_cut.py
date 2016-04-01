@@ -21,7 +21,6 @@ from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, \
     _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
-settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 
 class EdlCut(QtCore.QObject):
@@ -70,7 +69,7 @@ class EdlCut(QtCore.QObject):
         for status in shot_statuses:
             self._shot_status_list.append(status)
         # Retrieve some settings
-        self._user_settings = settings.UserSettings(self._app)
+        self._user_settings = self._app.user_settings
         # todo: this will need to be rethought if we're able to extract fps
         # from an EDL. Basically this is redundant now b/c the frame_rate coming
         # in is almost definitely set by user settings default_frame_rate
@@ -597,23 +596,21 @@ class EdlCut(QtCore.QObject):
 
             for edit in self._edl.edits:
                 if reel_names[edit.reel]["dup"] is not True:
-                    edit.reel_name = "%s%s" % (edit.reel, str(reel_names[edit.reel]["iter"]).zfill(3))
+                    edit.reel_name = "%s%s" % (
+                        edit.reel, str(reel_names[edit.reel]["iter"]).zfill(3))
                     reel_names[edit.reel]["iter"] += 1
                 else:
                     edit.reel_name = edit.reel
-                # todo: Stephane moved this code to CutSummary, try moving again.
                 # Store the edit_offset in the summary instance so we can
                 # calculate edit in/out relative to the Cut (frame 1) later on
                 if edit.id == 1:
-                    # todo: replace with fps from Cut entity
                     self._summary.edit_offset = edl.Timecode(
                         str(edit.record_in), self._summary.fps).to_frame()
                     self._summary.tc_start = edit.record_in
                 if edit.id == len(self._edl.edits):
                     self._summary.tc_end = edit.record_out
 
-            # todo: Stephane moved this code to CutSummary but it doesn't
-            # work, investigate b/c it should be moved there
+            # Calculating the duration and storing it in the Cut summary.
             start_frame = edl.Timecode(
                 str(self._summary.tc_start), self._summary.fps).to_frame()
             end_frame = edl.Timecode(
@@ -622,25 +619,9 @@ class EdlCut(QtCore.QObject):
 
             # reel_names = set()
             for edit in self._edl.edits:
-                # todo: more of Stephane's code that I had to put on hold for
-                # a bit; this code doesn't correctly set the first CutItem's name
-                # # Ensure CutItems will have unique reel names
-                # if edit.reel in reel_names:
-                #     # Append a 3 digits number at the end
-                #     suffix = 1
-                #     reel_name = "%s%03d" % (edit.reel, suffix)
-                #     while reel_name in reel_names:
-                #         suffix += 1
-                #         reel_name = "%s%03d" % (edit.reel, suffix)
-                #     edit.reel_name = reel_name
-                # else:
-                #     edit.reel_name = edit.reel
-                # reel_names.add(edit.reel_name)
-
                 shot_name = edit.get_shot_name()
                 if not shot_name:
-                    # If we don't have a shot name, we can't match
-                    # anything
+                    # If we don't have a shot name, we can't match anything
                     cut_diff = self._summary.add_cut_diff(
                         None,
                         sg_shot=None,
@@ -652,7 +633,8 @@ class EdlCut(QtCore.QObject):
                     existing = self._summary.diffs_for_shot(shot_name)
                     # Is it a duplicate ?
                     if existing:
-                        self._logger.debug("Found duplicated shot shot %s (%s)" % (shot_name, existing))
+                        self._logger.debug("Found duplicated shot shot %s (%s)" % (
+                            shot_name, existing))
                         cut_diff = self._summary.add_cut_diff(
                             shot_name,
                             sg_shot=existing[0].sg_shot,

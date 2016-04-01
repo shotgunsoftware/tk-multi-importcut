@@ -19,7 +19,6 @@ from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 
 # Import the EDL framework
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
-settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 
 # Define difference types as enums
@@ -105,9 +104,6 @@ class CutDiff(QtCore.QObject):
     # Emitted when this cut diff instance is discarded
     discarded = QtCore.Signal(QtCore.QObject)
 
-    # User settings for class methods
-    __user_settings = settings.UserSettings(sgtk.platform.current_bundle())
-
     __default_timecode_frame_mapping = None
 
     def __init__(self, name, sg_shot=None, edit=None, sg_cut_item=None):
@@ -124,10 +120,9 @@ class CutDiff(QtCore.QObject):
         self._sg_shot = sg_shot
         self._edit = edit
         self._sg_cut_item = sg_cut_item
-        self._app = sgtk.platform.current_bundle()
 
         # User settings for non-class methods
-        self._user_settings = settings.UserSettings(self._app)
+        self._user_settings = sgtk.platform.current_bundle().user_settings
 
         self._repeated = False
         self._diff_type = _DIFF_TYPES.NO_CHANGE
@@ -157,21 +152,21 @@ class CutDiff(QtCore.QObject):
 
     @classmethod
     def retrieve_default_timecode_frame_mapping(cls):
-        sgtk.platform.current_bundle()
-        timecode_to_frame_mapping = cls.__user_settings.retrieve("timecode_to_frame_mapping")
-        default_frame_rate = int(cls.__user_settings.retrieve("default_frame_rate"))
+        user_settings = sgtk.platform.current_bundle().user_settings
+        timecode_to_frame_mapping = user_settings.retrieve("timecode_to_frame_mapping")
+        default_frame_rate = int(user_settings.retrieve("default_frame_rate"))
         if timecode_to_frame_mapping == _ABSOLUTE_MODE:
             # if we're in absolute mode, we need to reset our tc/frame values to 0
             cls.__default_timecode_frame_mapping = (
                 edl.Timecode("00:00:00:00", fps=default_frame_rate), 0)
         elif timecode_to_frame_mapping == _RELATIVE_MODE:
             # the values from users settings are only used in relative mode
-            timecode_mapping = cls.__user_settings.retrieve("timecode_mapping")
-            frame_mapping = int(cls.__user_settings.retrieve("frame_mapping"))
+            timecode_mapping = user_settings.retrieve("timecode_mapping")
+            frame_mapping = int(user_settings.retrieve("frame_mapping"))
             cls.__default_timecode_frame_mapping = (
                 edl.Timecode(timecode_mapping, fps=default_frame_rate), frame_mapping)
         elif timecode_to_frame_mapping == _AUTOMATIC_MODE:
-            default_head_in = int(cls.__user_settings.retrieve("default_head_in"))
+            default_head_in = int(user_settings.retrieve("default_head_in"))
             cls.__default_timecode_frame_mapping = (None, default_head_in)
 
     @property
