@@ -105,7 +105,7 @@ class AppDialog(QtGui.QWidget):
         """
         Constructor
         :param edl_file_path: Full path to an EDL file
-        :param sg_entity: A SG entity dictionary
+        :param sg_entity: An SG entity dictionary
         :param frame_rate: Use a specific frame rate for the import
         """
         # first, call the base class and let it do its thing.

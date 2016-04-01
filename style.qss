@@ -244,6 +244,7 @@ EntityCard, CutCard, CutDiffCard, ProjectCard {
     background-color: #525252;
     border-radius: 2px;
 }
+
 /* Highlight selected cards */
 ProjectCard[selected="true"], EntityCard[selected="true"],
 CutCard[selected="true"], EntityTypeCard[selected="true"] {
@@ -260,9 +261,20 @@ ProjectCard #status_label, EntityCard #status_label {
 }
 
 /* Make the Select button SG blue when enabled */
-QPushButton:enabled#select_button {
-    background-color: #2C93E2;
+EntityCard QPushButton:enabled#select_button, CutCard QPushButton:enabled#select_button,
+CutDiffCard QPushButton:enabled#select_button, ProjectCard QPushButton:enabled#select_button {
+    background-color: rgba(44, 147, 226, 0%);
+    border: none;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-right: 0px;
+    padding-left: 0px;
 }
+
+QPushButton#back_button {
+    icon-size: 15px;
+}
+
 /* Screens titles */
 QLabel#entity_picker_title_label_2,
 QLabel#entity_picker_title_label,
