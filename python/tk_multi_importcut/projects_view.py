@@ -57,6 +57,7 @@ class ProjectsView(QtCore.QObject):
         # Put the stretcher back
         self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
         self._grid_widget.setRowStretch(row+1, 1)
+        count = i + 1
         self._info_message = ("%d %ss" % (count, sg_project["type"])) if count > 1 else (
             "%d %s" % (count, sg_project["type"]))
         self.new_info_message.emit(self._info_message)

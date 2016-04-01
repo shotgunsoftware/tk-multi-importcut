@@ -49,9 +49,9 @@ class SubmitDialog(QtGui.QDialog):
             # Just in case ...
             raise ValueError("Can't import a cut without a summary")
         self.ui.from_label.setText(self._app.context.user["name"] if self._app.context.user else "")
-        email_groups = self._app.shotgun.find("Group", [], ["code"])
-        email_group = email_groups[self._user_settings.retrieve("email_group") - 1]["code"]
-        self.ui.to_text.setText(email_group)
+        # email_groups = self._app.shotgun.find("Group", [], ["code"])
+        email_groups = ", ".join(self._user_settings.retrieve("email_groups"))
+        self.ui.to_text.setText(email_groups)
         self.ui.total_shots_label.setText("%s" % len(summary))
         self.ui.cut_changes_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
         self.ui.new_shots_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.NEW))
