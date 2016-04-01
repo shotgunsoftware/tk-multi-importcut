@@ -67,9 +67,12 @@ class SettingsDialog(QtGui.QDialog):
 
         self.ui.update_shot_statuses_checkbox.setChecked(
             update_shot_statuses)
+
         self.ui.use_smart_fields_checkbox.setChecked(
             self._user_settings.retrieve("use_smart_fields"))
-        self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
+
+        self.ui.update_shot_statuses_checkbox.stateChanged.connect(
+            self._set_enabled)
 
         self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(self._change_text)
 
@@ -78,20 +81,16 @@ class SettingsDialog(QtGui.QDialog):
         for status in shot_statuses:
             status = shot_statuses[status]
             self.ui.omit_status_combo_box.addItem(status)
-            self.ui.reinstate_shot_if_status_is_combo_box.addItem(status)
             self.ui.reinstate_status_combo_box.addItem(status)
 
-        self.ui.email_group_combo_box.addItem("")
-        email_groups = self._app.shotgun.find("Group", [], ["code"])
-        for group in email_groups:
-            self.ui.email_group_combo_box.addItem(group["code"])
-
-        self.ui.email_group_combo_box.setCurrentIndex(
-            self._user_settings.retrieve("email_group"))
+        email_groups = ", ".join(self._user_settings.retrieve("email_groups"))
+        self.ui.email_groups_line_edit.setText(email_groups)
         self.ui.omit_status_combo_box.setCurrentIndex(
             self._user_settings.retrieve("omit_status"))
-        self.ui.reinstate_shot_if_status_is_combo_box.setCurrentIndex(
-            self._user_settings.retrieve("reinstate_shot_if_status_is"))
+
+        statuses = ", ".join(self._user_settings.retrieve("reinstate_shot_if_status_is"))
+        self.ui.reinstate_shot_if_status_is_line_edit.setText(statuses)
+
         self.ui.reinstate_status_combo_box.setCurrentIndex(
             self._user_settings.retrieve("reinstate_status"))
 
@@ -142,7 +141,7 @@ class SettingsDialog(QtGui.QDialog):
         self.ui.reinstate_shot_if_status_is_label.setEnabled(state)
         self.ui.reinstate_status_label.setEnabled(state)
         self.ui.omit_status_combo_box.setEnabled(state)
-        self.ui.reinstate_shot_if_status_is_combo_box.setEnabled(state)
+        self.ui.reinstate_shot_if_status_is_line_edit.setEnabled(state)
         self.ui.reinstate_status_combo_box.setEnabled(state)
 
     def _change_text(self, state):
@@ -179,7 +178,7 @@ class SettingsDialog(QtGui.QDialog):
 
     def _save_settings(self):
         """
-        Save user settings from current UI values
+        Validate and save user settings from current UI values
         """
 
         error = False
@@ -187,14 +186,43 @@ class SettingsDialog(QtGui.QDialog):
         # General tab
         update_shot_statuses = self.ui.update_shot_statuses_checkbox.isChecked()
         self._user_settings.store("update_shot_statuses", update_shot_statuses)
+
         use_smart_fields = self.ui.use_smart_fields_checkbox.isChecked()
         self._user_settings.store("use_smart_fields", use_smart_fields)
-        email_group = self.ui.email_group_combo_box.currentIndex()
-        self._user_settings.store("email_group", email_group)
+
+        groups_okay = True
+        email_groups = self.ui.email_groups_line_edit.text().replace(", ", ",").split(",")
+        existing_email_groups = self._app.shotgun.find("Group", [], ["code"])
+        existing_email_groups_list = []
+        for existing_group in existing_email_groups:
+            existing_email_groups_list.append(existing_group["code"])
+        for email_group in email_groups:
+            if email_group not in existing_email_groups_list:
+                groups_okay = False
+        if groups_okay:
+            self._user_settings.store("email_groups", email_groups)
+        else:
+            error = True
+            self._logger.error('Could not set email groups to "%s": %s' % (
+                email_groups, "Group or groups do not exist in Shotgun."))
+
         omit_status = self.ui.omit_status_combo_box.currentIndex()
         self._user_settings.store("omit_status", omit_status)
-        reinstate_shot_if_status_is = self.ui.reinstate_shot_if_status_is_combo_box.currentIndex()
-        self._user_settings.store("reinstate_shot_if_status_is", reinstate_shot_if_status_is)
+
+        statuses_okay = True
+        statuses = self.ui.reinstate_shot_if_status_is_line_edit.text().replace(
+            ", ", ",").split(",")
+        existing_statuses = self._app.shotgun.schema_field_read("Shot")[
+            "sg_status_list"]["properties"]["valid_values"]["value"]
+        for status in statuses:
+            if status not in existing_statuses:
+                statuses_okay = False
+        if statuses_okay:
+            self._user_settings.store("reinstate_shot_if_status_is", statuses)
+        else:
+            error = True
+            self._logger.error('Could not set "reinstate shot if status is" to "%s": %s' % (
+                statuses, "Status or statuses do not exist in Shotgun."))
         reinstate_status = self.ui.reinstate_status_combo_box.currentIndex()
         self._user_settings.store("reinstate_status", reinstate_status)
 

@@ -55,9 +55,11 @@ class EntitiesView(QtCore.QObject):
         self._grid_widget.addWidget(widget, row, column, )
         self._grid_widget.setRowStretch(row, 0)
         # Put the stretcher back
-        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
-        self._grid_widget.setRowStretch(row+1, 1)
-        self._info_message = "%d %s(s)" % ((i+1), sg_entity["type"])
+        self._grid_widget.addItem(spacer, row + 1, 0, colSpan=2)
+        self._grid_widget.setRowStretch(row + 1, 1)
+        count = i + 1
+        self._info_message = ("%d %ss" % (count, sg_entity["type"])) if count > 1 else (
+            "%d %s" % (count, sg_entity["type"]))
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(QtGui.QWidget)
@@ -107,7 +109,8 @@ class EntitiesView(QtCore.QObject):
         # Sort widgets so visible ones will be first, with rows
         # distribution re-arranged
         self.sort_changed()
-        self._info_message = "%d Entitie(s)" % match_count
+        self._info_message = ("%d Entities" % match_count) if match_count > 1 else (
+            "%d Entity" % count)
         self.new_info_message.emit(self._info_message)
 
     def sort_changed(self):

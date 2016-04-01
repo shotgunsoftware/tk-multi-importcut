@@ -61,7 +61,8 @@ class CutDiffsView(QtCore.QObject):
         self._list_widget.setStretch(self._list_widget.count()-1, 1)
         # Redisplay widgets
         self._display_for_summary_mode()
-        self._info_message = "%d Cut Item(s)" % count
+        self._info_message = ("%d Cut Items" % count) if count > 1 else (
+            "%d Cut Item" % count)
         self.new_info_message.emit(self._info_message)
 
     def _get_insert_index(self, widget):
@@ -188,7 +189,8 @@ class CutDiffsView(QtCore.QObject):
                 self._list_widget.parentWidget().size().width(),
                 wsize.height() * count)
 
-        self._info_message = "%d Cut Item(s)" % match_count
+        self._info_message = ("%d Cut Items" % match_count) if match_count > 1 else (
+            "%d Cut Item" % count)
         self.new_info_message.emit(self._info_message)
 
     def clear(self):

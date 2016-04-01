@@ -126,12 +126,12 @@ class AppDialog(QtGui.QWidget):
             self._user_settings.store("update_shot_statuses", True)
         if self._user_settings.retrieve("use_smart_fields") is None:
             self._user_settings.store("use_smart_fields", False)
-        if self._user_settings.retrieve("email_group") is None:
-            self._user_settings.store("email_group", 0)
+        if self._user_settings.retrieve("email_groups") is None:
+            self._user_settings.store("email_groups", [])
         if self._user_settings.retrieve("omit_status") is None:
             self._user_settings.store("omit_status", 4)
         if self._user_settings.retrieve("reinstate_shot_if_status_is") is None:
-            self._user_settings.store("reinstate_shot_if_status_is", 4)
+            self._user_settings.store("reinstate_shot_if_status_is", [])
         if self._user_settings.retrieve("reinstate_status") is None:
             self._user_settings.store("reinstate_status", 1)
         if self._user_settings.retrieve("default_frame_rate") is None:

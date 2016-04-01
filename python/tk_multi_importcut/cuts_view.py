@@ -63,7 +63,8 @@ class CutsView(QtCore.QObject):
         self._grid_widget.setRowStretch(row, 0)
         self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
         self._grid_widget.setRowStretch(row+1, 1)
-        self._info_message = "%d Cut(s)" % (i+1)
+        self._info_message = ("%d Cuts" % (i + 1)) if (i + 1) > 1 else (
+            "%d Cut" % (i + 1))
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(unicode)
@@ -99,7 +100,8 @@ class CutsView(QtCore.QObject):
         # Sort widgets so visible ones will be first, with rows
         # distribution re-arranged
         self.sort_changed(self._action_group.checkedAction())
-        self._info_message = "%d Cut(s)" % match_count
+        self._info_message = ("%d Cuts" % match_count) if match_count > 1 else (
+            "%d Cut" % count)
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(QtGui.QWidget)
