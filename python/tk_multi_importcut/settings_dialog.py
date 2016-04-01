@@ -201,15 +201,16 @@ class SettingsDialog(QtGui.QDialog):
         self._user_settings.store("reinstate_shot_if_status_is", reinstate_shot_if_status_is)
         reinstate_status = self.ui.reinstate_status_combo_box.currentIndex()
         self._user_settings.store("reinstate_status", reinstate_status)
-        
+
         # Timecode/Frames tab
         default_frame_rate = self.ui.default_frame_rate_line_edit.text()
         try:
-            int(default_frame_rate)
+            fps = float(default_frame_rate)
+            assert fps > 0, "Value must be positive."
             self._user_settings.store("default_frame_rate", default_frame_rate)
         except Exception, e:
             error = True
-            self._logger.error('Could not set frame rate "%s": %s' % (default_frame_rate, e))
+            self._logger.error('Could not set frame rate to "%s": %s' % (default_frame_rate, e))
 
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
         self._user_settings.store("timecode_to_frame_mapping", timecode_to_frame_mapping)
@@ -219,7 +220,7 @@ class SettingsDialog(QtGui.QDialog):
             self._user_settings.store("timecode_mapping", timecode_mapping)
         else:
             error = True
-            self._logger.error('Could not set timecode mapping "%s": %s' % (
+            self._logger.error('Could not set timecode mapping to "%s": %s' % (
                 timecode_mapping, "Did not match pattern 00:00:00:00."))
 
         frame_mapping = self.ui.frame_mapping_line_edit.text()
@@ -228,7 +229,7 @@ class SettingsDialog(QtGui.QDialog):
             self._user_settings.store("frame_mapping", frame_mapping)
         except Exception, e:
             error = True
-            self._logger.error('Could not set frame mapping "%s": %s' % (frame_mapping, e))
+            self._logger.error('Could not set frame mapping to "%s": %s' % (frame_mapping, e))
 
         default_head_in = self.ui.default_head_in_line_edit.text()
         try:
@@ -236,24 +237,26 @@ class SettingsDialog(QtGui.QDialog):
             self._user_settings.store("default_head_in", default_head_in)
         except Exception, e:
             error = True
-            self._logger.error('Could not set default head in "%s": %s' % (default_head_in, e))
+            self._logger.error('Could not set default head in to "%s": %s' % (default_head_in, e))
 
         default_head_duration = self.ui.default_head_duration_line_edit.text()
         try:
-            int(default_head_duration)
+            dhd = int(default_head_duration)
+            assert dhd >= 0, "Value can't be nagative."
             self._user_settings.store("default_head_duration", default_head_duration)
         except Exception, e:
             error = True
-            self._logger.error('Could not set default head duration "%s": %s' % (
+            self._logger.error('Could not set default head duration to "%s": %s' % (
                 default_head_duration, e))
 
         default_tail_duration = self.ui.default_tail_duration_line_edit.text()
         try:
-            int(default_tail_duration)
+            dtd = int(default_tail_duration)
+            assert dtd >= 0, "Value can't be negative."
             self._user_settings.store("default_tail_duration", default_tail_duration)
         except Exception, e:
             error = True
-            self._logger.error('Could not set default head duration "%s": %s' % (
+            self._logger.error('Could not set default head duration to "%s": %s' % (
                 default_head_duration, e))
 
         if error is False:

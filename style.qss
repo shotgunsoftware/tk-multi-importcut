@@ -117,7 +117,12 @@ DropAreaFrame QLabel {
 }
 
 /* getting fonts to be the right size */
-#description_1_label, #email_group_combo_box, #omit_status_combo_box, #reinstate_shot_if_status_is_combo_box, #reinstate_status_combo_box, #timecode_to_frame_mapping_combo_box, #timecode_to_frame_mapping_instructions_label, #description_2_label, #default_frame_rate_line_edit, #timecode_mapping_line_edit, #frame_mapping_line_edit, #default_head_in_line_edit, #default_head_duration_line_edit, #default_tail_duration_line_edit {
+#description_1_label, #email_group_combo_box, #omit_status_combo_box,
+#reinstate_shot_if_status_is_combo_box, #reinstate_status_combo_box,
+#timecode_to_frame_mapping_combo_box, #timecode_to_frame_mapping_instructions_label,
+#description_2_label, #default_frame_rate_line_edit, #timecode_mapping_line_edit,
+#frame_mapping_line_edit, #default_head_in_line_edit, #default_head_duration_line_edit,
+#default_tail_duration_line_edit {
     font-size: 12px;
 }
 
@@ -144,23 +149,35 @@ QTabBar::tab:selected {
 }
 
 /* darkening the bg for selection widgets */
-#email_group_combo_box, #update_shot_statuses_checkbox, #omit_status_combo_box, #reinstate_shot_if_status_is_combo_box, #reinstate_status_combo_box, #use_smart_fields_checkbox, #default_frame_rate_line_edit, #timecode_to_frame_mapping_combo_box, #default_head_in_line_edit, #default_head_duration_line_edit, #default_tail_duration_line_edit, #timecode_mapping_line_edit, #frame_mapping_line_edit {
+#email_group_combo_box, #update_shot_statuses_checkbox, #omit_status_combo_box,
+#reinstate_shot_if_status_is_combo_box, #reinstate_status_combo_box,
+#use_smart_fields_checkbox, #default_frame_rate_line_edit,
+#timecode_to_frame_mapping_combo_box, #default_head_in_line_edit,
+#default_head_duration_line_edit, #default_tail_duration_line_edit,
+#timecode_mapping_line_edit, #frame_mapping_line_edit {
     background-color: #2a2a2a;
 }
 
 /* fading out widgets that aren't enabled */
-#omit_status_combo_box:!enabled, #reinstate_shot_if_status_is_combo_box:!enabled, #reinstate_status_combo_box:!enabled {
+#omit_status_combo_box:!enabled, #reinstate_shot_if_status_is_combo_box:!enabled,
+#reinstate_status_combo_box:!enabled {
     background-color: #3c3e42;
     color: #3c3e42;
 }
 
 /* fading out text that isn't enabled */
-#omit_status_label:!enabled, #reinstate_shot_if_status_is_label:!enabled, #reinstate_status_label:!enabled, #default_head_in_label:!enabled, #default_head_in_line_edit:!enabled {
+#omit_status_label:!enabled, #reinstate_shot_if_status_is_label:!enabled,
+#reinstate_status_label:!enabled, #default_head_in_label:!enabled,
+#default_head_in_line_edit:!enabled {
     color: #606060;
 }
 
 /* dimming certain text for dramatic effect */
-#send_cut_summary_note_to_label, #update_shot_statuses_label, #omit_status_label, #reinstate_shot_if_status_is_label, #reinstate_status_label, #use_smart_fields_label, #default_frame_rate_label, #timecode_to_frame_mapping_label, #default_head_in_label, #default_head_duration_label, #default_tail_duration_label, #timecode_mapping_label, #frame_mapping_label {
+#send_cut_summary_note_to_label, #update_shot_statuses_label, #omit_status_label,
+#reinstate_shot_if_status_is_label, #reinstate_status_label, #use_smart_fields_label,
+#default_frame_rate_label, #timecode_to_frame_mapping_label, #default_head_in_label,
+#default_head_duration_label, #default_tail_duration_label, #timecode_mapping_label,
+#frame_mapping_label {
     font-family: "Open Sans";
     font-size: 12px;
     color: #A8A8A8;
@@ -173,7 +190,8 @@ QTabBar::tab:selected {
 }
 
 /* making section headings bold */
-#note_addressing_label, #statuses_label, #cut_fields_on_shot_label, #timecode_label, #new_shots_label {
+#note_addressing_label, #statuses_label, #cut_fields_on_shot_label,
+#timecode_label, #new_shots_label {
     font-size: 12px;
     font-weight: bold;
 }
@@ -227,7 +245,8 @@ EntityCard, CutCard, CutDiffCard, ProjectCard {
     border-radius: 2px;
 }
 /* Highlight selected cards */
-ProjectCard[selected="true"], EntityCard[selected="true"], CutCard[selected="true"], EntityTypeCard[selected="true"] {
+ProjectCard[selected="true"], EntityCard[selected="true"],
+CutCard[selected="true"], EntityTypeCard[selected="true"] {
     border: 1px solid #2C93E2;
     background-color: rgba(44, 147, 226, 25%);
 }
