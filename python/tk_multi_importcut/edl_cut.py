@@ -1088,7 +1088,6 @@ class EdlCut(QtCore.QObject):
         # Loop through all edits and create CutItems for them
         self._logger.info("Creating cut items ...")
         sg_batch_data = []
-        cut_item_entity = "CutItem"
         for shot_name, items in self._summary.iteritems():
             for cut_diff in items:
                 edit = cut_diff.edit
@@ -1099,7 +1098,7 @@ class EdlCut(QtCore.QObject):
                     edit_out = edit.record_out.to_frame() - self._summary.edit_offset
                     sg_batch_data.append({
                         "request_type": "create",
-                        "entity_type": cut_item_entity,
+                        "entity_type": "CutItem",
                         "data": {
                             "project": self._project,
                             "code": edit.reel_name,
