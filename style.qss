@@ -243,7 +243,6 @@ EntityCard, CutCard, CutDiffCard, ProjectCard {
     border: 1px none black;
     background-color: #525252;
     border-radius: 2px;
-    padding: 1px;
 }
 /* Highlight selected cards */
 ProjectCard[selected="true"], EntityCard[selected="true"],
