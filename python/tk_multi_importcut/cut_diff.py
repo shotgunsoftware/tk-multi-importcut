@@ -154,7 +154,7 @@ class CutDiff(QtCore.QObject):
     def retrieve_default_timecode_frame_mapping(cls):
         user_settings = sgtk.platform.current_bundle().user_settings
         timecode_to_frame_mapping = user_settings.retrieve("timecode_to_frame_mapping")
-        default_frame_rate = int(user_settings.retrieve("default_frame_rate"))
+        default_frame_rate = float(user_settings.retrieve("default_frame_rate"))
         if timecode_to_frame_mapping == _ABSOLUTE_MODE:
             # if we're in absolute mode, we need to reset our tc/frame values to 0
             cls.__default_timecode_frame_mapping = (
