@@ -39,11 +39,14 @@ echo "building user interfaces..."
 build_ui dialog
 # add any additional .ui files you want converted here!
 build_ui entity_type_card
+build_ui project_card
 build_ui sequence_card
 build_ui cut_card
 build_ui cut_diff_card
 build_ui submit_dialog
+build_ui settings_dialog
 
 # build resources
 echo "building resources..."
 build_res resources
+

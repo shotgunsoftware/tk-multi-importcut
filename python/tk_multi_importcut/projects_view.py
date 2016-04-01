@@ -10,25 +10,25 @@
 
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
-from .entity_widget import EntityCard
+
+from .project_widget import ProjectCard
 
 
-class EntitiesView(QtCore.QObject):
+class ProjectsView(QtCore.QObject):
     """
-    Entities view page handler
+    Projects view page handler
     """
-    # Emitted when a sequence is chosen for next step
-    sequence_chosen = QtCore.Signal(dict)
-    # Emitted when a different sequence is selected
+    # Emitted when a project is chosen for next step
+    project_chosen = QtCore.Signal(dict)
+    # Emitted when a different project is selected
     selection_changed = QtCore.Signal(dict)
-
     # Emitted when the info message changed
     new_info_message = QtCore.Signal(str)
 
     def __init__(self, grid_widget):
-        super(EntitiesView, self).__init__()
+        super(ProjectsView, self).__init__()
         self._grid_widget = grid_widget
-        self._selected_entity_card = None
+        self._selected_project_card = None
         self._logger = get_logger()
         # A one line message which can be displayed when the view is visible
         self._info_message = ""
@@ -38,48 +38,48 @@ class EntitiesView(QtCore.QObject):
         return self._info_message
 
     @QtCore.Slot(dict)
-    def new_sg_entity(self, sg_entity):
+    def new_sg_project(self, sg_project):
         """
-        Called when a new entity card widget needs to be added to the list
-        of retrieved entities
+        Called when a new project card widget needs to be added to the list
+        of retrieved projects
         """
         i = self._grid_widget.count() - 1  # We have a stretcher
         # Remove it
         spacer = self._grid_widget.takeAt(i)
         row = i / 2
         column = i % 2
-        self._logger.debug("Adding %s at %d %d %d" % (sg_entity, i, row, column))
-        widget = EntityCard(None, sg_entity)
-        widget.highlight_selected.connect(self.entity_selected)
-        widget.show_sequence.connect(self.sequence_chosen)
+        self._logger.debug("Adding %s at %d %d %d" % (sg_project, i, row, column))
+        widget = ProjectCard(None, sg_project)
+        widget.highlight_selected.connect(self.project_selected)
+        widget.show_project.connect(self.project_chosen)
         self._grid_widget.addWidget(widget, row, column, )
         self._grid_widget.setRowStretch(row, 0)
         # Put the stretcher back
-        self._grid_widget.addItem(spacer, row + 1, 0, colSpan=2)
-        self._grid_widget.setRowStretch(row + 1, 1)
+        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
+        self._grid_widget.setRowStretch(row+1, 1)
         count = i + 1
-        self._info_message = ("%d %ss" % (count, sg_entity["type"])) if count > 1 else (
-            "%d %s" % (count, sg_entity["type"]))
+        self._info_message = ("%d %ss" % (count, sg_project["type"])) if count > 1 else (
+            "%d %s" % (count, sg_project["type"]))
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(QtGui.QWidget)
-    def entity_selected(self, card):
+    def project_selected(self, card):
         """
-        Called when an entity card is selected, ensure only one is selected at
+        Called when an project card is selected, ensure only one is selected at
         a time
         """
-        if self._selected_entity_card:
-            self._selected_entity_card.unselect()
-            self._logger.debug("Unselected %s" % self._selected_entity_card)
-        self._selected_entity_card = card
-        self._selected_entity_card.select()
-        self.selection_changed.emit(card.sg_entity)
-        self._logger.debug("Selected %s" % self._selected_entity_card)
+        if self._selected_project_card:
+            self._selected_project_card.unselect()
+            self._logger.debug("Unselected %s" % self._selected_project_card)
+        self._selected_project_card = card
+        self._selected_project_card.select()
+        self.selection_changed.emit(card.sg_project)
+        self._logger.debug("Selected %s" % self._selected_project_card)
 
     @QtCore.Slot(unicode)
     def search(self, text):
         """
-        Display only sequences whose name matches the given text,
+        Display only projects whose name matches the given text,
         display all of them if text is empty
 
         :param text: A string to match
@@ -87,7 +87,7 @@ class EntitiesView(QtCore.QObject):
         self._logger.debug("Searching for %s" % text)
         count = self._grid_widget.count() - 1  # We have stretcher
         if not count:
-            # Avoid 0 sequences message to be emitted if we don't have
+            # Avoid 0 projects message to be emitted if we don't have
             # anything ... yet
             return
         match_count = 0
@@ -101,7 +101,7 @@ class EntitiesView(QtCore.QObject):
             for i in range(count-1, -1, -1):
                 witem = self._grid_widget.itemAt(i)
                 widget = witem.widget()
-                if text.lower() in widget.entity_name.lower():
+                if text.lower() in widget.project_name.lower():
                     match_count += 1
                     widget.setVisible(True)
                 else:
@@ -109,13 +109,13 @@ class EntitiesView(QtCore.QObject):
         # Sort widgets so visible ones will be first, with rows
         # distribution re-arranged
         self.sort_changed()
-        self._info_message = ("%d Entities" % match_count) if match_count > 1 else (
-            "%d Entity" % count)
+        self._info_message = ("%d Projects" % match_count) if match_count > 1 else (
+            "%d Project" % count)
         self.new_info_message.emit(self._info_message)
 
     def sort_changed(self):
         """
-        Called when sequences need to be sorted again
+        Called when projects need to be sorted again
         """
         method = 0
         count = self._grid_widget.count() - 1  # We have stretcher
@@ -132,7 +132,7 @@ class EntitiesView(QtCore.QObject):
         widgets.sort(
             key=lambda x: (
                 x.isHidden(),
-                x.entity_name.lower(),
+                x.project_name.lower(),
             ), reverse=False
         )
         row_count = len(widgets) / 2
@@ -156,12 +156,11 @@ class EntitiesView(QtCore.QObject):
 
     def clear(self):
         """
-        Reset the page displaying available sequences
+        Reset the page displaying available projects
         """
-        self._selected_entity_card = None
+        self._selected_project_card = None
         count = self._grid_widget.count() - 1  # We have stretcher
         for i in range(count-1, -1, -1):
             witem = self._grid_widget.takeAt(i)
             widget = witem.widget()
             widget.close()
-        # print self._grid_widget.count()
