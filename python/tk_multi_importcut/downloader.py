@@ -1,18 +1,20 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
+
 from sgtk.platform.qt import QtCore
 import sgtk
-from .safe_shotgun import ThreadSafeShotgun
+
+
 class DownloadRunner(QtCore.QRunnable):
     """
     A runner to download things from Shotgun
@@ -27,13 +29,11 @@ class DownloadRunner(QtCore.QRunnable):
     def __init__(self, sg_attachment, path):
         """
         Instantiate a new download runner
-        
+
         :param sg_attachment: Either a Shotgun URL or an attachment dictionary
         :param path: Full file path to save the downloaded data
         """
         super(DownloadRunner, self).__init__()
-        # Build a thread safe Shotgun handle from the Toolkit one
-        self._sg = ThreadSafeShotgun(sgtk.platform.current_bundle().shotgun)
         self._sg_attachment = sg_attachment
         self._path = path
         self._thread = None
@@ -50,17 +50,19 @@ class DownloadRunner(QtCore.QRunnable):
         """
         Actually run the runner
         """
-        # Capture the thread we are running on
-        self._thread = QtCore.QThread.currentThread()
-        try :
+        sg = sgtk.platform.current_bundle().shotgun
+        try:
             if isinstance(self._sg_attachment, str):
-                self._sg.download_url(self._sg_attachment, self._path)
+                sgtk.util.download_url(sg, self._sg_attachment, self._path)
             else:
-                attachment = self._sg.download_attachment(
+                # todo: test this code. But how do we create a situation
+                # where the thumbnail (is it always a thumbnail?) an
+                # attachment and not a string path to an aws bucket?
+                attachment = sg.download_attachment(
                     attachment=self._sg_attachment,
                     file_path=self._path)
             self._notifier.file_downloaded.emit(self._path)
-        except Exception,e:
+        except Exception, e:
             raise
         finally:
             pass

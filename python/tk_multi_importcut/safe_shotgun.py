@@ -19,15 +19,16 @@ import requests
 
 LOG = logging.getLogger("shotgun_api3")
 
+
 class ThreadSafeShotgun(Shotgun):
     """
     Attempt to make a Shotgun handle thread safe with urllib3
     This is a TEMPORARY and HACKY workaround, the whole Shotgun API should be made
     thread safe.
-    
+
     Code was taken from the Shotgun API, and connection and requests replaced with
     urllib3 calls.
-    
+
     Downloads are not handled by this implementation.
 
     This implementation does not handle proxies and assume all
@@ -51,6 +52,8 @@ class ThreadSafeShotgun(Shotgun):
             login                       =   sg_handle.config.user_login,
             password                    =   sg_handle.config.user_password,
             sudo_as_login               =   sg_handle.config.sudo_as_login,
+            session_token               =   sg_handle.config.session_token,
+            auth_token                  =   sg_handle.config.auth_token,
             connect                     =   False
         )
 
@@ -59,7 +62,7 @@ class ThreadSafeShotgun(Shotgun):
         Downloads a file from a given url.
         This method will take into account any proxy settings which have
         been defined in the Shotgun connection parameters.
-        
+
         :param url: url to download
         :param location: path on disk where the payload should be written.
                          this path needs to exists and the current user needs
@@ -74,7 +77,8 @@ class ThreadSafeShotgun(Shotgun):
                 auth_string = "%s:%s@" % (self.config.proxy_user, self.config.proxy_pass)
             else:
                 auth_string = ""
-            proxy_addr = "http://%s%s:%d" % (auth_string, self.config.proxy_server, self.config.proxy_port)
+            proxy_addr = "http://%s%s:%d" %
+            (auth_string, self.config.proxy_server, self.config.proxy_port)
             proxies["http"] = proxy_addr
             proxies["https"] = proxy_addr
         try:
@@ -87,10 +91,10 @@ class ThreadSafeShotgun(Shotgun):
             finally:
                 f.close()
         except Exception, e:
-            raise ShotgunError("Could not download contents of url '%s'. Error reported: %s" % (url, e))
+            raise ShotgunError(
+                "Could not download contents of url '%s'. Error reported: %s" % (url, e))
 
-    def upload(self, entity_type, entity_id, path, field_name=None,
-        display_name=None, tag_list=None):
+    def upload(self, entity_type, entity_id, path, field_name=None, display_name=None, tag_list=None):
         """Upload a file as an attachment/thumbnail to the specified
         entity_type and entity_id.
 
@@ -124,8 +128,14 @@ class ThreadSafeShotgun(Shotgun):
         params.update(self._auth_params())
 
         if is_thumbnail:
-            url = urlparse.urlunparse((self.config.scheme, self.config.server,
-                "/upload/publish_thumbnail", None, None, None))
+            url = urlparse.urlunparse(
+                (
+                    self.config.scheme,
+                    self.config.server,
+                    "/upload/publish_thumbnail",
+                    None,
+                    None,
+                    None))
             params["thumb_image"] = (
                 os.path.basename(path),
                 open(path, "rb").read(),
@@ -134,8 +144,8 @@ class ThreadSafeShotgun(Shotgun):
             if field_name == "filmstrip_thumb_image":
                 params["filmstrip"] = True
         else:
-            url = urlparse.urlunparse((self.config.scheme, self.config.server,
-                "/upload/upload_file", None, None, None))
+            url = urlparse.urlunparse(
+                (self.config.scheme, self.config.server, "/upload/upload_file", None, None, None))
             if display_name is None:
                 display_name = os.path.basename(path)
             # we allow linking to nothing for generic reference use cases
@@ -153,12 +163,12 @@ class ThreadSafeShotgun(Shotgun):
             )
 
         http = urllib3.PoolManager(
-                cert_reqs="CERT_REQUIRED", # Force certificate check.
+                cert_reqs="CERT_REQUIRED",  # Force certificate check.
                 ca_certs=certifi.where(),  # Path to the Certifi bundle.
                 )
         try:
             response = http.request_encode_body("POST", url, params)
-            if response.status < 200 or response.status > 299: # Not ok
+            if response.status < 200 or response.status > 299:  # Not ok
                 raise ShotgunError("%d : Could not upload %s, to %s : %s" % (
                     response.status,
                     path,
@@ -167,9 +177,10 @@ class ThreadSafeShotgun(Shotgun):
                     ))
             result = response.data
             if not str(result).startswith("1"):
-                raise ShotgunError("Could not upload file successfully, but "\
-                    "not sure why.\nPath: %s\nUrl: %s\nError: %s" % (
-                    path, url, str(result)))
+                raise ShotgunError(
+                    "Could not upload file successfully, but not sure why.\
+                    \nPath: %s\nUrl: %s\nError: %s" %
+                    (path, url, str(result)))
 
             attachment_id = int(str(result).split(":")[1].split("\n")[0])
             return attachment_id
@@ -177,42 +188,45 @@ class ThreadSafeShotgun(Shotgun):
             print str(e)
             raise
 
-    def share_thumbnail(self, entities, thumbnail_path=None, source_entity=None,
-        filmstrip_thumbnail=False, **kwargs):
+    def share_thumbnail(self, entities, thumbnail_path=None, source_entity=None, filmstrip_thumbnail=False, **kwargs):
         if not self.server_caps.version or self.server_caps.version < (4, 0, 0):
-            raise ShotgunError("Thumbnail sharing support requires server "\
-                "version 4.0 or higher, server is %s" % (self.server_caps.version,))
+            raise ShotgunError("Thumbnail sharing support requires server \
+                version 4.0 or higher, server is %s" % (self.server_caps.version,))
 
         if not isinstance(entities, list) or len(entities) == 0:
-            raise ShotgunError("'entities' parameter must be a list of entity "\
-                "hashes and may not be empty")
+            raise ShotgunError("'entities' parameter must be a list of entity \
+                hashes and may not be empty")
 
         for e in entities:
             if not isinstance(e, dict) or 'id' not in e or 'type' not in e:
-                raise ShotgunError("'entities' parameter must be a list of "\
-                    "entity hashes with at least 'type' and 'id' keys.\nInvalid "\
-                    "entity: %s" % e)
+                raise ShotgunError("'entities' parameter must be a list of \
+                    entity hashes with at least 'type' and 'id' keys.\nInvalid \
+                    entity: %s" % e)
 
-        if (not thumbnail_path and not source_entity) or \
-            (thumbnail_path and source_entity):
-            raise ShotgunError("You must supply either thumbnail_path OR "\
-                "source_entity.")
+        if (not thumbnail_path and not source_entity) or (thumbnail_path and source_entity):
+            raise ShotgunError("You must supply either thumbnail_path OR \
+                source_entity.")
 
         # upload thumbnail
         if thumbnail_path:
             source_entity = entities.pop(0)
             if filmstrip_thumbnail:
-                thumb_id = self.upload_filmstrip_thumbnail(source_entity['type'],
-                    source_entity['id'], thumbnail_path, **kwargs)
+                thumb_id = self.upload_filmstrip_thumbnail(
+                    source_entity['type'],
+                    source_entity['id'],
+                    thumbnail_path, **kwargs)
             else:
-                thumb_id = self.upload_thumbnail(source_entity['type'],
-                    source_entity['id'], thumbnail_path, **kwargs)
+                thumb_id = self.upload_thumbnail(
+                    source_entity['type'],
+                    source_entity['id'],
+                    thumbnail_path,
+                    **kwargs)
         else:
-            if not isinstance(source_entity, dict) or 'id' not in source_entity \
-                or 'type' not in source_entity:
-                raise ShotgunError("'source_entity' parameter must be a dict "\
-                    "with at least 'type' and 'id' keys.\nGot: %s (%s)" \
-                    % (source_entity, type(source_entity)))
+            if not isinstance(source_entity, dict) or 'id' not in source_entity or 'type' not in source_entity:
+                raise ShotgunError("'source_entity' parameter must be a dict \
+                    with at least 'type' and 'id' keys.\nGot: %s (%s)" % (
+                        source_entity, type(source_entity)
+                    ))
 
         # only 1 entity in list and we already uploaded the thumbnail to it
         if len(entities) == 0:
@@ -234,15 +248,23 @@ class ThreadSafeShotgun(Shotgun):
         params.update(self._auth_params())
 
         # Create opener with extended form post support
-        url = urlparse.urlunparse((self.config.scheme, self.config.server,
-            "/upload/share_thumbnail", None, None, None))
+        url = urlparse.urlunparse(
+            (
+                self.config.scheme,
+                self.config.server,
+                "/upload/share_thumbnail",
+                None,
+                None,
+                None
+            )
+        )
         http = urllib3.PoolManager(
-                cert_reqs="CERT_REQUIRED", # Force certificate check.
+                cert_reqs="CERT_REQUIRED",  # Force certificate check.
                 ca_certs=certifi.where(),  # Path to the Certifi bundle.
                 )
         try:
             response = http.request_encode_body("POST", url, params)
-            if response.status < 200 or response.status > 299: # Not ok
+            if response.status < 200 or response.status > 299:  # Not ok
                 raise ShotgunError("%d : Could not upload %s, to %s : %s" % (
                     response.status,
                     path,
@@ -274,7 +296,7 @@ class ThreadSafeShotgun(Shotgun):
         else:
             self._connection = urllib3.PoolManager(
                     timeout=self.config.timeout_secs,
-                    cert_reqs="CERT_REQUIRED", # Force certificate check.
+                    cert_reqs="CERT_REQUIRED",  # Force certificate check.
                     ca_certs=certifi.where(),  # Path to the Certifi bundle.
                     )
 
@@ -292,15 +314,20 @@ class ThreadSafeShotgun(Shotgun):
     def _http_request(self, verb, path, body, headers):
         """Makes the actual HTTP request.
         """
-        url = urlparse.urlunparse((self.config.scheme, self.config.server,
-            path, None, None, None))
+        url = urlparse.urlunparse(
+            (
+                self.config.scheme,
+                self.config.server,
+                path, None, None, None
+            )
+        )
         LOG.debug("Request is %s:%s" % (verb, url))
         LOG.debug("Request headers are %s" % headers)
         LOG.debug("Request body is %s" % body)
 
         conn = self._get_connection()
         resp = conn.urlopen(verb, url, headers=headers, body=body)
-        #http response code is handled else where
+        # http response code is handled else where
         http_status = (resp.status, "not supported")
         resp_headers = resp.getheaders()
         resp_body = resp.data
@@ -326,7 +353,8 @@ class ThreadSafeShotgun(Shotgun):
                     auth_string = "%s:%s@" % (self.config.proxy_user, self.config.proxy_pass)
                 else:
                     auth_string = ""
-                proxy_addr = "http://%s%s:%d" % (auth_string, self.config.proxy_server, self.config.proxy_port)
+                proxy_addr = "http://%s%s:%d" % (
+                    auth_string, self.config.proxy_server, self.config.proxy_port)
                 proxy_support = urllib2.ProxyHandler({self.config.scheme: proxy_addr})
 
                 opener = urllib2.build_opener(proxy_support, handler)

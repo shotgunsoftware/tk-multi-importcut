@@ -12,64 +12,24 @@
 
 # expected fields in the configuration file for this engine
 configuration:
-    sg_cut_item_entity:
-        type : shotgun_entity_type
-        description : The Shotgun entity used to represent cut items
-        default_value : CustomEntity09
-    default_head_in:
-        type: int
-        description: Default head in value when creating new shots
-        default_value: 1001
-    default_head_in_duration:
-        type: int
-        description: Default head in duration when creating new shots
-        default_value: 8
-    default_tail_out_duration:
-        type: int
-        description: Default tail out duration when creating new shots
-        default_value: 8
-    ensure_sg_setup_hook:
-        type: hook
-        parameters: []
-        default_value: '{self}/post_install.py'
-        description: "Hook that ensure needed entities and fields are available"
-    report_to_group:
-        type: str
-        description: "A Shotgun group, used when addressing reports"
-        default_value: "Editorial"
-    omit_statuses:
-        type: list
-        values:
-            type: str
-        default_value: [inac, omt]
-        description: "List of statuses causing a shot to reinstated"
-    reinstate_status:
-        type: str
-        default_value: act
-        description: Status used when reinstating shots
-    use_smart_fields:
-        type: bool
-        default_value: true
-        description: Should smart or regular fields be used to store cut values
+
 # this app works in all engines - it does not contain
 # any host application specific commands
 supported_engines: 
 
 # the Shotgun fields that this engine needs in order to operate correctly
 requires_shotgun_fields:
-        
+
 # More verbose description of this item 
 display_name: "Cut Import"
 description: "An app to import cut changes."
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
-requires_core_version: "v0.14.28"
+requires_core_version: "v0.16.18"
 requires_engine_version:
 
 # the frameworks required to run this app
 frameworks:
-    - {"name": "tk-framework-wb", "version": "v3.x.x"}
+    - {"name": "tk-framework-shotgunutils", "version": "v4.x.x"}
     - {"name": "tk-framework-editorial", "version": "v1.x.x"}
-
-    

@@ -1,20 +1,21 @@
 # Copyright (c) 2015 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import sgtk
 from sgtk.platform.qt import QtCore, QtGui
 
+
 class EntityLineWidget(QtGui.QLineEdit):
     """
     A custom line edit with a completer. Using a custom widget allows easy
-    style sheet styling with the class name, e.g. 
+    style sheet styling with the class name, e.g.
 
     /* Make the line edit looks like a QLabel when not in edit mode */
     EntityLineWidget {
@@ -33,7 +34,7 @@ class EntityLineWidget(QtGui.QLineEdit):
     __known_list = []
 
     # Our own signal to emit new values as provided ones didn't work in our case
-    value_changed=QtCore.Signal(str)
+    value_changed = QtCore.Signal(str)
 
     def __init__(self, *args, **kwargs):
         """
@@ -59,7 +60,7 @@ class EntityLineWidget(QtGui.QLineEdit):
         Define the list of known names for the completer
         :param known_list: A list of possible values
         """
-        cls.__known_list=sorted(known_list)
+        cls.__known_list = sorted(known_list)
 
     def set_property(self, name, value):
         """
@@ -71,8 +72,8 @@ class EntityLineWidget(QtGui.QLineEdit):
         # We are using a custom property in style sheets
         # we need to force a style sheet re-computation with
         # unpolish / polish
-        self.style().unpolish(self);
-        self.style().polish(self);
+        self.style().unpolish(self)
+        self.style().polish(self)
 
     def focusInEvent(self, event):
         """
@@ -82,15 +83,15 @@ class EntityLineWidget(QtGui.QLineEdit):
         :param event: A standard Qt event
         """
         self.set_property("valid", True)
-        super(EntityLineWidget,self).focusInEvent(event)
+        super(EntityLineWidget, self).focusInEvent(event)
 
-    QtCore.Slot()
+    @QtCore.Slot()
     def edited(self):
         """
         Called when editingFinished is emitted
         Clear the focus for this widget and emit a signal with
         the current value.
         """
-        value=self.text()
+        value = self.text()
         self.clearFocus()
         self.value_changed.emit(value)
