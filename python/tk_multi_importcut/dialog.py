@@ -121,33 +121,42 @@ class AppDialog(QtGui.QWidget):
         self._ctx = self._app.context
         self._user_settings = self._app.user_settings
 
+        # todo: this is a tmp workaround. In the future we should validate all settings
+        # on app launch and reset the settings that are broken
+        reset_settings = False
+        if self._user_settings.retrieve("reset_settings"):
+            reset_settings = True
+
         # set defaults, but don't override user settings.
-        if self._user_settings.retrieve("update_shot_statuses") is None:
+        if reset_settings or self._user_settings.retrieve("update_shot_statuses") is None:
             self._user_settings.store("update_shot_statuses", True)
-        if self._user_settings.retrieve("use_smart_fields") is None:
+        if reset_settings or self._user_settings.retrieve("use_smart_fields") is None:
             self._user_settings.store("use_smart_fields", False)
-        if self._user_settings.retrieve("email_groups") is None:
+        if reset_settings or self._user_settings.retrieve("email_groups") is None:
             self._user_settings.store("email_groups", [])
-        if self._user_settings.retrieve("omit_status") is None:
-            self._user_settings.store("omit_status", 4)
-        if self._user_settings.retrieve("reinstate_shot_if_status_is") is None:
-            self._user_settings.store("reinstate_shot_if_status_is", [])
-        if self._user_settings.retrieve("reinstate_status") is None:
-            self._user_settings.store("reinstate_status", 1)
-        if self._user_settings.retrieve("default_frame_rate") is None:
+        if reset_settings or self._user_settings.retrieve("omit_status") is None:
+            self._user_settings.store("omit_status", "omt")
+        if reset_settings or self._user_settings.retrieve("reinstate_shot_if_status_is") is None:
+            self._user_settings.store("reinstate_shot_if_status_is", ["omt", "hld"])
+        if reset_settings or self._user_settings.retrieve("reinstate_status") is None:
+            self._user_settings.store("reinstate_status", "ip")
+        if reset_settings or self._user_settings.retrieve("default_frame_rate") is None:
             self._user_settings.store("default_frame_rate", "24")
-        if self._user_settings.retrieve("timecode_to_frame_mapping") is None:
+        if reset_settings or self._user_settings.retrieve("timecode_to_frame_mapping") is None:
             self._user_settings.store("timecode_to_frame_mapping", _ABSOLUTE_MODE)
-        if self._user_settings.retrieve("timecode_mapping") is None:
+        if reset_settings or self._user_settings.retrieve("timecode_mapping") is None:
             self._user_settings.store("timecode_mapping", "00:00:00:00")
-        if self._user_settings.retrieve("frame_mapping") is None:
+        if reset_settings or self._user_settings.retrieve("frame_mapping") is None:
             self._user_settings.store("frame_mapping", "1000")
-        if self._user_settings.retrieve("default_head_in") is None:
+        if reset_settings or self._user_settings.retrieve("default_head_in") is None:
             self._user_settings.store("default_head_in", "1001")
-        if self._user_settings.retrieve("default_head_duration") is None:
+        if reset_settings or self._user_settings.retrieve("default_head_duration") is None:
             self._user_settings.store("default_head_duration", "8")
-        if self._user_settings.retrieve("default_tail_duration") is None:
+        if reset_settings or self._user_settings.retrieve("default_tail_duration") is None:
             self._user_settings.store("default_tail_duration", "8")
+
+        if reset_settings:
+            self._user_settings.store("update_shot_statuses", False)
 
         self._busy = False
         # Current step being displayed
