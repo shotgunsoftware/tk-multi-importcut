@@ -11,8 +11,6 @@
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 
-import sys
-
 import re
 import sgtk
 
@@ -141,6 +139,8 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.save_settings_button_box.accepted.connect(self.save_settings)
 
         except Exception, e:
+            # todo: this is a tmp workaround until we get direction on the full-on
+            # solution for dealing with bad values.
             # If something goes wrong, reset all settings to default next time the app is run
             self._user_settings.store("update_shot_statuses", True)
             self._logger.error(
