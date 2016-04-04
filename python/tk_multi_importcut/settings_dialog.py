@@ -58,19 +58,21 @@ class SettingsDialog(QtGui.QDialog):
 
         try:
             # General tab
+
+            # Setting whether or not the shot status fields are enabled
+            # and updating that if the user turns them on/off w/the checkbox.
             update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
             self._set_enabled(update_shot_statuses)
             self.ui.update_shot_statuses_checkbox.setChecked(update_shot_statuses)
+            self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
 
             self.ui.use_smart_fields_checkbox.setChecked(
                 self._user_settings.retrieve("use_smart_fields"))
 
-            self.ui.update_shot_statuses_checkbox.stateChanged.connect(
-                self._set_enabled)
-
             self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(
                 self._change_text)
 
+            # Turning the email_groups list into user editable csv text
             email_groups = ", ".join(self._user_settings.retrieve("email_groups"))
             self.ui.email_groups_line_edit.setText(email_groups)
 
@@ -100,8 +102,7 @@ class SettingsDialog(QtGui.QDialog):
             else:
                 self.ui.omit_status_combo_box.setCurrentIndex(0)
                 self._logger.error(
-                    'Omit status not set to "%s," status does not exist in \
-                    Shotgun, check Settings.' % omit_status)
+                    'Omit status not set to "%s," status does not exist in Shotgun, check Settings.' % omit_status)
             self.ui.reinstate_status_combo_box.addItem("Previous Status")
             if found_reinstate_index:
                 self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
@@ -110,9 +111,9 @@ class SettingsDialog(QtGui.QDialog):
             else:
                 self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
                 self._logger.error(
-                    'Reinstate status not set to "%s," status does not exist \
-                    in Shotgun, check Settings.' % reinstate_status)
+                    'Reinstate status not set to "%s," status does not exist in Shotgun, check Settings.' % reinstate_status)
 
+            # Turning the reinstate status list into user editable csv text
             statuses = ", ".join(self._user_settings.retrieve("reinstate_shot_if_status_is"))
             self.ui.reinstate_shot_if_status_is_line_edit.setText(statuses)
 
@@ -142,9 +143,9 @@ class SettingsDialog(QtGui.QDialog):
             # todo: this is a tmp workaround until we get direction on the full-on
             # solution for dealing with bad values.
             # If something goes wrong, reset all settings to default next time the app is run
-            self._user_settings.store("update_shot_statuses", True)
+            self._user_settings.store("reset_settings", True)
             self._logger.error(
-                    "Corrupt user settings were reset to default, restart Import Cut: %s" % (e))
+                    "Corrupt user settings will be reset to default, restart Import Cut: %s" % (e))
 
     @QtCore.Slot()
     def save_settings(self):
