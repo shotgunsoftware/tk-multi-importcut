@@ -161,7 +161,7 @@ class AppDialog(QtGui.QWidget):
             self._user_settings.store("default_tail_duration", "8")
 
         if reset_settings:
-            self._user_settings.store("update_shot_statuses", False)
+            self._user_settings.store("reset_settings", False)
 
         self._busy = False
         # Current step being displayed
