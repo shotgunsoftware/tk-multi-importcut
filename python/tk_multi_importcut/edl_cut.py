@@ -893,6 +893,28 @@ class EdlCut(QtCore.QObject):
         tc_end = self._summary.timecode_end
         if tc_end is not None:
             tc_end = str(tc_end)
+        # Upload base layer media file to the new Cut record
+        base_layer_media = True
+        if base_layer_media:
+            # step 1, create a version
+            sg_version = self._sg.create(
+                "Version", {
+                    "project"           : self._project,
+                    "code"              : title,
+                    "entity"            : self._sg_entity,
+                    "created_by"        : self._ctx.user,
+                    "updated_by"        : self._ctx.user,
+                    "description"       : "Base media layer imported with Cut: %s" % title,
+                },
+                ["id"])
+            # step 2, upload media to the version
+            self._sg.upload(
+                sg_version["type"],
+                sg_version["id"],
+                "/Users/mattor/Documents/movies/cube.v002.mov",
+                "sg_uploaded_movie"
+            )
+            # step 3, link the Cut to the version
         sg_cut = self._sg.create(
             "Cut", {
                 "project"           : self._project,
@@ -905,10 +927,11 @@ class EdlCut(QtCore.QObject):
                 "timecode_start"    : tc_start,
                 "timecode_end"      : tc_end,
                 "duration"          : self._summary.duration,
-                "revision_number"   : self._num_cuts + 1
+                "revision_number"   : self._num_cuts + 1,
+                "version"           : {"type": "Version", "id": sg_version["id"]}
             },
             ["id", "code"])
-        # Upload edl file to the new cut record
+        # Upload edl file to the new Cut record
         self._sg.upload(
             sg_cut["type"], sg_cut["id"],
             self._edl_file_path, "attachments"
