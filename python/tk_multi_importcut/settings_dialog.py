@@ -104,8 +104,11 @@ class SettingsDialog(QtGui.QDialog):
                 self._logger.error(
                     'Omit status not set to "%s," status does not exist in \
                     Shotgun, check Settings.' % omit_status)
+            self.ui.reinstate_status_combo_box.addItem("Previous Status")
             if found_reinstate_index:
                 self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
+            elif reinstate_status == "Previous Status":
+                self.ui.reinstate_status_combo_box.setCurrentIndex(len(shot_statuses))
             else:
                 self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
                 self._logger.error(

@@ -930,7 +930,6 @@ class EdlCut(QtCore.QObject):
         else:
             self._logger.info("Creating new shots ...")
         sg_batch_data = []
-        reinstate_status = self._user_settings.retrieve("reinstate_status")
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
             # Retrieve values for the shot, and the shot itself
@@ -993,6 +992,23 @@ class EdlCut(QtCore.QObject):
                         }
                     })
                 elif shot_diff_type == _DIFF_TYPES.REINSTATED:
+                    reinstate_status = self._user_settings.retrieve("reinstate_status")
+                    if reinstate_status == "Previous Status":
+                        # Find the most recent status change event log entry where the
+                        # project and linked shot code match the current project/shot
+                        filters = [
+                            ["project", "is", {"type": "Project", "id": self._project["id"]}],
+                            ["event_type", "is", "Shotgun_Shot_Change"],
+                            ["attribute_name", "is", "sg_status_list"],
+                            ["entity.Shot.id", "is", sg_shot["id"]]
+                        ]
+                        fields = ["meta"]
+                        sort = [{'field_name': 'created_at', 'direction': 'desc'}]
+                        event_log = self._sg.find_one("EventLogEntry", filters, fields, order=[
+                            {"field_name": "created_at", "direction": "desc"}])
+                        # Set the reinstate status value to the value previous to the
+                        # event log entry
+                        reinstate_status = event_log["meta"]["old_value"]
                     data = {
                         "sg_status_list": reinstate_status,
                         "sg_cut_order": min_cut_order,
