@@ -143,7 +143,6 @@ class AppDialog(QtGui.QWidget):
             # todo: same comment as above
             self._user_settings.store("reinstate_shot_if_status_is", ["omt", "hld"])
         if reset_settings or self._user_settings.retrieve("reinstate_status") is None:
-            # todo: again, same comment
             self._user_settings.store("reinstate_status", "Previous Status")
         if reset_settings or self._user_settings.retrieve("default_frame_rate") is None:
             self._user_settings.store("default_frame_rate", "24")
