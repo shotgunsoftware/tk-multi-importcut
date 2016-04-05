@@ -590,7 +590,7 @@ class EdlCut(QtCore.QObject):
                 reel_names[edit.reel]["iter"] = 1
 
             for edit in self._edl.edits:
-                if reel_names[edit.reel]["dup"] is not True:
+                if reel_names[edit.reel]["dup"] is True:
                     edit.reel_name = "%s%s" % (
                         edit.reel, str(reel_names[edit.reel]["iter"]).zfill(3))
                     reel_names[edit.reel]["iter"] += 1
@@ -605,15 +605,6 @@ class EdlCut(QtCore.QObject):
                 if edit.id == len(self._edl.edits):
                     self._summary.tc_end = edit.record_out
 
-            # Calculating the duration and storing it in the Cut summary.
-            start_frame = edl.Timecode(
-                str(self._summary.tc_start), self._summary.fps).to_frame()
-            end_frame = edl.Timecode(
-                str(self._summary.tc_end), self._summary.fps).to_frame()
-            self._summary.duration = end_frame - start_frame
-
-            # reel_names = set()
-            for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
                 if not shot_name:
                     # If we don't have a shot name, we can't match anything
@@ -664,6 +655,13 @@ class EdlCut(QtCore.QObject):
                             sg_cut_item=matching_cut_item
                         )
 
+            # Calculating the duration and storing it in the Cut summary.
+            start_frame = edl.Timecode(
+                str(self._summary.tc_start), self._summary.fps).to_frame()
+            end_frame = edl.Timecode(
+                str(self._summary.tc_end), self._summary.fps).to_frame()
+            self._summary.duration = end_frame - start_frame
+
             # Process cut items left over
             for sg_cut_item in sg_cut_items:
                 # If not compliant to what we expect, just ignore it
@@ -689,7 +687,7 @@ class EdlCut(QtCore.QObject):
                             sg_cut_item=sg_cut_item
                         )
 
-            # Process now all sg shots leftover
+            # Now process all sg shots that are leftover
             for sg_shot in leftover_shots:
                 # Don't show omitted shots which are not in this cut
                 if sg_shot["sg_status_list"] not in self._reinstate_statuses:
