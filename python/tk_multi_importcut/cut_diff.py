@@ -549,8 +549,7 @@ class CutDiff(QtCore.QObject):
         :returns: An integer or None
         """
         if self._sg_cut_item:
-            # todo: replace when legit duration field materializes
-            return self._sg_cut_item["sg_sg_cut_duration"]
+            return self._sg_cut_item["cut_item_duration"]
         return None
 
     @property
@@ -862,8 +861,7 @@ class CutDiff(QtCore.QObject):
                     tc_out,
                     self.sg_cut_item["cut_item_in"],
                     self.sg_cut_item["cut_item_out"],
-                    # todo: replace when legit duration field materializes
-                    self.sg_cut_item["sg_sg_cut_duration"]
+                    self.sg_cut_item["cut_item_duration"]
                 )
         version_details = ""
         return (shot_details, cut_item_details, version_details, str(self._edit))
