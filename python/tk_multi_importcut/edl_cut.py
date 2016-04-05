@@ -501,7 +501,7 @@ class EdlCut(QtCore.QObject):
                                                 "cut_item_out",
                                                 "shot",
                                                 "cut_duration",
-                                                "sg_sg_cut_duration",
+                                                "cut_item_duration",
                                                 "cut.Cut.fps",
                                                 "version",
                                                 "version.Version.code",
@@ -914,7 +914,8 @@ class EdlCut(QtCore.QObject):
                 "/Users/mattor/Documents/movies/cube.v002.mov",
                 "sg_uploaded_movie"
             )
-            # step 3, link the Cut to the version
+        # todo: this will fail if there is no version, fix!!!!!!!
+        # step 3, link the Cut to the version
         sg_cut = self._sg.create(
             "Cut", {
                 "project"           : self._project,
@@ -1128,7 +1129,7 @@ class EdlCut(QtCore.QObject):
                             "cut_item_out": cut_diff.new_cut_out,
                             "edit_in": edit_in,
                             "edit_out": edit_out,
-                            "sg_sg_cut_duration": cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
+                            "cut_item_duration": cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
                             "shot": cut_diff.sg_shot,
                             # "version": edit.get_sg_version(),
                             "created_by": self._ctx.user,
