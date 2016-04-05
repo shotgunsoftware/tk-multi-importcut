@@ -51,70 +51,101 @@ class SettingsDialog(QtGui.QDialog):
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
         self._user_settings = self._app.user_settings
-
-        # todo: the way omit_status is handled is tmp, I'm only
-        # grabbing one status in the gui, but the code wants a list
-        # so remember to fix the code once the gui can supply a list
-
-        # Retrieve user settings and set UI values
         buttons = self.ui.save_settings_button_box.buttons()
         apply_button = buttons[0]
+        # Retrieve user settings and set UI values
         apply_button.setText("Apply")
 
-        # General tab
-        update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
-        self._set_enabled(update_shot_statuses)
+        try:
+            # General tab
 
-        self.ui.update_shot_statuses_checkbox.setChecked(
-            update_shot_statuses)
+            # Setting whether or not the shot status fields are enabled
+            # and updating that if the user turns them on/off w/the checkbox.
+            update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
+            self._set_enabled(update_shot_statuses)
+            self.ui.update_shot_statuses_checkbox.setChecked(update_shot_statuses)
+            self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
 
-        self.ui.use_smart_fields_checkbox.setChecked(
-            self._user_settings.retrieve("use_smart_fields"))
+            self.ui.use_smart_fields_checkbox.setChecked(
+                self._user_settings.retrieve("use_smart_fields"))
 
-        self.ui.update_shot_statuses_checkbox.stateChanged.connect(
-            self._set_enabled)
+            self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(
+                self._change_text)
 
-        self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(self._change_text)
+            # Turning the email_groups list into user editable csv text
+            email_groups = ", ".join(self._user_settings.retrieve("email_groups"))
+            self.ui.email_groups_line_edit.setText(email_groups)
 
-        shot_statuses = self._app.shotgun.schema_field_read("Shot")[
-            "sg_status_list"]["properties"]["display_values"]["value"]
-        for status in shot_statuses:
-            status = shot_statuses[status]
-            self.ui.omit_status_combo_box.addItem(status)
-            self.ui.reinstate_status_combo_box.addItem(status)
+            # We're storing status lists with their internal codes and matching
+            # them by searching through current status codes to find the drop
+            # down index. If the status code is missing, the index is set to 0
+            # and we throw an error to warn the user. This should probably happen
+            # when the app launches, not only when the settings dialog is opened.
+            omit_status = self._user_settings.retrieve("omit_status")
+            reinstate_status = self._user_settings.retrieve("reinstate_status")
+            shot_statuses = self._app.shotgun.schema_field_read("Shot")[
+                "sg_status_list"]["properties"]["valid_values"]["value"]
+            index = 0
+            found_omit_index, found_reinstate_index = [False, False]
+            for status in shot_statuses:
+                if omit_status == status:
+                    omit_index = index
+                    found_omit_index = True
+                if reinstate_status == status:
+                    reinstate_index = index
+                    found_reinstate_index = True
+                self.ui.omit_status_combo_box.addItem(status)
+                self.ui.reinstate_status_combo_box.addItem(status)
+                index += 1
+            if found_omit_index:
+                self.ui.omit_status_combo_box.setCurrentIndex(omit_index)
+            else:
+                self.ui.omit_status_combo_box.setCurrentIndex(0)
+                self._logger.error(
+                    'Omit status not set to "%s," status does not exist in Shotgun, check Settings.' % omit_status)
+            self.ui.reinstate_status_combo_box.addItem("Previous Status")
+            if found_reinstate_index:
+                self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
+            elif reinstate_status == "Previous Status":
+                self.ui.reinstate_status_combo_box.setCurrentIndex(len(shot_statuses))
+            else:
+                self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
+                self._logger.error(
+                    'Reinstate status not set to "%s," status does not exist in Shotgun, check Settings.' % reinstate_status)
 
-        email_groups = ", ".join(self._user_settings.retrieve("email_groups"))
-        self.ui.email_groups_line_edit.setText(email_groups)
-        self.ui.omit_status_combo_box.setCurrentIndex(
-            self._user_settings.retrieve("omit_status"))
+            # Turning the reinstate status list into user editable csv text
+            statuses = ", ".join(self._user_settings.retrieve("reinstate_shot_if_status_is"))
+            self.ui.reinstate_shot_if_status_is_line_edit.setText(statuses)
 
-        statuses = ", ".join(self._user_settings.retrieve("reinstate_shot_if_status_is"))
-        self.ui.reinstate_shot_if_status_is_line_edit.setText(statuses)
+            # Timecode/Frames tab
+            self.ui.default_frame_rate_line_edit.setText(
+                self._user_settings.retrieve("default_frame_rate"))
+            self.ui.timecode_to_frame_mapping_combo_box.addItems(
+                ["Absolute", "Automatic", "Relative"])
+            self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(
+                self._user_settings.retrieve("timecode_to_frame_mapping"))
+            self.ui.timecode_mapping_line_edit.setText(
+                self._user_settings.retrieve("timecode_mapping"))
+            self.ui.frame_mapping_line_edit.setText(
+                self._user_settings.retrieve("frame_mapping"))
+            self.ui.default_head_in_line_edit.setText(
+                self._user_settings.retrieve("default_head_in"))
+            self.ui.default_head_duration_line_edit.setText(
+                self._user_settings.retrieve("default_head_duration"))
+            self.ui.default_tail_duration_line_edit.setText(
+                self._user_settings.retrieve("default_tail_duration"))
 
-        self.ui.reinstate_status_combo_box.setCurrentIndex(
-            self._user_settings.retrieve("reinstate_status"))
+            # Cancel or Save
+            self.ui.save_settings_button_box.rejected.connect(self.close_dialog)
+            self.ui.save_settings_button_box.accepted.connect(self.save_settings)
 
-        # Timecode/Frames tab
-        self.ui.default_frame_rate_line_edit.setText(
-            self._user_settings.retrieve("default_frame_rate"))
-        self.ui.timecode_to_frame_mapping_combo_box.addItems(
-            ["Absolute", "Automatic", "Relative"])
-        self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(
-            self._user_settings.retrieve("timecode_to_frame_mapping"))
-        self.ui.timecode_mapping_line_edit.setText(
-            self._user_settings.retrieve("timecode_mapping"))
-        self.ui.frame_mapping_line_edit.setText(
-            self._user_settings.retrieve("frame_mapping"))
-        self.ui.default_head_in_line_edit.setText(
-            self._user_settings.retrieve("default_head_in"))
-        self.ui.default_head_duration_line_edit.setText(
-            self._user_settings.retrieve("default_head_duration"))
-        self.ui.default_tail_duration_line_edit.setText(
-            self._user_settings.retrieve("default_tail_duration"))
-
-        # Cancel or Save
-        self.ui.save_settings_button_box.rejected.connect(self.close_dialog)
-        self.ui.save_settings_button_box.accepted.connect(self.save_settings)
+        except Exception, e:
+            # todo: this is a tmp workaround until we get direction on the full-on
+            # solution for dealing with bad values.
+            # If something goes wrong, reset all settings to default next time the app is run
+            self._user_settings.store("reset_settings", True)
+            self._logger.error(
+                    "Corrupt user settings will be reset to default, restart Import Cut: %s" % (e))
 
     @QtCore.Slot()
     def save_settings(self):
@@ -184,6 +215,7 @@ class SettingsDialog(QtGui.QDialog):
         error = False
 
         # General tab
+
         update_shot_statuses = self.ui.update_shot_statuses_checkbox.isChecked()
         self._user_settings.store("update_shot_statuses", update_shot_statuses)
 
@@ -206,8 +238,11 @@ class SettingsDialog(QtGui.QDialog):
             self._logger.error('Could not set email groups to "%s": %s' % (
                 email_groups, "Group or groups do not exist in Shotgun."))
 
-        omit_status = self.ui.omit_status_combo_box.currentIndex()
+        omit_status = self.ui.omit_status_combo_box.currentText()
         self._user_settings.store("omit_status", omit_status)
+
+        reinstate_status = self.ui.reinstate_status_combo_box.currentText()
+        self._user_settings.store("reinstate_status", reinstate_status)
 
         statuses_okay = True
         statuses = self.ui.reinstate_shot_if_status_is_line_edit.text().replace(
@@ -223,10 +258,9 @@ class SettingsDialog(QtGui.QDialog):
             error = True
             self._logger.error('Could not set "reinstate shot if status is" to "%s": %s' % (
                 statuses, "Status or statuses do not exist in Shotgun."))
-        reinstate_status = self.ui.reinstate_status_combo_box.currentIndex()
-        self._user_settings.store("reinstate_status", reinstate_status)
 
         # Timecode/Frames tab
+
         default_frame_rate = self.ui.default_frame_rate_line_edit.text()
         try:
             fps = float(default_frame_rate)

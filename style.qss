@@ -122,7 +122,7 @@ DropAreaFrame QLabel {
 #timecode_to_frame_mapping_combo_box, #timecode_to_frame_mapping_instructions_label,
 #description_2_label, #default_frame_rate_line_edit, #timecode_mapping_line_edit,
 #frame_mapping_line_edit, #default_head_in_line_edit, #default_head_duration_line_edit,
-#default_tail_duration_line_edit {
+#default_tail_duration_line_edit, #email_groups_line_edit, #reinstate_shot_if_status_is_line_edit {
     font-size: 12px;
 }
 
@@ -168,7 +168,7 @@ QTabBar::tab:selected {
 /* fading out text that isn't enabled */
 #omit_status_label:!enabled, #reinstate_shot_if_status_is_label:!enabled,
 #reinstate_status_label:!enabled, #default_head_in_label:!enabled,
-#default_head_in_line_edit:!enabled {
+#default_head_in_line_edit:!enabled, #reinstate_shot_if_status_is_line_edit:!enabled {
     color: #606060;
 }
 

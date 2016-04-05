@@ -62,12 +62,6 @@ class EdlCut(QtCore.QObject):
         self._sg_new_cut = None
         self._no_cut_for_entity = False
         self._project_import = False
-        # todo: tmp code until we get a proper status selection widget.
-        shot_statuses = self._sg.schema_field_read("Shot")[
-            "sg_status_list"]["properties"]["display_values"]["value"]
-        self._shot_status_list = []
-        for status in shot_statuses:
-            self._shot_status_list.append(status)
         # Retrieve some settings
         self._user_settings = self._app.user_settings
         # todo: this will need to be rethought if we're able to extract fps
@@ -78,7 +72,8 @@ class EdlCut(QtCore.QObject):
         else:
             self._frame_rate = float(self._user_settings.retrieve("default_frame_rate"))
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
-        self._omit_statuses = [self._shot_status_list[self._user_settings.retrieve("omit_status")]]
+        self._omit_status = self._user_settings.retrieve("omit_status")
+        self._reinstate_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is")
         self._cut_link_field = "entity"
         self._num_cuts = 0
 
@@ -697,7 +692,7 @@ class EdlCut(QtCore.QObject):
             # Process now all sg shots leftover
             for sg_shot in leftover_shots:
                 # Don't show omitted shots which are not in this cut
-                if sg_shot["sg_status_list"] not in self._omit_statuses:
+                if sg_shot["sg_status_list"] not in self._reinstate_statuses:
                     # In theory we shouldn't have any leftover cut items ...
                     matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
                     cut_diff = self._summary.add_cut_diff(
@@ -935,7 +930,6 @@ class EdlCut(QtCore.QObject):
         else:
             self._logger.info("Creating new shots ...")
         sg_batch_data = []
-        reinstate_status = self._shot_status_list[self._user_settings.retrieve("reinstate_status")]
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
             # Retrieve values for the shot, and the shot itself
@@ -984,20 +978,37 @@ class EdlCut(QtCore.QObject):
                     "entity_type": "Shot",
                     "data": data
                 })
+            # We only update shots if asked to do so
             elif update_shots:
-                # We only update shots if asked to do so
                 if shot_diff_type == _DIFF_TYPES.OMITTED:
                     sg_batch_data.append({
                         "request_type": "update",
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
                         "data": {
-                            "sg_status_list": self._omit_statuses[-1],  # Arbitrarily pick the last one.
+                            "sg_status_list": self._omit_status,
                             # Add code in the update so it will be returned with batch results.
                             "code": sg_shot["code"],
                         }
                     })
                 elif shot_diff_type == _DIFF_TYPES.REINSTATED:
+                    reinstate_status = self._user_settings.retrieve("reinstate_status")
+                    if reinstate_status == "Previous Status":
+                        # Find the most recent status change event log entry where the
+                        # project and linked shot code match the current project/shot
+                        filters = [
+                            ["project", "is", {"type": "Project", "id": self._project["id"]}],
+                            ["event_type", "is", "Shotgun_Shot_Change"],
+                            ["attribute_name", "is", "sg_status_list"],
+                            ["entity.Shot.id", "is", sg_shot["id"]]
+                        ]
+                        fields = ["meta"]
+                        sort = [{'field_name': 'created_at', 'direction': 'desc'}]
+                        event_log = self._sg.find_one("EventLogEntry", filters, fields, order=[
+                            {"field_name": "created_at", "direction": "desc"}])
+                        # Set the reinstate status value to the value previous to the
+                        # event log entry
+                        reinstate_status = event_log["meta"]["old_value"]
                     data = {
                         "sg_status_list": reinstate_status,
                         "sg_cut_order": min_cut_order,
