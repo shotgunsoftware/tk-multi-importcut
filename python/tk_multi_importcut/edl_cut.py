@@ -891,8 +891,22 @@ class EdlCut(QtCore.QObject):
         tc_end = self._summary.timecode_end
         if tc_end is not None:
             tc_end = str(tc_end)
+        cut_payload = {
+            "project"            : self._project,
+            "code"               : title,
+            self._cut_link_field : self._sg_entity,
+            "fps"                : float(self._edl.fps),
+            "created_by"         : self._ctx.user,
+            "updated_by"         : self._ctx.user,
+            "description"        : description,
+            "timecode_start"     : tc_start,
+            "timecode_end"       : tc_end,
+            "duration"           : self._summary.duration,
+            "revision_number"    : self._num_cuts + 1,
+        }
+
         # Upload base layer media file to the new Cut record
-        base_layer_media = True
+        base_layer_media = False
         if base_layer_media:
             # step 1, create a version
             sg_version = self._sg.create(
@@ -912,23 +926,12 @@ class EdlCut(QtCore.QObject):
                 "/Users/mattor/Documents/movies/cube.v002.mov",
                 "sg_uploaded_movie"
             )
-        # todo: this will fail if there is no version, fix!!!!!!!
-        # step 3, link the Cut to the version
+            # step 3, link the Cut to the version
+            cut_payload["version"] = {"type": "Version", "id": sg_version["id"]}
+
         sg_cut = self._sg.create(
-            "Cut", {
-                "project"           : self._project,
-                "code"              : title,
-                self._cut_link_field: self._sg_entity,
-                "fps"               : float(self._edl.fps),
-                "created_by"        : self._ctx.user,
-                "updated_by"        : self._ctx.user,
-                "description"       : description,
-                "timecode_start"    : tc_start,
-                "timecode_end"      : tc_end,
-                "duration"          : self._summary.duration,
-                "revision_number"   : self._num_cuts + 1,
-                "version"           : {"type": "Version", "id": sg_version["id"]}
-            },
+            "Cut",
+            cut_payload,
             ["id", "code"])
         # Upload edl file to the new Cut record
         self._sg.upload(
