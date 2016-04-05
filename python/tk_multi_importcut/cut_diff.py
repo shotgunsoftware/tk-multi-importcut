@@ -550,7 +550,7 @@ class CutDiff(QtCore.QObject):
         """
         if self._sg_cut_item:
             # todo: replace when legit duration field materializes
-            return self._sg_cut_item["sg_sg_cut_duration"]
+            return self._sg_cut_item["cut_item_duration"]
         return None
 
     @property
@@ -742,7 +742,7 @@ class CutDiff(QtCore.QObject):
                 self._diff_type = _DIFF_TYPES.OMITTED_IN_CUT
             return
         # We have both a shot and an edit
-        omit_statuses = [self._user_settings.retrieve("omit_status")] or []
+        omit_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is") or []
         if self._sg_shot["sg_status_list"] in omit_statuses:
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
@@ -863,7 +863,7 @@ class CutDiff(QtCore.QObject):
                     self.sg_cut_item["cut_item_in"],
                     self.sg_cut_item["cut_item_out"],
                     # todo: replace when legit duration field materializes
-                    self.sg_cut_item["sg_sg_cut_duration"]
+                    self.sg_cut_item["cut_item_duration"]
                 )
         version_details = ""
         return (shot_details, cut_item_details, version_details, str(self._edit))
