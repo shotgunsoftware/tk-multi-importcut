@@ -81,6 +81,9 @@ class SettingsDialog(QtGui.QDialog):
             # down index. If the status code is missing, the index is set to 0
             # and we throw an error to warn the user. This should probably happen
             # when the app launches, not only when the settings dialog is opened.
+            # The reason we warn the user is: if someone deletes a status from
+            # sg that this app references, it obviously can't be used anymore, so
+            # we arbitrarily choose whatever status is at 0.
             omit_status = self._user_settings.retrieve("omit_status")
             reinstate_status = self._user_settings.retrieve("reinstate_status")
             shot_statuses = self._app.shotgun.schema_field_read("Shot")[

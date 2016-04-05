@@ -742,7 +742,7 @@ class CutDiff(QtCore.QObject):
                 self._diff_type = _DIFF_TYPES.OMITTED_IN_CUT
             return
         # We have both a shot and an edit
-        omit_statuses = [self._user_settings.retrieve("omit_status")] or []
+        omit_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is") or []
         if self._sg_shot["sg_status_list"] in omit_statuses:
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
