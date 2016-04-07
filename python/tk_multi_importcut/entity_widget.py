@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import tempfile
+import os
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
@@ -170,7 +171,8 @@ class EntityCard(QtGui.QFrame):
         if self._sg_entity and self._sg_entity["image"]:
             self._logger.debug(
                 "Requesting %s for %s" % (self._sg_entity["image"], self.entity_name))
-            _, path = tempfile.mkstemp()
+            f, path = tempfile.mkstemp()
+            os.close(f)
             downloader = DownloadRunner(
                 sg_attachment=self._sg_entity["image"],
                 path=path,

@@ -10,6 +10,7 @@
 
 import sgtk
 import tempfile
+import os
 
 from .ui.cut_diff_card import Ui_CutDiffCard
 from .cut_diff import CutDiff, _DIFF_TYPES
@@ -313,7 +314,8 @@ class CutDiffCard(QtGui.QFrame):
         if self._cut_diff.sg_shot and self._cut_diff.sg_shot.get("image"):
             thumb_url = self._cut_diff.sg_shot["image"]
         if thumb_url:
-            _, path = tempfile.mkstemp()
+            f, path = tempfile.mkstemp()
+            os.close(f)
             downloader = DownloadRunner(
                 sg_attachment=thumb_url,
                 path=path,
