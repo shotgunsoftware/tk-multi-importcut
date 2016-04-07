@@ -135,6 +135,15 @@ DropAreaFrame QLabel {
     color: #707070;
 }
 
+#success_page #success_label {
+    font-size: 20px;
+}
+
+#success_page #shotgun_button {
+    background-color: #18a6e3;
+    width: 100px;
+}
+
 /* todo: this is bad, it's going to style all QTabBar widgets
 try to figure out how to focus on just the one in the
 settings_dialog (doesn't really matter now cuz there is only one) */
@@ -556,14 +565,4 @@ CutDiffCard[diff_type="no_link"]  #status_label ,
 #success_page #success_frame {
     color: #2C93E2;
     border: 1px none #555555;
-}
-#success_page #success_label {
-    font-size: 15px;
-    font-weight: bold;
-}
-#success_page #shotgun_button {
-    border: none;
-    outline: none;
-    font-size: 15px;
-    text-decoration: underline;
 }

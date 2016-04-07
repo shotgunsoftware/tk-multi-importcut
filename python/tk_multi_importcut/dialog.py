@@ -647,9 +647,7 @@ class AppDialog(QtGui.QWidget):
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
         elif step == _LAST_STEP:
-            self.ui.success_label.setText(
-                "Cut %s successfully imported" % self._processor.sg_new_cut["code"]
-            )
+            self.ui.edl_imported_label.setText(self._processor.sg_new_cut["code"])
             self.ui.back_button.hide()
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
