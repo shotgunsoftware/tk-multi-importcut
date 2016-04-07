@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import tempfile
+import os
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
@@ -146,7 +147,8 @@ class CutCard(QtGui.QFrame):
         if self._sg_cut and self._sg_cut["image"]:
             self._logger.debug("Requesting %s for %s" %
                                (self._sg_cut["image"], self._sg_cut["code"]))
-            _, path = tempfile.mkstemp()
+            f, path = tempfile.mkstemp()
+            os.close(f)
             downloader = DownloadRunner(
                 sg_attachment=self._sg_cut["image"],
                 path=path,

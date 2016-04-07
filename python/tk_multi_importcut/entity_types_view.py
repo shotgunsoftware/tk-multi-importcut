@@ -10,6 +10,7 @@
 
 import sgtk
 import tempfile
+import os
 
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
@@ -53,7 +54,8 @@ class EntityTypeCard(QtGui.QFrame):
             )
             if sg_project and sg_project["image"]:
                 self._logger.debug("Requesting %s" % (sg_project["image"]))
-            _, path = tempfile.mkstemp()
+            f, path = tempfile.mkstemp()
+            os.close(f)
             downloader = DownloadRunner(
                 sg_attachment=sg_project["image"],
                 path=path,

@@ -9,7 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import tempfile
-
+import os
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
@@ -164,7 +164,8 @@ class ProjectCard(QtGui.QFrame):
         if self._sg_project and self._sg_project["image"]:
             self._logger.debug("Requesting %s for %s" %
                                (self._sg_project["image"], self.project_name))
-            _, path = tempfile.mkstemp()
+            f, path = tempfile.mkstemp()
+            os.close(f)
             downloader = DownloadRunner(
                 sg_attachment=self._sg_project["image"],
                 path=path,
