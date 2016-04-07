@@ -95,7 +95,7 @@ class AppDialog(QtGui.QWidget):
     """
     Main application dialog window
     """
-    new_edl = QtCore.Signal(str)
+    new_edl = QtCore.Signal(list)
     get_projects = QtCore.Signal(str)
     get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
@@ -165,6 +165,8 @@ class AppDialog(QtGui.QWidget):
         self._busy = False
         # Current step being displayed
         self._step = 0
+        self._edl_file_path = None
+        self._mov_file_path = None
 
         # Selected sg entity per step : selection only happen in steps 1 and 2
         # but we create entries for all steps allowing to index the list
@@ -178,6 +180,8 @@ class AppDialog(QtGui.QWidget):
         # - A tk API instance, via self._app.tk
 
         # lastly, set up our very basic UI
+        self.ui.edl_added_icon.hide()
+        self.ui.mov_added_icon.hide()
         self.set_custom_style()
         self.set_logger(logging.INFO)
 
@@ -263,6 +267,7 @@ class AppDialog(QtGui.QWidget):
         self.set_ui_for_step(_DROP_STEP)
 
         self.ui.back_button.clicked.connect(self.previous_page)
+        self.ui.next_button.clicked.connect(self.process_edl_mov)
         self.ui.stackedWidget.first_page_reached.connect(self.reset)
         self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
@@ -294,7 +299,7 @@ class AppDialog(QtGui.QWidget):
         # Special mode for Premiere integration : load the given EDL
         # and select the given SG entity
 
-        self.new_edl.emit(edl_file_path)
+        self.new_edl.emit([edl_file_path, None])
         if sg_entity:
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
             self.show_entities(sg_entity["type"])
@@ -366,6 +371,21 @@ class AppDialog(QtGui.QWidget):
 #            next_step += 1
         self.goto_step(next_step)
 
+    @QtCore.Slot()
+    def process_edl_mov(self):
+        self.new_edl.emit([self._edl_file_path, self._mov_file_path])
+        # todo: this show_projects() call shouldn't be necessary
+        self.show_projects()
+        if self._ctx.project is not None:
+            self.goto_step(_ENTITY_TYPE_STEP)
+        else:
+            # The user needs to pickup a project first
+            self.goto_step(_PROJECT_STEP)
+        self.ui.sequences_label.setText("Importing %s" % self._edl_file_path)
+        self.ui.entity_picker_message_label.setText(
+            "Importing %s ..." % os.path.basename(self._edl_file_path),
+        )
+
     @QtCore.Slot(list)
     def process_drop(self, paths):
         """
@@ -379,19 +399,24 @@ class AppDialog(QtGui.QWidget):
                 "Please drop only one file at a time",
             )
             return
-        self.new_edl.emit(paths[0])
-        self.ui.sequences_label.setText("Importing %s" % os.path.basename(paths[0]))
-        self.ui.entity_picker_message_label.setText(
-            "Importing %s ..." % os.path.basename(paths[0]),
-        )
-        # todo: this show_projects() call shouldn't be necessary
-        self.show_projects()
-        if self._ctx.project is not None:
-            self.goto_step(_ENTITY_TYPE_STEP)
-        else:
-            # The user needs to pickup a project first
-            self.goto_step(_PROJECT_STEP)
-        # self._logger.info( "Processing %s" % (paths[0] ))
+        ext = os.path.splitext(paths[0])[1]
+        if ext == ".edl":
+            self._edl_file_path = paths[0]
+            if self._mov_file_path:
+                self.process_edl_mov()
+            else:
+                self.ui.edl_added_icon.show()
+                self.ui.next_button.setEnabled(True)
+                self.ui.file_added_label.setText(
+                    os.path.basename(self._edl_file_path))
+        elif ext == ".mov":
+            self._mov_file_path = paths[0]
+            if self._edl_file_path:
+                self.process_edl_mov()
+            else:
+                self.ui.mov_added_icon.show()
+                self.ui.file_added_label.setText(
+                    os.path.basename(self._mov_file_path))
 
     @QtCore.Slot(int, str)
     def new_message(self, levelno, message):
@@ -530,6 +555,12 @@ class AppDialog(QtGui.QWidget):
             # Clear various things when we hit the first screen
             # doing a reset
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = None
+            self._edl_file_path = None
+            self._mov_file_path = None
+            self.ui.edl_added_icon.hide()
+            self.ui.mov_added_icon.hide()
+            self.ui.file_added_label.setText("")
+            self.ui.next_button.setEnabled(False)
         else:
             # Allow reset and back from screens > 0
             self.ui.reset_button.show()

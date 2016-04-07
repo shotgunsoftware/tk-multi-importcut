@@ -126,6 +126,15 @@ DropAreaFrame QLabel {
     font-size: 12px;
 }
 
+/* setting font size for mov and edl label on drop */
+#file_added_label, #instructions_label {
+    font-size: 14px;
+}
+
+#instructions_label {
+    color: #707070;
+}
+
 /* todo: this is bad, it's going to style all QTabBar widgets
 try to figure out how to focus on just the one in the
 settings_dialog (doesn't really matter now cuz there is only one) */

@@ -46,6 +46,7 @@ class EdlCut(QtCore.QObject):
         super(EdlCut, self).__init__()
 
         self._edl_file_path = None
+        self._mov_file_path = None
         self._edl = None
         self._sg_entity_type = None
         self._sg_shot_link_field_name = None
@@ -164,6 +165,7 @@ class EdlCut(QtCore.QObject):
         """
         had_something = self._edl_file_path is not None
         self._edl_file_path = None
+        self._mov_file_path = None
         self._edl = None
         self._sg_entity_type = None
         self._sg_shot_link_field_name = None
@@ -173,20 +175,22 @@ class EdlCut(QtCore.QObject):
         if had_something:
             self._logger.info("Session discarded...")
 
-    @QtCore.Slot(str)
-    def load_edl(self, path):
+    @QtCore.Slot(list)
+    def load_edl(self, paths):
         """
         Load an EDL file
 
-        :param path: Full path to the EDL file
+        :param paths: List, full path to the EDL and optional Mov files.
         """
-        self._logger.info("Loading %s ..." % path)
+        edl_file_path = paths[0]
+        self._mov_file_path = paths[1]
+        self._logger.info("Loading %s ..." % edl_file_path)
         try:
-            self._edl_file_path = path
+            self._edl_file_path = edl_file_path
             if self._frame_rate is not None:
                 self._logger.info("Using explicit frame rate %f ..." % self._frame_rate)
                 self._edl = edl.EditList(
-                    file_path=path,
+                    file_path=edl_file_path,
                     visitor=self.process_edit,
                     fps=self._frame_rate,
                 )
@@ -194,7 +198,7 @@ class EdlCut(QtCore.QObject):
                 self._logger.info("Using default frame rate ...")
                 # Use default frame rate, whatever it is
                 self._edl = edl.EditList(
-                    file_path=path,
+                    file_path=edl_file_path,
                     visitor=self.process_edit,
                 )
             self._logger.info(
@@ -203,7 +207,7 @@ class EdlCut(QtCore.QObject):
                 )
             )
             if not self._edl.edits:
-                self._logger.warning("Couldn't find any entry in %s" % (path))
+                self._logger.warning("Couldn't find any entry in %s" % (edl_file_path))
                 return
             # Consolidate what we loaded
             # Build a dictionary using versions names as keys
@@ -247,7 +251,7 @@ class EdlCut(QtCore.QObject):
         except Exception, e:
             self._edl = None
             self._edl_file_path = None
-            self._logger.error("Couldn't load %s : %s" % (path, str(e)))
+            self._logger.error("Couldn't load %s : %s" % (edl_file_path, str(e)))
 
     @QtCore.Slot(str)
     def retrieve_entities(self, entity_type):
@@ -906,24 +910,27 @@ class EdlCut(QtCore.QObject):
         }
         # Upload base layer media file to the new Cut record if a media file
         # has been chosen by the user.
-        base_layer_media = False
-        if base_layer_media:
+        if self._mov_file_path:
             # Create a version
             sg_version = self._sg.create(
                 "Version", {
-                    "project"           : self._project,
-                    "code"              : title,
-                    "entity"            : self._sg_entity,
-                    "created_by"        : self._ctx.user,
-                    "updated_by"        : self._ctx.user,
-                    "description"       : "Base media layer imported with Cut: %s" % title,
+                    "project"            : self._project,
+                    "code"               : title,
+                    "entity"             : self._sg_entity,
+                    "created_by"         : self._ctx.user,
+                    "updated_by"         : self._ctx.user,
+                    "description"        : "Base media layer imported with Cut: %s" % title,
+                    "sg_first_frame"     : 1,
+                    "sg_movie_has_slate" : False,
+                    "sg_path_to_movie"   : self._mov_file_path
                 },
                 ["id"])
             # Upload media to the version.
+            self._logger.info("Uploading movie...")
             self._sg.upload(
                 sg_version["type"],
                 sg_version["id"],
-                "/Users/mattor/Documents/movies/cube.v002.mov",
+                self._mov_file_path,
                 "sg_uploaded_movie"
             )
             # Link the Cut to the version.
