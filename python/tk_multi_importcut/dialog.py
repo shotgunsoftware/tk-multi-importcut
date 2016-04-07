@@ -8,9 +8,10 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-import sgtk
+import re
 import os
 import sys
+import sgtk
 import logging
 import logging.handlers
 import tempfile
@@ -299,6 +300,8 @@ class AppDialog(QtGui.QWidget):
         # Special mode for Premiere integration : load the given EDL
         # and select the given SG entity
 
+        # There is not command line support yet for passing in a base layer
+        # media file, so we set mov_file_path to None
         self.new_edl.emit([edl_file_path, None])
         if sg_entity:
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
@@ -373,6 +376,11 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def process_edl_mov(self):
+        """
+        After EDL and optional MOV file paths have been set by process_drop
+        The next button is activated and this code is run when Next is clicked.
+        Here we emit a signal to register a new edl, and move to the next screen.
+        """
         self.new_edl.emit([self._edl_file_path, self._mov_file_path])
         # todo: this show_projects() call shouldn't be necessary
         self.show_projects()
@@ -399,8 +407,10 @@ class AppDialog(QtGui.QWidget):
                 "Please drop only one file at a time",
             )
             return
+        # Set state of gui elements based on what kind of file is dropped,
+        # or move on to the next screen if we have both EDL and MOV
         ext = os.path.splitext(paths[0])[1]
-        if ext == ".edl":
+        if re.search('\.edl$', ext, flags=re.IGNORECASE):
             self._edl_file_path = paths[0]
             if self._mov_file_path:
                 self.process_edl_mov()
@@ -409,7 +419,7 @@ class AppDialog(QtGui.QWidget):
                 self.ui.next_button.setEnabled(True)
                 self.ui.file_added_label.setText(
                     os.path.basename(self._edl_file_path))
-        elif ext == ".mov":
+        if re.search('\.mov$', ext, flags=re.IGNORECASE):
             self._mov_file_path = paths[0]
             if self._edl_file_path:
                 self.process_edl_mov()
