@@ -381,6 +381,7 @@ class AppDialog(QtGui.QWidget):
         The next button is activated and this code is run when Next is clicked.
         Here we emit a signal to register a new edl, and move to the next screen.
         """
+        self.ui.next_button.hide()
         self.new_edl.emit([self._edl_file_path, self._mov_file_path])
         # todo: this show_projects() call shouldn't be necessary
         self.show_projects()
@@ -558,6 +559,7 @@ class AppDialog(QtGui.QWidget):
         # 4 : cut summary
         # 5 : import completed
         if step == _DROP_STEP:
+            self.ui.next_button.show()
             # No previous screen
             self.ui.back_button.hide()
             # Nothing to reset
