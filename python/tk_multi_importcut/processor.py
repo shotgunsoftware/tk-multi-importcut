@@ -32,7 +32,7 @@ class Processor(QtCore.QThread):
     # | UI | <-> | Processor | <-> | EdlCut | <-> | CutSummary |
     #
     #
-    new_edl                 = QtCore.Signal(str)
+    new_edl                 = QtCore.Signal(list)
     reset                   = QtCore.Signal()
     set_busy                = QtCore.Signal(bool)
     step_done               = QtCore.Signal(int)
