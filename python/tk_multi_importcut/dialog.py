@@ -839,6 +839,7 @@ class AppDialog(QtGui.QWidget):
         show_create_entity_dialog = CreateEntityDialog(
             self._selected_sg_entity[2],
             parent=self)
+        show_create_entity_dialog.create_entity.connect(self._processor.create_entity)
         show_create_entity_dialog.show()
         show_create_entity_dialog.raise_()
         show_create_entity_dialog.activateWindow()

@@ -15,8 +15,6 @@ import re
 import sgtk
 
 from .ui.create_entity_dialog import Ui_create_entity_dialog
-# Different frame mapping modes
-from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
 
@@ -25,7 +23,7 @@ class CreateEntityDialog(QtGui.QDialog):
     """
     Write something here
     """
-    create_entity = QtCore.Signal(dict)
+    create_entity = QtCore.Signal(list)
 
     def __init__(self, entity_type, parent=None):
         """
@@ -39,125 +37,25 @@ class CreateEntityDialog(QtGui.QDialog):
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
-        # self._user_settings = self._app.user_settings
-
         self._entity_type = entity_type
 
         # Set text on labels and buttons
         self.ui.create_new_entity_label.setText("Create a new %s" % entity_type)
         self.ui.create_entity_button.setText("Create %s" % entity_type)
-
-
-
-        # try:
-            # General tab
-
-            # Setting whether or not the shot status fields are enabled
-            # and updating that if the user turns them on/off w/the checkbox.
-            # update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
-            # self._set_enabled(update_shot_statuses)
-            # self.ui.update_shot_statuses_checkbox.setChecked(update_shot_statuses)
-            # self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
-
-            # self.ui.use_smart_fields_checkbox.setChecked(
-            #     self._user_settings.retrieve("use_smart_fields"))
-
-            # self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(
-            #     self._change_text)
-
-            # # Turning the email_groups list into user editable csv text
-            # email_groups = ", ".join(self._user_settings.retrieve("email_groups"))
-            # self.ui.email_groups_line_edit.setText(email_groups)
-
-            # We're storing status lists with their internal codes and matching
-            # them by searching through current status codes to find the drop
-            # down index. If the status code is missing, the index is set to 0
-            # and we throw an error to warn the user. This should probably happen
-            # when the app launches, not only when the settings dialog is opened.
-            # The reason we warn the user is: if someone deletes a status from
-            # sg that this app references, it obviously can't be used anymore, so
-            # we arbitrarily choose whatever status is at 0.
-            # omit_status = self._user_settings.retrieve("omit_status")
-            # reinstate_status = self._user_settings.retrieve("reinstate_status")
-            # shot_statuses = self._app.shotgun.schema_field_read("Shot")[
-            #     "sg_status_list"]["properties"]["valid_values"]["value"]
-            # index = 0
-            # found_omit_index, found_reinstate_index = [False, False]
-            # for status in shot_statuses:
-            #     if omit_status == status:
-            #         omit_index = index
-            #         found_omit_index = True
-            #     if reinstate_status == status:
-            #         reinstate_index = index
-            #         found_reinstate_index = True
-            #     self.ui.omit_status_combo_box.addItem(status)
-            #     self.ui.reinstate_status_combo_box.addItem(status)
-            #     index += 1
-            # if found_omit_index:
-            #     self.ui.omit_status_combo_box.setCurrentIndex(omit_index)
-            # else:
-            #     self.ui.omit_status_combo_box.setCurrentIndex(0)
-            #     self._logger.error(
-            #         'Omit status not set to "%s," status does not exist in Shotgun, check Settings.' % omit_status)
-            # self.ui.reinstate_status_combo_box.addItem("Previous Status")
-            # if found_reinstate_index:
-            #     self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
-            # elif reinstate_status == "Previous Status":
-            #     self.ui.reinstate_status_combo_box.setCurrentIndex(len(shot_statuses))
-            # else:
-            #     self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
-            #     self._logger.error(
-            #         'Reinstate status not set to "%s," status does not exist in Shotgun, check Settings.' % reinstate_status)
-
-            # # Turning the reinstate status list into user editable csv text
-            # statuses = ", ".join(self._user_settings.retrieve("reinstate_shot_if_status_is"))
-            # self.ui.reinstate_shot_if_status_is_line_edit.setText(statuses)
-
-            # # Timecode/Frames tab
-            # self.ui.default_frame_rate_line_edit.setText(
-            #     self._user_settings.retrieve("default_frame_rate"))
-            # self.ui.timecode_to_frame_mapping_combo_box.addItems(
-            #     ["Absolute", "Automatic", "Relative"])
-            # self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(
-            #     self._user_settings.retrieve("timecode_to_frame_mapping"))
-            # self.ui.timecode_mapping_line_edit.setText(
-            #     self._user_settings.retrieve("timecode_mapping"))
-            # self.ui.frame_mapping_line_edit.setText(
-            #     self._user_settings.retrieve("frame_mapping"))
-            # self.ui.default_head_in_line_edit.setText(
-            #     self._user_settings.retrieve("default_head_in"))
-            # self.ui.default_head_duration_line_edit.setText(
-            #     self._user_settings.retrieve("default_head_duration"))
-            # self.ui.default_tail_duration_line_edit.setText(
-            #     self._user_settings.retrieve("default_tail_duration"))
-
-            # Cancel or Save
         self.ui.cancel_button.clicked.connect(self.close_dialog)
-        self.ui.create_entity_button.clicked.connect(self.create_entity)
+        self.ui.create_entity_button.clicked.connect(self.emit_create_entity)
 
-        # except Exception, e:
-        #     # todo: this is a tmp workaround until we get direction on the full-on
-        #     # solution for dealing with bad values.
-        #     # If something goes wrong, reset all settings to default next time the app is run
-        #     self._user_settings.store("reset_settings", True)
-        #     self._logger.error(
-        #             "Corrupt user settings will be reset to default, restart Import Cut: %s" % (e))
-
-    @QtCore.Slot()
-    def create_entity(self):
+    def emit_create_entity(self):
         """
         Create entity, close dialog, and move to the next screen.
         """
         entity_name = self.ui.entity_name_line_edit.text()
         entity_description = self.ui.description_line_edit.text()
-        self._logger.info("Creating %s..." % entity_name)
-        new_entity = self._sg.create(
+        self.create_entity.emit([
             self._entity_type,
             {"project": self._ctx.project, "code": entity_name, "description": entity_description}
-            )
-        self.create_entity.emit(new_entity)
+            ])
         self.close_dialog()
-        # todo: move to next screen here
 
     @QtCore.Slot()
     def close_dialog(self):
@@ -165,161 +63,3 @@ class CreateEntityDialog(QtGui.QDialog):
         Close the dialog on submit or cancel.
         """
         self.close()
-
-    # def _set_enabled(self, state):
-    #     """
-    #     Enables or disables widgets based on a state.
-
-    #     :param state: bool, whether or not the widget is enabled
-    #     """
-    #     self.ui.omit_status_label.setEnabled(state)
-    #     self.ui.reinstate_shot_if_status_is_label.setEnabled(state)
-    #     self.ui.reinstate_status_label.setEnabled(state)
-    #     self.ui.omit_status_combo_box.setEnabled(state)
-    #     self.ui.reinstate_shot_if_status_is_line_edit.setEnabled(state)
-    #     self.ui.reinstate_status_combo_box.setEnabled(state)
-
-    # def _change_text(self, state):
-    #     """
-    #     Sets text and enables/disables certain widgets when user chooses a
-    #     specific timecode mapping mode
-
-    #     :param state: int representing index of choices (Absolute, Automatic, Relative)
-    #     """
-    #     if state == _ABSOLUTE_MODE:
-    #         self.ui.timecode_to_frame_mapping_instructions_label.setText(_ABSOLUTE_INSTRUCTIONS)
-    #         self.ui.timecode_mapping_label.hide()
-    #         self.ui.timecode_mapping_line_edit.hide()
-    #         self.ui.frame_mapping_label.hide()
-    #         self.ui.frame_mapping_line_edit.hide()
-    #         self.ui.default_head_in_line_edit.setEnabled(False)
-    #         self.ui.default_head_in_label.setEnabled(False)
-    #     if state == _AUTOMATIC_MODE:
-    #         self.ui.timecode_to_frame_mapping_instructions_label.setText(_AUTOMATIC_INSTRUCTIONS)
-    #         self.ui.timecode_mapping_label.hide()
-    #         self.ui.timecode_mapping_line_edit.hide()
-    #         self.ui.frame_mapping_label.hide()
-    #         self.ui.frame_mapping_line_edit.hide()
-    #         self.ui.default_head_in_line_edit.setEnabled(True)
-    #         self.ui.default_head_in_label.setEnabled(True)
-    #     if state == _RELATIVE_MODE:
-    #         self.ui.timecode_to_frame_mapping_instructions_label.setText(_RELATIVE_INSTRUCTIONS)
-    #         self.ui.timecode_mapping_label.show()
-    #         self.ui.timecode_mapping_line_edit.show()
-    #         self.ui.frame_mapping_label.show()
-    #         self.ui.frame_mapping_line_edit.show()
-    #         self.ui.default_head_in_line_edit.setEnabled(False)
-    #         self.ui.default_head_in_label.setEnabled(False)
-
-    # def _save_settings(self):
-    #     """
-    #     Validate and save user settings from current UI values
-    #     """
-
-    #     error = False
-
-    #     # General tab
-
-    #     update_shot_statuses = self.ui.update_shot_statuses_checkbox.isChecked()
-    #     self._user_settings.store("update_shot_statuses", update_shot_statuses)
-
-    #     use_smart_fields = self.ui.use_smart_fields_checkbox.isChecked()
-    #     self._user_settings.store("use_smart_fields", use_smart_fields)
-
-    #     groups_okay = True
-    #     email_groups = self.ui.email_groups_line_edit.text().replace(", ", ",").split(",")
-    #     existing_email_groups = self._app.shotgun.find("Group", [], ["code"])
-    #     existing_email_groups_list = []
-    #     for existing_group in existing_email_groups:
-    #         existing_email_groups_list.append(existing_group["code"])
-    #     for email_group in email_groups:
-    #         if email_group not in existing_email_groups_list:
-    #             groups_okay = False
-    #     if groups_okay:
-    #         self._user_settings.store("email_groups", email_groups)
-    #     else:
-    #         error = True
-    #         self._logger.error('Could not set email groups to "%s": %s' % (
-    #             email_groups, "Group or groups do not exist in Shotgun."))
-
-    #     omit_status = self.ui.omit_status_combo_box.currentText()
-    #     self._user_settings.store("omit_status", omit_status)
-
-    #     reinstate_status = self.ui.reinstate_status_combo_box.currentText()
-    #     self._user_settings.store("reinstate_status", reinstate_status)
-
-    #     statuses_okay = True
-    #     statuses = self.ui.reinstate_shot_if_status_is_line_edit.text().replace(
-    #         ", ", ",").split(",")
-    #     existing_statuses = self._app.shotgun.schema_field_read("Shot")[
-    #         "sg_status_list"]["properties"]["valid_values"]["value"]
-    #     for status in statuses:
-    #         if status not in existing_statuses:
-    #             statuses_okay = False
-    #     if statuses_okay:
-    #         self._user_settings.store("reinstate_shot_if_status_is", statuses)
-    #     else:
-    #         error = True
-    #         self._logger.error('Could not set "reinstate shot if status is" to "%s": %s' % (
-    #             statuses, "Status or statuses do not exist in Shotgun."))
-
-    #     # Timecode/Frames tab
-
-    #     default_frame_rate = self.ui.default_frame_rate_line_edit.text()
-    #     try:
-    #         fps = float(default_frame_rate)
-    #         assert fps > 0, "Value must be positive."
-    #         self._user_settings.store("default_frame_rate", default_frame_rate)
-    #     except Exception, e:
-    #         error = True
-    #         self._logger.error('Could not set frame rate to "%s": %s' % (default_frame_rate, e))
-
-    #     timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
-    #     self._user_settings.store("timecode_to_frame_mapping", timecode_to_frame_mapping)
-
-    #     timecode_mapping = self.ui.timecode_mapping_line_edit.text()
-    #     if re.search("^\d{2}:\d{2}:\d{2}[:.;]\d{2}$", timecode_mapping):
-    #         self._user_settings.store("timecode_mapping", timecode_mapping)
-    #     else:
-    #         error = True
-    #         self._logger.error('Could not set timecode mapping to "%s": %s' % (
-    #             timecode_mapping, "Did not match pattern 00:00:00:00."))
-
-    #     frame_mapping = self.ui.frame_mapping_line_edit.text()
-    #     try:
-    #         int(frame_mapping)
-    #         self._user_settings.store("frame_mapping", frame_mapping)
-    #     except Exception, e:
-    #         error = True
-    #         self._logger.error('Could not set frame mapping to "%s": %s' % (frame_mapping, e))
-
-    #     default_head_in = self.ui.default_head_in_line_edit.text()
-    #     try:
-    #         int(default_head_in)
-    #         self._user_settings.store("default_head_in", default_head_in)
-    #     except Exception, e:
-    #         error = True
-    #         self._logger.error('Could not set default head in to "%s": %s' % (default_head_in, e))
-
-    #     default_head_duration = self.ui.default_head_duration_line_edit.text()
-    #     try:
-    #         dhd = int(default_head_duration)
-    #         assert dhd >= 0, "Value can't be nagative."
-    #         self._user_settings.store("default_head_duration", default_head_duration)
-    #     except Exception, e:
-    #         error = True
-    #         self._logger.error('Could not set default head duration to "%s": %s' % (
-    #             default_head_duration, e))
-
-    #     default_tail_duration = self.ui.default_tail_duration_line_edit.text()
-    #     try:
-    #         dtd = int(default_tail_duration)
-    #         assert dtd >= 0, "Value can't be negative."
-    #         self._user_settings.store("default_tail_duration", default_tail_duration)
-    #     except Exception, e:
-    #         error = True
-    #         self._logger.error('Could not set default head duration to "%s": %s' % (
-    #             default_head_duration, e))
-
-    #     if error is False:
-    #         self._logger.info("User settings saved.")
