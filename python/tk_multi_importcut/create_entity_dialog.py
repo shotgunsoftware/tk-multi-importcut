@@ -21,7 +21,9 @@ from .logger import get_logger
 
 class CreateEntityDialog(QtGui.QDialog):
     """
-    Write something here
+    This dialog is available by clicking the "New [Entity]" button on the select
+    entities page. A user can enter an entity name with description, on submit
+    the entity is create and the stacked widget moves to the next page.
     """
     create_entity = QtCore.Signal(list)
 
@@ -47,7 +49,7 @@ class CreateEntityDialog(QtGui.QDialog):
 
     def emit_create_entity(self):
         """
-        Create entity, close dialog, and move to the next screen.
+        Send out request to create entity, then close the dialog.
         """
         entity_name = self.ui.entity_name_line_edit.text()
         entity_description = self.ui.description_line_edit.text()
@@ -60,6 +62,6 @@ class CreateEntityDialog(QtGui.QDialog):
     @QtCore.Slot()
     def close_dialog(self):
         """
-        Close the dialog on submit or cancel.
+        Close the dialog on Create [Entity] or Cancel.
         """
         self.close()

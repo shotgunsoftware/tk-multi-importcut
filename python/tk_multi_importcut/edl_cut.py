@@ -373,7 +373,7 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(list)
     def create_entity(self, create_playload):
         """
-        :param create_payload: A list containing an entity type to b created
+        :param create_payload: A list containing an entity type to be created
         along with paramater values the user entered in the create_entity dialog.
         """
         new_entity = self._sg.create(*create_playload)
