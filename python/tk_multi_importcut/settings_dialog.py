@@ -38,8 +38,6 @@ class SettingsDialog(QtGui.QDialog):
     widget. Gives users access to app settings via a gui interface, stores those
     settings locally per user.
     """
-    submit = QtCore.Signal(str, dict, dict, str, bool)
-
     def __init__(self, parent=None):
         """
         Instantiate a new dialog
@@ -153,7 +151,7 @@ class SettingsDialog(QtGui.QDialog):
     @QtCore.Slot()
     def save_settings(self):
         """
-        Submit the cut import and close the dialog
+        Save settings and close the dialog.
         """
         self._save_settings()
         self.close_dialog()
@@ -161,7 +159,7 @@ class SettingsDialog(QtGui.QDialog):
     @QtCore.Slot()
     def close_dialog(self):
         """
-        Close the dialog on submit or cancel
+        Close the dialog on save or cancel.
         """
         self.close()
 

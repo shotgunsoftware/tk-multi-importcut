@@ -39,6 +39,7 @@ from .cut_diff import _DIFF_TYPES, CutDiff
 from .cut_diffs_view import CutDiffsView
 from .submit_dialog import SubmitDialog
 from .settings_dialog import SettingsDialog
+from .create_entity_dialog import CreateEntityDialog
 from .downloader import DownloadRunner
 
 # Different steps in the process
@@ -269,6 +270,7 @@ class AppDialog(QtGui.QWidget):
 
         self.ui.back_button.clicked.connect(self.previous_page)
         self.ui.next_button.clicked.connect(self.process_edl_mov)
+        self.ui.create_entity_button.clicked.connect(self.create_entity_dialog)
         self.ui.stackedWidget.first_page_reached.connect(self.reset)
         self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
@@ -390,10 +392,9 @@ class AppDialog(QtGui.QWidget):
         else:
             # The user needs to pickup a project first
             self.goto_step(_PROJECT_STEP)
-        self.ui.sequences_label.setText("Importing %s" % self._edl_file_path)
-        self.ui.entity_picker_message_label.setText(
-            "Importing %s ..." % os.path.basename(self._edl_file_path),
-        )
+        import_message = "Importing %s..." % os.path.basename(self._edl_file_path)
+        self.ui.sequences_label.setText(import_message)
+        self.ui.entity_picker_message_label.setText(import_message)
 
     @QtCore.Slot(list)
     def process_drop(self, paths):
@@ -559,24 +560,28 @@ class AppDialog(QtGui.QWidget):
         # 4 : cut summary
         # 5 : import completed
         if step == _DROP_STEP:
-            self.ui.next_button.show()
-            # No previous screen
-            self.ui.back_button.hide()
-            # Nothing to reset
-            self.ui.reset_button.hide()
             # Clear various things when we hit the first screen
             # doing a reset
+            self.ui.back_button.hide()
+            self.ui.reset_button.hide()
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = None
             self._edl_file_path = None
             self._mov_file_path = None
             self.ui.edl_added_icon.hide()
             self.ui.mov_added_icon.hide()
             self.ui.file_added_label.setText("")
+            self.ui.next_button.show()
             self.ui.next_button.setEnabled(False)
         else:
             # Allow reset and back from screens > 0
             self.ui.reset_button.show()
             self.ui.back_button.show()
+
+        if step == _ENTITY_STEP:
+            self.ui.create_entity_button.setText("New %s" % self._selected_sg_entity[2])
+            self.ui.create_entity_button.show()
+        else:
+            self.ui.create_entity_button.hide()
 
         if step < _PROJECT_STEP:
             self.ui.projects_search_line_edit.clear()
@@ -644,7 +649,7 @@ class AppDialog(QtGui.QWidget):
                 )
         elif step == _PROGRESS_STEP:
             self.ui.progress_screen_title_label.setText(
-                "Importing %s ..." % os.path.basename(self._processor.edl_file_path),
+                "Importing %s..." % os.path.basename(self._processor.edl_file_path),
             )
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
@@ -824,6 +829,19 @@ class AppDialog(QtGui.QWidget):
         show_settings_dialog.show()
         show_settings_dialog.raise_()
         show_settings_dialog.activateWindow()
+
+    @QtCore.Slot()
+    def create_entity_dialog(self):
+        """
+        Called on the Select [Entity] page, the user is presented with a dialog
+        where he/she can choose to create a new Entity of the selected type
+        """
+        show_create_entity_dialog = CreateEntityDialog(
+            self._selected_sg_entity[2],
+            parent=self)
+        show_create_entity_dialog.show()
+        show_create_entity_dialog.raise_()
+        show_create_entity_dialog.activateWindow()
 
     @QtCore.Slot()
     def email_cut_changes(self):
