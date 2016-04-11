@@ -385,7 +385,8 @@ class AppDialog(QtGui.QWidget):
         """
         self.ui.next_button.hide()
         self.new_edl.emit([self._edl_file_path, self._mov_file_path])
-        # todo: this show_projects() call shouldn't be necessary
+        # todo: this show_projects() call shouldn't be necessary, but
+        # if it's not called here, then we can't go back and see the projects list
         self.show_projects()
         if self._ctx.project is not None:
             self.goto_step(_ENTITY_TYPE_STEP)
@@ -421,7 +422,7 @@ class AppDialog(QtGui.QWidget):
                 self.ui.next_button.setEnabled(True)
                 self.ui.file_added_label.setText(
                     os.path.basename(self._edl_file_path))
-        if re.search('\.mov$', ext, flags=re.IGNORECASE):
+        elif re.search('\.mov$', ext, flags=re.IGNORECASE):
             self._mov_file_path = paths[0]
             if self._edl_file_path:
                 self.process_edl_mov()
@@ -429,6 +430,10 @@ class AppDialog(QtGui.QWidget):
                 self.ui.mov_added_icon.show()
                 self.ui.file_added_label.setText(
                     os.path.basename(self._mov_file_path))
+        else:
+            self._bad_file_path = paths[0]
+            self._logger.error('"%s" is not a supported file type.' % (
+                os.path.basename(self._bad_file_path)))
 
     @QtCore.Slot(int, str)
     def new_message(self, levelno, message):
@@ -834,7 +839,7 @@ class AppDialog(QtGui.QWidget):
     def create_entity_dialog(self):
         """
         Called on the Select [Entity] page, the user is presented with a dialog
-        where he/she can choose to create a new Entity of the selected type
+        where s/he can choose to create a new Entity of the selected type.
         """
         show_create_entity_dialog = CreateEntityDialog(
             self._selected_sg_entity[2],

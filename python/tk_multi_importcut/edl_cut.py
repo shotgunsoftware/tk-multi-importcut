@@ -373,6 +373,9 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(list)
     def create_entity(self, create_playload):
         """
+        Creates an entity of the type specific in the create_payload param and
+        moves to the next screen with that entity selected.
+
         :param create_payload: A list containing an entity type to be created
         along with paramater values the user entered in the create_entity dialog.
         """
@@ -917,10 +920,9 @@ class EdlCut(QtCore.QObject):
             "duration"           : self._summary.duration,
             "revision_number"    : self._num_cuts + 1,
         }
-        # Upload base layer media file to the new Cut record if a media file
-        # has been chosen by the user.
+        # Upload base layer media file to the new Cut record if it exists.
         if self._mov_file_path:
-            # Create a version
+            # Create a version.
             sg_version = self._sg.create(
                 "Version", {
                     "project"            : self._project,
