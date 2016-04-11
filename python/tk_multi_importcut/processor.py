@@ -49,7 +49,6 @@ class Processor(QtCore.QThread):
     got_idle                = QtCore.Signal()
     progress_changed        = QtCore.Signal(int)
     import_cut              = QtCore.Signal(str, dict, dict, str, bool)
-    create_entity           = QtCore.Signal(list)
     totals_changed          = QtCore.Signal()
     delete_cut_diff         = QtCore.Signal(CutDiff)
     ready                   = QtCore.Signal()
@@ -184,7 +183,6 @@ class Processor(QtCore.QThread):
         self.retrieve_cuts.connect(self._edl_cut.retrieve_cuts)
         self.show_cut_diff.connect(self._edl_cut.show_cut_diff)
         self.import_cut.connect(self._edl_cut.do_cut_import)
-        self.create_entity.connect(self._edl_cut.create_entity)
         # Results / orders we send
         self._edl_cut.step_done.connect(self.step_done)
         self._edl_cut.step_failed.connect(self.step_failed)

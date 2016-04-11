@@ -120,6 +120,7 @@ class AppDialog(QtGui.QWidget):
         # most of the useful accessors are available through the Application class instance
         # it is often handy to keep a reference to this. You can get it via the following method:
         self._app = sgtk.platform.current_bundle()
+        self._sg = self._app.shotgun
         self._ctx = self._app.context
         self._user_settings = self._app.user_settings
 
@@ -835,6 +836,33 @@ class AppDialog(QtGui.QWidget):
         show_settings_dialog.raise_()
         show_settings_dialog.activateWindow()
 
+    def create_entity(self, create_playload):
+        """
+        Creates an entity of the type specific in the create_payload param and
+        moves to the next screen with that entity selected.
+
+        :param create_payload: A list containing an entity type to be created
+        along with paramater values the user entered in the create_entity dialog.
+        """
+        try:
+            new_entity = self._sg.create(*create_playload)
+            self.show_cuts_for_sequence.emit(new_entity)
+        except Exception, e:
+            msg_box = QtGui.QMessageBox(
+                parent=self,
+                icon=QtGui.QMessageBox.Critical
+                )
+            msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
+            msg_box.setText("The following error was reported:")
+            msg_box.setInformativeText("You do not have permission to create new %ss. \
+Please select another %s or ask your Shotgun Admin to adjust your permissions in Shotgun." % (
+                create_playload[0], create_playload[0]))
+            msg_box.setDetailedText("%s" % e)
+            msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+            msg_box.show()
+            msg_box.raise_()
+            msg_box.activateWindow()
+
     @QtCore.Slot()
     def create_entity_dialog(self):
         """
@@ -844,7 +872,7 @@ class AppDialog(QtGui.QWidget):
         show_create_entity_dialog = CreateEntityDialog(
             self._selected_sg_entity[2],
             parent=self)
-        show_create_entity_dialog.create_entity.connect(self._processor.create_entity)
+        show_create_entity_dialog.create_entity.connect(self.create_entity)
         show_create_entity_dialog.show()
         show_create_entity_dialog.raise_()
         show_create_entity_dialog.activateWindow()

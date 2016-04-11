@@ -15,6 +15,7 @@ from .logger import get_logger
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
 from .entity_line_widget import EntityLineWidget
+from sgtk.platform.qt import QtCore, QtGui
 
 # Different steps in the process
 from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, \
@@ -369,22 +370,6 @@ class EdlCut(QtCore.QObject):
             self._logger.exception(str(e))
         finally:
             self.got_idle.emit()
-
-    @QtCore.Slot(list)
-    def create_entity(self, create_playload):
-        """
-        Creates an entity of the type specific in the create_payload param and
-        moves to the next screen with that entity selected.
-
-        :param create_payload: A list containing an entity type to be created
-        along with paramater values the user entered in the create_entity dialog.
-        """
-        try:
-            new_entity = self._sg.create(*create_playload)
-            self.retrieve_cuts(new_entity)
-        except Exception, e:
-            self._logger.error("You do not have permission to create new %ss. \
-Please select another %s or ask your Shotgun Admin to adjust your permissions in Shotgun." % (create_playload[0], create_playload[0]))
 
     @QtCore.Slot(dict)
     def retrieve_cuts(self, sg_entity):
