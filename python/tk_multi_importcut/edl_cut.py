@@ -379,8 +379,12 @@ class EdlCut(QtCore.QObject):
         :param create_payload: A list containing an entity type to be created
         along with paramater values the user entered in the create_entity dialog.
         """
-        new_entity = self._sg.create(*create_playload)
-        self.retrieve_cuts(new_entity)
+        try:
+            new_entity = self._sg.create(*create_playload)
+            self.retrieve_cuts(new_entity)
+        except Exception, e:
+            self._logger.error("You do not have permission to create new %ss. \
+Please select another %s or ask your Shotgun Admin to adjust your permissions in Shotgun." % (create_playload[0], create_playload[0]))
 
     @QtCore.Slot(dict)
     def retrieve_cuts(self, sg_entity):
