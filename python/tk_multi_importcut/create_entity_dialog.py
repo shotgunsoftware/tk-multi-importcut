@@ -47,16 +47,29 @@ class CreateEntityDialog(QtGui.QDialog):
         self.ui.cancel_button.clicked.connect(self.close_dialog)
         self.ui.create_entity_button.clicked.connect(self.emit_create_entity)
 
+        self.entity_statuses = self._app.shotgun.schema_field_read(entity_type)[
+                "sg_status_list"]["properties"]["valid_values"]["value"]
+        for status in self.entity_statuses:
+            self.ui.status_combo_box.addItem(status)
+
+        self.ui.project_name_label.setText(self._ctx.project["name"])
+
     def emit_create_entity(self):
         """
         Send out request to create entity, then close the dialog.
         """
         entity_name = self.ui.entity_name_line_edit.text()
         entity_description = self.ui.description_line_edit.text()
+        status_index = self.ui.status_combo_box.currentIndex()
         self.create_entity.emit([
             self._entity_type,
-            {"project": self._ctx.project, "code": entity_name, "description": entity_description}
-            ])
+            {
+                "project": self._ctx.project,
+                "code": entity_name,
+                "description": entity_description,
+                "sg_status_list": self.entity_statuses[status_index]
+            }
+        ])
         self.close_dialog()
 
     @QtCore.Slot()
