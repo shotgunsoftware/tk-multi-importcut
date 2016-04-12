@@ -892,7 +892,7 @@ class AppDialog(QtGui.QWidget):
             # Add a watcher to pickup changes only if the app was started from tk-shell
             # usually clients use tk-desktop or tk-shotgun, so it should be safe to
             # assume that this will cause any harm in production
-            if sgtk.platform.current_engine().name == "tk-shell":
+            if self._app.engine.name == "tk-shell":
                 self._css_watcher = QtCore.QFileSystemWatcher([css_file], self)
                 self._css_watcher.fileChanged.connect(self.reload_css)
 
