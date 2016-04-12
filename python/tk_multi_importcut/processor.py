@@ -176,7 +176,7 @@ class Processor(QtCore.QThread):
         # Connect signals from the worker to ours as a gateway, so anything
         # connected to the Processor signals will be connected to the worker
         # Orders we receive
-        self.new_edl.connect(self._edl_cut.load_edl)
+        self.new_edl.connect(self._edl_cut.process_edl_and_mov)
         self.reset.connect(self._edl_cut.reset)
         self.retrieve_projects.connect(self._edl_cut.retrieve_projects)
         self.retrieve_entities.connect(self._edl_cut.retrieve_entities)

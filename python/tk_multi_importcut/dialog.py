@@ -594,6 +594,7 @@ class AppDialog(QtGui.QWidget):
             self.ui.next_button.setEnabled(False)
         else:
             # Allow reset and back from screens > 0
+            self.ui.next_button.hide()
             self.ui.reset_button.show()
             self.ui.back_button.show()
 

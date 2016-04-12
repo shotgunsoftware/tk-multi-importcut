@@ -176,13 +176,24 @@ class EdlCut(QtCore.QObject):
             self._logger.info("Session discarded...")
 
     @QtCore.Slot(str, str)
-    def load_edl(self, edl_file_path, mov_file_path):
+    def process_edl_and_mov(self, edl_file_path, mov_file_path):
         """
-        Load an EDL file
+        Set _mov_file path member and pass edl_file_path to load_edl
 
-        :param paths: List, full path to the EDL and optional Mov files.
+        :param edl_file_path: String, full path to EDL file.
+        :param mov_file_path: String, full path to MOV file.
         """
         self._mov_file_path = mov_file_path
+        self._logger.info(mov_file_path)
+        self._logger.info(edl_file_path)
+        self.load_edl(edl_file_path)
+
+    def load_edl(self, edl_file_path):
+        """
+        Load an EDL file.
+
+        :param edl_file_path: String, full path to the EDL file.
+        """
         self._logger.info("Loading %s ..." % edl_file_path)
         try:
             self._edl_file_path = edl_file_path
