@@ -282,7 +282,7 @@ class EdlCut(QtCore.QObject):
                 r, g, b = sg_status["bg_color"].split(",")
                 sg_status["_bg_hex_color"] = "#%02x%02x%02x" % (int(r), int(g), int(b))
             status_dict[sg_status["code"]] = sg_status
-        self._logger.info("Retrieving %s(s) for project %s ..." % (
+        self._logger.info("Retrieving %ss for project %s..." % (
             entity_type, self._project["name"]))
         self.got_busy.emit(None)
         try:
@@ -326,11 +326,6 @@ class EdlCut(QtCore.QObject):
                     ["code", "name", "title", "id", "sg_status_list", "image", "description"],
                     order=[{"field_name": "code", "direction": "asc"}]
                 )
-            if not sg_entities:
-                raise RuntimeWarning("Couldn't retrieve any %s for project %s" % (
-                    entity_type,
-                    self._project["name"],
-                ))
             for sg_entity in sg_entities:
                 # Project uses sg_status and not sg_status_list
                 status = sg_entity.get("sg_status_list",

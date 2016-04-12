@@ -27,7 +27,7 @@ class CreateEntityDialog(QtGui.QDialog):
     """
     create_entity = QtCore.Signal(str, dict)
 
-    def __init__(self, entity_type, parent=None):
+    def __init__(self, entity_type, sg_project, parent=None):
         """
         Instantiate a new dialog
         :param parent: a QWidget
@@ -40,6 +40,7 @@ class CreateEntityDialog(QtGui.QDialog):
         self._sg = self._app.shotgun
         self._ctx = self._app.context
         self._entity_type = entity_type
+        self._project = sg_project
 
         # Set text on labels and buttons
         self.ui.create_new_entity_label.setText("Create a new %s" % entity_type)
@@ -52,7 +53,7 @@ class CreateEntityDialog(QtGui.QDialog):
         for status in self.entity_statuses:
             self.ui.status_combo_box.addItem(status)
 
-        self.ui.project_name_label.setText(self._ctx.project["name"])
+        self.ui.project_name_label.setText(sg_project["name"])
 
     def emit_create_entity(self):
         """
@@ -64,7 +65,7 @@ class CreateEntityDialog(QtGui.QDialog):
         self.create_entity.emit(
             self._entity_type,
             {
-                "project": self._ctx.project,
+                "project": self._project,
                 "code": entity_name,
                 "description": entity_description,
                 "sg_status_list": self.entity_statuses[status_index]

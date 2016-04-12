@@ -124,6 +124,7 @@ class AppDialog(QtGui.QWidget):
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
+        self._sg_project = self._ctx.project
         self._user_settings = self._app.user_settings
 
         # todo: this is a tmp workaround. In the future we should validate all settings
@@ -744,6 +745,7 @@ class AppDialog(QtGui.QWidget):
 
         :param sg_project: The Shotgun Project dict to check for entities with
         """
+        self._sg_project = sg_project
         self._processor.set_project(sg_project)
         self.goto_step(_ENTITY_TYPE_STEP)
 
@@ -890,6 +892,7 @@ class AppDialog(QtGui.QWidget):
         """
         show_create_entity_dialog = CreateEntityDialog(
             self._selected_sg_entity[2],
+            self._sg_project,
             parent=self)
         show_create_entity_dialog.create_entity.connect(self.create_entity)
         show_create_entity_dialog.show()
@@ -1004,7 +1007,7 @@ class AppDialog(QtGui.QWidget):
             # Add a watcher to pickup changes only if the app was started from tk-shell
             # usually clients use tk-desktop or tk-shotgun, so it should be safe to
             # assume that this will cause any harm in production
-            if sgtk.platform.current_engine().name == "tk-shell":
+            if self._app.engine.name == "tk-shell":
                 self._css_watcher = QtCore.QFileSystemWatcher([css_file], self)
                 self._css_watcher.fileChanged.connect(self.reload_css)
 

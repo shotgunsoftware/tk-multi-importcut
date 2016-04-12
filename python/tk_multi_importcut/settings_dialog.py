@@ -15,6 +15,7 @@ import re
 import sgtk
 
 from .ui.settings_dialog import Ui_settings_dialog
+from .cut_diff import CutDiff
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 from sgtk.platform.qt import QtCore, QtGui
@@ -320,3 +321,5 @@ class SettingsDialog(QtGui.QDialog):
 
         if error is False:
             self._logger.info("User settings saved.")
+
+        CutDiff.retrieve_default_timecode_frame_mapping()

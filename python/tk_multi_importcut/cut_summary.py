@@ -265,6 +265,7 @@ class CutSummary(QtCore.QObject):
         super(CutSummary, self).__init__()
         self._cut_diffs = {}
         self._counts = {}
+        self._cut_item_notes = {}
         self._rescans_count = 0
         self._logger = get_logger()
 
@@ -298,6 +299,10 @@ class CutSummary(QtCore.QObject):
     def fps(self):
         return self._fps
 
+    @property
+    def cut_item_notes(self):
+        return self._cut_item_notes
+
     @timecode_start.setter
     def timecode_start(self, value):
         self._tc_start = value
@@ -317,6 +322,10 @@ class CutSummary(QtCore.QObject):
     @fps.setter
     def fps(self, value):
         self._fps = value
+
+    @cut_item_notes.setter
+    def cut_item_notes(self, value):
+        self._cut_item_notes = value
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
