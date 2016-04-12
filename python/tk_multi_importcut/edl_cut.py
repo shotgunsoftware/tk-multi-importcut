@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
@@ -15,7 +15,6 @@ from .logger import get_logger
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
 from .entity_line_widget import EntityLineWidget
-from sgtk.platform.qt import QtCore, QtGui
 
 # Different steps in the process
 from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, \
@@ -176,15 +175,14 @@ class EdlCut(QtCore.QObject):
         if had_something:
             self._logger.info("Session discarded...")
 
-    @QtCore.Slot(list)
-    def load_edl(self, paths):
+    @QtCore.Slot(str, str)
+    def load_edl(self, edl_file_path, mov_file_path):
         """
         Load an EDL file
 
         :param paths: List, full path to the EDL and optional Mov files.
         """
-        edl_file_path = paths[0]
-        self._mov_file_path = paths[1]
+        self._mov_file_path = mov_file_path
         self._logger.info("Loading %s ..." % edl_file_path)
         try:
             self._edl_file_path = edl_file_path

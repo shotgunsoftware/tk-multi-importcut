@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
@@ -45,6 +45,8 @@ from .downloader import DownloadRunner
 # Different steps in the process
 from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, \
     _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+
+from .constants import _VIDEO_EXTS
 
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
@@ -97,7 +99,7 @@ class AppDialog(QtGui.QWidget):
     """
     Main application dialog window
     """
-    new_edl = QtCore.Signal(list)
+    new_edl = QtCore.Signal(str, str)
     get_projects = QtCore.Signal(str)
     get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
@@ -305,7 +307,7 @@ class AppDialog(QtGui.QWidget):
 
         # There is not command line support yet for passing in a base layer
         # media file, so we set mov_file_path to None
-        self.new_edl.emit([edl_file_path, None])
+        self.new_edl.emit(edl_file_path, None)
         if sg_entity:
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
             self.show_entities(sg_entity["type"])
@@ -384,8 +386,7 @@ class AppDialog(QtGui.QWidget):
         The next button is activated and this code is run when Next is clicked.
         Here we emit a signal to register a new edl, and move to the next screen.
         """
-        self.ui.next_button.hide()
-        self.new_edl.emit([self._edl_file_path, self._mov_file_path])
+        self.new_edl.emit(self._edl_file_path, self._mov_file_path)
         # todo: this show_projects() call shouldn't be necessary, but
         # if it's not called here, then we can't go back and see the projects list
         self.show_projects()
@@ -404,37 +405,50 @@ class AppDialog(QtGui.QWidget):
         Process a drop event, paths can either be
         local filesystem paths or SG urls
         """
-        if len(paths) != 1:
+        # if len(paths) > 2:
+        if len(paths) > 1:
             QtGui.QMessageBox.warning(
                 self,
                 "Can't process drop",
-                "Please drop only one file at a time",
+                # "Please drop maximum of two files at a time (EDL + MOV).",
+                "Please drop one file at a time."
             )
             return
-        # Set state of gui elements based on what kind of file is dropped,
-        # or move on to the next screen if we have both EDL and MOV
-        ext = os.path.splitext(paths[0])[1]
-        if re.search('\.edl$', ext, flags=re.IGNORECASE):
-            self._edl_file_path = paths[0]
-            if self._mov_file_path:
-                self.process_edl_mov()
+        _, ext = os.path.splitext(paths[0])
+        if len(paths) == 2:
+            _, ext_2 = os.path.splitext(paths[1])
+            if ext == ".edl":
+                extensions = [ext_2, ext]
             else:
-                self.ui.edl_added_icon.show()
-                self.ui.next_button.setEnabled(True)
-                self.ui.file_added_label.setText(
-                    os.path.basename(self._edl_file_path))
-        elif re.search('\.mov$', ext, flags=re.IGNORECASE):
-            self._mov_file_path = paths[0]
-            if self._edl_file_path:
-                self.process_edl_mov()
-            else:
-                self.ui.mov_added_icon.show()
-                self.ui.file_added_label.setText(
-                    os.path.basename(self._mov_file_path))
+                extensions = [ext, ext_2]
         else:
-            self._bad_file_path = paths[0]
-            self._logger.error('"%s" is not a supported file type.' % (
-                os.path.basename(self._bad_file_path)))
+            extensions = [ext]
+        for ext in extensions:
+            # Set state of gui elements based on what kind of file is dropped,
+            # or move on to the next screen if we have both EDL and MOV
+            if ext.lower() == ".edl":
+                self._edl_file_path = paths[0]
+                if self._mov_file_path:
+                    self.process_edl_mov()
+                else:
+                    self.ui.edl_added_icon.show()
+                    self.ui.next_button.setEnabled(True)
+                    self.ui.file_added_label.setText(
+                        os.path.basename(self._edl_file_path))
+            elif ext.lower() in _VIDEO_EXTS:
+                self._mov_file_path = paths[0]
+                if self._edl_file_path:
+                    self.process_edl_mov()
+                else:
+                    self.ui.mov_added_icon.show()
+                    self.ui.file_added_label.setText(
+                        os.path.basename(self._mov_file_path))
+            else:
+                bad_file_path = paths[0]
+                self._logger.error('"%s" is not a supported file type. \
+    Supported types are .edl and movie types: %s.' % (
+                    os.path.basename(bad_file_path), _VIDEO_EXTS))
+                break
 
     @QtCore.Slot(int, str)
     def new_message(self, levelno, message):
@@ -836,7 +850,7 @@ class AppDialog(QtGui.QWidget):
         show_settings_dialog.raise_()
         show_settings_dialog.activateWindow()
 
-    def create_entity(self, create_playload):
+    def create_entity(self, entity_type, fields):
         """
         Creates an entity of the type specific in the create_payload param and
         moves to the next screen with that entity selected.
@@ -845,18 +859,22 @@ class AppDialog(QtGui.QWidget):
         along with paramater values the user entered in the create_entity dialog.
         """
         try:
-            new_entity = self._sg.create(*create_playload)
+            new_entity = self._sg.create(entity_type, fields)
             self.show_cuts_for_sequence.emit(new_entity)
         except Exception, e:
             msg_box = QtGui.QMessageBox(
                 parent=self,
                 icon=QtGui.QMessageBox.Critical
-                )
+            )
             msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
             msg_box.setText("The following error was reported:")
-            msg_box.setInformativeText("You do not have permission to create new %ss. \
-Please select another %s or ask your Shotgun Admin to adjust your permissions in Shotgun." % (
-                create_playload[0], create_playload[0]))
+            msg_box.setInformativeText(
+                "It's possible you do not have permission to create new %ss. Please select another \
+%s or ask your Shotgun Admin to adjust your permissions in Shotgun." % (
+                    entity_type,
+                    entity_type
+                )
+            )
             msg_box.setDetailedText("%s" % e)
             msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
             msg_box.show()

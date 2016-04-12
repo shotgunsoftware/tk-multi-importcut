@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
@@ -25,7 +25,7 @@ class CreateEntityDialog(QtGui.QDialog):
     entities page. A user can enter an entity name with description, on submit
     the entity is create and the stacked widget moves to the next page.
     """
-    create_entity = QtCore.Signal(list)
+    create_entity = QtCore.Signal(str, dict)
 
     def __init__(self, entity_type, parent=None):
         """
@@ -61,7 +61,7 @@ class CreateEntityDialog(QtGui.QDialog):
         entity_name = self.ui.entity_name_line_edit.text()
         entity_description = self.ui.description_line_edit.text()
         status_index = self.ui.status_combo_box.currentIndex()
-        self.create_entity.emit([
+        self.create_entity.emit(
             self._entity_type,
             {
                 "project": self._ctx.project,
@@ -69,7 +69,7 @@ class CreateEntityDialog(QtGui.QDialog):
                 "description": entity_description,
                 "sg_status_list": self.entity_statuses[status_index]
             }
-        ])
+        )
         self.close_dialog()
 
     @QtCore.Slot()

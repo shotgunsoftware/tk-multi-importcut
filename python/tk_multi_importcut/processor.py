@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
@@ -32,7 +32,7 @@ class Processor(QtCore.QThread):
     # | UI | <-> | Processor | <-> | EdlCut | <-> | CutSummary |
     #
     #
-    new_edl                 = QtCore.Signal(list)
+    new_edl                 = QtCore.Signal(str, str)
     reset                   = QtCore.Signal()
     set_busy                = QtCore.Signal(bool)
     step_done               = QtCore.Signal(int)
