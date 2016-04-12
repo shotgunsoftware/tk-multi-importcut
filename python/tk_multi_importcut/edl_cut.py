@@ -184,8 +184,6 @@ class EdlCut(QtCore.QObject):
         :param mov_file_path: String, full path to MOV file.
         """
         self._mov_file_path = mov_file_path
-        self._logger.info(mov_file_path)
-        self._logger.info(edl_file_path)
         self.load_edl(edl_file_path)
 
     def load_edl(self, edl_file_path):
