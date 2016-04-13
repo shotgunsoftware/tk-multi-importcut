@@ -99,7 +99,7 @@ class AppDialog(QtGui.QWidget):
     """
     Main application dialog window
     """
-    new_edl = QtCore.Signal(str, str)
+    new_edl_and_mov = QtCore.Signal(str, str)
     get_projects = QtCore.Signal(str)
     get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
@@ -186,8 +186,6 @@ class AppDialog(QtGui.QWidget):
         # - A tk API instance, via self._app.tk
 
         # lastly, set up our very basic UI
-        self.ui.edl_added_icon.hide()
-        self.ui.mov_added_icon.hide()
         self.set_custom_style()
         self.set_logger(logging.INFO)
 
@@ -197,7 +195,7 @@ class AppDialog(QtGui.QWidget):
         # Handle data and processong in a separate thread
         self._processor = Processor(frame_rate)
 
-        self.new_edl.connect(self._processor.new_edl)
+        self.new_edl_and_mov.connect(self._processor.new_edl_and_mov)
         self.get_projects.connect(self._processor.retrieve_projects)
         self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
@@ -308,7 +306,7 @@ class AppDialog(QtGui.QWidget):
 
         # There is not command line support yet for passing in a base layer
         # media file, so we set mov_file_path to None
-        self.new_edl.emit(edl_file_path, None)
+        self.new_edl_and_mov.emit(edl_file_path, None)
         if sg_entity:
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
             self.show_entities(sg_entity["type"])
@@ -387,7 +385,7 @@ class AppDialog(QtGui.QWidget):
         The next button is activated and this code is run when Next is clicked.
         Here we emit a signal to register a new edl, and move to the next screen.
         """
-        self.new_edl.emit(self._edl_file_path, self._mov_file_path)
+        self.new_edl_and_mov.emit(self._edl_file_path, self._mov_file_path)
         # todo: this show_projects() call shouldn't be necessary, but
         # if it's not called here, then we can't go back and see the projects list
         self.show_projects()
@@ -418,7 +416,7 @@ class AppDialog(QtGui.QWidget):
         _, ext = os.path.splitext(paths[0])
         if len(paths) == 2:
             _, ext_2 = os.path.splitext(paths[1])
-            if ext == ".edl":
+            if ext.lower() == ".edl":
                 extensions = [ext_2, ext]
             else:
                 extensions = [ext, ext_2]
@@ -446,8 +444,7 @@ class AppDialog(QtGui.QWidget):
                         os.path.basename(self._mov_file_path))
             else:
                 bad_file_path = paths[0]
-                self._logger.error('"%s" is not a supported file type. \
-    Supported types are .edl and movie types: %s.' % (
+                self._logger.error('"%s" is not a supported file type. Supported types are .edl and movie types: %s.' % (
                     os.path.basename(bad_file_path), _VIDEO_EXTS))
                 break
 
@@ -1007,7 +1004,7 @@ class AppDialog(QtGui.QWidget):
             # Add a watcher to pickup changes only if the app was started from tk-shell
             # usually clients use tk-desktop or tk-shotgun, so it should be safe to
             # assume that this will cause any harm in production
-            if self._app.engine.name == "tk-shell":
+            if self._app.get_setting("css_watcher"):
                 self._css_watcher = QtCore.QFileSystemWatcher([css_file], self)
                 self._css_watcher.fileChanged.connect(self.reload_css)
 
