@@ -106,8 +106,13 @@ DropAreaFrame QLabel {
 }
 
 /* general bg color for the whole settings_dialog */
-#settings_dialog {
+#settings_dialog, #create_entity_dialog {
     background-color: #3c3e42;
+}
+
+#create_entity_line_1, #create_entity_line_2 {
+    color: black;
+    height: 1px;
 }
 
 /* styling the tab border */
@@ -122,8 +127,33 @@ DropAreaFrame QLabel {
 #timecode_to_frame_mapping_combo_box, #timecode_to_frame_mapping_instructions_label,
 #description_2_label, #default_frame_rate_line_edit, #timecode_mapping_line_edit,
 #frame_mapping_line_edit, #default_head_in_line_edit, #default_head_duration_line_edit,
-#default_tail_duration_line_edit, #email_groups_line_edit, #reinstate_shot_if_status_is_line_edit {
+#default_tail_duration_line_edit, #email_groups_line_edit,
+#reinstate_shot_if_status_is_line_edit, #entity_name_label, #description_label,
+#status_label, #project_label {
     font-size: 12px;
+}
+
+/* setting font size for mov and edl label on drop */
+#file_added_label, #instructions_label {
+    font-size: 14px;
+}
+
+#instructions_label {
+    color: #707070;
+}
+
+#success_page #success_label {
+    font-size: 20px;
+}
+
+#success_page #shotgun_button, #create_entity_dialog #create_entity_button {
+    background-color: #18a6e3;
+}
+
+
+
+#entity_name_line_edit, #description_line_edit {
+    background-color: #2f3033;
 }
 
 /* todo: this is bad, it's going to style all QTabBar widgets
@@ -177,7 +207,8 @@ QTabBar::tab:selected {
 #reinstate_shot_if_status_is_label, #reinstate_status_label, #use_smart_fields_label,
 #default_frame_rate_label, #timecode_to_frame_mapping_label, #default_head_in_label,
 #default_head_duration_label, #default_tail_duration_label, #timecode_mapping_label,
-#frame_mapping_label {
+#frame_mapping_label, #entity_name_label, #description_label, #status_label,
+#project_label, #project_name_label {
     font-family: "Open Sans";
     font-size: 12px;
     color: #A8A8A8;
@@ -186,7 +217,14 @@ QTabBar::tab:selected {
 /* Font size for "Settings" in Settings dialog */
 #settings_label {
     font-size: 22px;
-    color: #909090 ;
+}
+
+#create_new_entity_label {
+    font-size: 20px;
+}
+
+#settings_label, #create_new_entity_label {
+    color: #909090;
 }
 
 /* making section headings bold */
@@ -547,14 +585,4 @@ CutDiffCard[diff_type="no_link"]  #status_label ,
 #success_page #success_frame {
     color: #2C93E2;
     border: 1px none #555555;
-}
-#success_page #success_label {
-    font-size: 15px;
-    font-weight: bold;
-}
-#success_page #shotgun_button {
-    border: none;
-    outline: none;
-    font-size: 15px;
-    text-decoration: underline;
 }

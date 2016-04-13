@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
@@ -13,6 +13,8 @@ _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, \
     _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP = range(8)
 
 _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE = range(3)
+
+_VIDEO_EXTS = [".avi", ".m4v", ".mov", ".mp4", ".qt", ".webm"]
 
 # Some colors used in various places
 _COLORS = {

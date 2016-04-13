@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# Copyright (c) 2015 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -45,6 +45,7 @@ build_ui cut_card
 build_ui cut_diff_card
 build_ui submit_dialog
 build_ui settings_dialog
+build_ui create_entity_dialog
 
 # build resources
 echo "building resources..."

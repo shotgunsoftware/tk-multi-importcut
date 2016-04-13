@@ -12,8 +12,13 @@
     <file>sg_shot_thumbnail.png</file>
     <file>sg_version_thumbnail.png</file>
     <file>settings_dialog_gear_icon.png</file>
+    <file>error_64px.png</file>
     <file>no_thumbnail.png</file>
     <file>icon_completed.png</file>
+    <file>edl_mov_icon.png</file>
+    <file>edl_added_icon_30px.png</file>
+    <file>mov_added_icon_30px.png</file>
+    <file>check_mark.png</file>
     <file>left_arrow.png</file>
     <file>right_arrow.png</file>
     <file>sg_logo.png</file>

@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
@@ -32,7 +32,7 @@ class Processor(QtCore.QThread):
     # | UI | <-> | Processor | <-> | EdlCut | <-> | CutSummary |
     #
     #
-    new_edl                 = QtCore.Signal(str)
+    new_edl_and_mov         = QtCore.Signal(str, str)
     reset                   = QtCore.Signal()
     set_busy                = QtCore.Signal(bool)
     step_done               = QtCore.Signal(int)
@@ -176,7 +176,7 @@ class Processor(QtCore.QThread):
         # Connect signals from the worker to ours as a gateway, so anything
         # connected to the Processor signals will be connected to the worker
         # Orders we receive
-        self.new_edl.connect(self._edl_cut.load_edl)
+        self.new_edl_and_mov.connect(self._edl_cut.process_edl_and_mov)
         self.reset.connect(self._edl_cut.reset)
         self.retrieve_projects.connect(self._edl_cut.retrieve_projects)
         self.retrieve_entities.connect(self._edl_cut.retrieve_entities)

@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
@@ -8,9 +8,10 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-import sgtk
+import re
 import os
 import sys
+import sgtk
 import logging
 import logging.handlers
 import tempfile
@@ -38,11 +39,14 @@ from .cut_diff import _DIFF_TYPES, CutDiff
 from .cut_diffs_view import CutDiffsView
 from .submit_dialog import SubmitDialog
 from .settings_dialog import SettingsDialog
+from .create_entity_dialog import CreateEntityDialog
 from .downloader import DownloadRunner
 
 # Different steps in the process
 from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, \
     _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+
+from .constants import _VIDEO_EXTS
 
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
@@ -95,7 +99,7 @@ class AppDialog(QtGui.QWidget):
     """
     Main application dialog window
     """
-    new_edl = QtCore.Signal(str)
+    new_edl_and_mov = QtCore.Signal(str, str)
     get_projects = QtCore.Signal(str)
     get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
@@ -118,7 +122,9 @@ class AppDialog(QtGui.QWidget):
         # most of the useful accessors are available through the Application class instance
         # it is often handy to keep a reference to this. You can get it via the following method:
         self._app = sgtk.platform.current_bundle()
+        self._sg = self._app.shotgun
         self._ctx = self._app.context
+        self._sg_project = self._ctx.project
         self._user_settings = self._app.user_settings
 
         # todo: this is a tmp workaround. In the future we should validate all settings
@@ -165,6 +171,8 @@ class AppDialog(QtGui.QWidget):
         self._busy = False
         # Current step being displayed
         self._step = 0
+        self._edl_file_path = None
+        self._mov_file_path = None
 
         # Selected sg entity per step : selection only happen in steps 1 and 2
         # but we create entries for all steps allowing to index the list
@@ -187,7 +195,7 @@ class AppDialog(QtGui.QWidget):
         # Handle data and processong in a separate thread
         self._processor = Processor(frame_rate)
 
-        self.new_edl.connect(self._processor.new_edl)
+        self.new_edl_and_mov.connect(self._processor.new_edl_and_mov)
         self.get_projects.connect(self._processor.retrieve_projects)
         self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
@@ -263,6 +271,8 @@ class AppDialog(QtGui.QWidget):
         self.set_ui_for_step(_DROP_STEP)
 
         self.ui.back_button.clicked.connect(self.previous_page)
+        self.ui.next_button.clicked.connect(self.process_edl_mov)
+        self.ui.create_entity_button.clicked.connect(self.create_entity_dialog)
         self.ui.stackedWidget.first_page_reached.connect(self.reset)
         self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
@@ -294,7 +304,9 @@ class AppDialog(QtGui.QWidget):
         # Special mode for Premiere integration : load the given EDL
         # and select the given SG entity
 
-        self.new_edl.emit(edl_file_path)
+        # There is not command line support yet for passing in a base layer
+        # media file, so we set mov_file_path to None
+        self.new_edl_and_mov.emit(edl_file_path, None)
         if sg_entity:
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
             self.show_entities(sg_entity["type"])
@@ -366,32 +378,75 @@ class AppDialog(QtGui.QWidget):
 #            next_step += 1
         self.goto_step(next_step)
 
-    @QtCore.Slot(list)
-    def process_drop(self, paths):
+    @QtCore.Slot()
+    def process_edl_mov(self):
         """
-        Process a drop event, paths can either be
-        local filesystem paths or SG urls
+        After EDL and optional MOV file paths have been set by process_drop
+        The next button is activated and this code is run when Next is clicked.
+        Here we emit a signal to register a new edl, and move to the next screen.
         """
-        if len(paths) != 1:
-            QtGui.QMessageBox.warning(
-                self,
-                "Can't process drop",
-                "Please drop only one file at a time",
-            )
-            return
-        self.new_edl.emit(paths[0])
-        self.ui.sequences_label.setText("Importing %s" % os.path.basename(paths[0]))
-        self.ui.entity_picker_message_label.setText(
-            "Importing %s ..." % os.path.basename(paths[0]),
-        )
-        # todo: this show_projects() call shouldn't be necessary
+        self.new_edl_and_mov.emit(self._edl_file_path, self._mov_file_path)
+        # todo: this show_projects() call shouldn't be necessary, but
+        # if it's not called here, then we can't go back and see the projects list
         self.show_projects()
         if self._ctx.project is not None:
             self.goto_step(_ENTITY_TYPE_STEP)
         else:
             # The user needs to pickup a project first
             self.goto_step(_PROJECT_STEP)
-        # self._logger.info( "Processing %s" % (paths[0] ))
+        import_message = "Importing %s..." % os.path.basename(self._edl_file_path)
+        self.ui.sequences_label.setText(import_message)
+        self.ui.entity_picker_message_label.setText(import_message)
+
+    @QtCore.Slot(list)
+    def process_drop(self, paths):
+        """
+        Process a drop event, paths can either be
+        local filesystem paths or SG urls
+        """
+        # if len(paths) > 2:
+        if len(paths) > 1:
+            QtGui.QMessageBox.warning(
+                self,
+                "Can't process drop",
+                # "Please drop maximum of two files at a time (EDL + MOV).",
+                "Please drop one file at a time."
+            )
+            return
+        _, ext = os.path.splitext(paths[0])
+        if len(paths) == 2:
+            _, ext_2 = os.path.splitext(paths[1])
+            if ext.lower() == ".edl":
+                extensions = [ext_2, ext]
+            else:
+                extensions = [ext, ext_2]
+        else:
+            extensions = [ext]
+        for ext in extensions:
+            # Set state of gui elements based on what kind of file is dropped,
+            # or move on to the next screen if we have both EDL and MOV
+            if ext.lower() == ".edl":
+                self._edl_file_path = paths[0]
+                if self._mov_file_path:
+                    self.process_edl_mov()
+                else:
+                    self.ui.edl_added_icon.show()
+                    self.ui.next_button.setEnabled(True)
+                    self.ui.file_added_label.setText(
+                        os.path.basename(self._edl_file_path))
+            elif ext.lower() in _VIDEO_EXTS:
+                self._mov_file_path = paths[0]
+                if self._edl_file_path:
+                    self.process_edl_mov()
+                else:
+                    self.ui.mov_added_icon.show()
+                    self.ui.file_added_label.setText(
+                        os.path.basename(self._mov_file_path))
+            else:
+                bad_file_path = paths[0]
+                self._logger.error('"%s" is not a supported file type. Supported types are .edl and movie types: %s.' % (
+                    os.path.basename(bad_file_path), _VIDEO_EXTS))
+                break
 
     @QtCore.Slot(int, str)
     def new_message(self, levelno, message):
@@ -523,17 +578,29 @@ class AppDialog(QtGui.QWidget):
         # 4 : cut summary
         # 5 : import completed
         if step == _DROP_STEP:
-            # No previous screen
-            self.ui.back_button.hide()
-            # Nothing to reset
-            self.ui.reset_button.hide()
             # Clear various things when we hit the first screen
             # doing a reset
+            self.ui.back_button.hide()
+            self.ui.reset_button.hide()
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = None
+            self._edl_file_path = None
+            self._mov_file_path = None
+            self.ui.edl_added_icon.hide()
+            self.ui.mov_added_icon.hide()
+            self.ui.file_added_label.setText("")
+            self.ui.next_button.show()
+            self.ui.next_button.setEnabled(False)
         else:
             # Allow reset and back from screens > 0
+            self.ui.next_button.hide()
             self.ui.reset_button.show()
             self.ui.back_button.show()
+
+        if step == _ENTITY_STEP:
+            self.ui.create_entity_button.setText("New %s" % self._selected_sg_entity[2])
+            self.ui.create_entity_button.show()
+        else:
+            self.ui.create_entity_button.hide()
 
         if step < _PROJECT_STEP:
             self.ui.projects_search_line_edit.clear()
@@ -601,14 +668,12 @@ class AppDialog(QtGui.QWidget):
                 )
         elif step == _PROGRESS_STEP:
             self.ui.progress_screen_title_label.setText(
-                "Importing %s ..." % os.path.basename(self._processor.edl_file_path),
+                "Importing %s..." % os.path.basename(self._processor.edl_file_path),
             )
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
         elif step == _LAST_STEP:
-            self.ui.success_label.setText(
-                "Cut %s successfully imported" % self._processor.sg_new_cut["code"]
-            )
+            self.ui.edl_imported_label.setText(self._processor.sg_new_cut["code"])
             self.ui.back_button.hide()
             self.ui.email_button.hide()
             self.ui.submit_button.hide()
@@ -677,6 +742,7 @@ class AppDialog(QtGui.QWidget):
 
         :param sg_project: The Shotgun Project dict to check for entities with
         """
+        self._sg_project = sg_project
         self._processor.set_project(sg_project)
         self.goto_step(_ENTITY_TYPE_STEP)
 
@@ -783,6 +849,52 @@ class AppDialog(QtGui.QWidget):
         show_settings_dialog.show()
         show_settings_dialog.raise_()
         show_settings_dialog.activateWindow()
+
+    def create_entity(self, entity_type, fields):
+        """
+        Creates an entity of the type specific in the create_payload param and
+        moves to the next screen with that entity selected.
+
+        :param create_payload: A list containing an entity type to be created
+        along with paramater values the user entered in the create_entity dialog.
+        """
+        try:
+            new_entity = self._sg.create(entity_type, fields)
+            self.show_cuts_for_sequence.emit(new_entity)
+        except Exception, e:
+            msg_box = QtGui.QMessageBox(
+                parent=self,
+                icon=QtGui.QMessageBox.Critical
+            )
+            msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
+            msg_box.setText("The following error was reported:")
+            msg_box.setInformativeText(
+                "It's possible you do not have permission to create new %ss. Please select another \
+%s or ask your Shotgun Admin to adjust your permissions in Shotgun." % (
+                    entity_type,
+                    entity_type
+                )
+            )
+            msg_box.setDetailedText("%s" % e)
+            msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+            msg_box.show()
+            msg_box.raise_()
+            msg_box.activateWindow()
+
+    @QtCore.Slot()
+    def create_entity_dialog(self):
+        """
+        Called on the Select [Entity] page, the user is presented with a dialog
+        where s/he can choose to create a new Entity of the selected type.
+        """
+        show_create_entity_dialog = CreateEntityDialog(
+            self._selected_sg_entity[2],
+            self._sg_project,
+            parent=self)
+        show_create_entity_dialog.create_entity.connect(self.create_entity)
+        show_create_entity_dialog.show()
+        show_create_entity_dialog.raise_()
+        show_create_entity_dialog.activateWindow()
 
     @QtCore.Slot()
     def email_cut_changes(self):
@@ -892,7 +1004,7 @@ class AppDialog(QtGui.QWidget):
             # Add a watcher to pickup changes only if the app was started from tk-shell
             # usually clients use tk-desktop or tk-shotgun, so it should be safe to
             # assume that this will cause any harm in production
-            if sgtk.platform.current_engine().name == "tk-shell":
+            if self._app.get_setting("css_watcher"):
                 self._css_watcher = QtCore.QFileSystemWatcher([css_file], self)
                 self._css_watcher.fileChanged.connect(self.reload_css)
 

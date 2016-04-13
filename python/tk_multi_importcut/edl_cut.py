@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
@@ -46,6 +46,7 @@ class EdlCut(QtCore.QObject):
         super(EdlCut, self).__init__()
 
         self._edl_file_path = None
+        self._mov_file_path = None
         self._edl = None
         self._sg_entity_type = None
         self._sg_shot_link_field_name = None
@@ -164,6 +165,7 @@ class EdlCut(QtCore.QObject):
         """
         had_something = self._edl_file_path is not None
         self._edl_file_path = None
+        self._mov_file_path = None
         self._edl = None
         self._sg_entity_type = None
         self._sg_shot_link_field_name = None
@@ -173,20 +175,30 @@ class EdlCut(QtCore.QObject):
         if had_something:
             self._logger.info("Session discarded...")
 
-    @QtCore.Slot(str)
-    def load_edl(self, path):
+    @QtCore.Slot(str, str)
+    def process_edl_and_mov(self, edl_file_path, mov_file_path):
         """
-        Load an EDL file
+        Set _mov_file path member and pass edl_file_path to load_edl
 
-        :param path: Full path to the EDL file
+        :param edl_file_path: String, full path to EDL file.
+        :param mov_file_path: String, full path to MOV file.
         """
-        self._logger.info("Loading %s ..." % path)
+        self._mov_file_path = mov_file_path
+        self.load_edl(edl_file_path)
+
+    def load_edl(self, edl_file_path):
+        """
+        Load an EDL file.
+
+        :param edl_file_path: String, full path to the EDL file.
+        """
+        self._logger.info("Loading %s ..." % edl_file_path)
         try:
-            self._edl_file_path = path
+            self._edl_file_path = edl_file_path
             if self._frame_rate is not None:
                 self._logger.info("Using explicit frame rate %f ..." % self._frame_rate)
                 self._edl = edl.EditList(
-                    file_path=path,
+                    file_path=edl_file_path,
                     visitor=self.process_edit,
                     fps=self._frame_rate,
                 )
@@ -194,7 +206,7 @@ class EdlCut(QtCore.QObject):
                 self._logger.info("Using default frame rate ...")
                 # Use default frame rate, whatever it is
                 self._edl = edl.EditList(
-                    file_path=path,
+                    file_path=edl_file_path,
                     visitor=self.process_edit,
                 )
             self._logger.info(
@@ -203,7 +215,7 @@ class EdlCut(QtCore.QObject):
                 )
             )
             if not self._edl.edits:
-                self._logger.warning("Couldn't find any entry in %s" % (path))
+                self._logger.warning("Couldn't find any entry in %s" % (edl_file_path))
                 return
             # Consolidate what we loaded
             # Build a dictionary using versions names as keys
@@ -247,7 +259,7 @@ class EdlCut(QtCore.QObject):
         except Exception, e:
             self._edl = None
             self._edl_file_path = None
-            self._logger.error("Couldn't load %s : %s" % (path, str(e)))
+            self._logger.error("Couldn't load %s : %s" % (edl_file_path, str(e)))
 
     @QtCore.Slot(str)
     def retrieve_entities(self, entity_type):
@@ -270,7 +282,7 @@ class EdlCut(QtCore.QObject):
                 r, g, b = sg_status["bg_color"].split(",")
                 sg_status["_bg_hex_color"] = "#%02x%02x%02x" % (int(r), int(g), int(b))
             status_dict[sg_status["code"]] = sg_status
-        self._logger.info("Retrieving %s(s) for project %s ..." % (
+        self._logger.info("Retrieving %ss for project %s..." % (
             entity_type, self._project["name"]))
         self.got_busy.emit(None)
         try:
@@ -314,11 +326,6 @@ class EdlCut(QtCore.QObject):
                     ["code", "name", "title", "id", "sg_status_list", "image", "description"],
                     order=[{"field_name": "code", "direction": "asc"}]
                 )
-            if not sg_entities:
-                raise RuntimeWarning("Couldn't retrieve any %s for project %s" % (
-                    entity_type,
-                    self._project["name"],
-                ))
             for sg_entity in sg_entities:
                 # Project uses sg_status and not sg_status_list
                 status = sg_entity.get("sg_status_list",
@@ -904,11 +911,37 @@ class EdlCut(QtCore.QObject):
             "duration"           : self._summary.duration,
             "revision_number"    : self._num_cuts + 1,
         }
+        # Upload base layer media file to the new Cut record if it exists.
+        if self._mov_file_path:
+            # Create a version.
+            sg_version = self._sg.create(
+                "Version", {
+                    "project"            : self._project,
+                    "code"               : title,
+                    "entity"             : self._sg_entity,
+                    "created_by"         : self._ctx.user,
+                    "updated_by"         : self._ctx.user,
+                    "description"        : "Base media layer imported with Cut: %s" % title,
+                    "sg_first_frame"     : 1,
+                    "sg_movie_has_slate" : False,
+                    "sg_path_to_movie"   : self._mov_file_path
+                },
+                ["id"])
+            # Upload media to the version.
+            self._logger.info("Uploading movie...")
+            self._sg.upload(
+                sg_version["type"],
+                sg_version["id"],
+                self._mov_file_path,
+                "sg_uploaded_movie"
+            )
+            # Link the Cut to the version.
+            cut_payload["version"] = {"type": "Version", "id": sg_version["id"]}
         sg_cut = self._sg.create(
             "Cut",
             cut_payload,
             ["id", "code"])
-        # Upload edl file to the new Cut record
+        # Upload edl file to the new Cut record.
         self._sg.upload(
             sg_cut["type"], sg_cut["id"],
             self._edl_file_path, "attachments"

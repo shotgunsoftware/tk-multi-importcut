@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
@@ -15,6 +15,7 @@ import re
 import sgtk
 
 from .ui.settings_dialog import Ui_settings_dialog
+from .cut_diff import CutDiff
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 from sgtk.platform.qt import QtCore, QtGui
@@ -38,8 +39,6 @@ class SettingsDialog(QtGui.QDialog):
     widget. Gives users access to app settings via a gui interface, stores those
     settings locally per user.
     """
-    submit = QtCore.Signal(str, dict, dict, str, bool)
-
     def __init__(self, parent=None):
         """
         Instantiate a new dialog
@@ -153,7 +152,7 @@ class SettingsDialog(QtGui.QDialog):
     @QtCore.Slot()
     def save_settings(self):
         """
-        Submit the cut import and close the dialog
+        Save settings and close the dialog.
         """
         self._save_settings()
         self.close_dialog()
@@ -161,7 +160,7 @@ class SettingsDialog(QtGui.QDialog):
     @QtCore.Slot()
     def close_dialog(self):
         """
-        Close the dialog on submit or cancel
+        Close the dialog on save or cancel.
         """
         self.close()
 
@@ -322,3 +321,5 @@ class SettingsDialog(QtGui.QDialog):
 
         if error is False:
             self._logger.info("User settings saved.")
+
+        CutDiff.retrieve_default_timecode_frame_mapping()
