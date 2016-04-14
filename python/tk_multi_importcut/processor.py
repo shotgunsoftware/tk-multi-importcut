@@ -94,6 +94,19 @@ class Processor(QtCore.QThread):
         return None
 
     @property
+    def sg_project(self):
+        """
+        Return the current Shotgun Project we are importing the Cut in.
+        This can be None if this app was started outside of Project
+        context, and a Project is not yet selected
+
+        :returns: A Shotgun Project dictionary or None
+        """
+        if self._edl_cut and self._edl_cut._project:
+            return self._edl_cut._project
+        return None
+
+    @property
     def sg_entity(self):
         """
         Return the current Shotgun entity ( Sequence ) we are displaying cut

@@ -43,9 +43,10 @@ from .create_entity_dialog import CreateEntityDialog
 from .downloader import DownloadRunner
 
 # Different steps in the process
-from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, \
-    _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP
+from .constants import _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
+# Supported movie file extensions
 from .constants import _VIDEO_EXTS
 
 # Different frame mapping modes
@@ -125,7 +126,6 @@ class AppDialog(QtGui.QWidget):
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
-        self._sg_project = self._ctx.project
         self._user_settings = self._app.user_settings
 
         # todo: this is a tmp workaround. In the future we should validate all settings
@@ -737,7 +737,6 @@ class AppDialog(QtGui.QWidget):
         if self._step == _ENTITY_TYPE_STEP:
             self.show_entities(self._selected_sg_entity[self._step])
         elif self._step == _PROJECT_STEP:
-#            self.show_projects()
             self.show_entity_types(self._selected_sg_entity[self._step])
         elif self._step == _ENTITY_STEP:
             self.show_entity(self._selected_sg_entity[self._step])
@@ -777,7 +776,6 @@ class AppDialog(QtGui.QWidget):
 
         :param sg_project: The Shotgun Project dict to check for entities with
         """
-        self._sg_project = sg_project
         self._processor.set_project(sg_project)
         self.goto_step(_ENTITY_TYPE_STEP)
 
@@ -923,9 +921,10 @@ class AppDialog(QtGui.QWidget):
         where s/he can choose to create a new Entity of the selected type.
         """
         show_create_entity_dialog = CreateEntityDialog(
-            self._selected_sg_entity[2],
-            self._sg_project,
-            parent=self)
+            self._selected_sg_entity[_ENTITY_TYPE_STEP],
+            self._processor.sg_project,
+            parent=self
+        )
         show_create_entity_dialog.create_entity.connect(self.create_entity)
         show_create_entity_dialog.show()
         show_create_entity_dialog.raise_()
