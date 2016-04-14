@@ -381,7 +381,7 @@ class EdlCut(QtCore.QObject):
         finally:
             self.got_idle.emit()
 
-    @QtCore.Slot(str)
+    @QtCore.Slot()
     def retrieve_projects(self):
         """
         Retrieve all Projects for the Shotgun site

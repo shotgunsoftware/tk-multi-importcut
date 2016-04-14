@@ -41,7 +41,7 @@ class Processor(QtCore.QThread):
     new_sg_project          = QtCore.Signal(dict)
     new_sg_entity           = QtCore.Signal(dict)
     new_sg_cut              = QtCore.Signal(dict)
-    retrieve_projects       = QtCore.Signal(str)
+    retrieve_projects       = QtCore.Signal()
     retrieve_entities       = QtCore.Signal(str)
     retrieve_cuts           = QtCore.Signal(dict)
     show_cut_diff           = QtCore.Signal(dict)

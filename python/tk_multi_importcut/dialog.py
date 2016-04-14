@@ -102,7 +102,7 @@ class AppDialog(QtGui.QWidget):
     """
     new_edl = QtCore.Signal(str)
     new_movie = QtCore.Signal(str)
-    get_projects = QtCore.Signal(str)
+    get_projects = QtCore.Signal()
     get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
@@ -767,7 +767,7 @@ class AppDialog(QtGui.QWidget):
         Called when projects need to be shown
         """
         self._logger.info("Retrieving Project(s)")
-        self.get_projects.emit("sg_project")
+        self.get_projects.emit()
 
     @QtCore.Slot()
     def show_entity_types(self, sg_project):
