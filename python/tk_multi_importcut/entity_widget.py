@@ -28,7 +28,9 @@ class EntityCard(QtGui.QFrame):
     show_sequence = QtCore.Signal(dict)
     # Emitted when this card wants to be selected
     highlight_selected = QtCore.Signal(QtGui.QWidget)
-
+    # A Signal to discard pending download
+    discard_download = QtCore.Signal()
+    
     def __init__(self, parent, sg_entity):
         """
         Instantiate a new EntityCard for the given Shotgun Sequence
@@ -178,10 +180,18 @@ class EntityCard(QtGui.QFrame):
                 path=path,
             )
             downloader.file_downloaded.connect(self.new_thumbnail)
+            self.discard_download.connect(downloader.abort)
             QtCore.QThreadPool.globalInstance().start(downloader)
 
         event.ignore()
 
+    def closeEvent(self, evt):
+        """
+        Discard downloads when the widget is removed
+        """
+        self.discard_download.emit()
+        evt.accept()
+    
     def set_thumbnail(self, thumb_path):
         """
         Build a pixmap from the given file path and use it as icon, resizing it to

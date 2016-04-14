@@ -392,12 +392,9 @@ class AppDialog(QtGui.QWidget):
         """
         After EDL and optional MOV file paths have been set by process_drop
         The next button is activated and this code is run when Next is clicked.
-        Here we emit a signal to register a new edl, and move to the next screen.
         """
+        # We're done with the drop step
         self.step_done(_DROP_STEP)
-#        import_message = "Importing %s..." % os.path.basename(self._edl_file_path)
-#        self.ui.sequences_label.setText(import_message)
-#        self.ui.entity_picker_message_label.setText(import_message)
 
     @QtCore.Slot(list)
     def process_drop(self, paths):
@@ -777,6 +774,9 @@ class AppDialog(QtGui.QWidget):
         :param sg_project: The Shotgun Project dict to check for entities with
         """
         self._processor.set_project(sg_project)
+        # Here we don't need the worker to retrieve additional data from SG
+        # so we don't emit any signal like in other show_xxxx slots and move
+        # directly to the entity type screen
         self.goto_step(_ENTITY_TYPE_STEP)
 
     @QtCore.Slot(dict)
@@ -991,6 +991,12 @@ class AppDialog(QtGui.QWidget):
                 return
         self._processor.quit()
         self._processor.wait()
+        # Wait for the global ThreadPool to be done with all downloads
+        # problem is we don't have a way to tell the ThreadPool to stop
+        # processing queued request, so it takes a while to get all threads
+        # done. We need a way to abort queued downloaded, unfortunately this
+        # is available from default QThreadPool
+        QtCore.QThreadPool.globalInstance().waitForDone()
         # Let the close happen
         evt.accept()
 

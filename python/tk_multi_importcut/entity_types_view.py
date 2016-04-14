@@ -29,6 +29,9 @@ class EntityTypeCard(QtGui.QFrame):
     # Emitted when this card wants to be selected
     highlight_selected = QtCore.Signal(QtGui.QWidget)
 
+    # A Signal to discard pending download
+    discard_download = QtCore.Signal()
+
     def __init__(self, entity_type, parent=None):
         super(EntityTypeCard, self).__init__(parent)
         self.ui = Ui_entity_type_frame()
@@ -61,6 +64,7 @@ class EntityTypeCard(QtGui.QFrame):
                 path=path,
             )
             downloader.file_downloaded.connect(self.new_thumbnail)
+            self.discard_download.connect(downloader.abort)
             QtCore.QThreadPool.globalInstance().start(downloader)
 
     @property
@@ -116,6 +120,13 @@ class EntityTypeCard(QtGui.QFrame):
         Handle double clicks : show cut changes for the attached sequence
         """
         self.show_selected()
+
+    def closeEvent(self, evt):
+        """
+        Discard downloads when the widget is removed
+        """
+        self.discard_download.emit()
+        evt.accept()
 
     def set_thumbnail(self, thumb_path, resize_to_fit=False):
         """

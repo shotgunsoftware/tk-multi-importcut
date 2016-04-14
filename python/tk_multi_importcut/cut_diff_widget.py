@@ -55,6 +55,8 @@ class CutDiffCard(QtGui.QFrame):
     """
     # Emitted when the CutDiff instance changed its type
     type_changed = QtCore.Signal()
+    # A Signal to discard pending download
+    discard_download = QtCore.Signal()
 
     def __init__(self, parent, cut_diff):
         """
@@ -305,6 +307,13 @@ class CutDiffCard(QtGui.QFrame):
         self.retrieve_thumbnail()
         event.ignore()
 
+    def closeEvent(self, evt):
+        """
+        Discard downloads when the widget is removed
+        """
+        self.discard_download.emit()
+        evt.accept()
+
     def retrieve_thumbnail(self):
         """
         Check if a SG version can be retrieved from the CutDiff, request an
@@ -321,6 +330,7 @@ class CutDiffCard(QtGui.QFrame):
                 path=path,
             )
             downloader.file_downloaded.connect(self.new_thumbnail)
+            self.discard_download.connect(downloader.abort)
             QtCore.QThreadPool.globalInstance().start(downloader)
 
     def set_thumbnail(self, thumb_path):
