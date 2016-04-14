@@ -303,30 +303,30 @@ class CutSummary(QtCore.QObject):
     def cut_item_notes(self):
         return self._cut_item_notes
 
-    @timecode_start.setter
-    def timecode_start(self, value):
-        self._tc_start = value
-
-    @timecode_end.setter
-    def timecode_end(self, value):
-        self._tc_end = value
-
-    @duration.setter
-    def duration(self, value):
-        self._duration = value
-
-    @edit_offset.setter
-    def edit_offset(self, value):
-        self._edit_offset = value
-
-    @fps.setter
-    def fps(self, value):
-        self._fps = value
-
-    @cut_item_notes.setter
-    def cut_item_notes(self, value):
-        self._cut_item_notes = value
-
+#    @timecode_start.setter
+#    def timecode_start(self, value):
+#        self._tc_start = value
+#
+#    @timecode_end.setter
+#    def timecode_end(self, value):
+#        self._tc_end = value
+#
+#    @duration.setter
+#    def duration(self, value):
+#        self._duration = value
+#
+#    @edit_offset.setter
+#    def edit_offset(self, value):
+#        self._edit_offset = value
+#
+#    @fps.setter
+#    def fps(self, value):
+#        self._fps = value
+#
+#    @cut_item_notes.setter
+#    def cut_item_notes(self, value):
+#        self._cut_item_notes = value
+#
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
         Add a new cut difference to this summary

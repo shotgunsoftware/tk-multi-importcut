@@ -994,8 +994,8 @@ class AppDialog(QtGui.QWidget):
         # Wait for the global ThreadPool to be done with all downloads
         # problem is we don't have a way to tell the ThreadPool to stop
         # processing queued request, so it takes a while to get all threads
-        # done. We need a way to abort queued downloaded, unfortunately this
-        # is available from default QThreadPool
+        # done. We need a way to abort all queued downloaded, through their
+        # abort slot
         QtCore.QThreadPool.globalInstance().waitForDone()
         # Let the close happen
         evt.accept()
