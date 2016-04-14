@@ -172,8 +172,6 @@ class AppDialog(QtGui.QWidget):
         self._busy = False
         # Current step being displayed
         self._step = 0
-        self._edl_file_path = None
-        self._mov_file_path = None
 
         # Selected sg entity per step : selection only happen in steps 1 and 2
         # but we create entries for all steps allowing to index the list
@@ -380,6 +378,8 @@ class AppDialog(QtGui.QWidget):
             # If we already have project from context, skip project chooser
             if self._ctx.project is not None:
                 next_step = _ENTITY_TYPE_STEP
+            else:
+                self.show_projects()
         if next_step == _ENTITY_TYPE_STEP and self._entity_types_view.select_and_skip():
             # Skip single entity type screen, autoselecting the single entry
             next_step += 1
@@ -395,14 +395,6 @@ class AppDialog(QtGui.QWidget):
         Here we emit a signal to register a new edl, and move to the next screen.
         """
         self.step_done(_DROP_STEP)
-        # todo: this show_projects() call shouldn't be necessary, but
-        # if it's not called here, then we can't go back and see the projects list
-#        self.show_projects()
-#        if self._ctx.project is not None:
-#            self.goto_step(_ENTITY_TYPE_STEP)
-#        else:
-#            # The user needs to pickup a project first
-#            self.goto_step(_PROJECT_STEP)
 #        import_message = "Importing %s..." % os.path.basename(self._edl_file_path)
 #        self.ui.sequences_label.setText(import_message)
 #        self.ui.entity_picker_message_label.setText(import_message)
@@ -461,14 +453,30 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(str)
     def valid_edl(self, file_name):
+        """
+        Called when an EDL file has been validated and can be used
+
+        :param file_name: Short EDL file name
+        """
         self.ui.edl_added_icon.show()
         self.ui.file_added_label.setText(
             os.path.basename(file_name)
         )
+        # Update a small information label in various screens we will later see
+        import_message = "Importing %s" % file_name
+        self.ui.importing_edl_label_2.setText(import_message)
+        self.ui.sequences_label.setText(import_message)
+        self.ui.entity_picker_message_label.setText(import_message)
+        # Allow the user to go ahead without a movie
         self.ui.next_button.setEnabled(True)
     
     @QtCore.Slot(str)
     def valid_movie(self, file_name):
+        """
+        Called when a movie file has been validated and can be used
+
+        :param file_name: Short movie file name
+        """
         self.ui.mov_added_icon.show()
         self.ui.file_added_label.setText(
             os.path.basename(file_name)
@@ -611,8 +619,6 @@ class AppDialog(QtGui.QWidget):
             self.ui.back_button.hide()
             self.ui.reset_button.hide()
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = None
-            self._edl_file_path = None
-            self._mov_file_path = None
             self.ui.edl_added_icon.hide()
             self.ui.mov_added_icon.hide()
             self.ui.file_added_label.setText("")
@@ -731,7 +737,8 @@ class AppDialog(QtGui.QWidget):
         if self._step == _ENTITY_TYPE_STEP:
             self.show_entities(self._selected_sg_entity[self._step])
         elif self._step == _PROJECT_STEP:
-            self.show_projects()
+#            self.show_projects()
+            self.show_entity_types(self._selected_sg_entity[self._step])
         elif self._step == _ENTITY_STEP:
             self.show_entity(self._selected_sg_entity[self._step])
         elif self._step == _CUT_STEP:
