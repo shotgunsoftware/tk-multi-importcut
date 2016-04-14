@@ -32,7 +32,8 @@ class Processor(QtCore.QThread):
     # | UI | <-> | Processor | <-> | EdlCut | <-> | CutSummary |
     #
     #
-    new_edl_and_mov         = QtCore.Signal(str, str)
+    new_edl                 = QtCore.Signal(str)
+    new_movie               = QtCore.Signal(str)
     reset                   = QtCore.Signal()
     set_busy                = QtCore.Signal(bool)
     step_done               = QtCore.Signal(int)
@@ -52,6 +53,8 @@ class Processor(QtCore.QThread):
     totals_changed          = QtCore.Signal()
     delete_cut_diff         = QtCore.Signal(CutDiff)
     ready                   = QtCore.Signal()
+    valid_edl               = QtCore.Signal(str)
+    valid_movie             = QtCore.Signal(str)
 
     def __init__(self, frame_rate=None):
         """
@@ -161,6 +164,14 @@ class Processor(QtCore.QThread):
     def project_import(self):
         return self._edl_cut._project_import
 
+    @property
+    def has_valid_edl(self):
+        return self._edl_cut.had_valid_edl
+
+    @property
+    def has_valid_movie(self):
+        return self._edl_cut.had_valid_movie
+
     def set_project(self, sg_project):
         self._edl_cut._project = sg_project
 
@@ -176,7 +187,8 @@ class Processor(QtCore.QThread):
         # Connect signals from the worker to ours as a gateway, so anything
         # connected to the Processor signals will be connected to the worker
         # Orders we receive
-        self.new_edl_and_mov.connect(self._edl_cut.process_edl_and_mov)
+        self.new_edl.connect(self._edl_cut.load_edl)
+        self.new_movie.connect(self._edl_cut.register_movie_path)
         self.reset.connect(self._edl_cut.reset)
         self.retrieve_projects.connect(self._edl_cut.retrieve_projects)
         self.retrieve_entities.connect(self._edl_cut.retrieve_entities)
@@ -195,6 +207,8 @@ class Processor(QtCore.QThread):
         self._edl_cut.got_idle.connect(self.got_idle)
         self._edl_cut.progress_changed.connect(self.progress_changed)
         self._edl_cut.totals_changed.connect(self.totals_changed)
+        self._edl_cut.valid_edl.connect(self.valid_edl)
+        self._edl_cut.valid_movie.connect(self.valid_movie)
         # Tell the outside world we are ready to process things
         self.ready.emit()
         self.exec_()

@@ -8,6 +8,7 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
+import os
 import re
 import sgtk
 from sgtk.platform.qt import QtCore
@@ -38,6 +39,8 @@ class EdlCut(QtCore.QObject):
     progress_changed    = QtCore.Signal(int)
     totals_changed      = QtCore.Signal()
     delete_cut_diff     = QtCore.Signal(CutDiff)
+    valid_edl           = QtCore.Signal(str)
+    valid_movie         = QtCore.Signal(str)
 
     def __init__(self, frame_rate=None):
         """
@@ -105,6 +108,13 @@ class EdlCut(QtCore.QObject):
             sgtk.platform.current_bundle().sgtk,
             self._sg_entity["type"],
         )
+    @property
+    def has_valid_edl(self):
+        return bool(self._edl)
+
+    @property
+    def has_valid_movie(self):
+        return bool(self._mov_file_path)
 
     def process_edit(self, edit, logger):
         """
@@ -183,9 +193,24 @@ class EdlCut(QtCore.QObject):
         :param edl_file_path: String, full path to EDL file.
         :param mov_file_path: String, full path to MOV file.
         """
-        self._mov_file_path = mov_file_path
+        self.register_movie_path(mov_file_path)
         self.load_edl(edl_file_path)
 
+    @QtCore.Slot(str)
+    def register_movie_path(self, movie_file_path):
+        """
+        Register the given movie path
+
+        :param movie_file_path: String, full path to MOV file.
+        """
+        self._mov_file_path = movie_file_path
+        self._logger.info("Registered %s" % self._mov_file_path)
+        self.valid_movie.emit(os.path.basename(self._mov_file_path))
+        # If we have a valid EDL, we can move to next step
+        if self.has_valid_edl:
+            self.step_done.emit(_DROP_STEP)
+
+    @QtCore.Slot(str)
     def load_edl(self, edl_file_path):
         """
         Load an EDL file.
@@ -255,7 +280,9 @@ class EdlCut(QtCore.QObject):
                             edit._shot_name = sg_version["entity.Shot.code"]
             # self.retrieve_entities()
             # Can go to next step
-            self.step_done.emit(_DROP_STEP)
+            self.valid_edl.emit(os.path.basename(self._edl_file_path))
+            if self.has_valid_movie:
+                self.step_done.emit(_DROP_STEP)
         except Exception, e:
             self._edl = None
             self._edl_file_path = None
