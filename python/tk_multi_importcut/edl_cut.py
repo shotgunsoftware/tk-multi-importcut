@@ -626,19 +626,14 @@ class EdlCut(QtCore.QObject):
 
             for edit in self._edl.edits:
                 if reel_names[edit.reel]["dup"] is True:
-                    edit.reel_name = "%s%s" % (
-                        edit.reel, str(reel_names[edit.reel]["iter"]).zfill(3))
+                    edit.reel_name = "%s%03d" % (
+                        edit.reel,
+                        reel_names[edit.reel]["iter"]
+                    )
+                    # Increment the iter counter for next one
                     reel_names[edit.reel]["iter"] += 1
                 else:
                     edit.reel_name = edit.reel
-                # Store the edit_offset in the summary instance so we can
-                # calculate edit in/out relative to the Cut (frame 1) later on
-                if edit.id == 1:
-                    self._summary.edit_offset = edl.Timecode(
-                        str(edit.record_in), self._summary.fps).to_frame()
-                    self._summary.tc_start = edit.record_in
-                if edit.id == len(self._edl.edits):
-                    self._summary.tc_end = edit.record_out
 
                 shot_name = edit.get_shot_name()
                 if not shot_name:
@@ -689,13 +684,6 @@ class EdlCut(QtCore.QObject):
                             edit=edit,
                             sg_cut_item=matching_cut_item
                         )
-
-            # Calculating the duration and storing it in the Cut summary.
-            start_frame = edl.Timecode(
-                str(self._summary.tc_start), self._summary.fps).to_frame()
-            end_frame = edl.Timecode(
-                str(self._summary.tc_end), self._summary.fps).to_frame()
-            self._summary.duration = end_frame - start_frame
 
             # Process cut items left over
             for sg_cut_item in sg_cut_items:
