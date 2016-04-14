@@ -386,6 +386,7 @@ class EdlCut(QtCore.QObject):
         """
         Retrieve all Projects for the Shotgun site
         """
+        self.got_busy.emit(None)
         try:
             fields = ["name", "id", "sg_status", "image", "sg_description"]
             order = [{"field_name": "name", "direction": "asc"}]

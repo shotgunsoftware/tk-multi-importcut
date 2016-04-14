@@ -459,40 +459,6 @@ class AppDialog(QtGui.QWidget):
                 ))
                 return
 
-#        if len(paths) == 2:
-#            _, ext_2 = os.path.splitext(paths[1])
-#            if ext.lower() == ".edl":
-#                extensions = [ext_2, ext]
-#            else:
-#                extensions = [ext, ext_2]
-#        else:
-#            extensions = [ext]
-#        for ext in extensions:
-#            # Set state of gui elements based on what kind of file is dropped,
-#            # or move on to the next screen if we have both EDL and MOV
-#            if ext.lower() == ".edl":
-#                self._edl_file_path = paths[0]
-#                if self._mov_file_path:
-#                    self.process_edl_mov()
-#                else:
-#                    self.ui.edl_added_icon.show()
-#                    self.ui.next_button.setEnabled(True)
-#                    self.ui.file_added_label.setText(
-#                        os.path.basename(self._edl_file_path))
-#            elif ext.lower() in _VIDEO_EXTS:
-#                self._mov_file_path = paths[0]
-#                if self._edl_file_path:
-#                    self.process_edl_mov()
-#                else:
-#                    self.ui.mov_added_icon.show()
-#                    self.ui.file_added_label.setText(
-#                        os.path.basename(self._mov_file_path))
-#            else:
-#                bad_file_path = paths[0]
-#                self._logger.error('"%s" is not a supported file type. Supported types are .edl and movie types: %s.' % (
-#                    os.path.basename(bad_file_path), _VIDEO_EXTS))
-#                break
-
     @QtCore.Slot(str)
     def valid_edl(self, file_name):
         self.ui.edl_added_icon.show()
@@ -599,7 +565,7 @@ class AppDialog(QtGui.QWidget):
     def previous_page(self):
         """
         Go back to previous page
-        Skip the cuts view page if needed
+        Skip intermediate screens if needed
         """
         current_page = self.ui.stackedWidget.currentIndex()
         previous_page = current_page - 1
