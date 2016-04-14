@@ -25,6 +25,8 @@ class EntitiesView(QtCore.QObject):
     # Emitted when the info message changed
     new_info_message = QtCore.Signal(str)
 
+    entity_type_chosen = QtCore.Signal(str)
+
     def __init__(self, grid_widget):
         super(EntitiesView, self).__init__()
         self._grid_widget = grid_widget
@@ -32,6 +34,8 @@ class EntitiesView(QtCore.QObject):
         self._logger = get_logger()
         # A one line message which can be displayed when the view is visible
         self._info_message = ""
+        self._logger.info("emitting Scene in the Entities view...")
+        self.entity_type_chosen.emit("Scene")
 
     @property
     def info_message(self):

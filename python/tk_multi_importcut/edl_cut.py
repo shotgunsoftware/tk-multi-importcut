@@ -108,6 +108,7 @@ class EdlCut(QtCore.QObject):
             sgtk.platform.current_bundle().sgtk,
             self._sg_entity["type"],
         )
+
     @property
     def has_valid_edl(self):
         return bool(self._edl)
@@ -375,7 +376,7 @@ class EdlCut(QtCore.QObject):
                 # Skip project selection screen
                 self.retrieve_cuts(sg_entities[0])
             else:
-                self.step_done.emit(_ENTITY_TYPE_STEP)
+                self.step_done.emit(_ENTITY_STEP)
         except Exception, e:
             self._logger.exception(str(e))
         finally:

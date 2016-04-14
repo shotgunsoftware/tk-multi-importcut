@@ -230,6 +230,7 @@ class AppDialog(QtGui.QWidget):
 
         # Instantiate a entities view handler
         self._entities_view = EntitiesView(self.ui.sequence_grid)
+        self._entities_view.entity_type_chosen.connect(self.show_entities)
         self._entities_view.sequence_chosen.connect(self.show_entity)
         self._entities_view.selection_changed.connect(self.selection_changed)
         self._entities_view.new_info_message.connect(self.display_info_message)
@@ -292,6 +293,47 @@ class AppDialog(QtGui.QWidget):
                         self.show_settings_dialog)" % i)
                 except:
                     pass
+        # todo: maybe someone can find a better way to do this, I was having trouble
+        # creating dynamic variables with exec when they had embedded functions,
+        # so I simply set the max allowed Entities to 5. I was also having trouble
+        # passing through entity_type to a function with lamda, so I'm using the
+        # button text instead (which means I need to use the entity_type var
+        # instead of the entity_name var, which is not as nice)
+        cut_link_field = "entity"
+        schema = self._sg.schema_field_read("Cut", cut_link_field)
+        entity_types = schema[cut_link_field]["properties"]["valid_types"]["value"]
+        inc = 1
+        for entity_type in entity_types:
+            if inc > 5:
+                self._logger.error("Sorry, we can only display five link Entities at a time")
+                break
+            # todo: would be good to use this instead for the button names
+            # entity_name = self._sg.schema_entity_read(entity_type)[entity_type]["name"]["value"]
+            if inc == 1:
+                link_1_button = QtGui.QPushButton(entity_type)
+                link_1_button.clicked.connect(lambda: self.link_button_clicked(link_1_button))
+                self.ui.entity_buttons_layout.addWidget(link_1_button, inc, 0)
+            if inc == 2:
+                link_2_button = QtGui.QPushButton(entity_type)
+                link_2_button.clicked.connect(lambda: self.link_button_clicked(link_2_button))
+                self.ui.entity_buttons_layout.addWidget(link_2_button, inc, 0)
+            if inc == 3:
+                link_3_button = QtGui.QPushButton(entity_type)
+                link_3_button.clicked.connect(lambda: self.link_button_clicked(link_3_button))
+                self.ui.entity_buttons_layout.addWidget(link_3_button, inc, 0)
+            if inc == 4:
+                link_4_button = QtGui.QPushButton(entity_name)
+                link_4_button.clicked.connect(lambda: self.link_button_clicked(link_4_button))
+                self.ui.entity_buttons_layout.addWidget(link_4_button, inc, 0)
+            if inc == 5:
+                link_5_button = QtGui.QPushButton(entity_name)
+                link_5_button.clicked.connect(lambda: self.link_button_clicked(link_5_button))
+                self.ui.entity_buttons_layout.addWidget(link_5_button, inc, 0)
+            inc += 1
+        project_link_button = QtGui.QPushButton("Project")
+        project_link_button.clicked.connect(lambda: self.link_button_clicked(project_link_button))
+        self.ui.entity_buttons_layout.addWidget(project_link_button, inc, 0)
+
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
 
@@ -303,6 +345,10 @@ class AppDialog(QtGui.QWidget):
 
         self._processor.start()
 
+    @QtCore.Slot()
+    def link_button_clicked(self, button):
+        self._logger.info(button.text())
+
     def _preselected_input(self, edl_file_path, sg_entity):
         # Special mode for Premiere integration : load the given EDL
         # and select the given SG entity
@@ -311,7 +357,7 @@ class AppDialog(QtGui.QWidget):
         # media file, so we set mov_file_path to None
         self.new_edl.emit(edl_file_path)
         if sg_entity:
-            self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
+            self._selected_sg_entity[_ENTITY_STEP] = sg_entity["type"]
             self.show_entities(sg_entity["type"])
             self._selected_sg_entity[_ENTITY_STEP] = sg_entity
             self.show_entity(sg_entity)
@@ -377,10 +423,10 @@ class AppDialog(QtGui.QWidget):
         if next_step == _PROJECT_STEP:
             # If we already have project from context, skip project chooser
             if self._ctx.project is not None:
-                next_step = _ENTITY_TYPE_STEP
+                next_step = _ENTITY_STEP
             else:
                 self.show_projects()
-        if next_step == _ENTITY_TYPE_STEP and self._entity_types_view.select_and_skip():
+        if next_step == _ENTITY_STEP and self._entity_types_view.select_and_skip():
             # Skip single entity type screen, autoselecting the single entry
             next_step += 1
 #        if next_step == _ENTITY_STEP and self._entities_view.select_and_skip():
@@ -462,11 +508,11 @@ class AppDialog(QtGui.QWidget):
         # Update a small information label in various screens we will later see
         import_message = "Importing %s" % file_name
         self.ui.importing_edl_label_2.setText(import_message)
-        self.ui.sequences_label.setText(import_message)
-        self.ui.entity_picker_message_label.setText(import_message)
+        # self.ui.sequences_label.setText(import_message)
+        # self.ui.entity_picker_message_label.setText(import_message)
         # Allow the user to go ahead without a movie
         self.ui.next_button.setEnabled(True)
-    
+
     @QtCore.Slot(str)
     def valid_movie(self, file_name):
         """
@@ -581,9 +627,9 @@ class AppDialog(QtGui.QWidget):
 
         if previous_page == _ENTITY_STEP and self.project_import:
             # Skip project selection
-            previous_page = _ENTITY_TYPE_STEP
+            previous_page = _ENTITY_STEP
 
-        if previous_page == _ENTITY_TYPE_STEP and self._entity_types_view.count() < 2:
+        if previous_page == _ENTITY_STEP and self._entity_types_view.count() < 2:
             # If only one entity is available, no need to choose it
             previous_page = _PROJECT_STEP
 
@@ -615,7 +661,7 @@ class AppDialog(QtGui.QWidget):
             # doing a reset
             self.ui.back_button.hide()
             self.ui.reset_button.hide()
-            self._selected_sg_entity[_ENTITY_TYPE_STEP] = None
+            self._selected_sg_entity[_ENTITY_STEP] = None
             self.ui.edl_added_icon.hide()
             self.ui.mov_added_icon.hide()
             self.ui.file_added_label.setText("")
@@ -626,6 +672,12 @@ class AppDialog(QtGui.QWidget):
             self.ui.next_button.hide()
             self.ui.reset_button.show()
             self.ui.back_button.show()
+
+        # if step == _ENTITY_TYPE_STEP:
+        #     for i in range(2):
+        #         btn = QtGui.QPushButton("test %s" % str(i))
+        #         self.ui.entity_buttons_layout.addWidget(btn, i, 0)
+                # btn.clicked.connect(self.buttonClicked)
 
         if step == _ENTITY_STEP:
             self.ui.create_entity_button.setText("New %s" % self._selected_sg_entity[2])
@@ -659,7 +711,7 @@ class AppDialog(QtGui.QWidget):
             self.ui.submit_button.hide()
 
         # We can select things on intermediate screens
-        if step in [_ENTITY_TYPE_STEP, _PROJECT_STEP, _ENTITY_STEP, _CUT_STEP]:
+        if step in [_PROJECT_STEP, _ENTITY_STEP, _CUT_STEP]:
             self.ui.select_button.show()
             # Only enable it if there is a selection for this step
             self.ui.select_button.setEnabled(bool(self._selected_sg_entity[step]))
@@ -668,7 +720,7 @@ class AppDialog(QtGui.QWidget):
 
         # Display info message in feedback line and other special things
         # based on the current step
-        if step == _ENTITY_TYPE_STEP:
+        if step == _ENTITY_STEP:
             self.display_info_message(self._entity_types_view.info_message)
         elif step == _PROJECT_STEP:
             self.display_info_message(self._entity_types_view.info_message)
@@ -731,7 +783,7 @@ class AppDialog(QtGui.QWidget):
         """
         if not self._selected_sg_entity[self._step]:
             raise RuntimeError("No selection for current step %d" % self._step)
-        if self._step == _ENTITY_TYPE_STEP:
+        if self._step == _ENTITY_STEP:
             self.show_entities(self._selected_sg_entity[self._step])
         elif self._step == _PROJECT_STEP:
             self.show_entity_types(self._selected_sg_entity[self._step])
@@ -749,6 +801,7 @@ class AppDialog(QtGui.QWidget):
         Called when cuts needs to be shown for a particular sequence
         """
         # Retrieve the nice name instead of CustomEntity04
+        self._logger.info("woohoooo!")
         sg_entity_type_name = sgtk.util.get_entity_type_display_name(
             sgtk.platform.current_bundle().sgtk,
             sg_entity_type,
@@ -777,7 +830,7 @@ class AppDialog(QtGui.QWidget):
         # Here we don't need the worker to retrieve additional data from SG
         # so we don't emit any signal like in other show_xxxx slots and move
         # directly to the entity type screen
-        self.goto_step(_ENTITY_TYPE_STEP)
+        self.goto_step(_ENTITY_STEP)
 
     @QtCore.Slot(dict)
     def show_entity(self, sg_entity):
@@ -885,11 +938,12 @@ class AppDialog(QtGui.QWidget):
 
     def create_entity(self, entity_type, fields):
         """
-        Creates an entity of the type specific in the create_payload param and
+        Creates an entity of the specified type and
         moves to the next screen with that entity selected.
 
-        :param create_payload: A list containing an entity type to be created
-        along with paramater values the user entered in the create_entity dialog.
+        :param entity_type: String, the entity type to create.
+        :param fields: Dict, fields to set on the new Entity, specified by
+        the user in the create_entity dialog.
         """
         try:
             new_entity = self._sg.create(entity_type, fields)
@@ -921,7 +975,7 @@ class AppDialog(QtGui.QWidget):
         where s/he can choose to create a new Entity of the selected type.
         """
         show_create_entity_dialog = CreateEntityDialog(
-            self._selected_sg_entity[_ENTITY_TYPE_STEP],
+            self._selected_sg_entity[_ENTITY_STEP],
             self._processor.sg_project,
             parent=self
         )
