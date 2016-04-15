@@ -26,6 +26,17 @@ class DownloadRunner(QtCore.QRunnable):
         """
         file_downloaded = QtCore.Signal(str)
 
+        def __init__(self, *args, **kwargs):
+            QtCore.QObject.__init__(self, *args, **kwargs)
+            self._aborted = False
+
+        @QtCore.Slot()
+        def abort(self):
+            """
+            Allow to signal that the download should be aborted
+            """
+            self._aborted = True
+
     def __init__(self, sg_attachment, path):
         """
         Instantiate a new download runner
@@ -46,10 +57,20 @@ class DownloadRunner(QtCore.QRunnable):
         """
         return self._notifier.file_downloaded
 
+    @property
+    def abort(self):
+        """
+        Pass through to access the _Notifier slot
+        """
+        return self._notifier.abort
+
     def run(self):
         """
         Actually run the runner
         """
+        # Return immediately if the download was aborted
+        if self._notifier._aborted:
+            return
         sg = sgtk.platform.current_bundle().shotgun
         try:
             if isinstance(self._sg_attachment, str):

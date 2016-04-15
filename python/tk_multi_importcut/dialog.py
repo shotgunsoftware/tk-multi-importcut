@@ -43,9 +43,10 @@ from .create_entity_dialog import CreateEntityDialog
 from .downloader import DownloadRunner
 
 # Different steps in the process
-from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, \
-    _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP
+from .constants import _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
+# Supported movie file extensions
 from .constants import _VIDEO_EXTS
 
 # Different frame mapping modes
@@ -99,8 +100,9 @@ class AppDialog(QtGui.QWidget):
     """
     Main application dialog window
     """
-    new_edl_and_mov = QtCore.Signal(str, str)
-    get_projects = QtCore.Signal(str)
+    new_edl = QtCore.Signal(str)
+    new_movie = QtCore.Signal(str)
+    get_projects = QtCore.Signal()
     get_entities = QtCore.Signal(str)
     show_cuts_for_sequence = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
@@ -124,7 +126,6 @@ class AppDialog(QtGui.QWidget):
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
-        self._sg_project = self._ctx.project
         self._user_settings = self._app.user_settings
 
         # todo: this is a tmp workaround. In the future we should validate all settings
@@ -171,8 +172,6 @@ class AppDialog(QtGui.QWidget):
         self._busy = False
         # Current step being displayed
         self._step = 0
-        self._edl_file_path = None
-        self._mov_file_path = None
 
         # Selected sg entity per step : selection only happen in steps 1 and 2
         # but we create entries for all steps allowing to index the list
@@ -195,11 +194,15 @@ class AppDialog(QtGui.QWidget):
         # Handle data and processong in a separate thread
         self._processor = Processor(frame_rate)
 
-        self.new_edl_and_mov.connect(self._processor.new_edl_and_mov)
+        self.new_edl.connect(self._processor.new_edl)
+        self.new_movie.connect(self._processor.new_movie)
         self.get_projects.connect(self._processor.retrieve_projects)
         self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
+
+        self._processor.valid_edl.connect(self.valid_edl)
+        self._processor.valid_movie.connect(self.valid_movie)
 
         self._processor.step_done.connect(self.step_done)
         self._processor.step_failed.connect(self.step_failed)
@@ -306,7 +309,7 @@ class AppDialog(QtGui.QWidget):
 
         # There is not command line support yet for passing in a base layer
         # media file, so we set mov_file_path to None
-        self.new_edl_and_mov.emit(edl_file_path, None)
+        self.new_edl.emit(edl_file_path)
         if sg_entity:
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
             self.show_entities(sg_entity["type"])
@@ -371,6 +374,12 @@ class AppDialog(QtGui.QWidget):
         if next_step < cur_step:
             return
         # Check if we can skip some intermediate screens
+        if next_step == _PROJECT_STEP:
+            # If we already have project from context, skip project chooser
+            if self._ctx.project is not None:
+                next_step = _ENTITY_TYPE_STEP
+            else:
+                self.show_projects()
         if next_step == _ENTITY_TYPE_STEP and self._entity_types_view.select_and_skip():
             # Skip single entity type screen, autoselecting the single entry
             next_step += 1
@@ -383,20 +392,9 @@ class AppDialog(QtGui.QWidget):
         """
         After EDL and optional MOV file paths have been set by process_drop
         The next button is activated and this code is run when Next is clicked.
-        Here we emit a signal to register a new edl, and move to the next screen.
         """
-        self.new_edl_and_mov.emit(self._edl_file_path, self._mov_file_path)
-        # todo: this show_projects() call shouldn't be necessary, but
-        # if it's not called here, then we can't go back and see the projects list
-        self.show_projects()
-        if self._ctx.project is not None:
-            self.goto_step(_ENTITY_TYPE_STEP)
-        else:
-            # The user needs to pickup a project first
-            self.goto_step(_PROJECT_STEP)
-        import_message = "Importing %s..." % os.path.basename(self._edl_file_path)
-        self.ui.sequences_label.setText(import_message)
-        self.ui.entity_picker_message_label.setText(import_message)
+        # We're done with the drop step
+        self.step_done(_DROP_STEP)
 
     @QtCore.Slot(list)
     def process_drop(self, paths):
@@ -404,49 +402,90 @@ class AppDialog(QtGui.QWidget):
         Process a drop event, paths can either be
         local filesystem paths or SG urls
         """
-        # if len(paths) > 2:
-        if len(paths) > 1:
+        num_paths = len(paths)
+        if num_paths > 2:
             QtGui.QMessageBox.warning(
                 self,
                 "Can't process drop",
-                # "Please drop maximum of two files at a time (EDL + MOV).",
-                "Please drop one file at a time."
+                "Please drop maximum of two files at a time (EDL + MOV).",
             )
             return
-        _, ext = os.path.splitext(paths[0])
-        if len(paths) == 2:
-            _, ext_2 = os.path.splitext(paths[1])
-            if ext.lower() == ".edl":
-                extensions = [ext_2, ext]
-            else:
-                extensions = [ext, ext_2]
+        
+        path = paths[0]
+        _, ext = os.path.splitext(path)
+        if ext.lower() == ".edl":
+            # Reset things if an EDL was previously dropped
+            self.ui.edl_added_icon.hide()
+            self.ui.next_button.setEnabled(False)
+            self.ui.file_added_label.setText("")
+            self.new_edl.emit(path)
+        elif ext.lower() in _VIDEO_EXTS:
+            self.new_movie.emit(path)
         else:
-            extensions = [ext]
-        for ext in extensions:
-            # Set state of gui elements based on what kind of file is dropped,
-            # or move on to the next screen if we have both EDL and MOV
-            if ext.lower() == ".edl":
-                self._edl_file_path = paths[0]
-                if self._mov_file_path:
-                    self.process_edl_mov()
-                else:
-                    self.ui.edl_added_icon.show()
-                    self.ui.next_button.setEnabled(True)
-                    self.ui.file_added_label.setText(
-                        os.path.basename(self._edl_file_path))
-            elif ext.lower() in _VIDEO_EXTS:
-                self._mov_file_path = paths[0]
-                if self._edl_file_path:
-                    self.process_edl_mov()
-                else:
-                    self.ui.mov_added_icon.show()
-                    self.ui.file_added_label.setText(
-                        os.path.basename(self._mov_file_path))
+            self._logger.error(
+                "'%s' is not a supported file type. Supported types are .edl and movie types: %s." % (
+                    os.path.basename(path),
+                    str(_VIDEO_EXTS)
+            ))
+            return
+
+        if num_paths == 2:
+            path = paths[1]
+            _, ext_2 = os.path.splitext(path)
+            if ext_2.lower() == ext.lower():
+                self._logger.error(
+                    "An EDL file and a movie should be dropped, not two %s files." % (
+                        # Strip leading ".", we can assume it is not empty, otherwise
+                        # it would have been caught in 1st path handling
+                        ext[1:],
+                ))
+                return
+            elif ext_2.lower() == ".edl":
+                # Reset things if an EDL was previously dropped
+                self.ui.edl_added_icon.hide()
+                self.ui.next_button.setEnabled(False)
+                self.ui.file_added_label.setText("")
+                self.new_edl.emit(path)
+            elif ext_2.lower() in _VIDEO_EXTS:
+                self.new_movie.emit(path)
             else:
-                bad_file_path = paths[0]
-                self._logger.error('"%s" is not a supported file type. Supported types are .edl and movie types: %s.' % (
-                    os.path.basename(bad_file_path), _VIDEO_EXTS))
-                break
+                self._logger.error(
+                    "'%s' is not a supported file type. Supported types are .edl and movie types: %s." % (
+                        os.path.basename(path),
+                        str(_VIDEO_EXTS)
+                ))
+                return
+
+    @QtCore.Slot(str)
+    def valid_edl(self, file_name):
+        """
+        Called when an EDL file has been validated and can be used
+
+        :param file_name: Short EDL file name
+        """
+        self.ui.edl_added_icon.show()
+        self.ui.file_added_label.setText(
+            os.path.basename(file_name)
+        )
+        # Update a small information label in various screens we will later see
+        import_message = "Importing %s" % file_name
+        self.ui.importing_edl_label_2.setText(import_message)
+        self.ui.sequences_label.setText(import_message)
+        self.ui.entity_picker_message_label.setText(import_message)
+        # Allow the user to go ahead without a movie
+        self.ui.next_button.setEnabled(True)
+    
+    @QtCore.Slot(str)
+    def valid_movie(self, file_name):
+        """
+        Called when a movie file has been validated and can be used
+
+        :param file_name: Short movie file name
+        """
+        self.ui.mov_added_icon.show()
+        self.ui.file_added_label.setText(
+            os.path.basename(file_name)
+        )
 
     @QtCore.Slot(int, str)
     def new_message(self, levelno, message):
@@ -539,7 +578,7 @@ class AppDialog(QtGui.QWidget):
     def previous_page(self):
         """
         Go back to previous page
-        Skip the cuts view page if needed
+        Skip intermediate screens if needed
         """
         current_page = self.ui.stackedWidget.currentIndex()
         previous_page = current_page - 1
@@ -556,9 +595,11 @@ class AppDialog(QtGui.QWidget):
             # If only one entity is available, no need to choose it
             previous_page = _PROJECT_STEP
 
-        # todo: This should work, but does the opposite of what we want.
-        # if previous_page == _PROJECT_STEP:
-        #     previous_page = _DROP_STEP
+        if previous_page == _PROJECT_STEP:
+            # Skip Project chooser page if we have a project from
+            # current context
+            if self._ctx.project:
+                previous_page = _DROP_STEP
 
         if previous_page < 0:
             previous_page = _DROP_STEP
@@ -583,8 +624,6 @@ class AppDialog(QtGui.QWidget):
             self.ui.back_button.hide()
             self.ui.reset_button.hide()
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = None
-            self._edl_file_path = None
-            self._mov_file_path = None
             self.ui.edl_added_icon.hide()
             self.ui.mov_added_icon.hide()
             self.ui.file_added_label.setText("")
@@ -703,7 +742,7 @@ class AppDialog(QtGui.QWidget):
         if self._step == _ENTITY_TYPE_STEP:
             self.show_entities(self._selected_sg_entity[self._step])
         elif self._step == _PROJECT_STEP:
-            self.show_projects()
+            self.show_entity_types(self._selected_sg_entity[self._step])
         elif self._step == _ENTITY_STEP:
             self.show_entity(self._selected_sg_entity[self._step])
         elif self._step == _CUT_STEP:
@@ -733,7 +772,7 @@ class AppDialog(QtGui.QWidget):
         Called when projects need to be shown
         """
         self._logger.info("Retrieving Project(s)")
-        self.get_projects.emit("sg_project")
+        self.get_projects.emit()
 
     @QtCore.Slot()
     def show_entity_types(self, sg_project):
@@ -742,8 +781,10 @@ class AppDialog(QtGui.QWidget):
 
         :param sg_project: The Shotgun Project dict to check for entities with
         """
-        self._sg_project = sg_project
         self._processor.set_project(sg_project)
+        # Here we don't need the worker to retrieve additional data from SG
+        # so we don't emit any signal like in other show_xxxx slots and move
+        # directly to the entity type screen
         self.goto_step(_ENTITY_TYPE_STEP)
 
     @QtCore.Slot(dict)
@@ -888,9 +929,10 @@ class AppDialog(QtGui.QWidget):
         where s/he can choose to create a new Entity of the selected type.
         """
         show_create_entity_dialog = CreateEntityDialog(
-            self._selected_sg_entity[2],
-            self._sg_project,
-            parent=self)
+            self._selected_sg_entity[_ENTITY_TYPE_STEP],
+            self._processor.sg_project,
+            parent=self
+        )
         show_create_entity_dialog.create_entity.connect(self.create_entity)
         show_create_entity_dialog.show()
         show_create_entity_dialog.raise_()
@@ -957,6 +999,12 @@ class AppDialog(QtGui.QWidget):
                 return
         self._processor.quit()
         self._processor.wait()
+        # Wait for the global ThreadPool to be done with all downloads
+        # problem is we don't have a way to tell the ThreadPool to stop
+        # processing queued request, so it takes a while to get all threads
+        # done. We need a way to abort all queued downloaded, through their
+        # abort slot
+        QtCore.QThreadPool.globalInstance().waitForDone()
         # Let the close happen
         evt.accept()
 

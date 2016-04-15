@@ -8,6 +8,7 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
+import os
 import re
 import sgtk
 from sgtk.platform.qt import QtCore
@@ -38,6 +39,8 @@ class EdlCut(QtCore.QObject):
     progress_changed    = QtCore.Signal(int)
     totals_changed      = QtCore.Signal()
     delete_cut_diff     = QtCore.Signal(CutDiff)
+    valid_edl           = QtCore.Signal(str)
+    valid_movie         = QtCore.Signal(str)
 
     def __init__(self, frame_rate=None):
         """
@@ -105,6 +108,13 @@ class EdlCut(QtCore.QObject):
             sgtk.platform.current_bundle().sgtk,
             self._sg_entity["type"],
         )
+    @property
+    def has_valid_edl(self):
+        return bool(self._edl)
+
+    @property
+    def has_valid_movie(self):
+        return bool(self._mov_file_path)
 
     def process_edit(self, edit, logger):
         """
@@ -183,9 +193,24 @@ class EdlCut(QtCore.QObject):
         :param edl_file_path: String, full path to EDL file.
         :param mov_file_path: String, full path to MOV file.
         """
-        self._mov_file_path = mov_file_path
+        self.register_movie_path(mov_file_path)
         self.load_edl(edl_file_path)
 
+    @QtCore.Slot(str)
+    def register_movie_path(self, movie_file_path):
+        """
+        Register the given movie path
+
+        :param movie_file_path: String, full path to MOV file.
+        """
+        self._mov_file_path = movie_file_path
+        self._logger.info("Registered %s" % self._mov_file_path)
+        self.valid_movie.emit(os.path.basename(self._mov_file_path))
+        # If we have a valid EDL, we can move to next step
+        if self.has_valid_edl:
+            self.step_done.emit(_DROP_STEP)
+
+    @QtCore.Slot(str)
     def load_edl(self, edl_file_path):
         """
         Load an EDL file.
@@ -255,7 +280,9 @@ class EdlCut(QtCore.QObject):
                             edit._shot_name = sg_version["entity.Shot.code"]
             # self.retrieve_entities()
             # Can go to next step
-            self.step_done.emit(_DROP_STEP)
+            self.valid_edl.emit(os.path.basename(self._edl_file_path))
+            if self.has_valid_movie:
+                self.step_done.emit(_DROP_STEP)
         except Exception, e:
             self._edl = None
             self._edl_file_path = None
@@ -354,11 +381,12 @@ class EdlCut(QtCore.QObject):
         finally:
             self.got_idle.emit()
 
-    @QtCore.Slot(str)
+    @QtCore.Slot()
     def retrieve_projects(self):
         """
         Retrieve all Projects for the Shotgun site
         """
+        self.got_busy.emit(None)
         try:
             fields = ["name", "id", "sg_status", "image", "sg_description"]
             order = [{"field_name": "name", "direction": "asc"}]
@@ -598,19 +626,14 @@ class EdlCut(QtCore.QObject):
 
             for edit in self._edl.edits:
                 if reel_names[edit.reel]["dup"] is True:
-                    edit.reel_name = "%s%s" % (
-                        edit.reel, str(reel_names[edit.reel]["iter"]).zfill(3))
+                    edit.reel_name = "%s%03d" % (
+                        edit.reel,
+                        reel_names[edit.reel]["iter"]
+                    )
+                    # Increment the iter counter for next one
                     reel_names[edit.reel]["iter"] += 1
                 else:
                     edit.reel_name = edit.reel
-                # Store the edit_offset in the summary instance so we can
-                # calculate edit in/out relative to the Cut (frame 1) later on
-                if edit.id == 1:
-                    self._summary.edit_offset = edl.Timecode(
-                        str(edit.record_in), self._summary.fps).to_frame()
-                    self._summary.tc_start = edit.record_in
-                if edit.id == len(self._edl.edits):
-                    self._summary.tc_end = edit.record_out
 
                 shot_name = edit.get_shot_name()
                 if not shot_name:
@@ -661,13 +684,6 @@ class EdlCut(QtCore.QObject):
                             edit=edit,
                             sg_cut_item=matching_cut_item
                         )
-
-            # Calculating the duration and storing it in the Cut summary.
-            start_frame = edl.Timecode(
-                str(self._summary.tc_start), self._summary.fps).to_frame()
-            end_frame = edl.Timecode(
-                str(self._summary.tc_end), self._summary.fps).to_frame()
-            self._summary.duration = end_frame - start_frame
 
             # Process cut items left over
             for sg_cut_item in sg_cut_items:
