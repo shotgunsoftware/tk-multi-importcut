@@ -361,7 +361,17 @@ QAbstractButton#cut_change_select_button,
 QAbstractButton#omitted_select_button,
 QAbstractButton#reinstated_select_button,
 QAbstractButton#rescan_select_button,
-QAbstractButton#total_button {
+QAbstractButton#total_button,
+QAbstractButton#dynamic_button_project,
+QAbstractButton#dynamic_button_1,
+QAbstractButton#dynamic_button_2,
+QAbstractButton#dynamic_button_3,
+QAbstractButton#dynamic_button_4,
+QAbstractButton#dynamic_button_5,
+QAbstractButton#dynamic_button_6,
+QAbstractButton#dynamic_button_7,
+QAbstractButton#dynamic_button_8,
+QAbstractButton#dynamic_button_9 {
     outline: none;
     font-size: 14px;
 }
@@ -374,7 +384,17 @@ QAbstractButton#cut_change_select_button:checked,
 QAbstractButton#omitted_select_button:checked,
 QAbstractButton#reinstated_select_button:checked,
 QAbstractButton#rescan_select_button:checked,
-QAbstractButton#total_button:checked {
+QAbstractButton#total_button:checked,
+QAbstractButton#dynamic_button_project:checked,
+QAbstractButton#dynamic_button_1:checked,
+QAbstractButton#dynamic_button_2:checked,
+QAbstractButton#dynamic_button_3:checked,
+QAbstractButton#dynamic_button_4:checked,
+QAbstractButton#dynamic_button_5:checked,
+QAbstractButton#dynamic_button_6:checked,
+QAbstractButton#dynamic_button_7:checked,
+QAbstractButton#dynamic_button_8:checked,
+QAbstractButton#dynamic_button_9:checked {
     border-top: 2px none #2C93E2;
     border-bottom: 2px solid #2C93E2;
     outline: none;
@@ -389,7 +409,17 @@ QAbstractButton#cut_change_select_button:pressed,
 QAbstractButton#omitted_select_button:pressed,
 QAbstractButton#reinstated_select_button:pressed,
 QAbstractButton#rescan_select_button:pressed,
-QAbstractButton#total_button:pressed {
+QAbstractButton#total_button:pressed,
+QAbstractButton#dynamic_button_project:pressed,
+QAbstractButton#dynamic_button_1:pressed,
+QAbstractButton#dynamic_button_2:pressed,
+QAbstractButton#dynamic_button_3:pressed,
+QAbstractButton#dynamic_button_4:pressed,
+QAbstractButton#dynamic_button_5:pressed,
+QAbstractButton#dynamic_button_6:pressed,
+QAbstractButton#dynamic_button_7:pressed,
+QAbstractButton#dynamic_button_8:pressed,
+QAbstractButton#dynamic_button_9:pressed {
     border-top: 2px none #2C93E2;
     border-bottom: 2px solid #2C93E2;
     outline: none;
@@ -402,7 +432,17 @@ QAbstractButton#cut_change_select_button:!checked:hover,
 QAbstractButton#omitted_select_button:!checked:hover,
 QAbstractButton#reinstated_select_button:!checked:hover,
 QAbstractButton#rescan_select_button:!checked:hover,
-QAbstractButton#total_button:!checked:hover {
+QAbstractButton#total_button:!checked:hover,
+QAbstractButton#dynamic_button_project:!checked:hover,
+QAbstractButton#dynamic_button_1:!checked:hover,
+QAbstractButton#dynamic_button_2:!checked:hover,
+QAbstractButton#dynamic_button_3:!checked:hover,
+QAbstractButton#dynamic_button_4:!checked:hover,
+QAbstractButton#dynamic_button_5:!checked:hover,
+QAbstractButton#dynamic_button_6:!checked:hover,
+QAbstractButton#dynamic_button_7:!checked:hover,
+QAbstractButton#dynamic_button_8:!checked:hover,
+QAbstractButton#dynamic_button_9:!checked:hover {
     color: white;
 }
 QAbstractButton#only_vfx_check_box {

@@ -32,7 +32,7 @@
    <item>
     <widget class="AnimatedStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="drop_page">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -193,9 +193,6 @@
             </item>
             <item>
              <widget class="QLabel" name="file_added_label">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -203,7 +200,7 @@
                </size>
               </property>
               <property name="text">
-               <string/>
+               <string>testing</string>
               </property>
               <property name="indent">
                <number>10</number>
@@ -655,7 +652,7 @@
           <enum>QLayout::SetDefaultConstraint</enum>
          </property>
          <property name="leftMargin">
-          <number>12</number>
+          <number>0</number>
          </property>
          <property name="topMargin">
           <number>4</number>
@@ -667,7 +664,11 @@
           <number>4</number>
          </property>
          <item>
-          <layout class="QHBoxLayout" name="entity_buttons_layout"/>
+          <layout class="QHBoxLayout" name="entity_buttons_layout">
+           <property name="spacing">
+            <number>5</number>
+           </property>
+          </layout>
          </item>
          <item>
           <widget class="QLabel" name="sequences_title_label">
@@ -1679,6 +1680,12 @@
       <widget class="QPushButton" name="create_entity_button">
        <property name="text">
         <string>New Entity</string>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
        </property>
       </widget>
      </item>

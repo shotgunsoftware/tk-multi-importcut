@@ -25,8 +25,6 @@ class EntitiesView(QtCore.QObject):
     # Emitted when the info message changed
     new_info_message = QtCore.Signal(str)
 
-    entity_type_chosen = QtCore.Signal(str)
-
     def __init__(self, grid_widget):
         super(EntitiesView, self).__init__()
         self._grid_widget = grid_widget
@@ -34,8 +32,7 @@ class EntitiesView(QtCore.QObject):
         self._logger = get_logger()
         # A one line message which can be displayed when the view is visible
         self._info_message = ""
-        self._logger.info("emitting Scene in the Entities view...")
-        self.entity_type_chosen.emit("Scene")
+        self._entities_display_mode = None
 
     @property
     def info_message(self):
@@ -47,13 +44,20 @@ class EntitiesView(QtCore.QObject):
         Called when a new entity card widget needs to be added to the list
         of retrieved entities
         """
-        i = self._grid_widget.count() - 1  # We have a stretcher
+        if sg_entity.get("mode_change"):
+            self._entities_display_mode = sg_entity["mode_change"]
+            self._display_for_mode()
+            return
+
+        i = self._grid_widget.count() - 1
+
         # Remove it
         spacer = self._grid_widget.takeAt(i)
         row = i / 2
         column = i % 2
         self._logger.debug("Adding %s at %d %d %d" % (sg_entity, i, row, column))
         widget = EntityCard(None, sg_entity)
+        widget.entity_type = sg_entity["type"]
         widget.highlight_selected.connect(self.entity_selected)
         widget.show_sequence.connect(self.sequence_chosen)
         self._grid_widget.addWidget(widget, row, column, )
@@ -65,6 +69,8 @@ class EntitiesView(QtCore.QObject):
         self._info_message = ("%d %ss" % (count, sg_entity["type"])) if count > 1 else (
             "%d %s" % (count, sg_entity["type"]))
         self.new_info_message.emit(self._info_message)
+        self._entities_display_mode = sg_entity["type"]
+        self._display_for_mode()
 
     @QtCore.Slot(QtGui.QWidget)
     def entity_selected(self, card):
@@ -99,17 +105,19 @@ class EntitiesView(QtCore.QObject):
             for i in range(count-1, -1, -1):
                 witem = self._grid_widget.itemAt(i)
                 widget = witem.widget()
-                widget.setVisible(True)
+                if widget.entity_type == self._entities_display_mode:
+                    widget.setVisible(True)
             match_count = count
         else:
             for i in range(count-1, -1, -1):
                 witem = self._grid_widget.itemAt(i)
                 widget = witem.widget()
-                if text.lower() in widget.entity_name.lower():
-                    match_count += 1
-                    widget.setVisible(True)
-                else:
-                    widget.setVisible(False)
+                if widget.entity_type == self._entities_display_mode:
+                    if text.lower() in widget.entity_name.lower():
+                        match_count += 1
+                        widget.setVisible(True)
+                    else:
+                        widget.setVisible(False)
         # Sort widgets so visible ones will be first, with rows
         # distribution re-arranged
         self.sort_changed()
@@ -130,8 +138,11 @@ class EntitiesView(QtCore.QObject):
         # Retrieve all cut cards
         widgets = []
         for i in range(count-1, -1, -1):
-            witem = self._grid_widget.takeAt(i)
-            widgets.append(witem.widget())
+            witem = self._grid_widget.itemAt(i).widget()
+            if hasattr(witem, "entity_type"):
+                if witem.entity_type == self._entities_display_mode:
+                    witem = self._grid_widget.takeAt(i)
+                    widgets.append(witem.widget())
         field = "code"
         widgets.sort(
             key=lambda x: (
@@ -157,6 +168,20 @@ class EntitiesView(QtCore.QObject):
         self._grid_widget.parentWidget().resize(
             self._grid_widget.parentWidget().size().width(),
             wsize.height() * row_count)
+
+    def _display_for_mode(self):
+        """
+        Hide / show CutDiff widgets depending on the current mode
+        """
+        count = self._grid_widget.count() - 1  # We have stretcher
+        for i in range(0, count):
+            widget = self._grid_widget.itemAt(i).widget()
+            if hasattr(widget, "entity_type"):
+                if widget.entity_type == self._entities_display_mode:
+                    widget.setVisible(True)
+                else:
+                    widget.setVisible(False)
+        self.sort_changed()
 
     def clear(self):
         """
