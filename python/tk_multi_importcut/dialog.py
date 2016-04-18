@@ -460,6 +460,10 @@ class AppDialog(QtGui.QWidget):
         path = paths[0]
         _, ext = os.path.splitext(path)
         if ext.lower() == ".edl":
+            # Reset things if an EDL was previously dropped
+            self.ui.edl_added_icon.hide()
+            self.ui.next_button.setEnabled(False)
+            self.ui.file_added_label.setText("")
             self.new_edl.emit(path)
         elif ext.lower() in _VIDEO_EXTS:
             self.new_movie.emit(path)
@@ -483,6 +487,10 @@ class AppDialog(QtGui.QWidget):
                 ))
                 return
             elif ext_2.lower() == ".edl":
+                # Reset things if an EDL was previously dropped
+                self.ui.edl_added_icon.hide()
+                self.ui.next_button.setEnabled(False)
+                self.ui.file_added_label.setText("")
                 self.new_edl.emit(path)
             elif ext_2.lower() in _VIDEO_EXTS:
                 self.new_movie.emit(path)
