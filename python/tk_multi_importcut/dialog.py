@@ -344,7 +344,6 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(str, QtGui.QWidget)
     def link_button_clicked(self, entity_type, button):
         self._logger.info(entity_type)
-        # self._logger.info(button.text())
         self.get_entities.emit(entity_type)
 
     def _preselected_input(self, edl_file_path, sg_entity):
@@ -516,8 +515,6 @@ class AppDialog(QtGui.QWidget):
         # Update a small information label in various screens we will later see
         import_message = "Importing %s" % file_name
         self.ui.importing_edl_label_2.setText(import_message)
-        # self.ui.sequences_label.setText(import_message)
-        # self.ui.entity_picker_message_label.setText(import_message)
         # Allow the user to go ahead without a movie
         self.ui.next_button.setEnabled(True)
 

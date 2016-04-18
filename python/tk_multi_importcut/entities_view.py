@@ -49,7 +49,7 @@ class EntitiesView(QtCore.QObject):
             self._display_for_mode()
             return
 
-        i = self._grid_widget.count() - 1
+        i = self._grid_widget.count() - 1  # We have a stretcher
 
         # Remove it
         spacer = self._grid_widget.takeAt(i)
