@@ -188,6 +188,13 @@ class EdlCut(QtCore.QObject):
         if had_something:
             self._logger.info("Session discarded...")
 
+    @QtCore.Slot(str)
+    def half_reset(self):
+        """
+        Clear some things in this worker if headed back to the Project step.
+        """
+        self._cached_entities = []
+
     @QtCore.Slot(str, str)
     def process_edl_and_mov(self, edl_file_path, mov_file_path):
         """
