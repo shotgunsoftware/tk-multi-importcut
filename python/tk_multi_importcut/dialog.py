@@ -664,7 +664,9 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.setEnabled(True)
         self.ui.email_button.setEnabled(True)
         self.ui.submit_button.setEnabled(True)
-        self.ui.select_button.setEnabled(bool(self._selected_sg_entity[self._step]))
+        self.ui.select_button.setEnabled(
+            self.has_valid_selection_for_step(self._step)
+        )
         self.ui.progress_bar.hide()
 
     def goto_step(self, which):
@@ -788,7 +790,7 @@ class AppDialog(QtGui.QWidget):
         if step in [_PROJECT_STEP, _ENTITY_STEP, _CUT_STEP]:
             self.ui.select_button.show()
             # Only enable it if there is a selection for this step
-            self.ui.select_button.setEnabled(bool(self._selected_sg_entity[step]))
+            self.ui.select_button.setEnabled(self.has_valid_selection_for_step(step))
         else:
             self.ui.select_button.hide()
 
@@ -836,6 +838,18 @@ class AppDialog(QtGui.QWidget):
             self.ui.submit_button.hide()
             # Clear info message
             self.display_info_message("")
+
+    def has_valid_selection_for_step(self, step):
+        """
+        Return True is a valid selection is held for the given step
+        """
+        if not self._selected_sg_entity[step]:
+            # Nothing selected
+            return False
+        if step == _ENTITY_STEP and self._selected_sg_entity[step]["type"] != self._preload_entity_type:
+            # Selection does not correspond to selected entity type
+            return False
+        return True
 
     @QtCore.Slot(dict)
     def selection_changed(self, sg_entity):
