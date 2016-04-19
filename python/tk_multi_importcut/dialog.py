@@ -16,6 +16,7 @@ import logging
 import logging.handlers
 import tempfile
 import ast
+from operator import itemgetter
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
@@ -320,7 +321,20 @@ class AppDialog(QtGui.QWidget):
         """
         self._preload_entity_type = None
         schema = self._sg.schema_field_read("Cut", "entity")
-        entity_types = schema["entity"]["properties"]["valid_types"]["value"]
+        schema_entity_types = schema["entity"]["properties"]["valid_types"]["value"]
+        # Build a list of entity type / entity type name tuple
+        entity_types = []
+        for entity_type in schema_entity_types:
+            entity_types.append((
+                entity_type,
+                self._sg.schema_entity_read(entity_type)[entity_type]["name"]["value"]
+            ))
+        # Sort by the display name
+        entity_types.sort(key=itemgetter(1))
+        # We always want to be able to import against the Project. It looks like
+        # we want Project to always be the last button, so we append it after sorting
+        # is done
+        entity_types.append(("Project", "Project",))
         count = len(entity_types)
         # This is a bit arbitrary, since it only messes up the gui, but it's probably
         # possible to display more like eight types, depending on the char length of each type.
@@ -329,20 +343,14 @@ class AppDialog(QtGui.QWidget):
         if count:
             # Preselect 1st entry
             entity_type = entity_types[0]
-            entity_name = self._sg.schema_entity_read(entity_type)[entity_type]["name"]["value"]
-            button = self._create_entity_type_button(entity_type, entity_name)
-            self._preload_entity_type = entity_type
+            button = self._create_entity_type_button(entity_type[0], entity_type[1])
+            self._preload_entity_type = entity_type[0]
             self.checked_entity_button = button
             self.checked_entity_button.setChecked(True)
             self.ui.entity_buttons_layout.addWidget(button)
         for entity_type in entity_types[1:5]:
-            entity_name = self._sg.schema_entity_read(entity_type)[entity_type]["name"]["value"]
-            button = self._create_entity_type_button(entity_type, entity_name)
+            button = self._create_entity_type_button(entity_type[0], entity_type[1])
             self.ui.entity_buttons_layout.addWidget(button)
-        # Always allow to import against a Project ? But then we could choose a Project
-        # in the Project chooser screen and here choose another one ?
-        button = self._create_entity_type_button("Project", "Project")
-        self.ui.entity_buttons_layout.addWidget(button)
 
     def _create_entity_type_button(self, entity_type, entity_type_name):
         """
