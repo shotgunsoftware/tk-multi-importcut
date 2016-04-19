@@ -230,15 +230,8 @@ class AppDialog(QtGui.QWidget):
         self._entity_types_view.selection_changed.connect(self.selection_changed)
         self._entity_types_view.entity_type_chosen.connect(self.show_entities)
 
-        # Instantiate a entities view handler
-        self._entities_view = EntitiesView(self.ui.sequence_grid)
-        self._entities_view.sequence_chosen.connect(self.show_entity)
-        self._entities_view.selection_changed.connect(self.selection_changed)
-        self._entities_view.new_info_message.connect(self.display_info_message)
-        self._processor.new_sg_entity.connect(self._entities_view.new_sg_entity)
-        self._processor.new_sg_entity.connect(self._change_entity_button)
-        self.ui.sequences_search_line_edit.search_edited.connect(self._entities_view.search)
-        self.ui.sequences_search_line_edit.search_changed.connect(self._entities_view.search)
+        # Instantiate an empty entities views handler
+        self._entities_views = []
 
         # Instantiate a cuts view handler
         self._cuts_view = CutsView(self.ui.cuts_grid, self.ui.cuts_sort_button)
@@ -315,10 +308,14 @@ class AppDialog(QtGui.QWidget):
         Create buttons allowing to choose which entity type the Cut
         will be imported against.
         
-        A maximum of 5 different entity types is only supported, as the
+        A maximum number of different entity types is supported, as the
         current UI will not allow to display them correctly if bigger.
         
         """
+        # Retrieve the stack widget used to display different list of entities
+        entity_type_stacked_widget = self.ui.entities_type_stacked_widget
+        # Retrieve the maximum number of entity types we can handle
+        max_count = entity_type_stacked_widget.count()
         self._preload_entity_type = None
         schema = self._sg.schema_field_read("Cut", "entity")
         schema_entity_types = schema["entity"]["properties"]["valid_types"]["value"]
@@ -338,19 +335,33 @@ class AppDialog(QtGui.QWidget):
         count = len(entity_types)
         # This is a bit arbitrary, since it only messes up the gui, but it's probably
         # possible to display more like eight types, depending on the char length of each type.
-        if count > 5:
-            self._logger.warning("Sorry, we can only display five link Entity Types at a time.")
+        if count > max_count:
+            self._logger.warning(
+                "Sorry, we can only display %d link Entity Types at a time." % max_count
+            )
         if count:
             # Preselect 1st entry
             entity_type = entity_types[0]
             button = self._create_entity_type_button(entity_type[0], entity_type[1])
             self._preload_entity_type = entity_type[0]
-            self.checked_entity_button = button
-            self.checked_entity_button.setChecked(True)
+            button.setChecked(True)
             self.ui.entity_buttons_layout.addWidget(button)
-        for entity_type in entity_types[1:5]:
+            page = entity_type_stacked_widget.widget(0)
+            self._create_entity_type_view(entity_type[0], page.layout())
+
+        for entity_type in entity_types[1:max_count]:
             button = self._create_entity_type_button(entity_type[0], entity_type[1])
             self.ui.entity_buttons_layout.addWidget(button)
+
+    def _create_entity_type_view(self, entity_type, grid_layout):
+        self._entities_views.append(EntitiesView(entity_type, grid_layout))
+        self._entities_views[-1].sequence_chosen.connect(self.show_entity)
+        self._entities_views[-1].selection_changed.connect(self.selection_changed)
+        self._entities_views[-1].new_info_message.connect(self.display_info_message)
+        self._processor.new_sg_entity.connect(self._entities_views[-1].new_sg_entity)
+        #self._processor.new_sg_entity.connect(self._change_entity_button)
+        self.ui.sequences_search_line_edit.search_edited.connect(self._entities_views[-1].search)
+        self.ui.sequences_search_line_edit.search_changed.connect(self._entities_views[-1].search)
 
     def _create_entity_type_button(self, entity_type, entity_type_name):
         """
@@ -381,10 +392,8 @@ class AppDialog(QtGui.QWidget):
         """
         Called when an Entity Type button is clicked
         """
-        # Register selected entity type
-        self._preload_entity_type = entity_type
-        # Ask our data manager to retrieve entries for the given entity type
-        self.get_entities.emit(entity_type)
+        # Just show the view for the entity type
+        self.show_entities(entity_type)
 
     def _preselected_input(self, edl_file_path, sg_entity):
         # Special mode for Premiere integration : load the given EDL
@@ -787,7 +796,7 @@ class AppDialog(QtGui.QWidget):
         elif step == _PROJECT_STEP:
             self.display_info_message(self._entity_types_view.info_message)
         elif step == _ENTITY_STEP:
-            self.display_info_message(self._entities_view.info_message)
+            self.display_info_message(self._entities_views[0].info_message)
         elif step == _CUT_STEP:
             self.display_info_message(self._cuts_view.info_message)
         elif step == _SUMMARY_STEP:
@@ -849,7 +858,6 @@ class AppDialog(QtGui.QWidget):
         #     self.show_entities(self._selected_sg_entity[self._step])
         elif self._step == _PROJECT_STEP:
             self._processor.set_project(self._selected_sg_entity[self._step])
-            self._processor.half_reset.emit()
             self.show_entities(self._preload_entity_type)
             self.goto_step(_ENTITY_STEP)
         elif self._step == _ENTITY_STEP:
@@ -870,9 +878,24 @@ class AppDialog(QtGui.QWidget):
             sgtk.platform.current_bundle().sgtk,
             sg_entity_type,
         )
-        self._logger.info("Retrieving %s(s)" % sg_entity_type_name)
+        self._logger.info("Showing %s(s)" % sg_entity_type_name)
         self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
-        self.get_entities.emit(sg_entity_type)
+        self._preload_entity_type = sg_entity_type
+
+        entity_type_stacked_widget = self.ui.entities_type_stacked_widget
+        # Retrieve the entity type view we should activate
+        for i, view in enumerate(self._entities_views):
+            if view.sg_entity_type == sg_entity_type:
+                entity_type_stacked_widget.setCurrentIndex(i)
+                break
+        else:
+            # Create the needed page
+            page_i = len(self._entities_views)
+            page = entity_type_stacked_widget.widget(page_i)
+            self._create_entity_type_view(sg_entity_type, page.layout())
+            # Ask our data manager to retrieve entries for the given entity type
+            self.get_entities.emit(sg_entity_type)
+            entity_type_stacked_widget.setCurrentIndex(page_i)
 
     @QtCore.Slot(str)
     def show_projects(self):
@@ -890,9 +913,7 @@ class AppDialog(QtGui.QWidget):
         :param sg_project: The Shotgun Project dict to check for entities with
         """
         self._processor.set_project(sg_project)
-        self._processor.half_reset.emit()
         self.show_entities(self._preload_entity_type)
-        self._logger.info("types!")
         # Here we don't need the worker to retrieve additional data from SG
         # so we don't emit any signal like in other show_xxxx slots and move
         # directly to the entity type screen
@@ -951,7 +972,9 @@ class AppDialog(QtGui.QWidget):
         """
         Reset the page displaying available sequences
         """
-        self._entities_view.clear()
+        for page_i, view in enumerate(self._entities_views):
+            view.clear()
+        self._entities_views = []
 
     def clear_project_view(self):
         """

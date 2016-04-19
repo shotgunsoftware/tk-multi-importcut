@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'settings_dialog.ui'
 #
-#      by: pyside-uic 0.2.15 running on PySide 1.2.4
+#      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -110,7 +110,7 @@ class Ui_settings_dialog(object):
         self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.update_shot_statuses_checkbox)
         self.omit_status_label = QtGui.QLabel(self.general_tab)
         self.omit_status_label.setEnabled(True)
-        self.omit_status_label.setFrameShadow(QtGui.QFrame.Sunken)
+        self.omit_status_label.setFrameShadow(QtGui.QFrame.Plain)
         self.omit_status_label.setMargin(0)
         self.omit_status_label.setObjectName("omit_status_label")
         self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.omit_status_label)
