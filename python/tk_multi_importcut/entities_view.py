@@ -66,7 +66,7 @@ class EntitiesView(QtCore.QObject):
         spacer = self._grid_widget.takeAt(i)
         row = i / 2
         column = i % 2
-        self._logger.info("Adding %s at %d %d %d" % (sg_entity, i, row, column))
+        self._logger.debug("Adding %s at %d %d %d" % (sg_entity, i, row, column))
         widget = EntityCard(None, sg_entity)
         widget.entity_type = sg_entity["type"]
         widget.highlight_selected.connect(self.entity_selected)

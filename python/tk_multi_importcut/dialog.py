@@ -354,12 +354,14 @@ class AppDialog(QtGui.QWidget):
             self.ui.entity_buttons_layout.addWidget(button)
 
     def _create_entity_type_view(self, entity_type, grid_layout):
+        """
+        Create a view for the given entity type
+        """
         self._entities_views.append(EntitiesView(entity_type, grid_layout))
         self._entities_views[-1].sequence_chosen.connect(self.show_entity)
         self._entities_views[-1].selection_changed.connect(self.selection_changed)
         self._entities_views[-1].new_info_message.connect(self.display_info_message)
         self._processor.new_sg_entity.connect(self._entities_views[-1].new_sg_entity)
-        #self._processor.new_sg_entity.connect(self._change_entity_button)
         self.ui.sequences_search_line_edit.search_edited.connect(self._entities_views[-1].search)
         self.ui.sequences_search_line_edit.search_changed.connect(self._entities_views[-1].search)
 
@@ -392,8 +394,10 @@ class AppDialog(QtGui.QWidget):
         """
         Called when an Entity Type button is clicked
         """
-        # Just show the view for the entity type
+        # Show the view for the entity type
         self.show_entities(entity_type)
+        # The UI can change based on the entity_type, so call a refresh
+        self.set_ui_for_step(self._step)
 
     def _preselected_input(self, edl_file_path, sg_entity):
         # Special mode for Premiere integration : load the given EDL
@@ -707,15 +711,6 @@ class AppDialog(QtGui.QWidget):
 
         self.ui.stackedWidget.goto_page(previous_page)
 
-    def _change_entity_button(self, entity):
-        entity_type = entity.get("type") or entity.get("mode_change")
-        if entity_type == "Project":
-            self.ui.create_entity_button.hide()
-        elif entity_type:
-            self.ui.create_entity_button.show()
-            self.ui.create_entity_button.setText("New %s" % entity_type)
-            self._selected_entity_tab = entity_type
-
     @QtCore.Slot(int)
     def set_ui_for_step(self, step):
         """
@@ -752,7 +747,15 @@ class AppDialog(QtGui.QWidget):
                 # btn.clicked.connect(self.buttonClicked)
 
         if step == _ENTITY_STEP:
-            self.ui.create_entity_button.show()
+            entity_type = self._preload_entity_type
+            if entity_type == "Project":
+                self.ui.create_entity_button.hide()
+            elif entity_type:
+                self.ui.create_entity_button.show()
+                entity_type_name = sgtk.util.get_entity_type_display_name(
+                    self._app.sgtk, entity_type,
+                )
+                self.ui.create_entity_button.setText("New %s" % entity_type_name)
         else:
             self.ui.create_entity_button.hide()
 
@@ -1064,7 +1067,7 @@ class AppDialog(QtGui.QWidget):
         where s/he can choose to create a new Entity of the selected type.
         """
         show_create_entity_dialog = CreateEntityDialog(
-            self._selected_entity_tab,
+            self._preload_entity_type,
             self._processor.sg_project,
             parent=self
         )
