@@ -300,7 +300,11 @@ class AppDialog(QtGui.QWidget):
         cut_link_field = "entity"
         schema = self._sg.schema_field_read("Cut", cut_link_field)
         entity_types = schema[cut_link_field]["properties"]["valid_types"]["value"]
-        self._preload_entity_type = None
+        self._preload_entity_type = self._user_settings.retrieve("preload_entity_type")
+        self._logger.info(self._preload_entity_type)
+        if self._preload_entity_type not in entity_types:
+            if self._preload_entity_type != "Project":
+                self._preload_entity_type = None
         inc = 1
         for entity_type in entity_types:
             # This is a bit arbitrary, since it only messes up the gui, but it's probably
@@ -314,24 +318,40 @@ class AppDialog(QtGui.QWidget):
             entity_link_button.setFlat(True)
             entity_link_button.setAutoExclusive(True)
             entity_link_button.setCheckable(True)
+            # self._set_button_size(entity_link_button)
+            entity_link_button.setFont(QtGui.QFont("SansSerif", 20))
+            width = entity_link_button.fontMetrics().boundingRect(entity_name).width() + 7
+            entity_link_button.setMaximumWidth(width)
             entity_link_button.clicked.connect(self._get_link_cb(entity_type, entity_link_button))
+            # entity_link_button.setFont(QtGui.QFont("SansSerif", 14))
+            # width = entity_link_button.fontMetrics().boundingRect(entity_name).width() + 7
+            # entity_link_button.setMaximumWidth(width)
             if inc == 1:
-                self._preload_entity_type = entity_type
+                if self._preload_entity_type is None:
+                    self._preload_entity_type = entity_type
                 self.checked_entity_button = entity_link_button
                 self.ui.entity_buttons_layout.addWidget(self.checked_entity_button, inc, 0)
                 self.checked_entity_button.setChecked(True)
                 # self.ui.dynamic_button_1.setChecked(True)
             else:
                 self.ui.entity_buttons_layout.addWidget(entity_link_button, inc, 0)
+                if self._preload_entity_type == entity_type:
+                    entity_link_button.setChecked(True)
+                    # self._change_entity_button({"mode_change": self._preload_entity_type})
             inc += 1
         project_link_button = QtGui.QPushButton("Project")
         project_link_button.setObjectName("dynamic_button_project")
         project_link_button.setFlat(True)
         project_link_button.setAutoExclusive(True)
         project_link_button.setCheckable(True)
+        project_link_button.setFont(QtGui.QFont("SansSerif", 20))
+        width = project_link_button.fontMetrics().boundingRect(entity_name).width() + 7
+        project_link_button.setMaximumWidth(width)
         project_link_button.clicked.connect(
             lambda: self.link_button_clicked("Project", project_link_button))
         self.ui.entity_buttons_layout.addWidget(project_link_button, inc, 0)
+        if self._preload_entity_type == "Project":
+            project_link_button.setChecked(True)
 
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
@@ -343,6 +363,14 @@ class AppDialog(QtGui.QWidget):
             ))
 
         self._processor.start()
+
+    # def _set_button_size(self, button):
+    #     return lambda: self._set_button_size_B(button)
+
+    # def _set_button_size_B(self, button):
+    #     button.setFont(QtGui.QFont("SansSerif", 14))
+    #     width = button.fontMetrics().boundingRect(button.text()).width() + 15
+    #     button.setMaximumWidth(width)
 
     def _get_link_cb(self, entity_name, button):
         return lambda: self.link_button_clicked(entity_name, button)
@@ -666,6 +694,7 @@ class AppDialog(QtGui.QWidget):
 
     def _change_entity_button(self, entity):
         entity_type = entity.get("type") or entity.get("mode_change")
+        self._user_settings.store("preload_entity_type", entity_type)
         if entity_type == "Project":
             self.ui.create_entity_button.hide()
         elif entity_type:
