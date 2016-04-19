@@ -127,7 +127,6 @@ class AppDialog(QtGui.QWidget):
         self._sg = self._app.shotgun
         self._ctx = self._app.context
         self._user_settings = self._app.user_settings
-        self._got_projects = False
         self.checked_entity_button = None
 
         # todo: this is a tmp workaround. In the future we should validate all settings
@@ -297,41 +296,7 @@ class AppDialog(QtGui.QWidget):
                     pass
         # Here we're dynamically creating link buttons on the ENTITY_STEP page,
         # as well as adding a Project type button.
-        cut_link_field = "entity"
-        schema = self._sg.schema_field_read("Cut", cut_link_field)
-        entity_types = schema[cut_link_field]["properties"]["valid_types"]["value"]
-        self._preload_entity_type = None
-        inc = 1
-        for entity_type in entity_types:
-            # This is a bit arbitrary, since it only messes up the gui, but it's probably
-            # possible to display more like eight types, depending on the char length of each type.
-            if inc > 5:
-                self._logger.warning("Sorry, we can only display five link Entities at a time.")
-                break
-            entity_name = self._sg.schema_entity_read(entity_type)[entity_type]["name"]["value"]
-            entity_link_button = QtGui.QPushButton(entity_name)
-            entity_link_button.setObjectName("dynamic_button_%s" % inc)
-            entity_link_button.setFlat(True)
-            entity_link_button.setAutoExclusive(True)
-            entity_link_button.setCheckable(True)
-            entity_link_button.clicked.connect(self._get_link_cb(entity_type, entity_link_button))
-            if inc == 1:
-                self._preload_entity_type = entity_type
-                self.checked_entity_button = entity_link_button
-                self.ui.entity_buttons_layout.addWidget(self.checked_entity_button, inc, 0)
-                self.checked_entity_button.setChecked(True)
-                # self.ui.dynamic_button_1.setChecked(True)
-            else:
-                self.ui.entity_buttons_layout.addWidget(entity_link_button, inc, 0)
-            inc += 1
-        project_link_button = QtGui.QPushButton("Project")
-        project_link_button.setObjectName("dynamic_button_project")
-        project_link_button.setFlat(True)
-        project_link_button.setAutoExclusive(True)
-        project_link_button.setCheckable(True)
-        project_link_button.clicked.connect(
-            lambda: self.link_button_clicked("Project", project_link_button))
-        self.ui.entity_buttons_layout.addWidget(project_link_button, inc, 0)
+        self._create_entity_type_buttons()
 
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
@@ -344,12 +309,73 @@ class AppDialog(QtGui.QWidget):
 
         self._processor.start()
 
+    def _create_entity_type_buttons(self):
+        """
+        Create buttons allowing to choose which entity type the Cut
+        will be imported against.
+        
+        A maximum of 5 different entity types is only supported, as the
+        current UI will not allow to display them correctly if bigger.
+        
+        """
+        self._preload_entity_type = None
+        schema = self._sg.schema_field_read("Cut", "entity")
+        entity_types = schema["entity"]["properties"]["valid_types"]["value"]
+        count = len(entity_types)
+        # This is a bit arbitrary, since it only messes up the gui, but it's probably
+        # possible to display more like eight types, depending on the char length of each type.
+        if count > 5:
+            self._logger.warning("Sorry, we can only display five link Entity Types at a time.")
+        if count:
+            # Preselect 1st entry
+            entity_type = entity_types[0]
+            entity_name = self._sg.schema_entity_read(entity_type)[entity_type]["name"]["value"]
+            button = self._create_entity_type_button(entity_type, entity_name)
+            self._preload_entity_type = entity_type
+            self.checked_entity_button = button
+            self.checked_entity_button.setChecked(True)
+            self.ui.entity_buttons_layout.addWidget(button)
+        for entity_type in entity_types[1:5]:
+            entity_name = self._sg.schema_entity_read(entity_type)[entity_type]["name"]["value"]
+            button = self._create_entity_type_button(entity_type, entity_name)
+            self.ui.entity_buttons_layout.addWidget(button)
+        # Always allow to import against a Project ? But then we could choose a Project
+        # in the Project chooser screen and here choose another one ?
+        button = self._create_entity_type_button("Project", "Project")
+        self.ui.entity_buttons_layout.addWidget(button)
+
+    def _create_entity_type_button(self, entity_type, entity_type_name):
+        """
+        Create a button allowing to select an Entity Type
+        :param entity_type: A SG entity type
+        :param entity_type_name: A nice name for this entity type
+        :returns: A QPushButton
+        """
+        entity_link_button = QtGui.QPushButton(entity_type_name)
+        entity_link_button.setObjectName("dynamic_button_%s" % entity_type_name)
+        entity_link_button.setFlat(True)
+        entity_link_button.setAutoExclusive(True)
+        entity_link_button.setCheckable(True)
+        entity_link_button.clicked.connect(self._get_link_cb(entity_type, entity_link_button))
+        return entity_link_button
+
     def _get_link_cb(self, entity_name, button):
+        """
+        Returns a callback which can be connected to an Entity Type button clicked
+        signal
+        
+        http://stackoverflow.com/questions/19837486/python-lambda-in-a-loop
+        """
         return lambda: self.link_button_clicked(entity_name, button)
 
     @QtCore.Slot(str, QtGui.QWidget)
     def link_button_clicked(self, entity_type, button):
+        """
+        Called when an Entity Type button is clicked
+        """
+        # Register selected entity type
         self._preload_entity_type = entity_type
+        # Ask our data manager to retrieve entries for the given entity type
         self.get_entities.emit(entity_type)
 
     def _preselected_input(self, edl_file_path, sg_entity):
@@ -392,7 +418,6 @@ class AppDialog(QtGui.QWidget):
             ret = QtGui.QMessageBox.Yes
 
         if ret == QtGui.QMessageBox.Yes:
-            self._got_projects = False
             self.goto_step(_DROP_STEP)
 
     @QtCore.Slot()
@@ -428,6 +453,10 @@ class AppDialog(QtGui.QWidget):
             # If we already have project from context, skip project chooser
             if self._ctx.project is not None:
                 next_step = _ENTITY_STEP
+                # We don't show the Project screen when moving forward, but
+                # do show it when moving backward, so we skip the step but ask
+                # the data manager to retrieve projects
+                self.show_projects()
             else:
                 self.show_projects()
         if next_step == _ENTITY_STEP and self._entity_types_view.select_and_skip():
@@ -659,9 +688,6 @@ class AppDialog(QtGui.QWidget):
         if previous_page < 0:
             previous_page = _DROP_STEP
 
-        if previous_page == _PROJECT_STEP:
-            self.show_projects()
-
         self.ui.stackedWidget.goto_page(previous_page)
 
     def _change_entity_button(self, entity):
@@ -846,9 +872,7 @@ class AppDialog(QtGui.QWidget):
         Called when projects need to be shown
         """
         self._logger.info("Retrieving Project(s)")
-        if not self._got_projects:
-            self.get_projects.emit()
-        self._got_projects = True
+        self.get_projects.emit()
 
     @QtCore.Slot()
     def show_entity_types(self, sg_project):
