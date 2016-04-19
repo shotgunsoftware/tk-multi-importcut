@@ -301,7 +301,6 @@ class AppDialog(QtGui.QWidget):
         schema = self._sg.schema_field_read("Cut", cut_link_field)
         entity_types = schema[cut_link_field]["properties"]["valid_types"]["value"]
         self._preload_entity_type = self._user_settings.retrieve("preload_entity_type")
-        self._logger.info(self._preload_entity_type)
         if self._preload_entity_type not in entity_types:
             if self._preload_entity_type != "Project":
                 self._preload_entity_type = None
@@ -889,7 +888,6 @@ class AppDialog(QtGui.QWidget):
         self._processor.set_project(sg_project)
         self._processor.half_reset.emit()
         self.show_entities(self._preload_entity_type)
-        self._logger.info("types!")
         # Here we don't need the worker to retrieve additional data from SG
         # so we don't emit any signal like in other show_xxxx slots and move
         # directly to the entity type screen
