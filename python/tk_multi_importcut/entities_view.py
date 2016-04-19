@@ -50,6 +50,16 @@ class EntitiesView(QtCore.QObject):
         """
         return self._sg_entity_type
 
+    @property
+    def selected_sg_entity(self):
+        """
+        Return the selected entity, if any
+        :returns: A SG entity dictionary or None
+        """
+        if self._selected_entity_card:
+            return self._selected_entity_card.sg_entity
+        return None
+
     @QtCore.Slot(dict)
     def new_sg_entity(self, sg_entity):
         """

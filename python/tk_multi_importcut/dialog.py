@@ -387,10 +387,10 @@ class AppDialog(QtGui.QWidget):
         
         http://stackoverflow.com/questions/19837486/python-lambda-in-a-loop
         """
-        return lambda: self.link_button_clicked(entity_name, button)
+        return lambda: self.activate_entity_type_view(entity_name, button)
 
     @QtCore.Slot(str, QtGui.QWidget)
-    def link_button_clicked(self, entity_type, button):
+    def activate_entity_type_view(self, entity_type, button):
         """
         Called when an Entity Type button is clicked
         """
@@ -900,9 +900,11 @@ class AppDialog(QtGui.QWidget):
         self._preload_entity_type = sg_entity_type
 
         entity_type_stacked_widget = self.ui.entities_type_stacked_widget
+        active_view = None
         # Retrieve the entity type view we should activate
         for i, view in enumerate(self._entities_views):
             if view.sg_entity_type == sg_entity_type:
+                active_view = view
                 entity_type_stacked_widget.setCurrentIndex(i)
                 break
         else:
@@ -910,9 +912,12 @@ class AppDialog(QtGui.QWidget):
             page_i = len(self._entities_views)
             page = entity_type_stacked_widget.widget(page_i)
             self._create_entity_type_view(sg_entity_type, page.layout())
+            active_view = self._entities_views[-1]
             # Ask our data manager to retrieve entries for the given entity type
             self.get_entities.emit(sg_entity_type)
             entity_type_stacked_widget.setCurrentIndex(page_i)
+        # Change the selection to the one held by the active view
+        self._selected_sg_entity[_ENTITY_STEP] = active_view.selected_sg_entity
 
     @QtCore.Slot(str)
     def show_projects(self):
