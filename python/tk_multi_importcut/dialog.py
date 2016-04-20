@@ -16,6 +16,7 @@ import logging
 import logging.handlers
 import tempfile
 import ast
+from operator import itemgetter
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
@@ -127,7 +128,6 @@ class AppDialog(QtGui.QWidget):
         self._sg = self._app.shotgun
         self._ctx = self._app.context
         self._user_settings = self._app.user_settings
-        self._got_projects = False
         self.checked_entity_button = None
 
         # todo: this is a tmp workaround. In the future we should validate all settings
@@ -168,6 +168,7 @@ class AppDialog(QtGui.QWidget):
         if reset_settings or self._user_settings.retrieve("default_tail_duration") is None:
             self._user_settings.store("default_tail_duration", "8")
 
+
         if reset_settings:
             self._user_settings.store("reset_settings", False)
 
@@ -189,6 +190,11 @@ class AppDialog(QtGui.QWidget):
         # lastly, set up our very basic UI
         self.set_custom_style()
         self.set_logger(logging.INFO)
+
+        # Load the entity type we should show in Entities screen from user
+        # preferences
+        self._preload_entity_type = self._user_settings.retrieve("preload_entity_type")
+        self._logger.debug("Preferred entity type %s" % self._preload_entity_type)
 
         CutDiff.retrieve_default_timecode_frame_mapping()
 
@@ -224,21 +230,8 @@ class AppDialog(QtGui.QWidget):
         self.ui.projects_search_line_edit.search_edited.connect(self._projects_view.search)
         self.ui.projects_search_line_edit.search_changed.connect(self._projects_view.search)
 
-        # Instantiate a entity type view handler
-        self._entity_types_view = EntityTypesView(self.ui.entity_types_layout)
-        self._entity_types_view.new_info_message.connect(self.display_info_message)
-        self._entity_types_view.selection_changed.connect(self.selection_changed)
-        self._entity_types_view.entity_type_chosen.connect(self.show_entities)
-
-        # Instantiate a entities view handler
-        self._entities_view = EntitiesView(self.ui.sequence_grid)
-        self._entities_view.sequence_chosen.connect(self.show_entity)
-        self._entities_view.selection_changed.connect(self.selection_changed)
-        self._entities_view.new_info_message.connect(self.display_info_message)
-        self._processor.new_sg_entity.connect(self._entities_view.new_sg_entity)
-        self._processor.new_sg_entity.connect(self._change_entity_button)
-        self.ui.sequences_search_line_edit.search_edited.connect(self._entities_view.search)
-        self.ui.sequences_search_line_edit.search_changed.connect(self._entities_view.search)
+        # Instantiate an empty entities views handler
+        self._entities_views = []
 
         # Instantiate a cuts view handler
         self._cuts_view = CutsView(self.ui.cuts_grid, self.ui.cuts_sort_button)
@@ -298,60 +291,8 @@ class AppDialog(QtGui.QWidget):
                     pass
         # Here we're dynamically creating link buttons on the ENTITY_STEP page,
         # as well as adding a Project type button.
-        cut_link_field = "entity"
-        schema = self._sg.schema_field_read("Cut", cut_link_field)
-        entity_types = schema[cut_link_field]["properties"]["valid_types"]["value"]
-        self._preload_entity_type = self._user_settings.retrieve("preload_entity_type")
-        if self._preload_entity_type not in entity_types:
-            if self._preload_entity_type != "Project":
-                self._preload_entity_type = None
-        inc = 1
-        for entity_type in entity_types:
-            # This is a bit arbitrary, since it only messes up the gui, but it's probably
-            # possible to display more like eight types, depending on the char length of each type.
-            if inc > 5:
-                self._logger.warning("Sorry, we can only display five link Entities at a time.")
-                break
-            entity_name = self._sg.schema_entity_read(entity_type)[entity_type]["name"]["value"]
-            entity_link_button = QtGui.QPushButton(entity_name)
-            entity_link_button.setObjectName("dynamic_button_%s" % inc)
-            entity_link_button.setFlat(True)
-            entity_link_button.setAutoExclusive(True)
-            entity_link_button.setCheckable(True)
-            # self._set_button_size(entity_link_button)
-            entity_link_button.setFont(QtGui.QFont("SansSerif", 20))
-            width = entity_link_button.fontMetrics().boundingRect(entity_name).width() + 7
-            entity_link_button.setMaximumWidth(width)
-            entity_link_button.clicked.connect(self._get_link_cb(entity_type, entity_link_button))
-            # entity_link_button.setFont(QtGui.QFont("SansSerif", 14))
-            # width = entity_link_button.fontMetrics().boundingRect(entity_name).width() + 7
-            # entity_link_button.setMaximumWidth(width)
-            if inc == 1:
-                if self._preload_entity_type is None:
-                    self._preload_entity_type = entity_type
-                self.checked_entity_button = entity_link_button
-                self.ui.entity_buttons_layout.addWidget(self.checked_entity_button, inc, 0)
-                self.checked_entity_button.setChecked(True)
-                # self.ui.dynamic_button_1.setChecked(True)
-            else:
-                self.ui.entity_buttons_layout.addWidget(entity_link_button, inc, 0)
-                if self._preload_entity_type == entity_type:
-                    entity_link_button.setChecked(True)
-                    # self._change_entity_button({"mode_change": self._preload_entity_type})
-            inc += 1
-        project_link_button = QtGui.QPushButton("Project")
-        project_link_button.setObjectName("dynamic_button_project")
-        project_link_button.setFlat(True)
-        project_link_button.setAutoExclusive(True)
-        project_link_button.setCheckable(True)
-        project_link_button.setFont(QtGui.QFont("SansSerif", 20))
-        width = project_link_button.fontMetrics().boundingRect(entity_name).width() + 7
-        project_link_button.setMaximumWidth(width)
-        project_link_button.clicked.connect(
-            lambda: self.link_button_clicked("Project", project_link_button))
-        self.ui.entity_buttons_layout.addWidget(project_link_button, inc, 0)
-        if self._preload_entity_type == "Project":
-            project_link_button.setChecked(True)
+
+        self._create_entity_type_buttons()
 
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
@@ -364,21 +305,116 @@ class AppDialog(QtGui.QWidget):
 
         self._processor.start()
 
-    # def _set_button_size(self, button):
-    #     return lambda: self._set_button_size_B(button)
+    def _create_entity_type_buttons(self):
+        """
+        Create buttons allowing to choose which entity type the Cut
+        will be imported against.
+        
+        A maximum number of different entity types is supported, as the
+        current UI will not allow to display them correctly if bigger.
+        
+        """
+        # Retrieve the stack widget used to display different list of entities
+        entity_type_stacked_widget = self.ui.entities_type_stacked_widget
+        # Retrieve the maximum number of entity types we can handle
+        max_count = entity_type_stacked_widget.count()
 
-    # def _set_button_size_B(self, button):
-    #     button.setFont(QtGui.QFont("SansSerif", 14))
-    #     width = button.fontMetrics().boundingRect(button.text()).width() + 15
-    #     button.setMaximumWidth(width)
+        schema = self._sg.schema_field_read("Cut", "entity")
+        schema_entity_types = schema["entity"]["properties"]["valid_types"]["value"]
+
+        # Validate and potentially reset current value retrieved from user
+        # preferences.
+        # Project is systematically added so is always valid
+        if(self._preload_entity_type is not None and
+            self._preload_entity_type != "Project" and
+            self._preload_entity_type not in schema_entity_types):
+                self._logger.warning("Resetting invalid entity type preference %s" %
+                    self._preload_entity_type
+                )
+                self._preload_entity_type = None
+
+        # Build a list of entity type / entity type name tuple
+        entity_types = []
+        for entity_type in schema_entity_types:
+            entity_types.append((
+                entity_type,
+                self._sg.schema_entity_read(entity_type)[entity_type]["name"]["value"]
+            ))
+        # Sort by the display name
+        entity_types.sort(key=itemgetter(1))
+        # We always want to be able to import against the Project. It looks like
+        # we want Project to always be the last button, so we append it after sorting
+        # is done
+        entity_types.append(("Project", "Project",))
+        count = len(entity_types)
+        # This is a bit arbitrary, since it only messes up the gui, but it's probably
+        # possible to display more like eight types, depending on the char length of each type.
+        if count > max_count:
+            self._logger.warning(
+                "Sorry, we can only display %d link Entity Types at a time." % max_count
+            )
+        # Preselect 1st entry, we will always have at the very least one Project entry
+        if self._preload_entity_type is None:
+            self._preload_entity_type = entity_types[0][0]
+            self._logger.debug("Preselecting %s entity type" % self._preload_entity_type)
+
+        for entity_type in entity_types[:max_count]:
+            button = self._create_entity_type_button(entity_type[0], entity_type[1])
+            self.ui.entity_buttons_layout.addWidget(button)
+            if entity_type[0] == self._preload_entity_type:
+                # We can't build the view now, as we might be in a case where
+                # the Project is not currently set, so we just
+                button.setChecked(True)
+
+    def _create_entity_type_view(self, entity_type, grid_layout):
+        """
+        Create a view for the given entity type
+        """
+        self._entities_views.append(EntitiesView(entity_type, grid_layout))
+        self._entities_views[-1].sequence_chosen.connect(self.show_entity)
+        self._entities_views[-1].selection_changed.connect(self.selection_changed)
+        self._entities_views[-1].new_info_message.connect(self.display_info_message)
+        self._processor.new_sg_entity.connect(self._entities_views[-1].new_sg_entity)
+        self.ui.sequences_search_line_edit.search_edited.connect(self._entities_views[-1].search)
+        self.ui.sequences_search_line_edit.search_changed.connect(self._entities_views[-1].search)
+
+    def _create_entity_type_button(self, entity_type, entity_type_name):
+        """
+        Create a button allowing to select an Entity Type
+        :param entity_type: A SG entity type
+        :param entity_type_name: A nice name for this entity type
+        :returns: A QPushButton
+        """
+        entity_link_button = QtGui.QPushButton(entity_type_name)
+        entity_link_button.setObjectName("dynamic_button_%s" % entity_type_name)
+        entity_link_button.setFlat(True)
+        entity_link_button.setAutoExclusive(True)
+        entity_link_button.setCheckable(True)
+        entity_link_button.setFont(QtGui.QFont("SansSerif", 20))
+        width = entity_link_button.fontMetrics().boundingRect(entity_type_name).width() + 7
+        entity_link_button.setMaximumWidth(width)
+        entity_link_button.clicked.connect(self._get_link_cb(entity_type, entity_link_button))
+        return entity_link_button
 
     def _get_link_cb(self, entity_name, button):
-        return lambda: self.link_button_clicked(entity_name, button)
+        """
+        Returns a callback which can be connected to an Entity Type button clicked
+        signal
+        
+        http://stackoverflow.com/questions/19837486/python-lambda-in-a-loop
+        """
+        return lambda: self.activate_entity_type_view(entity_name, button)
 
     @QtCore.Slot(str, QtGui.QWidget)
-    def link_button_clicked(self, entity_type, button):
-        self._preload_entity_type = entity_type
-        self.get_entities.emit(entity_type)
+    def activate_entity_type_view(self, entity_type, button):
+        """
+        Called when an Entity Type button is clicked
+        """
+        # Show the view for the entity type
+        self.show_entities(entity_type)
+        # The UI can change based on the entity_type, so call a refresh
+        self.set_ui_for_step(self._step)
+
 
     def _preselected_input(self, edl_file_path, sg_entity):
         # Special mode for Premiere integration : load the given EDL
@@ -398,10 +434,6 @@ class AppDialog(QtGui.QWidget):
     def no_cut_for_entity(self):
         return self._processor.no_cut_for_entity
 
-    @property
-    def project_import(self):
-        return self._processor.project_import
-
     @QtCore.Slot()
     def do_reset(self):
         """
@@ -420,7 +452,6 @@ class AppDialog(QtGui.QWidget):
             ret = QtGui.QMessageBox.Yes
 
         if ret == QtGui.QMessageBox.Yes:
-            self._got_projects = False
             self.goto_step(_DROP_STEP)
 
     @QtCore.Slot()
@@ -456,15 +487,20 @@ class AppDialog(QtGui.QWidget):
             # If we already have project from context, skip project chooser
             if self._ctx.project is not None:
                 next_step = _ENTITY_STEP
+                # We don't show the Project screen when moving forward, but
+                # do show it when moving backward, so we skip the step but ask
+                # the data manager to retrieve projects
+                self.show_projects()
+                self.show_entity_types(self._ctx.project)
             else:
                 self.show_projects()
-        if next_step == _ENTITY_STEP and self._entity_types_view.select_and_skip():
-            # Skip single entity type screen, autoselecting the single entry
-            next_step += 1
+#        if next_step == _ENTITY_STEP and self._entity_types_view.select_and_skip():
+#            # Skip single entity type screen, autoselecting the single entry
+#            next_step += 1
 #        if next_step == _ENTITY_STEP and self._entities_view.select_and_skip():
 #            next_step += 1
-        if next_step == _ENTITY_STEP:
-            self.get_entities.emit(self._preload_entity_type)
+#        if next_step == _ENTITY_STEP:
+#            self.get_entities.emit(self._preload_entity_type)
         self.goto_step(next_step)
 
     @QtCore.Slot()
@@ -642,7 +678,9 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.setEnabled(True)
         self.ui.email_button.setEnabled(True)
         self.ui.submit_button.setEnabled(True)
-        self.ui.select_button.setEnabled(bool(self._selected_sg_entity[self._step]))
+        self.ui.select_button.setEnabled(
+            self.has_valid_selection_for_step(self._step)
+        )
         self.ui.progress_bar.hide()
 
     def goto_step(self, which):
@@ -665,16 +703,16 @@ class AppDialog(QtGui.QWidget):
             # Skip cut selection screen
             previous_page = _ENTITY_STEP
 
-        if previous_page == _ENTITY_STEP and self.project_import:
-            # Skip project selection
-            previous_page = _PROJECT_STEP
+#        if previous_page == _ENTITY_STEP:
+#            # Skip project selection
+#            previous_page = _PROJECT_STEP
 
         if previous_page == _ENTITY_TYPE_STEP:
             previous_page = _PROJECT_STEP
 
-        if previous_page == _ENTITY_STEP and self._entity_types_view.count() < 2:
-            # If only one entity is available, no need to choose it
-            previous_page = _PROJECT_STEP
+#        if previous_page == _ENTITY_STEP and self._entity_types_view.count() < 2:
+#            # If only one entity is available, no need to choose it
+#            previous_page = _PROJECT_STEP
 
         # todo: leaving this in here because it seems like we may want to
         # go back to this behavior.
@@ -687,20 +725,7 @@ class AppDialog(QtGui.QWidget):
         if previous_page < 0:
             previous_page = _DROP_STEP
 
-        if previous_page == _PROJECT_STEP:
-            self.show_projects()
-
         self.ui.stackedWidget.goto_page(previous_page)
-
-    def _change_entity_button(self, entity):
-        entity_type = entity.get("type") or entity.get("mode_change")
-        self._user_settings.store("preload_entity_type", entity_type)
-        if entity_type == "Project":
-            self.ui.create_entity_button.hide()
-        elif entity_type:
-            self.ui.create_entity_button.show()
-            self.ui.create_entity_button.setText("New %s" % entity_type)
-            self._selected_entity_tab = entity_type
 
     @QtCore.Slot(int)
     def set_ui_for_step(self, step):
@@ -731,23 +756,12 @@ class AppDialog(QtGui.QWidget):
             self.ui.reset_button.show()
             self.ui.back_button.show()
 
-        # if step == _ENTITY_TYPE_STEP:
-        #     for i in range(2):
-        #         btn = QtGui.QPushButton("test %s" % str(i))
-        #         self.ui.entity_buttons_layout.addWidget(btn, i, 0)
-                # btn.clicked.connect(self.buttonClicked)
-
         if step == _CUT_STEP:
             self.ui.skip_button.show()
             self.ui.select_button.setText("Compare")
         else:
             self.ui.skip_button.hide()
             self.ui.select_button.setText("Select")
-
-        if step == _ENTITY_STEP:
-            self.ui.create_entity_button.show()
-        else:
-            self.ui.create_entity_button.hide()
 
         if step < _PROJECT_STEP:
             self.ui.projects_search_line_edit.clear()
@@ -756,6 +770,7 @@ class AppDialog(QtGui.QWidget):
 
         if step < _ENTITY_STEP:
             self.ui.sequences_search_line_edit.clear()
+            self.ui.create_entity_button.hide()
             self.clear_sequence_view()
             self._selected_sg_entity[_ENTITY_STEP] = None
 
@@ -778,18 +793,46 @@ class AppDialog(QtGui.QWidget):
         if step in [_PROJECT_STEP, _ENTITY_STEP, _CUT_STEP]:
             self.ui.select_button.show()
             # Only enable it if there is a selection for this step
-            self.ui.select_button.setEnabled(bool(self._selected_sg_entity[step]))
+            self.ui.select_button.setEnabled(self.has_valid_selection_for_step(step))
         else:
             self.ui.select_button.hide()
 
+        if step != _ENTITY_STEP:
+            # Only visible for this step
+            self.ui.create_entity_button.hide()
+
         # Display info message in feedback line and other special things
         # based on the current step
-        if step == _ENTITY_STEP:
-            self.display_info_message(self._entity_types_view.info_message)
-        elif step == _PROJECT_STEP:
-            self.display_info_message(self._entity_types_view.info_message)
+        if step == _PROJECT_STEP:
+            self.display_info_message(self._projects_view.info_message)
         elif step == _ENTITY_STEP:
-            self.display_info_message(self._entities_view.info_message)
+            sg_entity_type = self._preload_entity_type
+            if not sg_entity_type:
+                # Shouldn't happen, but...
+                raise RuntimeError("Don't have a selected entity type...")
+            sg_entity_type_name = sgtk.util.get_entity_type_display_name(
+                self._app.sgtk, sg_entity_type,
+            )
+            if sg_entity_type == "Project":
+                self.ui.create_entity_button.hide()
+            else:
+                self.ui.create_entity_button.show()
+                self.ui.create_entity_button.setText("New %s" % sg_entity_type_name)
+            self._logger.info("Showing %s(s)" % sg_entity_type_name)
+            self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
+            entity_type_stacked_widget = self.ui.entities_type_stacked_widget
+            active_view = None
+            # Retrieve the entity type view we should activate
+            for i, view in enumerate(self._entities_views):
+                if view.sg_entity_type == sg_entity_type:
+                    active_view = view
+                    entity_type_stacked_widget.setCurrentIndex(i)
+                    break
+            else:
+                raise RuntimeError("Don't have an Entity type view for %s" % sg_entity_type)
+            # Change the selection to the one held by the active view
+            self._selected_sg_entity[_ENTITY_STEP] = active_view.selected_sg_entity
+            self.display_info_message(active_view.info_message)
         elif step == _CUT_STEP:
             self.display_info_message(self._cuts_view.info_message)
         elif step == _SUMMARY_STEP:
@@ -827,6 +870,18 @@ class AppDialog(QtGui.QWidget):
             # Clear info message
             self.display_info_message("")
 
+    def has_valid_selection_for_step(self, step):
+        """
+        Return True is a valid selection is held for the given step
+        """
+        if not self._selected_sg_entity[step]:
+            # Nothing selected
+            return False
+        if step == _ENTITY_STEP and self._selected_sg_entity[step]["type"] != self._preload_entity_type:
+            # Selection does not correspond to selected entity type
+            return False
+        return True
+
     @QtCore.Slot(dict)
     def selection_changed(self, sg_entity):
         """
@@ -855,9 +910,10 @@ class AppDialog(QtGui.QWidget):
         #     self.show_entities(self._selected_sg_entity[self._step])
         elif self._step == _PROJECT_STEP:
             self._processor.set_project(self._selected_sg_entity[self._step])
-            self._processor.half_reset.emit()
             self.show_entities(self._preload_entity_type)
-            self.goto_step(_ENTITY_STEP)
+            #self.goto_step(_ENTITY_STEP)
+        elif self._step == _ENTITY_TYPE_STEP:
+            self.show_entities(self._preload_entity_type)
         elif self._step == _ENTITY_STEP:
             self.show_entity(self._selected_sg_entity[self._step])
         elif self._step == _CUT_STEP:
@@ -869,16 +925,30 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(str)
     def show_entities(self, sg_entity_type):
         """
-        Called when cuts needs to be shown for a particular sequence
+        Called when entities needs to be shown for a particular entity type
         """
-        # Retrieve the nice name instead of CustomEntity04
-        sg_entity_type_name = sgtk.util.get_entity_type_display_name(
-            sgtk.platform.current_bundle().sgtk,
-            sg_entity_type,
-        )
-        self._logger.info("Retrieving %s(s)" % sg_entity_type_name)
-        self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
-        self.get_entities.emit(sg_entity_type)
+        self._preload_entity_type = sg_entity_type
+        # Save the value in user settings so it will persist across
+        # sessions
+        self._user_settings.store("preload_entity_type", sg_entity_type)
+        entity_type_stacked_widget = self.ui.entities_type_stacked_widget
+        # Retrieve the entity type view we should activate
+        for i, view in enumerate(self._entities_views):
+            if view.sg_entity_type == sg_entity_type:
+                # Here we don't need the worker to retrieve additional data from SG
+                # so we don't emit any signal like in other show_xxxx slots and move
+                # directly to the entities screen
+                self.goto_step(_ENTITY_STEP)
+                break
+        else:
+            # Create the needed page
+            page_i = len(self._entities_views)
+            page = entity_type_stacked_widget.widget(page_i)
+            self._create_entity_type_view(sg_entity_type, page.layout())
+            # Ask our data manager to retrieve entries for the given entity type
+            # we will receive a _ENTITY_TYPE_STEP step done signal from the data
+            # manager when the data is available
+            self.get_entities.emit(sg_entity_type)
 
     @QtCore.Slot(str)
     def show_projects(self):
@@ -886,9 +956,7 @@ class AppDialog(QtGui.QWidget):
         Called when projects need to be shown
         """
         self._logger.info("Retrieving Project(s)")
-        if not self._got_projects:
-            self.get_projects.emit()
-        self._got_projects = True
+        self.get_projects.emit()
 
     @QtCore.Slot()
     def show_entity_types(self, sg_project):
@@ -898,12 +966,7 @@ class AppDialog(QtGui.QWidget):
         :param sg_project: The Shotgun Project dict to check for entities with
         """
         self._processor.set_project(sg_project)
-        self._processor.half_reset.emit()
         self.show_entities(self._preload_entity_type)
-        # Here we don't need the worker to retrieve additional data from SG
-        # so we don't emit any signal like in other show_xxxx slots and move
-        # directly to the entity type screen
-        self.goto_step(_ENTITY_STEP)
 
     @QtCore.Slot(dict)
     def show_entity(self, sg_entity):
@@ -959,7 +1022,9 @@ class AppDialog(QtGui.QWidget):
         """
         Reset the page displaying available sequences
         """
-        self._entities_view.clear()
+        for page_i, view in enumerate(self._entities_views):
+            view.clear()
+        self._entities_views = []
 
     def clear_project_view(self):
         """
@@ -1049,7 +1114,7 @@ class AppDialog(QtGui.QWidget):
         where s/he can choose to create a new Entity of the selected type.
         """
         show_create_entity_dialog = CreateEntityDialog(
-            self._selected_entity_tab,
+            self._preload_entity_type,
             self._processor.sg_project,
             parent=self
         )
@@ -1119,12 +1184,11 @@ class AppDialog(QtGui.QWidget):
                 return
         self._processor.quit()
         self._processor.wait()
-        # Wait for the global ThreadPool to be done with all downloads
-        # problem is we don't have a way to tell the ThreadPool to stop
-        # processing queued request, so it takes a while to get all threads
-        # done. We need a way to abort all queued downloaded, through their
-        # abort slot
-        QtCore.QThreadPool.globalInstance().waitForDone()
+        # Shutdown the download thread pool
+        pool = DownloadRunner.get_thread_pool()
+        pool.shutdown()
+        # And wait for all threads to be done
+        pool.waitForDone()
         # Let the close happen
         evt.accept()
 
@@ -1169,9 +1233,7 @@ class AppDialog(QtGui.QWidget):
         css_file = os.path.join(this_folder, "style.qss")
         if os.path.exists(css_file):
             self._load_css(css_file)
-            # Add a watcher to pickup changes only if the app was started from tk-shell
-            # usually clients use tk-desktop or tk-shotgun, so it should be safe to
-            # assume that this will cause any harm in production
+            # Add a watcher if css_watcher optional setting is set
             if self._app.get_setting("css_watcher"):
                 self._css_watcher = QtCore.QFileSystemWatcher([css_file], self)
                 self._css_watcher.fileChanged.connect(self.reload_css)

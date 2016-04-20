@@ -14,6 +14,29 @@
 from sgtk.platform.qt import QtCore
 import sgtk
 
+class DownloadThreadPool(QtCore.QThreadPool):
+    """
+    Thin wrapper around QThreadPool allowing to shut it down
+    """
+    abort = QtCore.Signal()
+
+    def shutdown(self):
+        """
+        Shutdown this thread pool
+        """
+        self.abort.emit()
+
+    def queue(self, runner):
+        """
+        Queue the given runner
+
+        :param runner: A DownloadRunner instance
+        """
+        self.abort.connect(runner.abort)
+        self.start(runner)
+
+# We use a single download thread pool for all downloads
+_download_thread_pool = DownloadThreadPool()
 
 class DownloadRunner(QtCore.QRunnable):
     """
@@ -50,6 +73,13 @@ class DownloadRunner(QtCore.QRunnable):
         self._thread = None
         self._notifier = self._Notifier()
 
+    @classmethod
+    def get_thread_pool(cls):
+        """
+        Return the download thread pool used by all downloaders
+        """
+        return _download_thread_pool
+    
     @property
     def file_downloaded(self):
         """
@@ -63,6 +93,12 @@ class DownloadRunner(QtCore.QRunnable):
         Pass through to access the _Notifier slot
         """
         return self._notifier.abort
+
+    def queue(self):
+        """
+        Queue this runner on the shared download thread pool
+        """
+        _download_thread_pool.queue(self)
 
     def run(self):
         """
