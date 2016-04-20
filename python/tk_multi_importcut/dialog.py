@@ -168,6 +168,8 @@ class AppDialog(QtGui.QWidget):
         if reset_settings or self._user_settings.retrieve("default_tail_duration") is None:
             self._user_settings.store("default_tail_duration", "8")
 
+        self._preload_entity_type = self._user_settings.retrieve("preload_entity_type")
+
         if reset_settings:
             self._user_settings.store("reset_settings", False)
 
@@ -290,6 +292,7 @@ class AppDialog(QtGui.QWidget):
                     pass
         # Here we're dynamically creating link buttons on the ENTITY_STEP page,
         # as well as adding a Project type button.
+
         self._create_entity_type_buttons()
 
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
@@ -319,6 +322,11 @@ class AppDialog(QtGui.QWidget):
         self._preload_entity_type = None
         schema = self._sg.schema_field_read("Cut", "entity")
         schema_entity_types = schema["entity"]["properties"]["valid_types"]["value"]
+
+        if self._preload_entity_type not in schema_entity_types:
+            if self._preload_entity_type != "Project":
+                self._preload_entity_type = None
+
         # Build a list of entity type / entity type name tuple
         entity_types = []
         for entity_type in schema_entity_types:
@@ -343,7 +351,8 @@ class AppDialog(QtGui.QWidget):
             # Preselect 1st entry
             entity_type = entity_types[0]
             button = self._create_entity_type_button(entity_type[0], entity_type[1])
-            self._preload_entity_type = entity_type[0]
+            if self._preload_entity_type is None:
+                self._preload_entity_type = entity_type[0]
             button.setChecked(True)
             self.ui.entity_buttons_layout.addWidget(button)
             page = entity_type_stacked_widget.widget(0)
@@ -377,6 +386,9 @@ class AppDialog(QtGui.QWidget):
         entity_link_button.setFlat(True)
         entity_link_button.setAutoExclusive(True)
         entity_link_button.setCheckable(True)
+        entity_link_button.setFont(QtGui.QFont("SansSerif", 20))
+        width = entity_link_button.fontMetrics().boundingRect(entity_type_name).width() + 7
+        entity_link_button.setMaximumWidth(width)
         entity_link_button.clicked.connect(self._get_link_cb(entity_type, entity_link_button))
         return entity_link_button
 
