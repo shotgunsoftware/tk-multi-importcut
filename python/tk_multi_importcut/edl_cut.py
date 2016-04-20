@@ -526,16 +526,6 @@ class EdlCut(QtCore.QObject):
             ]
             if self._sg_shot_link_field_name:
                 shot_fields.append(self._sg_shot_link_field_name)
-            # Handle the case where we don't have any cut specified
-            # Grab the latest one ...
-            if not sg_cut:
-                # Retrieve cuts linked to the sequence, pick up the latest or approved one
-                sg_cut = self._sg.find_one(
-                    "Cut",
-                    [[self._cut_link_field, "is", self._sg_entity]],
-                    [],
-                    order=[{"field_name": "id", "direction": "desc"}]
-                )
             sg_cut_items = []
             sg_shots_dict = {}
             if sg_cut:

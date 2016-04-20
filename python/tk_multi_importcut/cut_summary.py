@@ -283,7 +283,8 @@ class CutSummary(QtCore.QObject):
             if self._tc_end is not None:
                 self._duration = tc_edit_out.to_frame() - self._edit_offset
 
-        self._logger.info("Edit offset %s, duration %s" %( self._edit_offset, self._duration))
+        self._logger.info("Edit offset %s, duration %s" % (self._edit_offset, self._duration))
+
     @property
     def timecode_start(self):
         return self._tc_start

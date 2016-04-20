@@ -283,6 +283,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.stackedWidget.currentChanged.connect(self.set_ui_for_step)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
         self.ui.select_button.clicked.connect(self.select_button_callback)
+        self.ui.skip_button.clicked.connect(self.skip_button_callback)
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
@@ -489,7 +490,7 @@ class AppDialog(QtGui.QWidget):
                 "Please drop maximum of two files at a time (EDL + MOV).",
             )
             return
-        
+
         path = paths[0]
         _, ext = os.path.splitext(path)
         if ext.lower() == ".edl":
@@ -736,6 +737,13 @@ class AppDialog(QtGui.QWidget):
         #         self.ui.entity_buttons_layout.addWidget(btn, i, 0)
                 # btn.clicked.connect(self.buttonClicked)
 
+        if step == _CUT_STEP:
+            self.ui.skip_button.show()
+            self.ui.select_button.setText("Compare")
+        else:
+            self.ui.skip_button.hide()
+            self.ui.select_button.setText("Select")
+
         if step == _ENTITY_STEP:
             self.ui.create_entity_button.show()
         else:
@@ -832,6 +840,10 @@ class AppDialog(QtGui.QWidget):
         self.ui.select_button.setEnabled(True)
 
     @QtCore.Slot()
+    def skip_button_callback(self):
+        self.show_cut({})
+
+    @QtCore.Slot()
     def select_button_callback(self):
         """
         Callback for the select button
@@ -922,7 +934,8 @@ class AppDialog(QtGui.QWidget):
         Called when cut changes needs to be shown for a particular sequence/cut
         :param sg_cut: A Cut dictionary as retrieved from Shotgun
         """
-        self._logger.info("Retrieving cut information for %s" % sg_cut["code"])
+        if sg_cut != {}:
+            self._logger.info("Retrieving cut information for %s" % sg_cut["code"])
         self.show_cut_diff.emit(sg_cut)
 
     @QtCore.Slot()

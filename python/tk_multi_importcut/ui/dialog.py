@@ -497,7 +497,7 @@ class Ui_Dialog(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollArea_2.setObjectName("scrollArea_2")
         self.cut_summary_widgets = QtGui.QWidget()
-        self.cut_summary_widgets.setGeometry(QtCore.QRect(0, 0, 943, 380))
+        self.cut_summary_widgets.setGeometry(QtCore.QRect(0, 0, 98, 28))
         self.cut_summary_widgets.setObjectName("cut_summary_widgets")
         self.cutsummary_list = QtGui.QVBoxLayout(self.cut_summary_widgets)
         self.cutsummary_list.setSpacing(2)
@@ -646,6 +646,9 @@ class Ui_Dialog(object):
         self.submit_button = QtGui.QPushButton(Dialog)
         self.submit_button.setObjectName("submit_button")
         self.horizontalLayout.addWidget(self.submit_button)
+        self.skip_button = QtGui.QPushButton(Dialog)
+        self.skip_button.setObjectName("skip_button")
+        self.horizontalLayout.addWidget(self.skip_button)
         self.select_button = QtGui.QPushButton(Dialog)
         self.select_button.setObjectName("select_button")
         self.horizontalLayout.addWidget(self.select_button)
@@ -653,7 +656,7 @@ class Ui_Dialog(object):
         self.main_layout.addLayout(self.horizontalLayout)
 
         self.retranslateUi(Dialog)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(4)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -669,7 +672,7 @@ class Ui_Dialog(object):
         self.entity_picker_title_label_2.setText(QtGui.QApplication.translate("Dialog", "What do you want to link this Cut to ?", None, QtGui.QApplication.UnicodeUTF8))
         self.sequences_title_label.setText(QtGui.QApplication.translate("Dialog", "Select Link for Cut", None, QtGui.QApplication.UnicodeUTF8))
         self.sequences_search_line_edit.setPlaceholderText(QtGui.QApplication.translate("Dialog", "Search Sequences", None, QtGui.QApplication.UnicodeUTF8))
-        self.cuts_title_label.setText(QtGui.QApplication.translate("Dialog", "Select Cut", None, QtGui.QApplication.UnicodeUTF8))
+        self.cuts_title_label.setText(QtGui.QApplication.translate("Dialog", "Compare to Previous Cut", None, QtGui.QApplication.UnicodeUTF8))
         self.cuts_sort_button.setText(QtGui.QApplication.translate("Dialog", "Sort ...", None, QtGui.QApplication.UnicodeUTF8))
         self.search_line_edit.setPlaceholderText(QtGui.QApplication.translate("Dialog", "Search Cut", None, QtGui.QApplication.UnicodeUTF8))
         self.total_button.setText(QtGui.QApplication.translate("Dialog", "Total", None, QtGui.QApplication.UnicodeUTF8))
@@ -690,6 +693,7 @@ class Ui_Dialog(object):
         self.reset_button.setText(QtGui.QApplication.translate("Dialog", "Reset", None, QtGui.QApplication.UnicodeUTF8))
         self.email_button.setText(QtGui.QApplication.translate("Dialog", "Email Summary", None, QtGui.QApplication.UnicodeUTF8))
         self.submit_button.setText(QtGui.QApplication.translate("Dialog", "Import Cut", None, QtGui.QApplication.UnicodeUTF8))
+        self.skip_button.setText(QtGui.QApplication.translate("Dialog", "Skip", None, QtGui.QApplication.UnicodeUTF8))
         self.select_button.setText(QtGui.QApplication.translate("Dialog", "Select", None, QtGui.QApplication.UnicodeUTF8))
 
 from ..dialog import SearchWidget, DropAreaFrame, AnimatedStackedWidget
