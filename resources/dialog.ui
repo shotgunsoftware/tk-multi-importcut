@@ -439,13 +439,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-<<<<<<< HEAD
             <width>98</width>
             <height>28</height>
-=======
-            <width>999</width>
-            <height>429</height>
->>>>>>> 35606_improved_merged_entity_screens
            </rect>
           </property>
           <layout class="QGridLayout" name="project_grid">
@@ -734,13 +729,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-<<<<<<< HEAD
             <width>98</width>
-            <height>28</height>
-=======
-            <width>999</width>
-            <height>429</height>
->>>>>>> 35606_improved_merged_entity_screens
+            <height>40</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -1368,13 +1358,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-<<<<<<< HEAD
               <width>98</width>
               <height>28</height>
-=======
-              <width>59</width>
-              <height>16</height>
->>>>>>> 35606_improved_merged_entity_screens
              </rect>
             </property>
             <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">
@@ -1821,7 +1806,6 @@
  </customwidgets>
  <resources>
   <include location="resources.qrc"/>
-  <include location="../../../../../.designer/backup/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
