@@ -759,40 +759,6 @@ class AppDialog(QtGui.QWidget):
             self.ui.reset_button.show()
             self.ui.back_button.show()
 
-        # if step == _ENTITY_TYPE_STEP:
-        #     for i in range(2):
-        #         btn = QtGui.QPushButton("test %s" % str(i))
-        #         self.ui.entity_buttons_layout.addWidget(btn, i, 0)
-                # btn.clicked.connect(self.buttonClicked)
-
-        if step == _ENTITY_STEP:
-            sg_entity_type = self._preload_entity_type
-            if not sg_entity_type:
-                # Shouldn't happen, but...
-                raise RuntimeError("Don't have a selected entity type...")
-            sg_entity_type_name = sgtk.util.get_entity_type_display_name(
-                self._app.sgtk, sg_entity_type,
-            )
-            if sg_entity_type == "Project":
-                self.ui.create_entity_button.hide()
-            else:
-                self.ui.create_entity_button.show()
-                self.ui.create_entity_button.setText("New %s" % sg_entity_type_name)
-            self._logger.info("Showing %s(s)" % sg_entity_type_name)
-            self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
-            entity_type_stacked_widget = self.ui.entities_type_stacked_widget
-            active_view = None
-            # Retrieve the entity type view we should activate
-            for i, view in enumerate(self._entities_views):
-                if view.sg_entity_type == sg_entity_type:
-                    active_view = view
-                    entity_type_stacked_widget.setCurrentIndex(i)
-                    break
-            else:
-                raise RuntimeError("Don't have an Entity type view for %s" % sg_entity_type)
-            # Change the selection to the one held by the active view
-            self._selected_sg_entity[_ENTITY_STEP] = active_view.selected_sg_entity
-            self.display_info_message(active_view.info_message)
 
         if step < _PROJECT_STEP:
             self.ui.projects_search_line_edit.clear()
@@ -830,13 +796,36 @@ class AppDialog(QtGui.QWidget):
 
         # Display info message in feedback line and other special things
         # based on the current step
-        if step == _ENTITY_TYPE_STEP:
-            self.display_info_message(self._entity_types_view.info_message)
-        elif step == _PROJECT_STEP:
+        if step == _PROJECT_STEP:
             self.display_info_message(self._projects_view.info_message)
         elif step == _ENTITY_STEP:
-            pass
-            #self.display_info_message(self._entities_views[0].info_message)
+            sg_entity_type = self._preload_entity_type
+            if not sg_entity_type:
+                # Shouldn't happen, but...
+                raise RuntimeError("Don't have a selected entity type...")
+            sg_entity_type_name = sgtk.util.get_entity_type_display_name(
+                self._app.sgtk, sg_entity_type,
+            )
+            if sg_entity_type == "Project":
+                self.ui.create_entity_button.hide()
+            else:
+                self.ui.create_entity_button.show()
+                self.ui.create_entity_button.setText("New %s" % sg_entity_type_name)
+            self._logger.info("Showing %s(s)" % sg_entity_type_name)
+            self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
+            entity_type_stacked_widget = self.ui.entities_type_stacked_widget
+            active_view = None
+            # Retrieve the entity type view we should activate
+            for i, view in enumerate(self._entities_views):
+                if view.sg_entity_type == sg_entity_type:
+                    active_view = view
+                    entity_type_stacked_widget.setCurrentIndex(i)
+                    break
+            else:
+                raise RuntimeError("Don't have an Entity type view for %s" % sg_entity_type)
+            # Change the selection to the one held by the active view
+            self._selected_sg_entity[_ENTITY_STEP] = active_view.selected_sg_entity
+            self.display_info_message(active_view.info_message)
         elif step == _CUT_STEP:
             self.display_info_message(self._cuts_view.info_message)
         elif step == _SUMMARY_STEP:
