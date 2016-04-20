@@ -702,9 +702,9 @@ class AppDialog(QtGui.QWidget):
             # Skip cut selection screen
             previous_page = _ENTITY_STEP
 
-        if previous_page == _ENTITY_STEP:
-            # Skip project selection
-            previous_page = _PROJECT_STEP
+#        if previous_page == _ENTITY_STEP:
+#            # Skip project selection
+#            previous_page = _PROJECT_STEP
 
         if previous_page == _ENTITY_TYPE_STEP:
             previous_page = _PROJECT_STEP
@@ -789,6 +789,10 @@ class AppDialog(QtGui.QWidget):
             self.ui.select_button.setEnabled(self.has_valid_selection_for_step(step))
         else:
             self.ui.select_button.hide()
+
+        if step != _ENTITY_STEP:
+            # Only visible for this step
+            self.ui.create_entity_button.hide()
 
         # Display info message in feedback line and other special things
         # based on the current step
