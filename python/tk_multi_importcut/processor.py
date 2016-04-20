@@ -174,10 +174,6 @@ class Processor(QtCore.QThread):
         return self._edl_cut._no_cut_for_entity
 
     @property
-    def project_import(self):
-        return self._edl_cut._project_import
-
-    @property
     def has_valid_edl(self):
         return self._edl_cut.had_valid_edl
 

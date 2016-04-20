@@ -65,7 +65,6 @@ class EdlCut(QtCore.QObject):
         self._project = self._ctx.project
         self._sg_new_cut = None
         self._no_cut_for_entity = False
-        self._project_import = False
         # Retrieve some settings
         self._user_settings = self._app.user_settings
         # todo: this will need to be rethought if we're able to extract fps
@@ -296,10 +295,6 @@ class EdlCut(QtCore.QObject):
 
         :param entity_type: A Shotgun entity type name, e.g. "Sequence"
         """
-        if entity_type == "Project":
-            self._project_import = True
-        else:
-            self._project_import = False
         self._sg_entity_type = entity_type
         self._sg_shot_link_field_name = None
         # Retrieve display names and colors for statuses

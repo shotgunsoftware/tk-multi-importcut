@@ -433,10 +433,6 @@ class AppDialog(QtGui.QWidget):
     def no_cut_for_entity(self):
         return self._processor.no_cut_for_entity
 
-    @property
-    def project_import(self):
-        return self._processor.project_import
-
     @QtCore.Slot()
     def do_reset(self):
         """
@@ -706,7 +702,7 @@ class AppDialog(QtGui.QWidget):
             # Skip cut selection screen
             previous_page = _ENTITY_STEP
 
-        if previous_page == _ENTITY_STEP and self.project_import:
+        if previous_page == _ENTITY_STEP:
             # Skip project selection
             previous_page = _PROJECT_STEP
 
