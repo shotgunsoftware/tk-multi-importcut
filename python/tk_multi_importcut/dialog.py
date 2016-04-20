@@ -361,7 +361,7 @@ class AppDialog(QtGui.QWidget):
             button = self._create_entity_type_button(entity_type[0], entity_type[1])
             self.ui.entity_buttons_layout.addWidget(button)
             if entity_type[0] == self._preload_entity_type:
-                # We can build the view now, as we might be in a case where
+                # We can't build the view now, as we might be in a case where
                 # the Project is not currently set, so we just
                 button.setChecked(True)
 
@@ -789,14 +789,7 @@ class AppDialog(QtGui.QWidget):
                     entity_type_stacked_widget.setCurrentIndex(i)
                     break
             else:
-                # Create the needed page
-                page_i = len(self._entities_views)
-                page = entity_type_stacked_widget.widget(page_i)
-                self._create_entity_type_view(sg_entity_type, page.layout())
-                active_view = self._entities_views[-1]
-                # Ask our data manager to retrieve entries for the given entity type
-                self.get_entities.emit(sg_entity_type)
-                entity_type_stacked_widget.setCurrentIndex(page_i)
+                raise RuntimeError("Don't have an Entity type view for %s" % sg_entity_type)
             # Change the selection to the one held by the active view
             self._selected_sg_entity[_ENTITY_STEP] = active_view.selected_sg_entity
             self.display_info_message(active_view.info_message)
@@ -918,7 +911,9 @@ class AppDialog(QtGui.QWidget):
         elif self._step == _PROJECT_STEP:
             self._processor.set_project(self._selected_sg_entity[self._step])
             self.show_entities(self._preload_entity_type)
-            self.goto_step(_ENTITY_STEP)
+            #self.goto_step(_ENTITY_STEP)
+        elif self._step == _ENTITY_TYPE_STEP:
+            self.show_entities(self._preload_entity_type)
         elif self._step == _ENTITY_STEP:
             self.show_entity(self._selected_sg_entity[self._step])
         elif self._step == _CUT_STEP:
@@ -930,12 +925,30 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(str)
     def show_entities(self, sg_entity_type):
         """
-        Called when cuts needs to be shown for a particular sequence
+        Called when entities needs to be shown for a particular entity type
         """
         self._preload_entity_type = sg_entity_type
         # Save the value in user settings so it will persist across
         # sessions
         self._user_settings.store("preload_entity_type", sg_entity_type)
+        entity_type_stacked_widget = self.ui.entities_type_stacked_widget
+        # Retrieve the entity type view we should activate
+        for i, view in enumerate(self._entities_views):
+            if view.sg_entity_type == sg_entity_type:
+                # Here we don't need the worker to retrieve additional data from SG
+                # so we don't emit any signal like in other show_xxxx slots and move
+                # directly to the entities screen
+                self.goto_step(_ENTITY_STEP)
+                break
+        else:
+            # Create the needed page
+            page_i = len(self._entities_views)
+            page = entity_type_stacked_widget.widget(page_i)
+            self._create_entity_type_view(sg_entity_type, page.layout())
+            # Ask our data manager to retrieve entries for the given entity type
+            # we will receive a _ENTITY_TYPE_STEP step done signal from the data
+            # manager when the data is available
+            self.get_entities.emit(sg_entity_type)
 
     @QtCore.Slot(str)
     def show_projects(self):
@@ -954,10 +967,6 @@ class AppDialog(QtGui.QWidget):
         """
         self._processor.set_project(sg_project)
         self.show_entities(self._preload_entity_type)
-        # Here we don't need the worker to retrieve additional data from SG
-        # so we don't emit any signal like in other show_xxxx slots and move
-        # directly to the entity type screen
-        self.goto_step(_ENTITY_STEP)
 
     @QtCore.Slot(dict)
     def show_entity(self, sg_entity):

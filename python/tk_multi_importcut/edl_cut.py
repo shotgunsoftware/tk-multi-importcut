@@ -372,6 +372,7 @@ class EdlCut(QtCore.QObject):
                 len(sg_entities),
                 entity_type,
             ))
+            self.step_done.emit(_ENTITY_TYPE_STEP)
         except Exception, e:
             self._logger.exception(str(e))
         finally:
