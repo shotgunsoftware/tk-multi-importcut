@@ -1218,9 +1218,7 @@ class AppDialog(QtGui.QWidget):
         css_file = os.path.join(this_folder, "style.qss")
         if os.path.exists(css_file):
             self._load_css(css_file)
-            # Add a watcher to pickup changes only if the app was started from tk-shell
-            # usually clients use tk-desktop or tk-shotgun, so it should be safe to
-            # assume that this will cause any harm in production
+            # Add a watcher if css_watcher optional setting is set
             if self._app.get_setting("css_watcher"):
                 self._css_watcher = QtCore.QFileSystemWatcher([css_file], self)
                 self._css_watcher.fileChanged.connect(self.reload_css)
