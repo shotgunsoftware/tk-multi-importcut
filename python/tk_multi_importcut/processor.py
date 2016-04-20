@@ -35,7 +35,6 @@ class Processor(QtCore.QThread):
     new_edl                 = QtCore.Signal(str)
     new_movie               = QtCore.Signal(str)
     reset                   = QtCore.Signal()
-    half_reset              = QtCore.Signal()
     set_busy                = QtCore.Signal(bool)
     step_done               = QtCore.Signal(int)
     step_failed             = QtCore.Signal(int)
@@ -175,10 +174,6 @@ class Processor(QtCore.QThread):
         return self._edl_cut._no_cut_for_entity
 
     @property
-    def project_import(self):
-        return self._edl_cut._project_import
-
-    @property
     def has_valid_edl(self):
         return self._edl_cut.had_valid_edl
 
@@ -204,7 +199,6 @@ class Processor(QtCore.QThread):
         self.new_edl.connect(self._edl_cut.load_edl)
         self.new_movie.connect(self._edl_cut.register_movie_path)
         self.reset.connect(self._edl_cut.reset)
-        self.half_reset.connect(self._edl_cut.half_reset)
         self.retrieve_projects.connect(self._edl_cut.retrieve_projects)
         self.retrieve_entities.connect(self._edl_cut.retrieve_entities)
         self.retrieve_cuts.connect(self._edl_cut.retrieve_cuts)

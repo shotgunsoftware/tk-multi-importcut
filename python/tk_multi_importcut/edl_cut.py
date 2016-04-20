@@ -65,8 +65,6 @@ class EdlCut(QtCore.QObject):
         self._project = self._ctx.project
         self._sg_new_cut = None
         self._no_cut_for_entity = False
-        self._project_import = False
-        self._cached_entities = []
         # Retrieve some settings
         self._user_settings = self._app.user_settings
         # todo: this will need to be rethought if we're able to extract fps
@@ -184,16 +182,8 @@ class EdlCut(QtCore.QObject):
         self._sg_entity = None
         self._summary = None
         self._sg_new_cut = None
-        self._cached_entities = []
         if had_something:
             self._logger.info("Session discarded...")
-
-    @QtCore.Slot(str)
-    def half_reset(self):
-        """
-        Clear some things in this worker if headed back to the Project step.
-        """
-        self._cached_entities = []
 
     @QtCore.Slot(str, str)
     def process_edl_and_mov(self, edl_file_path, mov_file_path):
@@ -305,10 +295,6 @@ class EdlCut(QtCore.QObject):
 
         :param entity_type: A Shotgun entity type name, e.g. "Sequence"
         """
-        if entity_type == "Project":
-            self._project_import = True
-        else:
-            self._project_import = False
         self._sg_entity_type = entity_type
         self._sg_shot_link_field_name = None
         # Retrieve display names and colors for statuses
@@ -364,15 +350,6 @@ class EdlCut(QtCore.QObject):
                     order=[{"field_name": "code", "direction": "asc"}]
                 )
             for sg_entity in sg_entities:
-                cache_id = "%s%s" % (sg_entity["type"], sg_entity["id"])
-                if cache_id in self._cached_entities:
-                    self.new_sg_entity.emit({"mode_change": sg_entity["type"]})
-                    continue
-                else:
-                    # todo: here we assume that we'll never have two different Entities with the
-                    # same type and id. I'm not sure if this is accurate,
-                    # could it happen across projects?
-                    self._cached_entities.append(cache_id)
                 # Project uses sg_status and not sg_status_list
                 status = sg_entity.get("sg_status_list",
                                        sg_entity.get("sg_status", "")
@@ -390,6 +367,7 @@ class EdlCut(QtCore.QObject):
                 len(sg_entities),
                 entity_type,
             ))
+            self.step_done.emit(_ENTITY_TYPE_STEP)
         except Exception, e:
             self._logger.exception(str(e))
         finally:

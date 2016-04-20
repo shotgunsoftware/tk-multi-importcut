@@ -42,9 +42,14 @@ class CreateEntityDialog(QtGui.QDialog):
         self._entity_type = entity_type
         self._project = sg_project
 
+        entity_type_name = sgtk.util.get_entity_type_display_name(
+            self._app.sgtk, entity_type,
+        )
+
         # Set text on labels and buttons
-        self.ui.create_new_entity_label.setText("Create a new %s" % entity_type)
-        self.ui.create_entity_button.setText("Create %s" % entity_type)
+        self.ui.create_new_entity_label.setText("Create a new %s" % entity_type_name)
+        self.ui.create_entity_button.setText("Create %s" % entity_type_name)
+        self.ui.entity_name_label.setText("%s name" % entity_type_name)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
         self.ui.create_entity_button.clicked.connect(self.emit_create_entity)
 
