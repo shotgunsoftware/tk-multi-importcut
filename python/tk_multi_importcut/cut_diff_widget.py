@@ -121,7 +121,9 @@ class CutDiffCard(QtGui.QFrame):
         new_cut_order = self._cut_diff.new_cut_order or 0
         old_cut_order = self._cut_diff.cut_order or 0
         cut_order = new_cut_order or old_cut_order
-        self.set_property("cut_order_changed", bool(old_cut_order != new_cut_order))
+        # note: leaving this in here in case we decide to switch back to the old behavior
+        # self.set_property("cut_order_changed", bool(old_cut_order != new_cut_order))
+        self.set_property("cut_order_changed", False)
 
         self.ui.icon_label.set_text(
             cut_order,
