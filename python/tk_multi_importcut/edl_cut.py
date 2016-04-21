@@ -887,7 +887,7 @@ class EdlCut(QtCore.QObject):
         Create a Cut in Shotgun, linked to the current Sequence
         """
         # Create a new cut
-        self._logger.info("Creating cut %s ..." % title)
+        self._logger.info("Creating Cut %s ..." % title)
         # If start and end timecodes are not defined, we keep them as is,
         # so no value will be set when creating the Cut. We convert them
         # to string otherwise
@@ -1149,7 +1149,7 @@ class EdlCut(QtCore.QObject):
         Create the cut items in Shotgun, linked to the given cut
         """
         # Loop through all edits and create CutItems for them
-        self._logger.info("Creating cut items ...")
+        self._logger.info("Creating Cut Items...")
         sg_batch_data = []
         for shot_name, items in self._summary.iteritems():
             for cut_diff in items:
@@ -1166,6 +1166,7 @@ class EdlCut(QtCore.QObject):
                             "project": self._project,
                             "code": edit.reel_name,
                             "cut": sg_cut,
+                            "description": ", ".join(cut_diff.reasons),
                             "cut_order": edit.id,
                             "timecode_cut_item_in": str(edit.source_in),
                             "timecode_cut_item_out": str(edit.source_out),

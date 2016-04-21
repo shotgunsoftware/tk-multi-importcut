@@ -635,7 +635,7 @@ class CutSummary(QtCore.QObject):
 
         cut_changes_details = [
             "%s - %s" % (
-                edit.name, ",".join(edit.reasons)
+                edit.name, ", ".join(edit.reasons)
             ) for edit in sorted(
                 self.edits_for_type(_DIFF_TYPES.CUT_CHANGE),
                 key=lambda x: x.new_cut_order
@@ -643,7 +643,7 @@ class CutSummary(QtCore.QObject):
         ]
         rescan_details = [
             "%s - %s" % (
-                edit.name, ",".join(edit.reasons)
+                edit.name, ", ".join(edit.reasons)
             ) for edit in sorted(
                 self.edits_for_type(_DIFF_TYPES.RESCAN),
                 key=lambda x: x.new_cut_order
