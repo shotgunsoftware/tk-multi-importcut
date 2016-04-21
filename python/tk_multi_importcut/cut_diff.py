@@ -243,6 +243,38 @@ class CutDiff(QtCore.QObject):
         self._name = name
 
     @property
+    def version_name(self):
+        """
+        Return the version name for this diff, if any
+        """
+        if self._edit:
+            return self._edit.get_version_name()
+        if self._sg_cut_item and self._sg_cut_item["version.Version.code"]:
+            return self._sg_cut_item["version.Version.code"]
+        return None
+
+    @property
+    def sg_version(self):
+        """
+        Return the Shotgun version for this diff, if any
+        """
+        if self._edit:
+            return self._edit.get_sg_version()
+        if self._sg_cut_item and self._sg_cut_item["version"]:
+            return self._sg_cut_item["version"]
+        return None
+
+    def set_sg_version(self, sg_version):
+        """
+        Set the Shotgun version associated with this diff
+        :param sg_version: A SG version, as a dictionary
+        :raises: ValueError if no EditEvent is associated to this diff
+        """
+        if not self._edit:
+            raise ValueError("Can't set Shotgun version without an edit entry")
+        self._edit._sg_version = sg_version
+
+    @property
     def default_head_in(self):
         """
         Return the default head in value, e.g. 1001
@@ -337,12 +369,15 @@ class CutDiff(QtCore.QObject):
     @property
     def cut_in(self):
         """
-        Return the current cut in value from the associated cut item, or None
+        Return the current cut in value from the associated CutItem,
+        Shot, or None.
 
         :returns: An integer or None
         """
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_in"]
+        if self._sg_shot:
+            return self._sg_shot["sg_cut_in"]
         return None
 
     @property
@@ -378,12 +413,15 @@ class CutDiff(QtCore.QObject):
     @property
     def cut_out(self):
         """
-        Return the current cut out value from the associated cut item, or None
+        Return the current cut out value from the associated cut item,
+        Shot, or None
 
         :returns: An integer or None
         """
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_out"]
+        if self._sg_shot:
+            return self._sg_shot["sg_cut_out"]
         return None
 
     @property
@@ -515,10 +553,7 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
-        if not self._sg_cut_item:
-            return None
-        cut_in = self._sg_cut_item["cut_item_in"]
-        # head_in = self._sg_cut_item["sg_head_in"]
+        cut_in = self.cut_in
         head_in = self.shot_head_in
         if cut_in is None or head_in is None:
             return None
@@ -550,7 +585,10 @@ class CutDiff(QtCore.QObject):
         """
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_duration"]
-        return None
+        if self.cut_in and self.cut_out:
+            return self.cut_out - self.cut_in + 1
+        else:
+            return None
 
     @property
     def new_duration(self):
@@ -570,9 +608,7 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
-        if not self._sg_cut_item:
-            return None
-        cut_out = self._sg_cut_item["cut_item_out"]
+        cut_out = self.cut_out
         tail_out = self.shot_tail_out
         if cut_out is None or tail_out is None:
             return None
@@ -757,10 +793,11 @@ class CutDiff(QtCore.QObject):
                 self._diff_type = _DIFF_TYPES.CUT_CHANGE
                 return
 
-        if self.new_cut_order != self.cut_order:
-            self._diff_type = _DIFF_TYPES.CUT_CHANGE
-            self._cut_changes_reasons.append(
-                "Cut order changed from %d to %d" % (self.cut_order, self.new_cut_order))
+        # note: leaving this in here in case we decide to switch back to the old behavior
+        # if self.new_cut_order != self.cut_order:
+        #     self._diff_type = _DIFF_TYPES.CUT_CHANGE
+        #     self._cut_changes_reasons.append(
+        #         "Cut order changed from %d to %d" % (self.cut_order, self.new_cut_order))
 
         # Check if some rescan is needed
         if self.new_head_in < self.shot_head_in:
@@ -864,4 +901,11 @@ class CutDiff(QtCore.QObject):
                     self.sg_cut_item["cut_item_duration"]
                 )
         version_details = ""
+        sg_version = self.sg_version
+        if sg_version:
+            version_details = "%s, link %s %s" % (
+                sg_version["code"],
+                sg_version["entity"]["type"] if sg_version["entity"] else "None",
+                sg_version["entity.Shot.code"] if sg_version["entity.Shot.code"] else "",
+            )
         return (shot_details, cut_item_details, version_details, str(self._edit))
