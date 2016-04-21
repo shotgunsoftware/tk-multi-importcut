@@ -789,11 +789,6 @@ class CutDiff(QtCore.QObject):
                 self._diff_type = _DIFF_TYPES.CUT_CHANGE
                 return
 
-        if self.new_cut_order != self.cut_order:
-            self._diff_type = _DIFF_TYPES.CUT_CHANGE
-            self._cut_changes_reasons.append(
-                "Cut order changed from %d to %d" % (self.cut_order, self.new_cut_order))
-
         # Check if some rescan is needed
         if self.new_head_in < self.shot_head_in:
             self._diff_type = _DIFF_TYPES.RESCAN
