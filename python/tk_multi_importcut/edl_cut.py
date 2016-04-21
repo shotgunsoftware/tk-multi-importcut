@@ -65,7 +65,6 @@ class EdlCut(QtCore.QObject):
         self._project = self._ctx.project
         self._sg_new_cut = None
         self._no_cut_for_entity = False
-        self._project_import = False
         # Retrieve some settings
         self._user_settings = self._app.user_settings
         # todo: this will need to be rethought if we're able to extract fps
@@ -108,6 +107,7 @@ class EdlCut(QtCore.QObject):
             sgtk.platform.current_bundle().sgtk,
             self._sg_entity["type"],
         )
+
     @property
     def has_valid_edl(self):
         return bool(self._edl)
@@ -295,10 +295,6 @@ class EdlCut(QtCore.QObject):
 
         :param entity_type: A Shotgun entity type name, e.g. "Sequence"
         """
-        if entity_type == "Project":
-            self._project_import = True
-        else:
-            self._project_import = False
         self._sg_entity_type = entity_type
         self._sg_shot_link_field_name = None
         # Retrieve display names and colors for statuses
@@ -371,11 +367,7 @@ class EdlCut(QtCore.QObject):
                 len(sg_entities),
                 entity_type,
             ))
-            if entity_type == "Project":
-                # Skip project selection screen
-                self.retrieve_cuts(sg_entities[0])
-            else:
-                self.step_done.emit(_ENTITY_TYPE_STEP)
+            self.step_done.emit(_ENTITY_TYPE_STEP)
         except Exception, e:
             self._logger.exception(str(e))
         finally:
@@ -512,16 +504,6 @@ class EdlCut(QtCore.QObject):
             ]
             if self._sg_shot_link_field_name:
                 shot_fields.append(self._sg_shot_link_field_name)
-            # Handle the case where we don't have any cut specified
-            # Grab the latest one ...
-            if not sg_cut:
-                # Retrieve cuts linked to the sequence, pick up the latest or approved one
-                sg_cut = self._sg.find_one(
-                    "Cut",
-                    [[self._cut_link_field, "is", self._sg_entity]],
-                    [],
-                    order=[{"field_name": "id", "direction": "desc"}]
-                )
             sg_cut_items = []
             sg_shots_dict = {}
             if sg_cut:

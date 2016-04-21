@@ -181,7 +181,7 @@ class EntityCard(QtGui.QFrame):
             )
             downloader.file_downloaded.connect(self.new_thumbnail)
             self.discard_download.connect(downloader.abort)
-            QtCore.QThreadPool.globalInstance().start(downloader)
+            downloader.queue()
 
         event.ignore()
 

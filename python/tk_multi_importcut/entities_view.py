@@ -25,11 +25,17 @@ class EntitiesView(QtCore.QObject):
     # Emitted when the info message changed
     new_info_message = QtCore.Signal(str)
 
-    def __init__(self, grid_widget):
+    def __init__(self, sg_entity_type, grid_widget):
+        """
+        Instantiate a new view for the given entity type
+        :param sg_entity_type: The SG Entities we will show
+        :param grid_widget: A grid layout
+        """
         super(EntitiesView, self).__init__()
         self._grid_widget = grid_widget
         self._selected_entity_card = None
         self._logger = get_logger()
+        self._sg_entity_type = sg_entity_type
         # A one line message which can be displayed when the view is visible
         self._info_message = ""
 
@@ -37,19 +43,42 @@ class EntitiesView(QtCore.QObject):
     def info_message(self):
         return self._info_message
 
+    @property
+    def sg_entity_type(self):
+        """
+        Return the SG entity type this view is for as a string
+        """
+        return self._sg_entity_type
+
+    @property
+    def selected_sg_entity(self):
+        """
+        Return the selected entity, if any
+        :returns: A SG entity dictionary or None
+        """
+        if self._selected_entity_card:
+            return self._selected_entity_card.sg_entity
+        return None
+
     @QtCore.Slot(dict)
     def new_sg_entity(self, sg_entity):
         """
         Called when a new entity card widget needs to be added to the list
         of retrieved entities
         """
+        if sg_entity["type"] != self._sg_entity_type:
+            # Not for this view which only display another type of Entities
+            return
+
         i = self._grid_widget.count() - 1  # We have a stretcher
+
         # Remove it
         spacer = self._grid_widget.takeAt(i)
         row = i / 2
         column = i % 2
         self._logger.debug("Adding %s at %d %d %d" % (sg_entity, i, row, column))
         widget = EntityCard(None, sg_entity)
+        widget.entity_type = sg_entity["type"]
         widget.highlight_selected.connect(self.entity_selected)
         widget.show_sequence.connect(self.sequence_chosen)
         self._grid_widget.addWidget(widget, row, column, )
@@ -58,8 +87,10 @@ class EntitiesView(QtCore.QObject):
         self._grid_widget.addItem(spacer, row + 1, 0, colSpan=2)
         self._grid_widget.setRowStretch(row + 1, 1)
         count = i + 1
-        self._info_message = ("%d %ss" % (count, sg_entity["type"])) if count > 1 else (
-            "%d %s" % (count, sg_entity["type"]))
+        self._info_message = (
+            "%d %ss" % (count, sg_entity["type"])) if count > 1 else (
+                "%d %s" % (count, sg_entity["type"])
+        )
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(QtGui.QWidget)
