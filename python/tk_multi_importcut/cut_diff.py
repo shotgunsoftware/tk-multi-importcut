@@ -243,6 +243,38 @@ class CutDiff(QtCore.QObject):
         self._name = name
 
     @property
+    def version_name(self):
+        """
+        Return the version name for this diff, if any
+        """
+        if self._edit:
+            return self._edit.get_version_name()
+        if self._sg_cut_item and self._sg_cut_item["version.Version.code"]:
+            return self._sg_cut_item["version.Version.code"]
+        return None
+
+    @property
+    def sg_version(self):
+        """
+        Return the Shotgun version for this diff, if any
+        """
+        if self._edit:
+            return self._edit.get_sg_version()
+        if self._sg_cut_item and self._sg_cut_item["version"]:
+            return self._sg_cut_item["version"]
+        return None
+
+    def set_sg_version(self, sg_version):
+        """
+        Set the Shotgun version associated with this diff
+        :param sg_version: A SG version, as a dictionary
+        :raises: ValueError if no EditEvent is associated to this diff
+        """
+        if not self._edit:
+            raise ValueError("Can't set Shotgun version without an edit entry")
+        self._edit._sg_version = sg_version
+
+    @property
     def default_head_in(self):
         """
         Return the default head in value, e.g. 1001
@@ -864,4 +896,11 @@ class CutDiff(QtCore.QObject):
                     self.sg_cut_item["cut_item_duration"]
                 )
         version_details = ""
+        sg_version = self.sg_version
+        if sg_version:
+            version_details = "%s, link %s %s" % (
+                sg_version["code"],
+                sg_version["entity"]["type"] if sg_version["entity"] else "None",
+                sg_version["entity.Shot.code"] if sg_version["entity.Shot.code"] else "",
+            )
         return (shot_details, cut_item_details, version_details, str(self._edit))
