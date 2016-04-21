@@ -369,12 +369,15 @@ class CutDiff(QtCore.QObject):
     @property
     def cut_in(self):
         """
-        Return the current cut in value from the associated cut item, or None
+        Return the current cut in value from the associated CutItem,
+        Shot, or None.
 
         :returns: An integer or None
         """
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_in"]
+        if self._sg_shot:
+            return self._sg_shot["sg_cut_in"]
         return None
 
     @property
@@ -410,12 +413,15 @@ class CutDiff(QtCore.QObject):
     @property
     def cut_out(self):
         """
-        Return the current cut out value from the associated cut item, or None
+        Return the current cut out value from the associated cut item,
+        Shot, or None
 
         :returns: An integer or None
         """
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_out"]
+        if self._sg_shot:
+            return self._sg_shot["sg_cut_out"]
         return None
 
     @property
@@ -547,10 +553,7 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
-        if not self._sg_cut_item:
-            return None
-        cut_in = self._sg_cut_item["cut_item_in"]
-        # head_in = self._sg_cut_item["sg_head_in"]
+        cut_in = self.cut_in
         head_in = self.shot_head_in
         if cut_in is None or head_in is None:
             return None
@@ -582,7 +585,10 @@ class CutDiff(QtCore.QObject):
         """
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_duration"]
-        return None
+        if self.cut_in and self.cut_out:
+            return self.cut_out - self.cut_in + 1
+        else:
+            return None
 
     @property
     def new_duration(self):
@@ -602,9 +608,7 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
-        if not self._sg_cut_item:
-            return None
-        cut_out = self._sg_cut_item["cut_item_out"]
+        cut_out = self.cut_out
         tail_out = self.shot_tail_out
         if cut_out is None or tail_out is None:
             return None
