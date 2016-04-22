@@ -121,7 +121,9 @@ class CutDiffCard(QtGui.QFrame):
         new_cut_order = self._cut_diff.new_cut_order or 0
         old_cut_order = self._cut_diff.cut_order or 0
         cut_order = new_cut_order or old_cut_order
-        self.set_property("cut_order_changed", bool(old_cut_order != new_cut_order))
+        # note: leaving this in here in case we decide to switch back to the old behavior
+        # self.set_property("cut_order_changed", bool(old_cut_order != new_cut_order))
+        self.set_property("cut_order_changed", False)
 
         self.ui.icon_label.set_text(
             cut_order,
@@ -138,6 +140,32 @@ class CutDiffCard(QtGui.QFrame):
                 self.ui.status_label.setText("<b>%s</b>" % diff_type_label)
         else:
             self.ui.status_label.setText("%s" % reasons)
+
+        # self.ui.status_label.setStyleSheet(_DIFF_TYPES_STYLE.get(self._cut_diff.diff_type, ""))
+
+        sg_version = self._cut_diff.sg_version
+        self.ui.version_name_label.setToolTip(None)
+        if not sg_version:
+            # No Version
+            self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
+                _COLORS["yellow"],
+                self._cut_diff.version_name or "No Version",
+            ))
+        elif sg_version.get("entity.Shot.code") != self._cut_diff.name:
+            # Version linked to another shot
+            self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
+                _COLORS["sg_red"],
+                self._cut_diff.version_name,
+            ))
+            self.ui.version_name_label.setToolTip(
+                "Version %s is linked to Shot %s, instead of %s" % (
+                    self._cut_diff.version_name,
+                    sg_version.get("entity.Shot.code"),
+                    self._cut_diff.name,
+                )
+            )
+        else:
+            self.ui.version_name_label.setText(self._cut_diff.version_name)
 
         value = self._cut_diff.shot_head_in
         new_value = self._cut_diff.new_head_in
@@ -320,7 +348,9 @@ class CutDiffCard(QtGui.QFrame):
         asynchronous thumbnail download if it is the case
         """
         thumb_url = None
-        if self._cut_diff.sg_shot and self._cut_diff.sg_shot.get("image"):
+        if self._cut_diff.sg_version and self._cut_diff.sg_version.get("image"):
+            thumb_url = self._cut_diff.sg_version["image"]
+        elif self._cut_diff.sg_shot and self._cut_diff.sg_shot.get("image"):
             thumb_url = self._cut_diff.sg_shot["image"]
         if thumb_url:
             f, path = tempfile.mkstemp()

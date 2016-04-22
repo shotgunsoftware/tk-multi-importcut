@@ -48,7 +48,6 @@ class Ui_CutDiffCard(object):
         self.version_name_label.setObjectName("version_name_label")
         self.gridLayout_2.addWidget(self.version_name_label, 1, 1, 1, 1)
         self.version_title_label = QtGui.QLabel(CutDiffCard)
-        self.version_title_label.setText("")
         self.version_title_label.setObjectName("version_title_label")
         self.gridLayout_2.addWidget(self.version_title_label, 1, 0, 1, 1)
         self.shot_title_label = QtGui.QLabel(CutDiffCard)
@@ -153,6 +152,7 @@ class Ui_CutDiffCard(object):
 
     def retranslateUi(self, CutDiffCard):
         CutDiffCard.setWindowTitle(QtGui.QApplication.translate("CutDiffCard", "Frame", None, QtGui.QApplication.UnicodeUTF8))
+        self.version_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "Version", None, QtGui.QApplication.UnicodeUTF8))
         self.shot_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "SHOT", None, QtGui.QApplication.UnicodeUTF8))
         self.status_label.setText(QtGui.QApplication.translate("CutDiffCard", "New", None, QtGui.QApplication.UnicodeUTF8))
         self.tail_title_label.setText(QtGui.QApplication.translate("CutDiffCard", "<b>TAIL</b>", None, QtGui.QApplication.UnicodeUTF8))
