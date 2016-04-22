@@ -553,11 +553,9 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
-        cut_in = self.cut_in
-        head_in = self.shot_head_in
-        if cut_in is None or head_in is None:
+        if self.cut_in is None or self.shot_head_in is None:
             return None
-        return cut_in - head_in
+        return self.cut_in - self.shot_head_in
 
     @property
     def new_head_duration(self):
@@ -608,11 +606,9 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
-        cut_out = self.cut_out
-        tail_out = self.shot_tail_out
-        if cut_out is None or tail_out is None:
+        if self.cut_out is None or self.tail_out is None:
             return None
-        return tail_out - cut_out
+        return self.tail_out - self.cut_out
 
     @property
     def new_tail_duration(self):

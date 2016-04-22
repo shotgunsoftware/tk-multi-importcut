@@ -141,8 +141,6 @@ class CutDiffCard(QtGui.QFrame):
         else:
             self.ui.status_label.setText("%s" % reasons)
 
-        # self.ui.status_label.setStyleSheet(_DIFF_TYPES_STYLE.get(self._cut_diff.diff_type, ""))
-
         sg_version = self._cut_diff.sg_version
         self.ui.version_name_label.setToolTip(None)
         if not sg_version:
