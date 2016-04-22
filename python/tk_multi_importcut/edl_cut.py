@@ -827,7 +827,6 @@ class EdlCut(QtCore.QObject):
             self._sg_new_cut = self.create_sg_cut(title, description)
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
-            # self.update_sg_versions()
             self.progress_changed.emit(2)
             self.create_sg_cut_items(self._sg_new_cut)
             self.progress_changed.emit(3)
@@ -1106,44 +1105,6 @@ class EdlCut(QtCore.QObject):
                     else:
                         cut_diff._sg_shot = sg_shot
 
-    def update_sg_versions(self):
-        """
-        Create versions in Shotgun for each shot which needs one
-        """
-        # Temporary helper to create versions in SG for initial
-        # testing. Should be commented out before going into production
-        # unless it becomes part of the specs
-        self._logger.info("Updating versions ...")
-        sg_batch_data = []
-        for shot_name, items in self._summary.iteritems():
-            for cut_diff in items:
-                edit = cut_diff.edit
-                if edit and not edit.get_sg_version() and edit.get_version_name():
-                    sg_batch_data.append({
-                        "request_type": "create",
-                        "entity_type": "Version",
-                        "data": {
-                            "project": self._ctx.project,
-                            "code": edit.get_version_name(),
-                            "entity": cut_diff.sg_shot,
-                            "updated_by": self._ctx.user,
-                            "created_by": self._ctx.user,
-                            "entity": cut_diff.sg_shot,
-                        },
-                        "return_fields": [
-                            "entity.Shot.code",
-                        ]
-                    })
-        if sg_batch_data:
-            res = self._sg.batch(sg_batch_data)
-            self._logger.info("Created %d new versions." % len(res))
-            for shot_name, items in self._summary.iteritems():
-                for cut_diff in items:
-                    edit = cut_diff.edit
-                    if edit and not edit.get_sg_version():
-                        # Creation order should match
-                        cut_diff.set_sg_version(res.pop(0))
-
     def create_sg_cut_items(self, sg_cut):
         """
         Create the cut items in Shotgun, linked to the given cut
@@ -1178,7 +1139,7 @@ class EdlCut(QtCore.QObject):
                             "edit_out": edit_out,
                             "cut_item_duration": cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
                             "shot": cut_diff.sg_shot,
-                            # "version": edit.get_sg_version(),
+                            "version": cut_diff.sg_version,
                             "created_by": self._ctx.user,
                             "updated_by": self._ctx.user,
                         }
