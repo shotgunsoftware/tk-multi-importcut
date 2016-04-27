@@ -1,3 +1,4 @@
+
 # Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
@@ -359,8 +360,8 @@ class CutDiff(QtCore.QObject):
     @property
     def cut_in(self):
         """
-        Return the current cut in value from the associated CutItem,
-        Shot, or None.
+        Return the current cut in value for the Shot linked to the associated
+        CutItem, or None.
 
         :returns: An integer or None
         """
@@ -403,8 +404,8 @@ class CutDiff(QtCore.QObject):
     @property
     def cut_out(self):
         """
-        Return the current cut out value from the associated cut item,
-        Shot, or None
+        Return the current cut out value for the Shot linked to the associated
+        cut item, or None.
 
         :returns: An integer or None
         """
