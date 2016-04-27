@@ -827,7 +827,10 @@ class EdlCut(QtCore.QObject):
             self._sg_new_cut = self.create_sg_cut(title, description)
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
-            # self.update_sg_versions()
+            # When testing this app it might be time consuming to create
+            # all needed Versions in SG. If the following line is un-commented
+            # it will create missing Versions for you, which can be handy
+            # self._create_missing_sg_versions()
             self.progress_changed.emit(2)
             self.create_sg_cut_items(self._sg_new_cut)
             self.progress_changed.emit(3)
@@ -1106,7 +1109,7 @@ class EdlCut(QtCore.QObject):
                     else:
                         cut_diff._sg_shot = sg_shot
 
-    def update_sg_versions(self):
+    def _create_missing_sg_versions(self):
         """
         Create versions in Shotgun for each shot which needs one
         """
