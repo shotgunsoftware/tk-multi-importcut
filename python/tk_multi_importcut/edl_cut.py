@@ -721,11 +721,11 @@ class EdlCut(QtCore.QObject):
 
         Best matching cut item is returned, a score is computed for each entry
         from :
-        - Is it linked to the right shot ?
-        - Is it linked to the right version ?
-        - Is the cut order the same ?
-        - Is the tc in the same ?
-        - Is the tc out the same ?
+        - Is it linked to the right shot?
+        - Is it linked to the right version?
+        - Is the cut order the same?
+        - Is the tc in the same?
+        - Is the tc out the same?
 
         :param sg_cut_items: A list of CutItem instances to consider
         :param sg_shot: A SG shot dictionary
@@ -784,9 +784,9 @@ class EdlCut(QtCore.QObject):
     def _get_cut_item_score(self, sg_cut_item, edit):
         """
         Return a matching score for the given cut item and edit, based on :
-        - Is the cut order the same ?
-        - Is the tc in the same ?
-        - Is the tc out the same ?
+        - Is the cut order the same?
+        - Is the tc in the same?
+        - Is the tc out the same?
 
         So the best score is 3 if all matches
 
@@ -827,6 +827,7 @@ class EdlCut(QtCore.QObject):
             self._sg_new_cut = self.create_sg_cut(title, description)
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
+            # self.update_sg_versions()
             self.progress_changed.emit(2)
             self.create_sg_cut_items(self._sg_new_cut)
             self.progress_changed.emit(3)
@@ -886,7 +887,7 @@ class EdlCut(QtCore.QObject):
         Create a Cut in Shotgun, linked to the current Sequence
         """
         # Create a new cut
-        self._logger.info("Creating cut %s ..." % title)
+        self._logger.info("Creating Cut %s ..." % title)
         # If start and end timecodes are not defined, we keep them as is,
         # so no value will be set when creating the Cut. We convert them
         # to string otherwise
@@ -1105,12 +1106,50 @@ class EdlCut(QtCore.QObject):
                     else:
                         cut_diff._sg_shot = sg_shot
 
+    def update_sg_versions(self):
+        """
+        Create versions in Shotgun for each shot which needs one
+        """
+        # Temporary helper to create versions in SG for initial
+        # testing. Should be commented out before going into production
+        # unless it becomes part of the specs
+        self._logger.info("Updating versions ...")
+        sg_batch_data = []
+        for shot_name, items in self._summary.iteritems():
+            for cut_diff in items:
+                edit = cut_diff.edit
+                if edit and not edit.get_sg_version() and edit.get_version_name():
+                    sg_batch_data.append({
+                        "request_type": "create",
+                        "entity_type": "Version",
+                        "data": {
+                            "project": self._ctx.project,
+                            "code": edit.get_version_name(),
+                            "entity": cut_diff.sg_shot,
+                            "updated_by": self._ctx.user,
+                            "created_by": self._ctx.user,
+                            "entity": cut_diff.sg_shot,
+                        },
+                        "return_fields": [
+                            "entity.Shot.code",
+                        ]
+                    })
+        if sg_batch_data:
+            res = self._sg.batch(sg_batch_data)
+            self._logger.info("Created %d new versions." % len(res))
+            for shot_name, items in self._summary.iteritems():
+                for cut_diff in items:
+                    edit = cut_diff.edit
+                    if edit and not edit.get_sg_version():
+                        # Creation order should match
+                        cut_diff.set_sg_version(res.pop(0))
+
     def create_sg_cut_items(self, sg_cut):
         """
         Create the cut items in Shotgun, linked to the given cut
         """
         # Loop through all edits and create CutItems for them
-        self._logger.info("Creating cut items ...")
+        self._logger.info("Creating Cut Items...")
         sg_batch_data = []
         for shot_name, items in self._summary.iteritems():
             for cut_diff in items:
@@ -1127,6 +1166,7 @@ class EdlCut(QtCore.QObject):
                             "project": self._project,
                             "code": edit.reel_name,
                             "cut": sg_cut,
+                            "description": ", ".join(cut_diff.reasons),
                             "cut_order": edit.id,
                             "timecode_cut_item_in": str(edit.source_in),
                             "timecode_cut_item_out": str(edit.source_out),
