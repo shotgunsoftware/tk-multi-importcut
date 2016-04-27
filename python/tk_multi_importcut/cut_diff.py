@@ -265,6 +265,16 @@ class CutDiff(QtCore.QObject):
             return self._sg_cut_item["version"]
         return None
 
+    def set_sg_version(self, sg_version):
+        """
+        Set the Shotgun version associated with this diff
+        :param sg_version: A SG version, as a dictionary
+        :raises: ValueError if no EditEvent is associated to this diff
+        """
+        if not self._edit:
+            raise ValueError("Can't set Shotgun version without an edit entry")
+        self._edit._sg_version = sg_version
+
     @property
     def default_head_in(self):
         """
