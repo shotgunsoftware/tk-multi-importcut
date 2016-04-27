@@ -1,3 +1,4 @@
+
 # Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
@@ -606,9 +607,9 @@ class CutDiff(QtCore.QObject):
 
         :returns: An integer or None
         """
-        if self.cut_out is None or self.tail_out is None:
+        if self.cut_out is None or self.shot_tail_out is None:
             return None
-        return self.tail_out - self.cut_out
+        return self.shot_tail_out - self.cut_out
 
     @property
     def new_tail_duration(self):
