@@ -1178,7 +1178,7 @@ class EdlCut(QtCore.QObject):
                             "edit_out": edit_out,
                             "cut_item_duration": cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
                             "shot": cut_diff.sg_shot,
-                            # "version": edit.get_sg_version(),
+                            "version": cut_diff.sg_version,
                             "created_by": self._ctx.user,
                             "updated_by": self._ctx.user,
                         }
