@@ -779,7 +779,7 @@ class CutDiff(QtCore.QObject):
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
 
-        if self.repeated and not self._sg_cut_item:
+        if not self._sg_cut_item:
             self._diff_type = _DIFF_TYPES.NEW_IN_CUT
             return
 
