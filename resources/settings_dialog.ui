@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>524</width>
+    <width>530</width>
     <height>416</height>
    </rect>
   </property>
@@ -71,6 +71,9 @@
      <property name="contextMenuPolicy">
       <enum>Qt::PreventContextMenu</enum>
      </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
      <property name="tabPosition">
       <enum>QTabWidget::North</enum>
      </property>
@@ -80,18 +83,24 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
+     <property name="elideMode">
+      <enum>Qt::ElideRight</enum>
+     </property>
+     <property name="usesScrollButtons">
+      <bool>false</bool>
+     </property>
      <property name="tabsClosable">
       <bool>false</bool>
      </property>
      <widget class="QWidget" name="general_tab">
       <property name="maximumSize">
        <size>
-        <width>493</width>
+        <width>510</width>
         <height>16777215</height>
        </size>
       </property>
       <attribute name="title">
-       <string>General</string>
+       <string>       General</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="leftMargin">

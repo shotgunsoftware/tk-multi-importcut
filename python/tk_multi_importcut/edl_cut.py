@@ -1119,13 +1119,13 @@ class EdlCut(QtCore.QObject):
                     })
         if sg_batch_data:
             res = self._sg.batch(sg_batch_data)
-            self._logger.info("Created %d new shots." % len(res))
+            self._logger.info("Created/Updated %d shot(s)." % len(res))
             # Update cut_diffs with the new shots
             for sg_shot in res:
                 shot_name = sg_shot["code"].lower()
                 if shot_name not in self._summary:
                     raise RuntimeError(
-                        "Created shot %s, but couldn't retrieve it in our list" %
+                        "Created/Updated shot %s, but couldn't retrieve it in our list" %
                         shot_name)
                 for cut_diff in self._summary[shot_name]:
                     if cut_diff.sg_shot:
