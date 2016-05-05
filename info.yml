@@ -21,7 +21,7 @@ supported_engines:
 requires_shotgun_fields:
 
 # More verbose description of this item 
-display_name: "Cut Import"
+display_name: "Import Cut"
 description: "An app to import cut changes."
 
 # Required minimum versions for this item to run
