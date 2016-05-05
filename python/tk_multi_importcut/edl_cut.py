@@ -78,7 +78,7 @@ class EdlCut(QtCore.QObject):
         self._omit_status = self._user_settings.retrieve("omit_status")
         self._reinstate_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is")
         self._cut_link_field = "entity"
-        self._num_cuts = 0
+        self._revision_num = 0
 
     @property
     def entity_name(self):
@@ -431,10 +431,21 @@ class EdlCut(QtCore.QObject):
                     "updated_by",
                     "updated_at",
                     "created_at",
+                    "revision_number"
                 ],
                 order=[{"field_name": "id", "direction": "desc"}]
             )
-
+            # if sg_cuts is empty, set the revision number of this Cut to 1,
+            # else take the latest Cut's revision number and increment by 1.
+            if sg_cuts:
+                max_revision = 0
+                for cut in sg_cuts:
+                    if cut["revision_number"] > max_revision:
+                        max_revision = cut["revision_number"]
+                self._revision_num = max_revision + 1
+            else:
+                self._revision_num = 1
+            # self._logger.info(sg_cuts[len(sg_cuts) - 1]["code"])
             # If no cut, go directly to next step
             if not sg_cuts:
                 self.show_cut_diff({})
@@ -447,8 +458,8 @@ class EdlCut(QtCore.QObject):
                 if sg_cut["sg_status_list"] in status_dict:
                     sg_cut["_display_status"] = status_dict[sg_cut["sg_status_list"]]
                 self.new_sg_cut.emit(sg_cut)
-            self._num_cuts = len(sg_cuts)
-            self._logger.info("Retrieved %d Cuts." % self._num_cuts)
+            num_cuts = len(sg_cuts)
+            self._logger.info("Retrieved %d Cuts." % num_cuts)
             self.step_done.emit(_ENTITY_STEP)
         except Exception, e:
             self._logger.exception(str(e))
@@ -911,7 +922,7 @@ class EdlCut(QtCore.QObject):
             "timecode_start"     : tc_start,
             "timecode_end"       : tc_end,
             "duration"           : self._summary.duration,
-            "revision_number"    : self._num_cuts + 1,
+            "revision_number"    : self._revision_num,
         }
         # Upload base layer media file to the new Cut record if it exists.
         if self._mov_file_path:
