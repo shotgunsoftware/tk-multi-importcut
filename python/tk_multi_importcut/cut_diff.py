@@ -35,7 +35,7 @@ _DIFF_TYPES = diff_types(
     CUT_CHANGE=4,       # Some values changed, but don't fall in previous categories
     NO_CHANGE=5,        # Values are identical to previous ones
     NO_LINK=6,          # Related shot name couldn't be found
-    NEW_IN_CUT=7,       # A new repeated shot entry is added, but the shot already exists
+    NEW_IN_CUT=7,       # A new shot entry is added, but the shot already exists
     OMITTED_IN_CUT=8,   # A repeated shot entry was removed
 )
 
@@ -779,6 +779,7 @@ class CutDiff(QtCore.QObject):
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
 
+        # This cut_item hasn't appeared in previous Cuts
         if not self._sg_cut_item:
             self._diff_type = _DIFF_TYPES.NEW_IN_CUT
             return

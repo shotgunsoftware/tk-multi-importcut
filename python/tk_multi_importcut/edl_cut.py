@@ -435,16 +435,13 @@ class EdlCut(QtCore.QObject):
                 ],
                 order=[{"field_name": "id", "direction": "desc"}]
             )
-            # if sg_cuts is empty, set the revision number of this Cut to 1,
-            # else take the latest Cut's revision number and increment by 1.
-            if sg_cuts:
-                max_revision = 0
-                for cut in sg_cuts:
-                    if cut["revision_number"] > max_revision:
-                        max_revision = cut["revision_number"]
-                self._revision_num = max_revision + 1
-            else:
-                self._revision_num = 1
+            # if sg_cuts is empty, set the revision number of this Cut to 1, else
+            # take the highest revision number from all Cuts and increment by 1.
+            max_revision = 0
+            for cut in sg_cuts:
+                if cut["revision_number"] > max_revision:
+                    max_revision = cut["revision_number"]
+            self._revision_num = max_revision + 1
             # self._logger.info(sg_cuts[len(sg_cuts) - 1]["code"])
             # If no cut, go directly to next step
             if not sg_cuts:
@@ -458,8 +455,7 @@ class EdlCut(QtCore.QObject):
                 if sg_cut["sg_status_list"] in status_dict:
                     sg_cut["_display_status"] = status_dict[sg_cut["sg_status_list"]]
                 self.new_sg_cut.emit(sg_cut)
-            num_cuts = len(sg_cuts)
-            self._logger.info("Retrieved %d Cuts." % num_cuts)
+            self._logger.info("Retrieved %d Cuts." % len(sg_cuts))
             self.step_done.emit(_ENTITY_STEP)
         except Exception, e:
             self._logger.exception(str(e))
