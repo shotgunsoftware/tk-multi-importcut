@@ -35,6 +35,7 @@ class SubmitDialog(QtGui.QDialog):
         self.ui = Ui_submit_dialog()
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
+        self._sg = self._app.shotgun
         # Create a settings manager where we can pull and push prefs later
         self._user_settings = self._app.user_settings
         # Retrieve user settings and set UI values
@@ -76,20 +77,31 @@ class SubmitDialog(QtGui.QDialog):
         self._save_settings()
         update_shot_fields = self.ui.update_shot_fields_checkbox.isChecked()
         title = self.ui.title_text.text()
-        to = self.ui.to_text.text()
-        sg = self._app.shotgun
-        sg_group = sg.find_one("Group", [["code", "is", to]], ["code"])
-        if not sg_group:
-            QtGui.QMessageBox.warning(
-                self,
-                "Unknown Shotgun Group",
-                "Couldn't retrieve a group named %s in Shotgun" % to,
-                buttons=QtGui.QMessageBox.Ok
-            )
-            return
+        email_groups = self.ui.to_text.text().replace(", ", ",").split(",")
+        # If there are no groups specified, remove the empty string from email_groups.
+        if email_groups == [""]:
+            email_groups = []
+        existing_email_groups = self._sg.find("Group", [], ["code"])
+        email_group_entities = []
+        for email_group in email_groups:
+            found = False
+            for existing_email_group in existing_email_groups:
+                if email_group == existing_email_group["code"]:
+                    found = True
+                    email_group_entities.append(existing_email_group)
+            if not found:
+                QtGui.QMessageBox.warning(
+                    self,
+                    "Unknown Shotgun Group",
+                    "Couldn't retrieve a group named \"%s\" in Shotgun" % email_group,
+                    buttons=QtGui.QMessageBox.Ok
+                )
+                return
+        # store user settings back into email_groups preference.
+        self._user_settings.store("email_groups", email_groups)
         description = self.ui.description_text.toPlainText()
         user = self._app.context.user or {}
-        self.submit.emit(title, user, sg_group, description, update_shot_fields)
+        self.submit.emit(title, user, email_group_entities, description, update_shot_fields)
         self.close_dialog()
 
     @QtCore.Slot()

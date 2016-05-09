@@ -127,6 +127,7 @@ class AppDialog(QtGui.QWidget):
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
+
         self._user_settings = self._app.user_settings
         self.checked_entity_button = None
 
@@ -309,10 +310,10 @@ class AppDialog(QtGui.QWidget):
         """
         Create buttons allowing to choose which entity type the Cut
         will be imported against.
-        
+
         A maximum number of different entity types is supported, as the
         current UI will not allow to display them correctly if bigger.
-        
+
         """
         # Retrieve the stack widget used to display different list of entities
         entity_type_stacked_widget = self.ui.entities_type_stacked_widget
@@ -325,9 +326,11 @@ class AppDialog(QtGui.QWidget):
         # Validate and potentially reset current value retrieved from user
         # preferences.
         # Project is systematically added so is always valid
-        if(self._preload_entity_type is not None and
+        if(
+            self._preload_entity_type is not None and
             self._preload_entity_type != "Project" and
-            self._preload_entity_type not in schema_entity_types):
+            self._preload_entity_type not in schema_entity_types
+        ):
                 self._logger.warning("Resetting invalid entity type preference %s" %
                     self._preload_entity_type
                 )

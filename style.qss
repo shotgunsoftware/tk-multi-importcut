@@ -105,6 +105,18 @@ DropAreaFrame QLabel {
     outline: 0;
 }
 
+#settings_page_1_button,
+#settings_page_2_button,
+#settings_page_3_button,
+#settings_page_4_button,
+#settings_page_5_button,
+#settings_page_6_button,
+#settings_page_7_button,
+#settings_page_8_button,
+#settings_page_9_button {
+    border: 0px solid black;
+}
+
 #create_entity_line_1, #create_entity_line_2 {
     color: black;
     height: 1px;
