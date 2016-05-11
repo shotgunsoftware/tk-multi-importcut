@@ -46,7 +46,8 @@ class CutCard(QtGui.QFrame):
 
         self.ui = Ui_CutCard()
         self.ui.setupUi(self)
-        self.ui.title_label.setText("<big><b>%s</b></big>" % sg_cut["code"])
+        self.ui.title_label.setText("<big><b>%s_%s</b></big>" % (
+            sg_cut["code"], "%03d" % sg_cut["revision_number"]))
         if self._sg_cut["_display_status"]:
             self.ui.status_label.setText(
                 "<b><font color=%s>%s</font></b>" % (

@@ -155,8 +155,12 @@ DropAreaFrame QLabel {
 
 #success_page #shotgun_button,
 #create_entity_dialog #create_entity_button,
-#settings_dialog #apply_button {
-    background-color: #18a6e3;
+#settings_dialog #apply_button,
+#submit_dialog #import_cut_button,
+#next_button:enabled,
+#select_button:enabled,
+#submit_button:enabled {
+    background-color: #12bbff;
 }
 
 #entity_name_line_edit, #description_line_edit {

@@ -42,16 +42,11 @@ class SubmitDialog(QtGui.QDialog):
         # Retrieve user settings and set UI values
         update_shot_fields = self._user_settings.retrieve("update_shot_fields", True)
         self.ui.update_shot_fields_checkbox.setChecked(update_shot_fields)
-
-        buttons = self.ui.import_cut_button_box.buttons()
-        submit_button = buttons[0]
-        submit_button.setText("Import Cut")
         self.ui.title_text.setText(title or "")
         if not summary:
             # Just in case ...
             raise ValueError("Can't import a cut without a summary")
         self.ui.from_label.setText(self._app.context.user["name"] if self._app.context.user else "")
-        # email_groups = self._app.shotgun.find("Group", [], ["code"])
         email_groups = ", ".join(self._user_settings.retrieve("email_groups"))
         self.ui.to_text.setText(email_groups)
         self.ui.total_shots_label.setText("%s" % len(summary))
@@ -67,8 +62,8 @@ class SubmitDialog(QtGui.QDialog):
         else:
             self.ui.no_link_label.hide()
             self.ui.no_link_title_label.hide()
-        self.ui.import_cut_button_box.rejected.connect(self.close_dialog)
-        self.ui.import_cut_button_box.accepted.connect(self.submit_cut)
+        self.ui.cancel_button.clicked.connect(self.close_dialog)
+        self.ui.import_cut_button.clicked.connect(self.submit_cut)
 
     @QtCore.Slot()
     def submit_cut(self):
