@@ -131,9 +131,7 @@ class AppDialog(QtGui.QWidget):
         self._user_settings = self._app.user_settings
         self.checked_entity_button = None
 
-        # todo: this is a tmp workaround. In the future we should validate all settings
-        # on app launch and reset only the settings that are broken, waiting on direction
-        # before building out the complete solution.
+        # Reset user settings if they are corrupt.
         reset_settings = False
         if self._user_settings.retrieve("reset_settings"):
             reset_settings = True
@@ -146,11 +144,8 @@ class AppDialog(QtGui.QWidget):
         if reset_settings or self._user_settings.retrieve("email_groups") is None:
             self._user_settings.store("email_groups", [])
         if reset_settings or self._user_settings.retrieve("omit_status") is None:
-            # todo: this will break if these statuses don't exist in Shotgun
-            # waiting for a decision about how to handle the case of missing statuses
             self._user_settings.store("omit_status", "omt")
         if reset_settings or self._user_settings.retrieve("reinstate_shot_if_status_is") is None:
-            # todo: same comment as above
             self._user_settings.store("reinstate_shot_if_status_is", ["omt", "hld"])
         if reset_settings or self._user_settings.retrieve("reinstate_status") is None:
             self._user_settings.store("reinstate_status", "Previous Status")

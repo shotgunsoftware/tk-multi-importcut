@@ -21,17 +21,30 @@ from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
 
-_ABSOLUTE_INSTRUCTIONS = """In Absolute mode, the app will map the timecode \
+_ABSOLUTE_INSTRUCTIONS = "In Absolute mode, the app will map the timecode \
 values from the EDL directly as frames based on the frame rate. For example, \
-at 24fps 00:00:01:00 = frame 24."""
+at 24fps 00:00:01:00 = frame 24."
 
-_AUTOMATIC_INSTRUCTIONS = """In Automatic mode, the app will map the timecode \
+_AUTOMATIC_INSTRUCTIONS = "In Automatic mode, the app will map the timecode \
 values from the EDL to the Head In value from the Shot in Shotgun. If that \
-field is empty, the Default Head In value set below for New Shots will be used."""
+field is empty, the Default Head In value set below for New Shots will be used."
 
-_RELATIVE_INSTRUCTIONS = """In Relative mode, the app will map the timecode \
-values from the EDL to frames based on a specific timecode/frame relationship."""
+_RELATIVE_INSTRUCTIONS = "In Relative mode, the app will map the timecode \
+values from the EDL to frames based on a specific timecode/frame relationship."
 
+_BAD_GROUP_MSG = '"%s" does not match a valid Group in Shotgun. Please enter \
+another Group or create "%s" in Shotgun to proceed.'
+
+_BAD_STATUS_MSG = "The following statuses for reinstating Shots do not match \
+valid statuses in Shotgun:\n\n%s\n\nPlease enter another status to proceed."
+
+_BAD_TIMECODE_MSG = '"%s" is not a valid timecode value. The Timecode Mapping \
+must match the pattern ##.##.##.##.'
+
+_BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
+Please check your Shotgun site."
+
+_SPAN = ""
 
 class SettingsDialog(QtGui.QDialog):
     """
@@ -49,7 +62,9 @@ class SettingsDialog(QtGui.QDialog):
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
+        self._sg = self._app.shotgun
         self._user_settings = self._app.user_settings
+        self._shot_schema = None
         buttons = self.ui.save_settings_button_box.buttons()
         apply_button = buttons[0]
         # Retrieve user settings and set UI values
@@ -85,9 +100,14 @@ class SettingsDialog(QtGui.QDialog):
             # we arbitrarily choose whatever status is at 0.
             omit_status = self._user_settings.retrieve("omit_status")
             reinstate_status = self._user_settings.retrieve("reinstate_status")
-            shot_statuses = self._app.shotgun.schema_field_read("Shot")[
+            self._shot_schema = self._sg.schema_field_read("Shot")
+            shot_statuses = self._shot_schema[
                 "sg_status_list"]["properties"]["valid_values"]["value"]
-            index = 0
+            self.ui.omit_status_combo_box.addItem("")
+            self.ui.reinstate_status_combo_box.addItem("")
+            # starting with index of 1 because we already have an empty string
+            # item in the omit_status and reinstate_status combo boxes
+            index = 1
             found_omit_index, found_reinstate_index = [False, False]
             for status in shot_statuses:
                 if omit_status == status:
@@ -103,17 +123,14 @@ class SettingsDialog(QtGui.QDialog):
                 self.ui.omit_status_combo_box.setCurrentIndex(omit_index)
             else:
                 self.ui.omit_status_combo_box.setCurrentIndex(0)
-                self._logger.error(
-                    'Omit status not set to "%s," status does not exist in Shotgun, check Settings.' % omit_status)
             self.ui.reinstate_status_combo_box.addItem("Previous Status")
             if found_reinstate_index:
                 self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
             elif reinstate_status == "Previous Status":
-                self.ui.reinstate_status_combo_box.setCurrentIndex(len(shot_statuses))
+                # +1 to account for empty item at the head of the combo box list.
+                self.ui.reinstate_status_combo_box.setCurrentIndex(len(shot_statuses) + 1)
             else:
-                self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
-                self._logger.error(
-                    'Reinstate status not set to "%s," status does not exist in Shotgun, check Settings.' % reinstate_status)
+                self.ui.reinstate_status_combo_box.setCurrentIndex(0)
 
             # Turning the reinstate status list into user editable csv text
             statuses = ", ".join(self._user_settings.retrieve("reinstate_shot_if_status_is"))
@@ -142,8 +159,7 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.save_settings_button_box.accepted.connect(self.save_settings)
 
         except Exception, e:
-            # todo: this is a tmp workaround until we get direction on the full-on
-            # solution for dealing with bad values.
+            # This is a bit of code for dealing with bad values (if prefs var changes type).
             # If something goes wrong, reset all settings to default next time the app is run
             self._user_settings.store("reset_settings", True)
             self._logger.error(
@@ -154,8 +170,8 @@ class SettingsDialog(QtGui.QDialog):
         """
         Save settings and close the dialog.
         """
-        self._save_settings()
-        self.close_dialog()
+        if self._save_settings():
+            self.close_dialog()
 
     @QtCore.Slot()
     def close_dialog(self):
@@ -209,12 +225,27 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.default_head_in_line_edit.setEnabled(False)
             self.ui.default_head_in_label.setEnabled(False)
 
+    def _pop_error(self, title, message, error=None):
+        msg_box = QtGui.QMessageBox(
+            parent=self,
+            icon=QtGui.QMessageBox.Critical
+        )
+        msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
+        msg_box.setText(title)
+        if error:
+            msg_box.setDetailedText("%s" % error)
+        msg_box.setInformativeText(message)
+        msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+        msg_box.show()
+        msg_box.raise_()
+        msg_box.activateWindow()
+
     def _save_settings(self):
         """
-        Validate and save user settings from current UI values
-        """
+        Validate and save user settings from current UI values.
 
-        error = False
+        :returns: bool, True if all settings can be safetly saved.
+        """
 
         # General tab
 
@@ -222,44 +253,52 @@ class SettingsDialog(QtGui.QDialog):
         self._user_settings.store("update_shot_statuses", update_shot_statuses)
 
         use_smart_fields = self.ui.use_smart_fields_checkbox.isChecked()
+        if use_smart_fields and not self._shot_schema.get("smart_cut_duration"):
+            self._pop_error("User Input\n%s" % _SPAN, _BAD_SMART_FIELDS_MSG)
+            return
         self._user_settings.store("use_smart_fields", use_smart_fields)
 
-        groups_okay = True
         email_groups = self.ui.email_groups_line_edit.text().replace(", ", ",").split(",")
-        existing_email_groups = self._app.shotgun.find("Group", [], ["code"])
+        # If there is no text, reset email_group to be an empty list
+        if email_groups == [""]:
+            email_groups = []
+        existing_email_groups = self._sg.find("Group", [], ["code"])
         existing_email_groups_list = []
         for existing_group in existing_email_groups:
             existing_email_groups_list.append(existing_group["code"])
         for email_group in email_groups:
             if email_group not in existing_email_groups_list:
-                groups_okay = False
-        if groups_okay:
-            self._user_settings.store("email_groups", email_groups)
-        else:
-            error = True
-            self._logger.error('Could not set email groups to "%s": %s' % (
-                email_groups, "Group or groups do not exist in Shotgun."))
+                self._pop_error("User Input\n%s" % _SPAN, _BAD_GROUP_MSG % (email_group, email_group))
+                return
+        self._user_settings.store("email_groups", email_groups)
 
         omit_status = self.ui.omit_status_combo_box.currentText()
+        if not omit_status and update_shot_statuses:
+            self._pop_error("User Input\n%s" % _SPAN, "%s" % (
+                "Please select an Omit Status."))
+            return
         self._user_settings.store("omit_status", omit_status)
 
         reinstate_status = self.ui.reinstate_status_combo_box.currentText()
+        if not reinstate_status and update_shot_statuses:
+            self._pop_error("User Input\n%s" % _SPAN, "%s" % (
+                "Please select a Reinstate Status"))
+            return
         self._user_settings.store("reinstate_status", reinstate_status)
 
-        statuses_okay = True
         statuses = self.ui.reinstate_shot_if_status_is_line_edit.text().replace(
             ", ", ",").split(",")
-        existing_statuses = self._app.shotgun.schema_field_read("Shot")[
+        existing_statuses = self._shot_schema[
             "sg_status_list"]["properties"]["valid_values"]["value"]
+        bad_statuses = []
         for status in statuses:
-            if status not in existing_statuses:
-                statuses_okay = False
-        if statuses_okay:
-            self._user_settings.store("reinstate_shot_if_status_is", statuses)
-        else:
-            error = True
-            self._logger.error('Could not set "reinstate shot if status is" to "%s": %s' % (
-                statuses, "Status or statuses do not exist in Shotgun."))
+            if status not in existing_statuses and update_shot_statuses:
+                bad_statuses.append('"%s"' % status)
+        if bad_statuses:
+            bad_statuses = "\n".join(bad_statuses)
+            self._pop_error("User Input\n%s" % _SPAN, _BAD_STATUS_MSG % (bad_statuses))
+            return
+        self._user_settings.store("reinstate_shot_if_status_is", statuses)
 
         # Timecode/Frames tab
 
@@ -269,8 +308,9 @@ class SettingsDialog(QtGui.QDialog):
             assert fps > 0, "Value must be positive."
             self._user_settings.store("default_frame_rate", default_frame_rate)
         except Exception, e:
-            error = True
-            self._logger.error('Could not set frame rate to "%s": %s' % (default_frame_rate, e))
+            self._pop_error("User Input\n%s" % _SPAN, 'Could not set frame rate to "%s."' % (
+                default_frame_rate), e)
+            return
 
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
         self._user_settings.store("timecode_to_frame_mapping", timecode_to_frame_mapping)
@@ -279,25 +319,26 @@ class SettingsDialog(QtGui.QDialog):
         if re.search("^\d{2}:\d{2}:\d{2}[:.;]\d{2}$", timecode_mapping):
             self._user_settings.store("timecode_mapping", timecode_mapping)
         else:
-            error = True
-            self._logger.error('Could not set timecode mapping to "%s": %s' % (
-                timecode_mapping, "Did not match pattern 00:00:00:00."))
+            self._pop_error("User Input\n%s" % _SPAN, _BAD_TIMECODE_MSG % timecode_mapping)
+            return
 
         frame_mapping = self.ui.frame_mapping_line_edit.text()
         try:
             int(frame_mapping)
             self._user_settings.store("frame_mapping", frame_mapping)
         except Exception, e:
-            error = True
-            self._logger.error('Could not set frame mapping to "%s": %s' % (frame_mapping, e))
+            self._pop_error("User Input\n%s" % _SPAN, 'Could not set frame mapping to "%s."' % (
+                frame_mapping), e)
+            return
 
         default_head_in = self.ui.default_head_in_line_edit.text()
         try:
             int(default_head_in)
             self._user_settings.store("default_head_in", default_head_in)
         except Exception, e:
-            error = True
-            self._logger.error('Could not set default head in to "%s": %s' % (default_head_in, e))
+            self._pop_error("User Input\n%s" % _SPAN, 'Could not set default head in to "%s."' % (
+                default_head_in), e)
+            return
 
         default_head_duration = self.ui.default_head_duration_line_edit.text()
         try:
@@ -305,9 +346,9 @@ class SettingsDialog(QtGui.QDialog):
             assert dhd >= 0, "Value can't be nagative."
             self._user_settings.store("default_head_duration", default_head_duration)
         except Exception, e:
-            error = True
-            self._logger.error('Could not set default head duration to "%s": %s' % (
-                default_head_duration, e))
+            self._pop_error("User Input\n%s" % _SPAN, 'Could not set default head duration to "%s."' % (
+                default_head_duration), e)
+            return
 
         default_tail_duration = self.ui.default_tail_duration_line_edit.text()
         try:
@@ -315,11 +356,11 @@ class SettingsDialog(QtGui.QDialog):
             assert dtd >= 0, "Value can't be negative."
             self._user_settings.store("default_tail_duration", default_tail_duration)
         except Exception, e:
-            error = True
-            self._logger.error('Could not set default head duration to "%s": %s' % (
-                default_head_duration, e))
-
-        if error is False:
-            self._logger.info("User settings saved.")
+            self._pop_error("User Input\n%s" % _SPAN, 'Could not set default tail duration to "%s."' % (
+                default_tail_duration), e)
+            return
 
         CutDiff.retrieve_default_timecode_frame_mapping()
+
+        self._logger.info("User settings saved.")
+        return True

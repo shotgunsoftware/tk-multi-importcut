@@ -90,12 +90,19 @@ class SubmitDialog(QtGui.QDialog):
                     found = True
                     email_group_entities.append(existing_email_group)
             if not found:
-                QtGui.QMessageBox.warning(
-                    self,
-                    "Unknown Shotgun Group",
-                    "Couldn't retrieve a group named \"%s\" in Shotgun" % email_group,
-                    buttons=QtGui.QMessageBox.Ok
+                msg_box = QtGui.QMessageBox(
+                    parent=self,
+                    icon=QtGui.QMessageBox.Critical
                 )
+                msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
+                msg_box.setText("Unknown Shotgun Group")
+                msg_box.setInformativeText(
+                    "Couldn't retrieve a group named \"%s\" in Shotgun." % email_group
+                )
+                msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+                msg_box.show()
+                msg_box.raise_()
+                msg_box.activateWindow()
                 return
         # store user settings back into email_groups preference.
         self._user_settings.store("email_groups", email_groups)
