@@ -326,11 +326,9 @@ class AppDialog(QtGui.QWidget):
         # Validate and potentially reset current value retrieved from user
         # preferences.
         # Project is systematically added so is always valid
-        if(
-            self._preload_entity_type is not None and
+        if(self._preload_entity_type is not None and
             self._preload_entity_type != "Project" and
-            self._preload_entity_type not in schema_entity_types
-        ):
+            self._preload_entity_type not in schema_entity_types):
                 self._logger.warning("Resetting invalid entity type preference %s" %
                     self._preload_entity_type
                 )
