@@ -65,11 +65,8 @@ class SettingsDialog(QtGui.QDialog):
         self._sg = self._app.shotgun
         self._user_settings = self._app.user_settings
         self._shot_schema = None
-        buttons = self.ui.save_settings_button_box.buttons()
-        apply_button = buttons[0]
-        # Retrieve user settings and set UI values
-        apply_button.setText("Apply")
 
+        # Retrieve user settings and set UI values
         try:
             # General tab
 
@@ -155,8 +152,8 @@ class SettingsDialog(QtGui.QDialog):
                 self._user_settings.retrieve("default_tail_duration"))
 
             # Cancel or Save
-            self.ui.save_settings_button_box.rejected.connect(self.close_dialog)
-            self.ui.save_settings_button_box.accepted.connect(self.save_settings)
+            self.ui.cancel_button.clicked.connect(self.close_dialog)
+            self.ui.apply_button.clicked.connect(self.save_settings)
 
         except Exception, e:
             # This is a bit of code for dealing with bad values (if prefs var changes type).

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>530</width>
-    <height>416</height>
+    <height>426</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -153,7 +153,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="email_groups_line_edit"/>
+          <widget class="QLineEdit" name="email_groups_line_edit">
+           <property name="placeholderText">
+            <string>Group</string>
+           </property>
+          </widget>
          </item>
          <item>
           <spacer name="horizontalSpacer">
@@ -539,6 +543,12 @@
                <height>16777215</height>
               </size>
              </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="placeholderText">
+              <string>##:##:##:##</string>
+             </property>
             </widget>
            </item>
            <item>
@@ -723,7 +733,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_9">
+    <layout class="QHBoxLayout" name="horizontalLayout_9">
      <property name="rightMargin">
       <number>5</number>
      </property>
@@ -731,18 +741,51 @@
       <number>5</number>
      </property>
      <item>
-      <widget class="QDialogButtonBox" name="save_settings_button_box">
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
-       </property>
+      <spacer name="horizontalSpacer_4">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <property name="standardButtons">
-        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
        </property>
-       <property name="centerButtons">
-        <bool>false</bool>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancel_button">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+       <property name="shortcut">
+        <string>Esc</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_5">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>10</width>
+         <height>1</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="apply_button">
+       <property name="text">
+        <string>Apply</string>
+       </property>
+       <property name="shortcut">
+        <string>Return</string>
        </property>
       </widget>
      </item>

@@ -153,11 +153,11 @@ DropAreaFrame QLabel {
     font-size: 20px;
 }
 
-#success_page #shotgun_button, #create_entity_dialog #create_entity_button {
+#success_page #shotgun_button,
+#create_entity_dialog #create_entity_button,
+#settings_dialog #apply_button {
     background-color: #18a6e3;
 }
-
-
 
 #entity_name_line_edit, #description_line_edit {
     background-color: #2f3033;
