@@ -60,7 +60,6 @@ class SettingsDialog(QtGui.QDialog):
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
-        self._sg = self._app.shotgun
         self._user_settings = self._app.user_settings
         self._shot_schema = None
 
@@ -95,7 +94,7 @@ class SettingsDialog(QtGui.QDialog):
             # we arbitrarily choose whatever status is at 0.
             omit_status = self._user_settings.retrieve("omit_status")
             reinstate_status = self._user_settings.retrieve("reinstate_status")
-            self._shot_schema = self._sg.schema_field_read("Shot")
+            self._shot_schema = self._app.shotgun.schema_field_read("Shot")
             shot_statuses = self._shot_schema[
                 "sg_status_list"]["properties"]["valid_values"]["value"]
             self.ui.omit_status_combo_box.addItem("")
@@ -246,7 +245,7 @@ class SettingsDialog(QtGui.QDialog):
         """
         Validate and save user settings from current UI values.
 
-        :returns: bool, True if all settings can be safetly saved.
+        :returns: True if all settings can be safetly saved, and None otherwise.
         """
 
         # General tab
@@ -260,11 +259,13 @@ class SettingsDialog(QtGui.QDialog):
             return
         self._user_settings.store("use_smart_fields", use_smart_fields)
 
-        email_groups = self.ui.email_groups_line_edit.text().replace(", ", ",").split(",")
+        # Break the to_text string into a list of Shotgun Group names
+        to_text_list = re.sub(',\s+', ',', self.ui.email_groups_line_edit.text())
+        email_groups = to_text_list.split(",")
         # If there is no text, reset email_group to be an empty list
         if email_groups == [""]:
             email_groups = []
-        existing_email_groups = self._sg.find("Group", [], ["code"])
+        existing_email_groups = self._app.shotgun.find("Group", [], ["code"])
         existing_email_groups_list = []
         for existing_group in existing_email_groups:
             existing_email_groups_list.append(existing_group["code"])

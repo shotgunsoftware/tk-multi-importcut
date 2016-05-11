@@ -11,6 +11,7 @@
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 
+import re
 import sgtk
 
 from sgtk.platform.qt import QtCore, QtGui
@@ -78,7 +79,8 @@ class SubmitDialog(QtGui.QDialog):
         update_shot_fields = self.ui.update_shot_fields_checkbox.isChecked()
         title = self.ui.title_text.text()
         # Break the to_text string into a list of Shotgun Group names
-        email_groups = self.ui.to_text.text().replace(", ", ",").split(",")
+        to_text_list = re.sub(',\s+', ',', self.ui.to_text.text())
+        email_groups = to_text_list.split(",")
         # If there are no groups specified, remove the empty string from email_groups.
         if email_groups == [""]:
             email_groups = []
