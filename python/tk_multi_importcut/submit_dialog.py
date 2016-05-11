@@ -77,6 +77,7 @@ class SubmitDialog(QtGui.QDialog):
         self._save_settings()
         update_shot_fields = self.ui.update_shot_fields_checkbox.isChecked()
         title = self.ui.title_text.text()
+        # Break the to_text string into a list of Shotgun Group names
         email_groups = self.ui.to_text.text().replace(", ", ",").split(",")
         # If there are no groups specified, remove the empty string from email_groups.
         if email_groups == [""]:

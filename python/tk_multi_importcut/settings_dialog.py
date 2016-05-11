@@ -44,8 +44,6 @@ must match the pattern ##.##.##.##.'
 _BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
 Please check your Shotgun site."
 
-_SPAN = ""
-
 class SettingsDialog(QtGui.QDialog):
     """
     Settings dialog, available on almost each page of the animated stacked
@@ -223,6 +221,13 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.default_head_in_label.setEnabled(False)
 
     def _pop_error(self, title, message, error=None):
+        """
+        Helper method to display messages during validation and optional errors.
+
+        :param title: The message type (for example "User Input")
+        :param message: Easy to read message for the user
+        :param error: Error coming back from an Exception, included in "Additional Details"
+        """
         msg_box = QtGui.QMessageBox(
             parent=self,
             icon=QtGui.QMessageBox.Critical
@@ -251,7 +256,7 @@ class SettingsDialog(QtGui.QDialog):
 
         use_smart_fields = self.ui.use_smart_fields_checkbox.isChecked()
         if use_smart_fields and not self._shot_schema.get("smart_cut_duration"):
-            self._pop_error("User Input\n%s" % _SPAN, _BAD_SMART_FIELDS_MSG)
+            self._pop_error("User Input", _BAD_SMART_FIELDS_MSG)
             return
         self._user_settings.store("use_smart_fields", use_smart_fields)
 
@@ -265,20 +270,20 @@ class SettingsDialog(QtGui.QDialog):
             existing_email_groups_list.append(existing_group["code"])
         for email_group in email_groups:
             if email_group not in existing_email_groups_list:
-                self._pop_error("User Input\n%s" % _SPAN, _BAD_GROUP_MSG % (email_group, email_group))
+                self._pop_error("User Input", _BAD_GROUP_MSG % (email_group, email_group))
                 return
         self._user_settings.store("email_groups", email_groups)
 
         omit_status = self.ui.omit_status_combo_box.currentText()
         if not omit_status and update_shot_statuses:
-            self._pop_error("User Input\n%s" % _SPAN, "%s" % (
+            self._pop_error("User Input", "%s" % (
                 "Please select an Omit Status."))
             return
         self._user_settings.store("omit_status", omit_status)
 
         reinstate_status = self.ui.reinstate_status_combo_box.currentText()
         if not reinstate_status and update_shot_statuses:
-            self._pop_error("User Input\n%s" % _SPAN, "%s" % (
+            self._pop_error("User Input", "%s" % (
                 "Please select a Reinstate Status"))
             return
         self._user_settings.store("reinstate_status", reinstate_status)
@@ -293,7 +298,7 @@ class SettingsDialog(QtGui.QDialog):
                 bad_statuses.append('"%s"' % status)
         if bad_statuses:
             bad_statuses = "\n".join(bad_statuses)
-            self._pop_error("User Input\n%s" % _SPAN, _BAD_STATUS_MSG % (bad_statuses))
+            self._pop_error("User Input", _BAD_STATUS_MSG % (bad_statuses))
             return
         self._user_settings.store("reinstate_shot_if_status_is", statuses)
 
@@ -305,7 +310,7 @@ class SettingsDialog(QtGui.QDialog):
             assert fps > 0, "Value must be positive."
             self._user_settings.store("default_frame_rate", default_frame_rate)
         except Exception, e:
-            self._pop_error("User Input\n%s" % _SPAN, 'Could not set frame rate to "%s."' % (
+            self._pop_error("User Input", 'Could not set frame rate to "%s."' % (
                 default_frame_rate), e)
             return
 
@@ -316,7 +321,7 @@ class SettingsDialog(QtGui.QDialog):
         if re.search("^\d{2}:\d{2}:\d{2}[:.;]\d{2}$", timecode_mapping):
             self._user_settings.store("timecode_mapping", timecode_mapping)
         else:
-            self._pop_error("User Input\n%s" % _SPAN, _BAD_TIMECODE_MSG % timecode_mapping)
+            self._pop_error("User Input", _BAD_TIMECODE_MSG % timecode_mapping)
             return
 
         frame_mapping = self.ui.frame_mapping_line_edit.text()
@@ -324,7 +329,7 @@ class SettingsDialog(QtGui.QDialog):
             int(frame_mapping)
             self._user_settings.store("frame_mapping", frame_mapping)
         except Exception, e:
-            self._pop_error("User Input\n%s" % _SPAN, 'Could not set frame mapping to "%s."' % (
+            self._pop_error("User Input", 'Could not set frame mapping to "%s."' % (
                 frame_mapping), e)
             return
 
@@ -333,7 +338,7 @@ class SettingsDialog(QtGui.QDialog):
             int(default_head_in)
             self._user_settings.store("default_head_in", default_head_in)
         except Exception, e:
-            self._pop_error("User Input\n%s" % _SPAN, 'Could not set default head in to "%s."' % (
+            self._pop_error("User Input", 'Could not set default head in to "%s."' % (
                 default_head_in), e)
             return
 
@@ -343,7 +348,7 @@ class SettingsDialog(QtGui.QDialog):
             assert dhd >= 0, "Value can't be nagative."
             self._user_settings.store("default_head_duration", default_head_duration)
         except Exception, e:
-            self._pop_error("User Input\n%s" % _SPAN, 'Could not set default head duration to "%s."' % (
+            self._pop_error("User Input", 'Could not set default head duration to "%s."' % (
                 default_head_duration), e)
             return
 
@@ -353,7 +358,7 @@ class SettingsDialog(QtGui.QDialog):
             assert dtd >= 0, "Value can't be negative."
             self._user_settings.store("default_tail_duration", default_tail_duration)
         except Exception, e:
-            self._pop_error("User Input\n%s" % _SPAN, 'Could not set default tail duration to "%s."' % (
+            self._pop_error("User Input", 'Could not set default tail duration to "%s."' % (
                 default_tail_duration), e)
             return
 

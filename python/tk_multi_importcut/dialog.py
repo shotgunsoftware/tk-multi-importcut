@@ -132,7 +132,12 @@ class AppDialog(QtGui.QWidget):
         self._user_settings = self._app.user_settings
         self.checked_entity_button = None
 
-        # Reset user settings if they are corrupt.
+        # Reset user settings if they are corrupt. This can happen if users using an older
+        # version of import cut have settings saved that don't match the variable type of
+        # the current settings. For example, if they have the old email_groups setting
+        # that was at one point a dict and is now a list. This may happen again if these
+        # settings are changed in unpredictable ways and conflict with local user settings
+        # we don't have accesss to.
         reset_settings = False
         if self._user_settings.retrieve("reset_settings"):
             reset_settings = True
