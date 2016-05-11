@@ -264,7 +264,7 @@ class EdlCut(QtCore.QObject):
         for edit in self._edl.edits:
             edit._sg_version = None
 
-        # Consolidate what we loaded
+        # Consolidate loaded EDL data
         # Build a dictionary using versions names as keys
         versions_names = {}
         for edit in self._edl.edits:
