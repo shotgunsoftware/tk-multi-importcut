@@ -105,6 +105,7 @@ class AppDialog(QtGui.QWidget):
     new_movie = QtCore.Signal(str)
     get_projects = QtCore.Signal()
     get_entities = QtCore.Signal(str)
+    set_active_project = QtCore.Signal(dict)
     show_cuts_for_sequence = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
 
@@ -201,6 +202,7 @@ class AppDialog(QtGui.QWidget):
         self.new_edl.connect(self._processor.new_edl)
         self.new_movie.connect(self._processor.new_movie)
         self.get_projects.connect(self._processor.retrieve_projects)
+        self.set_active_project.connect(self._processor.set_sg_project)
         self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
@@ -219,7 +221,7 @@ class AppDialog(QtGui.QWidget):
 
         # Instantiate a projects view handler
         self._projects_view = ProjectsView(self.ui.project_grid)
-        self._projects_view.project_chosen.connect(self.show_entity_types)
+        self._projects_view.project_chosen.connect(self.show_project)
         self._projects_view.selection_changed.connect(self.selection_changed)
         self._projects_view.new_info_message.connect(self.display_info_message)
         self._processor.new_sg_project.connect(self._projects_view.new_sg_project)
@@ -411,6 +413,9 @@ class AppDialog(QtGui.QWidget):
         # Show the view for the entity type
         self.show_entities(entity_type)
         # The UI can change based on the entity_type, so call a refresh
+        # In some cases, this is not actually needed, for example when
+        # the entity type view is created, so we might refresh the UI twice
+        # instead of only once, but this is not a huge deal as it is not heavy
         self.set_ui_for_step(self._step)
 
 
@@ -422,7 +427,8 @@ class AppDialog(QtGui.QWidget):
         # media file, so we set mov_file_path to None
         self.new_edl.emit(edl_file_path)
         if sg_entity:
-            self._selected_sg_entity[_ENTITY_STEP] = sg_entity["type"]
+            self._selected_sg_entity[_PROJECT_STEP] = self._ctx.project
+            self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
             self.show_entities(sg_entity["type"])
             self._selected_sg_entity[_ENTITY_STEP] = sg_entity
             self.show_entity(sg_entity)
@@ -484,14 +490,19 @@ class AppDialog(QtGui.QWidget):
         if next_step == _PROJECT_STEP:
             # If we already have project from context, skip project chooser
             if self._ctx.project is not None:
-                next_step = _ENTITY_STEP
+                next_step = _ENTITY_TYPE_STEP
                 # We don't show the Project screen when moving forward, but
                 # do show it when moving backward, so we skip the step but ask
                 # the data manager to retrieve projects
                 self.show_projects()
-                self.show_entity_types(self._ctx.project)
+                self.show_project(self._ctx.project)
             else:
                 self.show_projects()
+        if next_step == _ENTITY_TYPE_STEP:
+            self._logger.debug("Activating entity type step for %s" % self._preload_entity_type)
+            self.show_entities(self._preload_entity_type)
+            # This is a "virtual" step, no UI is shown for it, so we skip it
+            next_step = _ENTITY_STEP
 #        if next_step == _ENTITY_STEP and self._entity_types_view.select_and_skip():
 #            # Skip single entity type screen, autoselecting the single entry
 #            next_step += 1
@@ -706,6 +717,7 @@ class AppDialog(QtGui.QWidget):
 #            previous_page = _PROJECT_STEP
 
         if previous_page == _ENTITY_TYPE_STEP:
+            # Pure virtual step, no UI for it, so we skip it
             previous_page = _PROJECT_STEP
 
 #        if previous_page == _ENTITY_STEP and self._entity_types_view.count() < 2:
@@ -733,7 +745,7 @@ class AppDialog(QtGui.QWidget):
         self._step = step
         # 0 : drag and drop
         # 1 : project select
-        # 2 : sequence select
+        # 2 : entity select
         # 3 : cut select
         # 4 : cut summary
         # 5 : import completed
@@ -766,10 +778,12 @@ class AppDialog(QtGui.QWidget):
             self.clear_project_view()
             self._selected_sg_entity[_PROJECT_STEP] = None
 
+        if step < _ENTITY_TYPE_STEP:
+            self.clear_entities_view()
+
         if step < _ENTITY_STEP:
             self.ui.sequences_search_line_edit.clear()
             self.ui.create_entity_button.hide()
-            self.clear_sequence_view()
             self._selected_sg_entity[_ENTITY_STEP] = None
 
         if step < _CUT_STEP:
@@ -904,14 +918,8 @@ class AppDialog(QtGui.QWidget):
         """
         if not self._selected_sg_entity[self._step]:
             raise RuntimeError("No selection for current step %d" % self._step)
-        # if self._step == _ENTITY_STEP:
-        #     self.show_entities(self._selected_sg_entity[self._step])
         elif self._step == _PROJECT_STEP:
-            self._processor.set_project(self._selected_sg_entity[self._step])
-            self.show_entities(self._preload_entity_type)
-            #self.goto_step(_ENTITY_STEP)
-        elif self._step == _ENTITY_TYPE_STEP:
-            self.show_entities(self._preload_entity_type)
+            self.show_project(self._selected_sg_entity[self._step])
         elif self._step == _ENTITY_STEP:
             self.show_entity(self._selected_sg_entity[self._step])
         elif self._step == _CUT_STEP:
@@ -934,11 +942,12 @@ class AppDialog(QtGui.QWidget):
         for i, view in enumerate(self._entities_views):
             if view.sg_entity_type == sg_entity_type:
                 # Here we don't need the worker to retrieve additional data from SG
-                # so we don't emit any signal like in other show_xxxx slots and move
-                # directly to the entities screen
-                self.goto_step(_ENTITY_STEP)
+                # so we don't emit any signal like in other show_xxxx slots
+                # if we already have a view for the given entity type, we are already
+                # on the right screen, so, basically, we don't have anything to do
                 break
         else:
+            self._logger.debug("Creating entities view for %s" % sg_entity_type)
             # Create the needed page
             page_i = len(self._entities_views)
             page = entity_type_stacked_widget.widget(page_i)
@@ -957,14 +966,14 @@ class AppDialog(QtGui.QWidget):
         self.get_projects.emit()
 
     @QtCore.Slot()
-    def show_entity_types(self, sg_project):
+    def show_project(self, sg_project):
         """
-        Called when entities needs to be shown for a project
+        Called when the given Project becomes the active one
 
         :param sg_project: The Shotgun Project dict to check for entities with
         """
-        self._processor.set_project(sg_project)
-        self.show_entities(self._preload_entity_type)
+        self._logger.info("Using Project %s" % sg_project["name"])
+        self.set_active_project.emit(sg_project)
 
     @QtCore.Slot(dict)
     def show_entity(self, sg_entity):
@@ -1016,9 +1025,9 @@ class AppDialog(QtGui.QWidget):
         self.ui.rescan_select_button.setText("Rescan Needed : %d" % summary.rescans_count)
         self.ui.total_button.setText("Total : %d" % len(summary))
 
-    def clear_sequence_view(self):
+    def clear_entities_view(self):
         """
-        Reset the page displaying available sequences
+        Reset the page displaying available entities
         """
         for page_i, view in enumerate(self._entities_views):
             view.clear()

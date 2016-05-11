@@ -38,6 +38,7 @@ class Processor(QtCore.QThread):
     set_busy                = QtCore.Signal(bool)
     step_done               = QtCore.Signal(int)
     step_failed             = QtCore.Signal(int)
+    set_sg_project          = QtCore.Signal(dict)
     new_sg_project          = QtCore.Signal(dict)
     new_sg_entity           = QtCore.Signal(dict)
     new_sg_cut              = QtCore.Signal(dict)
@@ -181,9 +182,6 @@ class Processor(QtCore.QThread):
     def has_valid_movie(self):
         return self._edl_cut.had_valid_movie
 
-    def set_project(self, sg_project):
-        self._edl_cut._project = sg_project
-
     def run(self):
         """
         Run the processor
@@ -200,6 +198,7 @@ class Processor(QtCore.QThread):
         self.new_movie.connect(self._edl_cut.register_movie_path)
         self.reset.connect(self._edl_cut.reset)
         self.retrieve_projects.connect(self._edl_cut.retrieve_projects)
+        self.set_sg_project.connect(self._edl_cut.set_sg_project)
         self.retrieve_entities.connect(self._edl_cut.retrieve_entities)
         self.retrieve_cuts.connect(self._edl_cut.retrieve_cuts)
         self.show_cut_diff.connect(self._edl_cut.show_cut_diff)
