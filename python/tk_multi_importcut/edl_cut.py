@@ -242,43 +242,6 @@ class EdlCut(QtCore.QObject):
             if not self._edl.edits:
                 self._logger.warning("Couldn't find any entry in %s" % (edl_file_path))
                 return
-            # Consolidate what we loaded
-            # Build a dictionary using versions names as keys
-            versions_names = {}
-            for edit in self._edl.edits:
-                v_name = edit.get_version_name()
-                if v_name:
-                    # SG find method is case insensitive, don't have to worry
-                    # about upper / lower case names match
-                    # but we use lowercase keys
-                    v_name = v_name.lower()
-                    if v_name not in versions_names:
-                        versions_names[v_name] = [edit]
-                    else:
-                        versions_names[v_name].append(edit)
-            # Retrieve actual versions from SG
-            if versions_names:
-                sg_versions = self._sg.find(
-                    "Version", [
-                        ["project", "is", self._project],
-                        ["code", "in", versions_names.keys()],
-                    ],
-                    ["code", "entity", "entity.Shot.code", "image"]
-                )
-                # And update edits with the SG versions retrieved
-                for sg_version in sg_versions:
-                    edits = versions_names.get(sg_version["code"].lower())
-                    if not edits:
-                        # Unlikely ... but who knows ...
-                        raise RuntimeError(
-                            "Retrieved Version %s from Shotgun, but didn't ask for it ..." %
-                            sg_version["code"]
-                        )
-                    for edit in edits:
-                        edit._sg_version = sg_version
-                        if not edit.get_shot_name() and sg_version["entity.Shot.code"]:
-                            edit._shot_name = sg_version["entity.Shot.code"]
-            # self.retrieve_entities()
             # Can go to next step
             self.valid_edl.emit(os.path.basename(self._edl_file_path))
             if self.has_valid_movie:
@@ -287,6 +250,66 @@ class EdlCut(QtCore.QObject):
             self._edl = None
             self._edl_file_path = None
             self._logger.error("Couldn't load %s : %s" % (edl_file_path, str(e)))
+
+    def _bind_versions(self):
+        """
+        Bind Versions to loaded EDL edits
+        """
+        # Shouldn't happen, but raise an error if it does
+        if not self._edl:
+            raise RuntimeError("No EDL file is currently loaded")
+
+        self._logger.info("Binding edits to %s's Versions" % self._project["name"])
+        # Reset everything
+        for edit in self._edl.edits:
+            edit._sg_version = None
+
+        # Consolidate loaded EDL data
+        # Build a dictionary using versions names as keys
+        versions_names = {}
+        for edit in self._edl.edits:
+            v_name = edit.get_version_name()
+            if v_name:
+                # SG find method is case insensitive, don't have to worry
+                # about upper / lower case names match
+                # but we use lowercase keys
+                v_name = v_name.lower()
+                if v_name not in versions_names:
+                    versions_names[v_name] = [edit]
+                else:
+                    versions_names[v_name].append(edit)
+        # Retrieve actual versions from SG
+        if versions_names:
+            sg_versions = self._sg.find(
+                "Version", [
+                    ["project", "is", self._project],
+                    ["code", "in", versions_names.keys()],
+                ],
+                ["code", "entity", "entity.Shot.code", "image"]
+            )
+            # And update edits with the SG versions retrieved
+            for sg_version in sg_versions:
+                edits = versions_names.get(sg_version["code"].lower())
+                if not edits:
+                    # Unlikely ... but who knows ...
+                    raise RuntimeError(
+                        "Retrieved Version %s from Shotgun, but didn't ask for it ..." %
+                        sg_version["code"]
+                    )
+                for edit in edits:
+                    edit._sg_version = sg_version
+                    if not edit.get_shot_name() and sg_version["entity.Shot.code"]:
+                        edit._shot_name = sg_version["entity.Shot.code"]
+
+    @QtCore.Slot(dict)
+    def set_sg_project(self, sg_project):
+        """
+        Set the given Project as the active one
+        """
+        self._project = sg_project
+        self._bind_versions()
+        self.step_done.emit(_PROJECT_STEP)
+        self._logger.info("Project %s activated..." % sg_project["name"])
 
     @QtCore.Slot(str)
     def retrieve_entities(self, entity_type):
