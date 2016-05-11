@@ -126,7 +126,6 @@ class AppDialog(QtGui.QWidget):
         # most of the useful accessors are available through the Application class instance
         # it is often handy to keep a reference to this. You can get it via the following method:
         self._app = sgtk.platform.current_bundle()
-        self._sg = self._app.shotgun
         self._ctx = self._app.context
 
         self._user_settings = self._app.user_settings
@@ -321,7 +320,7 @@ class AppDialog(QtGui.QWidget):
         # Retrieve the maximum number of entity types we can handle
         max_count = entity_type_stacked_widget.count()
 
-        schema = self._sg.schema_field_read("Cut", "entity")
+        schema = self._app.shotgun.schema_field_read("Cut", "entity")
         schema_entity_types = schema["entity"]["properties"]["valid_types"]["value"]
 
         # Validate and potentially reset current value retrieved from user
@@ -342,7 +341,7 @@ class AppDialog(QtGui.QWidget):
         for entity_type in schema_entity_types:
             entity_types.append((
                 entity_type,
-                self._sg.schema_entity_read(entity_type)[entity_type]["name"]["value"]
+                self._app.shotgun.schema_entity_read(entity_type)[entity_type]["name"]["value"]
             ))
         # Sort by the display name
         entity_types.sort(key=itemgetter(1))
@@ -1095,7 +1094,7 @@ class AppDialog(QtGui.QWidget):
         the user in the create_entity dialog.
         """
         try:
-            new_entity = self._sg.create(entity_type, fields)
+            new_entity = self._app.shotgun.create(entity_type, fields)
             self.show_cuts_for_sequence.emit(new_entity)
         except Exception, e:
             msg_box = QtGui.QMessageBox(

@@ -541,8 +541,8 @@ class EdlCut(QtCore.QObject):
                 sg_cut_items = self._sg.find("CutItem",
                                              [["cut", "is", sg_cut]], [
                                                 "cut",
-                                                "timecode_cut_item_in",
-                                                "timecode_cut_item_out",
+                                                "timecode_cut_item_in_text",
+                                                "timecode_cut_item_out_text",
                                                 "cut_order",
                                                 "cut_item_in",
                                                 "cut_item_out",
@@ -831,13 +831,13 @@ class EdlCut(QtCore.QObject):
         if diff == 0:
             score += 1
         diff = edit.source_in - edl.Timecode(
-                                    sg_cut_item["timecode_cut_item_in"],
+                                    sg_cut_item["timecode_cut_item_in_text"],
                                     sg_cut_item["cut.Cut.fps"]
                                 ).to_frame()
         if diff == 0:
             score += 1
         diff = edit.source_out - edl.Timecode(
-                                    sg_cut_item["timecode_cut_item_out"],
+                                    sg_cut_item["timecode_cut_item_out_text"],
                                     sg_cut_item["cut.Cut.fps"]
                                 ).to_frame()
 
@@ -931,17 +931,17 @@ class EdlCut(QtCore.QObject):
         if tc_end is not None:
             tc_end = str(tc_end)
         cut_payload = {
-            "project"            : self._project,
-            "code"               : title,
-            self._cut_link_field : self._sg_entity,
-            "fps"                : float(self._edl.fps),
-            "created_by"         : self._ctx.user,
-            "updated_by"         : self._ctx.user,
-            "description"        : description,
-            "timecode_start"     : tc_start,
-            "timecode_end"       : tc_end,
-            "duration"           : self._summary.duration,
-            "revision_number"    : self._revision_num,
+            "project"             : self._project,
+            "code"                : title,
+            self._cut_link_field  : self._sg_entity,
+            "fps"                 : float(self._edl.fps),
+            "created_by"          : self._ctx.user,
+            "updated_by"          : self._ctx.user,
+            "description"         : description,
+            "timecode_start_text" : tc_start,
+            "timecode_end_text"   : tc_end,
+            "duration"            : self._summary.duration,
+            "revision_number"     : self._revision_num,
         }
         # Upload base layer media file to the new Cut record if it exists.
         if self._mov_file_path:
@@ -1215,10 +1215,10 @@ class EdlCut(QtCore.QObject):
                             "cut": sg_cut,
                             "description": ", ".join(cut_diff.reasons),
                             "cut_order": edit.id,
-                            "timecode_cut_item_in": str(edit.source_in),
-                            "timecode_cut_item_out": str(edit.source_out),
-                            "timecode_edit_in": str(edit.record_in),
-                            "timecode_edit_out": str(edit.record_out),
+                            "timecode_cut_item_in_text": str(edit.source_in),
+                            "timecode_cut_item_out_text": str(edit.source_out),
+                            "timecode_edit_in_text": str(edit.record_in),
+                            "timecode_edit_out_text": str(edit.record_out),
                             "cut_item_in": cut_diff.new_cut_in,
                             "cut_item_out": cut_diff.new_cut_out,
                             "edit_in": edit_in,

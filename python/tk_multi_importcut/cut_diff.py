@@ -391,7 +391,7 @@ class CutDiff(QtCore.QObject):
         """
         if self._sg_cut_item:
             return edl.Timecode(
-                self._sg_cut_item["timecode_cut_item_in"],
+                self._sg_cut_item["timecode_cut_item_in_text"],
                 self._sg_cut_item["cut.Cut.fps"]
             )
         return None
@@ -406,7 +406,7 @@ class CutDiff(QtCore.QObject):
         """
         if self._sg_cut_item:
             return edl.Timecode(
-                self._sg_cut_item["timecode_cut_item_out"],
+                self._sg_cut_item["timecode_cut_item_out_text"],
                 self._sg_cut_item["cut.Cut.fps"]
             )
         return None
@@ -887,8 +887,8 @@ class CutDiff(QtCore.QObject):
         cut_item_details = ""
         if self.sg_cut_item:
             fps = self.sg_cut_item["cut.Cut.fps"]
-            tc_in = edl.Timecode(self.sg_cut_item["timecode_cut_item_in"], fps)
-            tc_out = edl.Timecode(self.sg_cut_item["timecode_cut_item_out"], fps)
+            tc_in = edl.Timecode(self.sg_cut_item["timecode_cut_item_in_text"], fps)
+            tc_out = edl.Timecode(self.sg_cut_item["timecode_cut_item_out_text"], fps)
             cut_item_details = \
                 "Cut Order %s, TC in %s, TC out %s, Cut In %s, Cut Out %s, Cut Duration %s" % (
                     self.sg_cut_item["cut_order"],
