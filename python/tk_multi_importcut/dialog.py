@@ -170,7 +170,6 @@ class AppDialog(QtGui.QWidget):
         if reset_settings or self._user_settings.retrieve("default_tail_duration") is None:
             self._user_settings.store("default_tail_duration", "8")
 
-
         if reset_settings:
             self._user_settings.store("reset_settings", False)
 
@@ -405,7 +404,7 @@ class AppDialog(QtGui.QWidget):
         """
         Returns a callback which can be connected to an Entity Type button clicked
         signal
-        
+
         http://stackoverflow.com/questions/19837486/python-lambda-in-a-loop
         """
         return lambda: self.activate_entity_type_view(entity_name, button)
@@ -422,7 +421,6 @@ class AppDialog(QtGui.QWidget):
         # the entity type view is created, so we might refresh the UI twice
         # instead of only once, but this is not a huge deal as it is not heavy
         self.set_ui_for_step(self._step)
-
 
     def _preselected_input(self, edl_file_path, sg_entity):
         # Special mode for Premiere integration : load the given EDL
@@ -556,7 +554,7 @@ class AppDialog(QtGui.QWidget):
                 "'%s' is not a supported file type. Supported types are .edl and movie types: %s." % (
                     os.path.basename(path),
                     str(_VIDEO_EXTS)
-            ))
+                ))
             return
 
         if num_paths == 2:
@@ -568,7 +566,7 @@ class AppDialog(QtGui.QWidget):
                         # Strip leading ".", we can assume it is not empty, otherwise
                         # it would have been caught in 1st path handling
                         ext[1:],
-                ))
+                    ))
                 return
             elif ext_2.lower() == ".edl":
                 # Reset things if an EDL was previously dropped
@@ -583,7 +581,7 @@ class AppDialog(QtGui.QWidget):
                     "'%s' is not a supported file type. Supported types are .edl and movie types: %s." % (
                         os.path.basename(path),
                         str(_VIDEO_EXTS)
-                ))
+                    ))
                 return
 
     @QtCore.Slot(str)
