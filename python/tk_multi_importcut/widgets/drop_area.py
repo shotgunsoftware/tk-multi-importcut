@@ -1,17 +1,20 @@
 # Copyright (c) 2013 Shotgun Software Inc.
-# 
+#
 # CONFIDENTIAL AND PROPRIETARY
-# 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+#
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-# By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# By accessing, using, copying or modifying this work you indicate your
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
 import sys
 
 from tank.platform.qt import QtCore, QtGui
+
+# Supported movie file extensions
+from ..constants import _VIDEO_EXTS
 
 
 def drop_area(cls):
@@ -25,6 +28,7 @@ def drop_area(cls):
         """
         # Emitted when something is dropped on the widget
         something_dropped = QtCore.Signal(list)
+
         def __init__(self, *args, **kargs):
             """
             Instantiate the class and enable drops
@@ -33,12 +37,17 @@ def drop_area(cls):
             self.setAcceptDrops(True)
             self._set_property("dragging", False)
             self._supported_extensions = []
+            # todo: I think this should be called from somewhere else,
+            # but I'm not sure where to put it. Help!
+            white_list = _VIDEO_EXTS
+            white_list.append(".edl")
+            self.set_supported_extensions(white_list)
 
         def set_supported_extensions(self, ext_list):
             self._supported_extensions = ext_list
 
         # Override dragEnterEvent
-        def dragEnterEvent( self, e):
+        def dragEnterEvent(self, e):
             """
             Check if we can handle the drop, basically if we will receive local file path
             """
@@ -47,26 +56,26 @@ def drop_area(cls):
             # DropAreaLabel[dragging="true"] {
             #     border: 2px solid white;
             # }
-            self._set_property("dragging", True)
-
-            if e.mimeData().hasFormat("text/plain") :
+            if e.mimeData().hasFormat("text/plain"):
                 e.accept()
-            elif e.mimeData().hasFormat("text/uri-list") :
-                for url in e.mimeData().urls() :
+            elif e.mimeData().hasFormat("text/uri-list"):
+                for url in e.mimeData().urls():
                     _, ext = os.path.splitext(url.path())
+                    is_good = False
                     if self._supported_extensions and ext.lower() in self._supported_extensions:
-                        print "Do something here."
+                        self._set_property("dragging", True)
+                        is_good = True
                     # Accept if there is at least one local file
-                    if url.isLocalFile() :
+                    if url.isLocalFile() and is_good:
                         e.accept()
                         break
-                else :
+                else:
                     e.ignore()
             else:
-                e.ignore() 
+                e.ignore()
 
         # Override dragLeaveEvent
-        def dragLeaveEvent( self, e):
+        def dragLeaveEvent(self, e):
             """
             Just unset our dragging property
             """
@@ -78,9 +87,9 @@ def drop_area(cls):
             Process a drop event, build a list of local files and emit somethingDropped if not empty
             """
             self._set_property("dragging", False)
-            if e.mimeData().hasFormat("text/plain") :
-                contents = [ e.mimeData().text() ]
-            else :
+            if e.mimeData().hasFormat("text/plain"):
+                contents = [e.mimeData().text()]
+            else:
                 urls = e.mimeData().urls()
                 if sys.platform == "darwin":
                     # Fix for Yosemite and later, file paths are not actual file paths
@@ -102,11 +111,11 @@ def drop_area(cls):
                         urls = fixed_urls
                     except:
                         pass
-                contents = [ x.toLocalFile() for x in urls if x.isLocalFile() ]
-            if contents :
+                contents = [x.toLocalFile() for x in urls if x.isLocalFile()]
+            if contents:
                 e.accept()
-                self.something_dropped.emit( contents )
-            else :
+                self.something_dropped.emit(contents)
+            else:
                 e.ignore()
 
         def _set_property(self, name, value):
@@ -120,10 +129,11 @@ def drop_area(cls):
             # We are using a custom property in style sheets
             # we need to force a style sheet re-computation with
             # unpolish / polish
-            self.style().unpolish(self);
-            self.style().polish(self);
-            
+            self.style().unpolish(self)
+            self.style().polish(self)
+
     return WrappedClass
+
 
 @drop_area
 class DropAreaLabel(QtGui.QLabel):
@@ -132,12 +142,14 @@ class DropAreaLabel(QtGui.QLabel):
     """
     pass
 
+
 @drop_area
 class DropAreaFrame(QtGui.QFrame):
     """
     Custom frame widget so we can override drop callback and add a somethingDropped signal
     """
     pass
+
 
 @drop_area
 class DropAreaTableView(QtGui.QTableView):
@@ -146,10 +158,10 @@ class DropAreaTableView(QtGui.QTableView):
     """
     pass
 
+
 @drop_area
 class DropAreaScrollArea(QtGui.QScrollArea):
     """
     Custom scroll area widget so we can override drop callback and add a somethingDropped signal
     """
     pass
-

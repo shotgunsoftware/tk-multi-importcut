@@ -28,19 +28,20 @@ class EdlCut(QtCore.QObject):
     """
     Worker which handles all data
     """
-    step_done           = QtCore.Signal(int)
-    step_failed         = QtCore.Signal(int)
-    new_sg_project      = QtCore.Signal(dict)
-    new_sg_entity       = QtCore.Signal(dict)
-    new_sg_cut          = QtCore.Signal(dict)
-    new_cut_diff        = QtCore.Signal(CutDiff)
-    got_busy            = QtCore.Signal(int)
-    got_idle            = QtCore.Signal()
-    progress_changed    = QtCore.Signal(int)
-    totals_changed      = QtCore.Signal()
-    delete_cut_diff     = QtCore.Signal(CutDiff)
-    valid_edl           = QtCore.Signal(str)
-    valid_movie         = QtCore.Signal(str)
+    step_done            = QtCore.Signal(int)
+    step_failed          = QtCore.Signal(int)
+    new_sg_project       = QtCore.Signal(dict)
+    new_sg_entity        = QtCore.Signal(dict)
+    new_sg_cut           = QtCore.Signal(dict)
+    bad_edl              = QtCore.Signal(str, str)
+    new_cut_diff         = QtCore.Signal(CutDiff)
+    got_busy             = QtCore.Signal(int)
+    got_idle             = QtCore.Signal()
+    progress_changed     = QtCore.Signal(int)
+    totals_changed       = QtCore.Signal()
+    delete_cut_diff      = QtCore.Signal(CutDiff)
+    valid_edl            = QtCore.Signal(str)
+    valid_movie          = QtCore.Signal(str)
 
     def __init__(self, frame_rate=None):
         """
@@ -249,7 +250,7 @@ class EdlCut(QtCore.QObject):
         except Exception, e:
             self._edl = None
             self._edl_file_path = None
-            self._logger.error("Couldn't load %s : %s" % (edl_file_path, str(e)))
+            self.bad_edl.emit(edl_file_path, "%s" % e)
 
     def _bind_versions(self):
         """

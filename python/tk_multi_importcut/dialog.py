@@ -112,6 +112,7 @@ class AppDialog(QtGui.QWidget):
     set_active_project = QtCore.Signal(dict)
     show_cuts_for_sequence = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
+    bad_edl = QtCore.Signal(str, str)
 
     def __init__(self, edl_file_path=None, sg_entity=None, frame_rate=None):
         """
@@ -213,6 +214,7 @@ class AppDialog(QtGui.QWidget):
         self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
+        self._processor.bad_edl.connect(self._bad_edl)
 
         self._processor.valid_edl.connect(self.valid_edl)
         self._processor.valid_movie.connect(self.valid_movie)
@@ -550,13 +552,6 @@ class AppDialog(QtGui.QWidget):
             self.new_edl.emit(path)
         elif ext.lower() in _VIDEO_EXTS:
             self.new_movie.emit(path)
-        else:
-            self._logger.error(
-                "'%s' is not a supported file type. Supported types are .edl and movie types: %s." % (
-                    os.path.basename(path),
-                    str(_VIDEO_EXTS)
-                ))
-            return
 
         if num_paths == 2:
             path = paths[1]
@@ -1162,9 +1157,28 @@ class AppDialog(QtGui.QWidget):
             parent=self,
             icon=QtGui.QMessageBox.Critical
             )
+        msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
         msg_box.setText("The following error was reported :")
         msg_box.setInformativeText(msg)
         msg_box.setDetailedText("\n".join(exec_info))
+        msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+        msg_box.show()
+        msg_box.raise_()
+        msg_box.activateWindow()
+
+    @QtCore.Slot(str, str)
+    def _bad_edl(self, file_path, e):
+        """
+        Display a popup window with the error message
+        and the exec_info in the "details"
+        """
+        msg_box = QtGui.QMessageBox(
+            parent=self,
+            icon=QtGui.QMessageBox.Critical
+        )
+        msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
+        msg_box.setText("An error occurred loading %s." % os.path.basename(file_path))
+        msg_box.setDetailedText("%s" % e)
         msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
         msg_box.show()
         msg_box.raise_()
