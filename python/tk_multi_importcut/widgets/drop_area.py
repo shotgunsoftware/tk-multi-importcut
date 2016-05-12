@@ -8,8 +8,11 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-from tank.platform.qt import QtCore, QtGui
+import os
 import sys
+
+from tank.platform.qt import QtCore, QtGui
+
 
 def drop_area(cls):
     """
@@ -29,6 +32,10 @@ def drop_area(cls):
             super(WrappedClass, self).__init__(*args, **kargs)
             self.setAcceptDrops(True)
             self._set_property("dragging", False)
+            self._supported_extensions = []
+
+        def set_supported_extensions(self, list):
+            self._supported_extensions = list
 
         # Override dragEnterEvent
         def dragEnterEvent( self, e):
@@ -46,6 +53,9 @@ def drop_area(cls):
                 e.accept()
             elif e.mimeData().hasFormat("text/uri-list") :
                 for url in e.mimeData().urls() :
+                    _, ext = os.path.splitext(url.path())
+                    if self._supported_extensions and ext.lower() in self._supported_extensions:
+                        print "Do something here."
                     # Accept if there is at least one local file
                     if url.isLocalFile() :
                         e.accept()
