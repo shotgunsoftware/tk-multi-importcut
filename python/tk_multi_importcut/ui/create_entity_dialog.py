@@ -99,7 +99,7 @@ class Ui_create_entity_dialog(object):
     def retranslateUi(self, create_entity_dialog):
         create_entity_dialog.setWindowTitle(QtGui.QApplication.translate("create_entity_dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
         self.create_new_entity_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Create a new Entity", None, QtGui.QApplication.UnicodeUTF8))
-        self.entity_name_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Sequence name:", None, QtGui.QApplication.UnicodeUTF8))
+        self.entity_name_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Sequence Name:", None, QtGui.QApplication.UnicodeUTF8))
         self.description_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Description:", None, QtGui.QApplication.UnicodeUTF8))
         self.status_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Status:", None, QtGui.QApplication.UnicodeUTF8))
         self.project_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Project:", None, QtGui.QApplication.UnicodeUTF8))

@@ -92,7 +92,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="entity_name_label">
        <property name="text">
-        <string>Sequence name:</string>
+        <string>Sequence Name:</string>
        </property>
       </widget>
      </item>

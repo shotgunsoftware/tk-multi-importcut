@@ -47,7 +47,7 @@ class CreateEntityDialog(QtGui.QDialog):
         )
 
         # Set text on labels and buttons
-        self.ui.create_new_entity_label.setText("Create a new %s" % entity_type_name)
+        self.ui.create_new_entity_label.setText("%s" % entity_type_name)
         self.ui.create_entity_button.setText("Create %s" % entity_type_name)
         self.ui.entity_name_label.setText("%s name" % entity_type_name)
         self.ui.cancel_button.clicked.connect(self.close_dialog)
@@ -55,6 +55,7 @@ class CreateEntityDialog(QtGui.QDialog):
 
         self.entity_statuses = self._app.shotgun.schema_field_read(entity_type)[
                 "sg_status_list"]["properties"]["valid_values"]["value"]
+        self.ui.status_combo_box.addItem("")
         for status in self.entity_statuses:
             self.ui.status_combo_box.addItem(status)
 
@@ -67,14 +68,20 @@ class CreateEntityDialog(QtGui.QDialog):
         entity_name = self.ui.entity_name_line_edit.text()
         entity_description = self.ui.description_line_edit.text()
         status_index = self.ui.status_combo_box.currentIndex()
+        field_data = {
+            "project": self._project,
+            "code": entity_name,
+            "description": entity_description,
+        }
+        # if the status_index is 0, create the entity without specifying the
+        # sg_status_list, and so use whatever the default status in Shogun is,
+        # otherwise set sg_status_list to the currently selected status.
+        if status_index:
+            # -1 here to account for the empty item added to the status_combo_box.
+            field_data["sg_status_list"] = self.entity_statuses[status_index - 1]
         self.create_entity.emit(
             self._entity_type,
-            {
-                "project": self._project,
-                "code": entity_name,
-                "description": entity_description,
-                "sg_status_list": self.entity_statuses[status_index]
-            }
+            field_data
         )
         self.close_dialog()
 

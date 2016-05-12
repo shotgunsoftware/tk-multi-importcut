@@ -232,10 +232,9 @@ class SettingsDialog(QtGui.QDialog):
             icon=QtGui.QMessageBox.Critical
         )
         msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
-        msg_box.setText(title)
         if error:
             msg_box.setDetailedText("%s" % error)
-        msg_box.setInformativeText(message)
+        msg_box.setText("%s\n\n%s" % (title, message))
         msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
         msg_box.show()
         msg_box.raise_()

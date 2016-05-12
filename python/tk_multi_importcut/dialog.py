@@ -55,6 +55,10 @@ from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 
 settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
+_BAD_PERMISSIONS_MSG = "The following error was reported:\n\nIt's possible you \
+do not have permission to create new %ss. Please select another %s or ask your \
+Shotgun Admin to adjust your permissions in Shotgun."
+
 
 def show_dialog(app_instance):
     """
@@ -1092,6 +1096,7 @@ class AppDialog(QtGui.QWidget):
         the user in the create_entity dialog.
         """
         try:
+            raise
             new_entity = self._app.shotgun.create(entity_type, fields)
             self.show_cuts_for_sequence.emit(new_entity)
         except Exception, e:
@@ -1100,14 +1105,7 @@ class AppDialog(QtGui.QWidget):
                 icon=QtGui.QMessageBox.Critical
             )
             msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
-            msg_box.setText("The following error was reported:")
-            msg_box.setInformativeText(
-                "It's possible you do not have permission to create new %ss. Please select another \
-%s or ask your Shotgun Admin to adjust your permissions in Shotgun." % (
-                    entity_type,
-                    entity_type
-                )
-            )
+            msg_box.setText(_BAD_PERMISSIONS_MSG % (entity_type, entity_type))
             msg_box.setDetailedText("%s" % e)
             msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
             msg_box.show()
