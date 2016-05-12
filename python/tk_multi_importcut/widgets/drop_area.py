@@ -34,8 +34,8 @@ def drop_area(cls):
             self._set_property("dragging", False)
             self._supported_extensions = []
 
-        def set_supported_extensions(self, list):
-            self._supported_extensions = list
+        def set_supported_extensions(self, ext_list):
+            self._supported_extensions = ext_list
 
         # Override dragEnterEvent
         def dragEnterEvent( self, e):
