@@ -1096,7 +1096,6 @@ class AppDialog(QtGui.QWidget):
         the user in the create_entity dialog.
         """
         try:
-            raise
             new_entity = self._app.shotgun.create(entity_type, fields)
             self.show_cuts_for_sequence.emit(new_entity)
         except Exception, e:
