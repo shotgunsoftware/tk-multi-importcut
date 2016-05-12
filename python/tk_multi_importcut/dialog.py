@@ -812,6 +812,11 @@ class AppDialog(QtGui.QWidget):
             # Only visible for this step
             self.ui.create_entity_button.hide()
 
+        if step == _PROGRESS_STEP:
+            self.ui.feedback_label.hide()
+        else:
+            self.ui.feedback_label.show()
+
         # Display info message in feedback line and other special things
         # based on the current step
         if step == _PROJECT_STEP:

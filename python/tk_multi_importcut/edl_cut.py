@@ -947,10 +947,12 @@ class EdlCut(QtCore.QObject):
         # Upload base layer media file to the new Cut record if it exists.
         if self._mov_file_path:
             # Create a version.
+            version_name = os.path.basename(self._mov_file_path)
+            version_name, _ = os.path.splitext(version_name)
             sg_version = self._sg.create(
                 "Version", {
                     "project"            : self._project,
-                    "code"               : title,
+                    "code"               : version_name,
                     "entity"             : self._sg_entity,
                     "created_by"         : self._ctx.user,
                     "updated_by"         : self._ctx.user,

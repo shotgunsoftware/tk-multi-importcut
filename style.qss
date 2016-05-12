@@ -65,6 +65,11 @@ EntityLineWidget:focus:!read-only {
     padding: 0px; /* suppress alignment padding */
 }
 
+/* Progress window */
+#progress_page #progress_screen_title_label {
+    font-size: 12px;
+}
+
 /*
 When not in edit and the value is empty or not valid
 Make it SG red
@@ -590,12 +595,6 @@ CutDiffCard[diff_type="no_link"]  #status_label ,
     color: #FC6246;
 }
 
-
-
-/* Progress window */
-#progress_page #progress_screen_title_label {
-    font-size: 20px;
-}
 /* Success window */
 #success_page #success_frame {
     color: #2C93E2;
