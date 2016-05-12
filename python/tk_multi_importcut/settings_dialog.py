@@ -21,6 +21,8 @@ from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
 
+edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
+
 _ABSOLUTE_INSTRUCTIONS = "In Absolute mode, the app will map the timecode \
 values from the EDL directly as frames based on the frame rate. For example, \
 at 24fps 00:00:01:00 = frame 24."
@@ -39,10 +41,11 @@ _BAD_STATUS_MSG = "The following statuses for reinstating Shots do not match \
 valid statuses in Shotgun:\n\n%s\n\nPlease enter another status to proceed."
 
 _BAD_TIMECODE_MSG = '"%s" is not a valid timecode value. The Timecode Mapping \
-must match the pattern ##.##.##.##.'
+must match the pattern ##.##.##.##. See message below for more details.'
 
 _BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
 Please check your Shotgun site."
+
 
 class SettingsDialog(QtGui.QDialog):
     """
@@ -318,10 +321,12 @@ class SettingsDialog(QtGui.QDialog):
         self._user_settings.store("timecode_to_frame_mapping", timecode_to_frame_mapping)
 
         timecode_mapping = self.ui.timecode_mapping_line_edit.text()
-        if re.search("^\d{2}:\d{2}:\d{2}[:.;]\d{2}$", timecode_mapping):
+        try:
+            # Using the timecode module to validate the timecode_mapping value
+            edl.Timecode(timecode_mapping, fps=fps)
             self._user_settings.store("timecode_mapping", timecode_mapping)
-        else:
-            self._pop_error("User Input", _BAD_TIMECODE_MSG % timecode_mapping)
+        except Exception, e:
+            self._pop_error("User Input", _BAD_TIMECODE_MSG % timecode_mapping, e)
             return
 
         frame_mapping = self.ui.frame_mapping_line_edit.text()

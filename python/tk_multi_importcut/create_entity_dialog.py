@@ -71,7 +71,7 @@ class CreateEntityDialog(QtGui.QDialog):
         field_data = {
             "project": self._project,
             "code": entity_name,
-            "description": entity_description,
+            "description": entity_description
         }
         # if the status_index is 0, create the entity without specifying the
         # sg_status_list, and so use whatever the default status in Shogun is,

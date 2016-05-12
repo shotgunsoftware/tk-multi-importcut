@@ -48,11 +48,11 @@ class CutCard(QtGui.QFrame):
         self.ui.setupUi(self)
         revision_number = sg_cut["revision_number"]
         if revision_number:
-            self.ui.title_label.setText("<big><b>%s_%s</b></big>" % (
-                sg_cut["code"], "%03d" % revision_number))
+            self.ui.title_label.setText("<big><b>%s_%03d</b></big>" % (
+                sg_cut["code"], revision_number))
         else:
-            self.ui.title_label.setText("<big><b>%s %s</b></big>" % (
-                sg_cut["code"], " (No Revision Number)"))
+            self.ui.title_label.setText("<big><b>%s</b></big> (No Revision Number)" % (
+                sg_cut["code"]))
         if self._sg_cut["_display_status"]:
             self.ui.status_label.setText(
                 "<b><font color=%s>%s</font></b>" % (
