@@ -551,6 +551,13 @@ class AppDialog(QtGui.QWidget):
             self.new_edl.emit(path)
         elif ext.lower() in _VIDEO_EXTS:
             self.new_movie.emit(path)
+        else:
+            self._logger.error(
+                "'%s' is not a supported file type. Supported types are .edl and movie types: %s." % (
+                    os.path.basename(path),
+                    str(_VIDEO_EXTS)
+                ))
+            return
 
         if num_paths == 2:
             path = paths[1]

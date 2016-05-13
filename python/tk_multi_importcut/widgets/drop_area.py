@@ -36,6 +36,11 @@ def drop_area(cls):
             self._restrict_to_ext = []
 
         def set_restrict_to_ext(self, ext_list):
+            """
+            Optionally set a list of extensions to restrict the drop area to accept.
+
+            :param ext_list: list of extensions to restrict drop area to accept.
+            """
             self._restrict_to_ext = ext_list
 
         # Override dragEnterEvent
@@ -55,6 +60,7 @@ def drop_area(cls):
                     _, ext = os.path.splitext(url.path())
                     # Accept anything if no extentions are specified.
                     if not self._restrict_to_ext or ext.lower() in self._restrict_to_ext:
+                        # We don't activate the dragging state unless ext is valid.
                         self._set_property("dragging", True)
                         # Accept if there is at least one local file
                         if url.isLocalFile():
