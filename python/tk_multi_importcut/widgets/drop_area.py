@@ -13,9 +13,6 @@ import sys
 
 from tank.platform.qt import QtCore, QtGui
 
-# Supported movie file extensions
-from ..constants import _VIDEO_EXTS
-
 
 def drop_area(cls):
     """
@@ -36,15 +33,10 @@ def drop_area(cls):
             super(WrappedClass, self).__init__(*args, **kargs)
             self.setAcceptDrops(True)
             self._set_property("dragging", False)
-            self._supported_extensions = []
-            # todo: I think this should be called from somewhere else,
-            # but I'm not sure where to put it. Help!
-            white_list = _VIDEO_EXTS
-            white_list.append(".edl")
-            self.set_supported_extensions(white_list)
+            self._restrict_to_ext = []
 
-        def set_supported_extensions(self, ext_list):
-            self._supported_extensions = ext_list
+        def set_restrict_to_ext(self, ext_list):
+            self._restrict_to_ext = ext_list
 
         # Override dragEnterEvent
         def dragEnterEvent(self, e):
@@ -61,14 +53,13 @@ def drop_area(cls):
             elif e.mimeData().hasFormat("text/uri-list"):
                 for url in e.mimeData().urls():
                     _, ext = os.path.splitext(url.path())
-                    is_good = False
-                    if self._supported_extensions and ext.lower() in self._supported_extensions:
+                    # Accept anything if no extentions are specified.
+                    if not self._restrict_to_ext or ext.lower() in self._restrict_to_ext:
                         self._set_property("dragging", True)
-                        is_good = True
-                    # Accept if there is at least one local file
-                    if url.isLocalFile() and is_good:
-                        e.accept()
-                        break
+                        # Accept if there is at least one local file
+                        if url.isLocalFile():
+                            e.accept()
+                            break
                 else:
                     e.ignore()
             else:

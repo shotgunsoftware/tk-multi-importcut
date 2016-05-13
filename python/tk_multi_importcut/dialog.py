@@ -227,6 +227,7 @@ class AppDialog(QtGui.QWidget):
 
         # Let's do something when something is dropped
         self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
+        self.ui.drop_area_frame.set_restrict_to_ext(_VIDEO_EXTS + [".edl"])
 
         # Instantiate a projects view handler
         self._projects_view = ProjectsView(self.ui.project_grid)
@@ -1172,10 +1173,9 @@ class AppDialog(QtGui.QWidget):
         msg_box.activateWindow()
 
     @QtCore.Slot(str, str)
-    def _bad_edl(self, file_path, e):
+    def _bad_edl(self, file_path, error_):
         """
-        Display a popup window with the error message
-        and the exec_info in the "details"
+        Display a popup window and the error_ in the "details"
         """
         msg_box = QtGui.QMessageBox(
             parent=self,
@@ -1183,7 +1183,7 @@ class AppDialog(QtGui.QWidget):
         )
         msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
         msg_box.setText("An error occurred loading %s." % os.path.basename(file_path))
-        msg_box.setDetailedText("%s" % e)
+        msg_box.setDetailedText("%s" % error_)
         msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
         msg_box.show()
         msg_box.raise_()
