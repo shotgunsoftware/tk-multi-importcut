@@ -39,7 +39,8 @@ def drop_area(cls):
             """
             Optionally set a list of extensions to restrict the drop area to accept.
 
-            :param ext_list: list of extensions to restrict drop area to accept.
+            :param ext_list: list of extensions to restrict drop area to accept, these
+            should be included WITH a dot so, for example, [".edl", ".mov"]
             """
             self._restrict_to_ext = ext_list
 

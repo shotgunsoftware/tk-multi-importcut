@@ -962,6 +962,7 @@ class EdlCut(QtCore.QObject):
                 ["id"])
             # Upload media to the version.
             self._logger.info("Uploading movie...")
+            self.progress_changed.emit(1)
             self._sg.upload(
                 sg_version["type"],
                 sg_version["id"],
