@@ -112,7 +112,6 @@ class AppDialog(QtGui.QWidget):
     set_active_project = QtCore.Signal(dict)
     show_cuts_for_sequence = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
-    bad_edl = QtCore.Signal(str, str)
 
     def __init__(self, edl_file_path=None, sg_entity=None, frame_rate=None):
         """
@@ -214,7 +213,6 @@ class AppDialog(QtGui.QWidget):
         self.get_entities.connect(self._processor.retrieve_entities)
         self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
-        self._processor.bad_edl.connect(self._bad_edl)
 
         self._processor.valid_edl.connect(self.valid_edl)
         self._processor.valid_movie.connect(self.valid_movie)
@@ -1164,26 +1162,8 @@ class AppDialog(QtGui.QWidget):
             icon=QtGui.QMessageBox.Critical
             )
         msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
-        msg_box.setText("The following error was reported :")
-        msg_box.setInformativeText(msg)
+        msg_box.setText(msg)
         msg_box.setDetailedText("\n".join(exec_info))
-        msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
-        msg_box.show()
-        msg_box.raise_()
-        msg_box.activateWindow()
-
-    @QtCore.Slot(str, str)
-    def _bad_edl(self, file_path, error_):
-        """
-        Display a popup window and the error_ in the "details"
-        """
-        msg_box = QtGui.QMessageBox(
-            parent=self,
-            icon=QtGui.QMessageBox.Critical
-        )
-        msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
-        msg_box.setText("An error occurred loading %s." % os.path.basename(file_path))
-        msg_box.setDetailedText("%s" % error_)
         msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
         msg_box.show()
         msg_box.raise_()

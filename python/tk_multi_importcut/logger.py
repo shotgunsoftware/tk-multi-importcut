@@ -96,6 +96,7 @@ class BundleLogHandler(logging.StreamHandler):
                 record.getMessage(),
                 traceback.format_tb(record.exc_info[2])
             )
+            return
         self.new_message.emit(record.levelno, record.getMessage())
         if self._bundle:
             # Special cases for tk-shotgun and tk-desktop :

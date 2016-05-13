@@ -37,7 +37,6 @@ class Processor(QtCore.QThread):
     reset                   = QtCore.Signal()
     set_busy                = QtCore.Signal(bool)
     step_done               = QtCore.Signal(int)
-    bad_edl                 = QtCore.Signal(str, str)
     step_failed             = QtCore.Signal(int)
     set_sg_project          = QtCore.Signal(dict)
     new_sg_project          = QtCore.Signal(dict)
@@ -206,7 +205,6 @@ class Processor(QtCore.QThread):
         self.import_cut.connect(self._edl_cut.do_cut_import)
         # Results / orders we send
         self._edl_cut.step_done.connect(self.step_done)
-        self._edl_cut.bad_edl.connect(self.bad_edl)
         self._edl_cut.step_failed.connect(self.step_failed)
         self._edl_cut.new_sg_project.connect(self.new_sg_project)
         self._edl_cut.new_sg_entity.connect(self.new_sg_entity)

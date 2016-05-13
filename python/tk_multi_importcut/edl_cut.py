@@ -33,7 +33,6 @@ class EdlCut(QtCore.QObject):
     new_sg_project       = QtCore.Signal(dict)
     new_sg_entity        = QtCore.Signal(dict)
     new_sg_cut           = QtCore.Signal(dict)
-    bad_edl              = QtCore.Signal(str, str)
     new_cut_diff         = QtCore.Signal(CutDiff)
     got_busy             = QtCore.Signal(int)
     got_idle             = QtCore.Signal()
@@ -250,7 +249,7 @@ class EdlCut(QtCore.QObject):
         except Exception, e:
             self._edl = None
             self._edl_file_path = None
-            self.bad_edl.emit(edl_file_path, "%s" % e)
+            self._logger.exception("Couldn't load %s: \n\n%s" % (edl_file_path, str(e)))
 
     def _bind_versions(self):
         """
