@@ -56,21 +56,46 @@ def drop_area(cls):
             # }
             if e.mimeData().hasFormat("text/plain"):
                 e.accept()
-            elif e.mimeData().hasFormat("text/uri-list"):
-                for url in e.mimeData().urls():
-                    _, ext = os.path.splitext(url.path())
-                    # Accept anything if no extentions are specified.
-                    if not self._restrict_to_ext or ext.lower() in self._restrict_to_ext:
+                return
+            else:
+                urls = e.mimeData().urls()
+                if sys.platform == "darwin":
+                    # Fix for Yosemite, file paths are not actual file paths
+                    # but weird /.file/id=6571367.18855673 values
+                    # https://bugreports.qt-project.org/browse/QTBUG-24379
+                    # https://gist.github.com/wedesoft/3216298
+                    import translate_file_reference
+                    for url in urls:
+                        _, ext = os.path.splitext(url.path())
+                        # Accept anything if no extentions are specified.
+                        if not self._restrict_to_ext or ext.lower() in self._restrict_to_ext:
+                            # We don't activate the dragging state unless ext is valid.
+                            self._set_property("dragging", True)
+                            str_url = url.toString()
+                            if str_url.startswith("file:///.file"):
+                                # for post-Yosemite OSX versions we need to translate to an actual path
+                                new_url = QtCore.QUrl(
+                                    str(translate_file_reference.translate_url(url.toString())))
+                                # Accept if there is at least one local file
+                                if new_url.isLocalFile():
+                                    e.accept()
+                                    return
+                            # Accept if there is at least one local file
+                            elif url.isLocalFile():
+                                e.accept()
+                                return
+                elif e.mimeData().hasFormat("text/uri-list"):
+                    for url in e.mimeData().urls():
                         # We don't activate the dragging state unless ext is valid.
                         self._set_property("dragging", True)
-                        # Accept if there is at least one local file
-                        if url.isLocalFile():
-                            e.accept()
-                            break
-                else:
-                    e.ignore()
-            else:
-                e.ignore()
+                        _, ext = os.path.splitext(url.path())
+                        # Accept anything if no extentions are specified.
+                        if not self._restrict_to_ext or ext.lower() in self._restrict_to_ext:
+                            # Accept if there is at least one local file
+                            if url.isLocalFile():
+                                e.accept()
+                                return
+            e.ignore()
 
         # Override dragLeaveEvent
         def dragLeaveEvent(self, e):
@@ -85,35 +110,35 @@ def drop_area(cls):
             Process a drop event, build a list of local files and emit somethingDropped if not empty
             """
             self._set_property("dragging", False)
-            if e.mimeData().hasFormat("text/plain"):
-                contents = [e.mimeData().text()]
-            else:
-                urls = e.mimeData().urls()
+
+            urls = e.mimeData().urls()
+            if urls :
                 if sys.platform == "darwin":
-                    # Fix for Yosemite and later, file paths are not actual file paths
+                    # Fix for Yosemite, file paths are not actual file paths
                     # but weird /.file/id=6571367.18855673 values
                     # https://bugreports.qt-project.org/browse/QTBUG-24379
                     # https://gist.github.com/wedesoft/3216298
-                    try:
-                        # Custom Python (e.g. brewed ones) might not be able to
-                        # import Foundation. In that case we do nothing and keep
-                        # urls as they are, assuming the problem should be fixed
-                        # in custom Python / PyQt / PySide
-                        import Foundation
-                        fixed_urls = []
-                        for url in urls:
-                            # It is fine to pass a regular file url to this method
-                            # e.g. file:///foo/bar/blah.ext
-                            fu = Foundation.NSURL.URLWithString_(url.toString()).filePathURL()
-                            fixed_urls.append(QtCore.QUrl(str(fu)))
-                        urls = fixed_urls
-                    except:
-                        pass
-                contents = [x.toLocalFile() for x in urls if x.isLocalFile()]
-            if contents:
+                    import translate_file_reference
+                    fixed_urls = []
+                    for url in urls:
+                        str_url = url.toString()
+                        if str_url.startswith("file:///.file"):
+                            # for post-Yosemite OSX versions we need to translate to an actual path
+                            new_url = QtCore.QUrl(str(translate_file_reference.translate_url(url.toString())))
+                            fixed_urls.append(new_url)
+                        else:
+                            # otherwise we can add the url as-is
+                            fixed_urls.append(url)
+                    urls = fixed_urls
+
+                contents = [ x.toLocalFile() for x in urls if x.isLocalFile() ]
+            elif e.mimeData().hasFormat("text/plain") :
+                contents = [ e.mimeData().text() ]
+
+            if contents :
                 e.accept()
-                self.something_dropped.emit(contents)
-            else:
+                self.something_dropped.emit( contents )
+            else :
                 e.ignore()
 
         def _set_property(self, name, value):
@@ -161,5 +186,13 @@ class DropAreaTableView(QtGui.QTableView):
 class DropAreaScrollArea(QtGui.QScrollArea):
     """
     Custom scroll area widget so we can override drop callback and add a somethingDropped signal
+    """
+    pass
+
+
+@drop_area
+class DropAreaTextEdit(QtGui.QTextEdit):
+    """
+    Custom text edit widget so we can override the drop callback and add a somethingDropped signal
     """
     pass
