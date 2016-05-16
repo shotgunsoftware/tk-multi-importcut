@@ -262,12 +262,16 @@ class CutSummary(QtCore.QObject):
             tc_edit_out=None,
             sg_shot_link_field_name=None,
             sg_entity=None,
-            project=None
+            sg_project=None
             ):
         """
         Create a new empty CutSummary
         :param tc_edit_in: A Timecode instance, first edit timecode in
         :param tc_edit_out: A Timecode instance, very last edit timecode out
+        :param sg_shot_link_field_name: The name of the field used to link Shots
+        :param sg_entity: The Shotgun Entity the Shot should be linked to
+        :param sg_project: The Shotgun project selected by the user (can be
+        different than the project stored in shotgun.context)
         """
         super(CutSummary, self).__init__()
         self._cut_diffs = {}
@@ -283,7 +287,7 @@ class CutSummary(QtCore.QObject):
 
         self._tc_start = tc_edit_in
         self._tc_end = tc_edit_out
-        self._project = project
+        self._sg_project = sg_project
         self._sg_entity = sg_entity
         self._sg_shot_link_field_name = sg_shot_link_field_name
         self._edit_offset = 0
@@ -382,8 +386,6 @@ class CutSummary(QtCore.QObject):
         """
         new_shot_key = new_name.lower() if new_name else "_no_shot_name_"
         old_shot_key = old_name.lower() if old_name else "_no_shot_name_"
-        # todo: this causes a bug if someone types in a Shot name and then
-        # changes the case, for example Shot1 to shot1, nothing is updated
         if new_shot_key == old_shot_key:
             return
 
@@ -458,7 +460,7 @@ class CutSummary(QtCore.QObject):
                       "sg_head_in",
                       "sg_tail_out"]
             existing_linked_shot = self._app.shotgun.find_one(
-                "Shot", [["project", "is", self._project],
+                "Shot", [["project", "is", self._sg_project],
                          [self._sg_shot_link_field_name, "is", self._sg_entity],
                          ["code", "is", new_name]],
                 fields)
@@ -468,7 +470,7 @@ class CutSummary(QtCore.QObject):
             else:
                 # Link to the first shot found whose name matches new_name
                 existing_unlinked_shot = self._app.shotgun.find_one(
-                    "Shot", [["project", "is", self._project],
+                    "Shot", [["project", "is", self._sg_project],
                              ["code", "is", new_name]],
                     fields)
                 if existing_unlinked_shot:
