@@ -106,4 +106,5 @@ class Ui_create_entity_dialog(object):
         self.project_name_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Some project", None, QtGui.QApplication.UnicodeUTF8))
         self.cancel_button.setText(QtGui.QApplication.translate("create_entity_dialog", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
         self.create_entity_button.setText(QtGui.QApplication.translate("create_entity_dialog", "Create Entity", None, QtGui.QApplication.UnicodeUTF8))
+        self.create_entity_button.setShortcut(QtGui.QApplication.translate("create_entity_dialog", "Return", None, QtGui.QApplication.UnicodeUTF8))
 

@@ -256,7 +256,14 @@ class CutSummary(QtCore.QObject):
     totals_changed = QtCore.Signal()
     delete_cut_diff = QtCore.Signal(CutDiff)
 
-    def __init__(self, tc_edit_in=None, tc_edit_out=None):
+    def __init__(
+            self,
+            tc_edit_in=None,
+            tc_edit_out=None,
+            sg_shot_link_field_name=None,
+            sg_entity=None,
+            project=None
+            ):
         """
         Create a new empty CutSummary
         :param tc_edit_in: A Timecode instance, first edit timecode in
@@ -269,12 +276,16 @@ class CutSummary(QtCore.QObject):
         self._rescans_count = 0
         self._logger = get_logger()
 
-        user_settings = sgtk.platform.current_bundle().user_settings
+        self._app = sgtk.platform.current_bundle()
+        user_settings = self._app.user_settings
 
         self._omit_statuses = [user_settings.retrieve("omit_status")]
 
         self._tc_start = tc_edit_in
         self._tc_end = tc_edit_out
+        self._project = project
+        self._sg_entity = sg_entity
+        self._sg_shot_link_field_name = sg_shot_link_field_name
         self._edit_offset = 0
         self._duration = 0
         self._fps = float(user_settings.retrieve("default_frame_rate"))
@@ -371,6 +382,8 @@ class CutSummary(QtCore.QObject):
         """
         new_shot_key = new_name.lower() if new_name else "_no_shot_name_"
         old_shot_key = old_name.lower() if old_name else "_no_shot_name_"
+        # todo: this causes a bug if someone types in a Shot name and then
+        # changes the case, for example Shot1 to shot1, nothing is updated
         if new_shot_key == old_shot_key:
             return
 
@@ -417,7 +430,7 @@ class CutSummary(QtCore.QObject):
             self._logger.debug("%d Entrie(s) for new shot key %s" % (count, new_shot_key))
             if count == 1 and not self._cut_diffs[new_shot_key][0].edit:
                 self._logger.debug("Single omitted entry for new shot key %s" % new_shot_key)
-                # If only one entry, that could be an omitted shot ( no edit )
+                # If only one entry, that could be an omitted shot (no edit)
                 # in that case the shot is not omitted anymore
                 cdiff = self._cut_diffs[new_shot_key].pop()
                 self.delete_cut_diff.emit(cdiff)
@@ -437,6 +450,29 @@ class CutSummary(QtCore.QObject):
                 for cdiff in self._cut_diffs[new_shot_key]:
                     cdiff.set_repeated(True)
         else:
+            fields = ["code",
+                      "sg_status_list",
+                      "sg_cut_order",
+                      "sg_cut_in",
+                      "sg_cut_out",
+                      "sg_head_in",
+                      "sg_tail_out"]
+            existing_linked_shot = self._app.shotgun.find_one(
+                "Shot", [["project", "is", self._project],
+                         [self._sg_shot_link_field_name, "is", self._sg_entity],
+                         ["code", "is", new_name]],
+                fields)
+            if existing_linked_shot:
+                # Link to the first shot found in the linked Entity whose name matches new_name
+                cut_diff.set_sg_shot(existing_linked_shot)
+            else:
+                # Link to the first shot found whose name matches new_name
+                existing_unlinked_shot = self._app.shotgun.find_one(
+                    "Shot", [["project", "is", self._project],
+                             ["code", "is", new_name]],
+                    fields)
+                if existing_unlinked_shot:
+                    cut_diff.set_sg_shot(existing_unlinked_shot)
             self._logger.debug("Creating single entry for new shot key %s" % new_shot_key)
             self._cut_diffs[new_shot_key] = ShotCutDiffList(cut_diff)
         cut_diff.check_changes()

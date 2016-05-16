@@ -61,7 +61,8 @@ class EdlCut(QtCore.QObject):
         self._ctx = self._app.context
         # we won't use context.project directly so we can change the Project if
         # we want (this is specifically for RV integration where it's possible to
-        # launch without a Project context
+        # launch without a Project context), but it's also possible to change
+        # the project when context.project is available
         self._project = self._ctx.project
         self._sg_new_cut = None
         self._no_cut_for_entity = False
@@ -77,7 +78,6 @@ class EdlCut(QtCore.QObject):
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
         self._omit_status = self._user_settings.retrieve("omit_status")
         self._reinstate_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is")
-        self._cut_link_field = "entity"
         self._revision_num = 0
 
     @property
@@ -443,7 +443,7 @@ class EdlCut(QtCore.QObject):
         try:
             sg_cuts = self._sg.find(
                 "Cut",
-                [[self._cut_link_field, "is", sg_entity]],
+                [["entity", "is", sg_entity]],
                 [
                     "code",
                     "id",
@@ -509,7 +509,10 @@ class EdlCut(QtCore.QObject):
             tc_end = self._edl.edits[-1].record_out
         self._summary = CutSummary(
             tc_start,
-            tc_end
+            tc_end,
+            self._sg_shot_link_field_name,
+            self._sg_entity,
+            self._project
         )
         # Connect CutSummary signals to ours as pass through, so any listener
         # on our signals will receive signals emitted by the CutSummary
@@ -933,7 +936,7 @@ class EdlCut(QtCore.QObject):
         cut_payload = {
             "project"             : self._project,
             "code"                : title,
-            self._cut_link_field  : self._sg_entity,
+            "entity"              : self._sg_entity,
             "fps"                 : float(self._edl.fps),
             "created_by"          : self._ctx.user,
             "updated_by"          : self._ctx.user,
