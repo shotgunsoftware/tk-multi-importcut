@@ -92,7 +92,7 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="resources.qrc">:/tk_multi_importcut/sg_logo.png</pixmap>
+      <pixmap resource="resources.qrc">:/tk_multi_importcut/default_card_icon.png</pixmap>
      </property>
      <property name="scaledContents">
       <bool>false</bool>

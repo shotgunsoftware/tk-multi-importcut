@@ -38,7 +38,7 @@ class Ui_SequenceCard(object):
         self.icon_label.setBaseSize(QtCore.QSize(105, 59))
         self.icon_label.setStyleSheet("background-color: black;")
         self.icon_label.setText("")
-        self.icon_label.setPixmap(QtGui.QPixmap(":/tk_multi_importcut/sg_logo.png"))
+        self.icon_label.setPixmap(QtGui.QPixmap(":/tk_multi_importcut/default_card_icon.png"))
         self.icon_label.setScaledContents(False)
         self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.icon_label.setObjectName("icon_label")
