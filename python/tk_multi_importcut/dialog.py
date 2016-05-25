@@ -865,7 +865,8 @@ class AppDialog(QtGui.QWidget):
                 self.ui.cut_summary_title_label.setText(
                     "Comparing %s and <b>%s</b> for %s <b>%s</b>" % (
                         os.path.basename(self._processor.edl_file_path),
-                        self._processor.sg_cut["code"],
+                        "%s_%03d" % (self._processor.sg_cut["code"],
+                                     self._processor.sg_cut["revision_number"]),
                         self._processor.entity_type_name,
                         self._processor.entity_name,
                     )
