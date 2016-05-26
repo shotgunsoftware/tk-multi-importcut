@@ -86,9 +86,11 @@ class Ui_create_entity_dialog(object):
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.cancel_button = QtGui.QPushButton(create_entity_dialog)
+        self.cancel_button.setAutoDefault(False)
         self.cancel_button.setObjectName("cancel_button")
         self.horizontalLayout.addWidget(self.cancel_button)
         self.create_entity_button = QtGui.QPushButton(create_entity_dialog)
+        self.create_entity_button.setAutoDefault(False)
         self.create_entity_button.setObjectName("create_entity_button")
         self.horizontalLayout.addWidget(self.create_entity_button)
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -106,5 +108,4 @@ class Ui_create_entity_dialog(object):
         self.project_name_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Some project", None, QtGui.QApplication.UnicodeUTF8))
         self.cancel_button.setText(QtGui.QApplication.translate("create_entity_dialog", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
         self.create_entity_button.setText(QtGui.QApplication.translate("create_entity_dialog", "Create Entity", None, QtGui.QApplication.UnicodeUTF8))
-        self.create_entity_button.setShortcut(QtGui.QApplication.translate("create_entity_dialog", "Return", None, QtGui.QApplication.UnicodeUTF8))
 
