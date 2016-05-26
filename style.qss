@@ -553,17 +553,11 @@ ExtendedThumbnail QToolTip {
     border-image: none;
     color: white;
 }
-CutDiffCard[repeated=true] #shot_name_line{
-    color: #A1A51A;
-}
 /*
  Styling depending on the cut difference type
 */
 CutDiffCard ExtendedThumbnail {
     color: #A5A5A5;
-}
-CutDiffCard[cut_order_changed=true] ExtendedThumbnail {
-    color: #A1A51A;
 }
 CutDiffCard[diff_type="new"] #status_label,
 CutDiffCard[diff_type="new"]  ExtendedThumbnail
@@ -574,10 +568,6 @@ CutDiffCard[diff_type="omitted"]  #status_label,
 CutDiffCard[diff_type="omitted"]  ExtendedThumbnail
 {
     color: #FC6246;
-}
-CutDiffCard[diff_type="reinstated"]  #status_label,
-{
-    color: #A1A51A;
 }
 CutDiffCard[diff_type="rescan_needed"]  #status_label ,
 {
