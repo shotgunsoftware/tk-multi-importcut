@@ -12,6 +12,7 @@
 # the code will be compatible with both PySide and PyQt.
 
 import re
+import sys
 import sgtk
 
 from .ui.settings_dialog import Ui_settings_dialog
@@ -408,13 +409,22 @@ class SettingsDialog(QtGui.QDialog):
                     msg_box.setText("%s\n\n%s" % ("Settings", _BAD_SETTINGS_MSG))
                     cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.YesRole)
                     apply_button = msg_box.addButton("Apply and Close", QtGui.QMessageBox.NoRole)
-                    apply_button.clicked.connect(self._store_settings)
+                    apply_button.clicked.connect(self._store_settings_and_close)
                     msg_box.show()
                     msg_box.raise_()
                     msg_box.activateWindow()
                     return
         self._store_settings()
         return True
+
+    def _store_settings_and_close(self):
+        """
+        Stores settings and closes since the App needs to be restarted.
+        """
+        self._store_settings()
+        # todo: there is a better way to do this, but I don't know the best way,
+        # so waiting until code review for guidance.
+        sys.exit(0)
 
     def _store_settings(self):
         """
