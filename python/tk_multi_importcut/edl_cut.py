@@ -79,6 +79,7 @@ class EdlCut(QtCore.QObject):
             self._frame_rate = frame_rate
         else:
             self._frame_rate = float(self._user_settings.retrieve("default_frame_rate"))
+        self._update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
         self._omit_status = self._user_settings.retrieve("omit_status")
         self._reinstate_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is")
@@ -1095,15 +1096,15 @@ class EdlCut(QtCore.QObject):
             # We only update shots if asked to do so
             elif update_shots:
                 if shot_diff_type == _DIFF_TYPES.OMITTED:
+                    # Add code in the update so it will be returned with batch results.
+                    data = {"code": sg_shot["code"]}
+                    if self._update_shot_statuses:
+                        data["sg_status_list"] = self._omit_status
                     sg_batch_data.append({
                         "request_type": "update",
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
-                        "data": {
-                            "sg_status_list": self._omit_status,
-                            # Add code in the update so it will be returned with batch results.
-                            "code": sg_shot["code"],
-                        }
+                        "data": data
                     })
                 elif shot_diff_type == _DIFF_TYPES.REINSTATED:
                     reinstate_status = self._user_settings.retrieve("reinstate_status")
@@ -1123,12 +1124,11 @@ class EdlCut(QtCore.QObject):
                         # Set the reinstate status value to the value previous to the
                         # event log entry
                         reinstate_status = event_log["meta"]["old_value"]
-                    data = {
-                        "sg_status_list": reinstate_status,
-                        "sg_cut_order": min_cut_order,
-                        # Add code in the update so it will be returned with batch results.
-                        "code": sg_shot["code"],
-                    }
+                    # Add code in the update so it will be returned with batch results.
+                    data = {"code": sg_shot["code"],
+                            "sg_cut_order": min_cut_order}
+                    if self._update_shot_statuses:
+                        data["sg_status_list"] = reinstate_status
                     data.update(
                         self._get_shot_in_out_sg_data(
                             cut_diff.new_head_in,
@@ -1144,13 +1144,14 @@ class EdlCut(QtCore.QObject):
                         "data": data
                     })
                 else:  # Cut change or rescan or no change.
+                    # Add code and status in the update so it will be
+                    # returned with batch results.
                     data = {
-                        # Add code and status in the update so it will be
-                        # returned with batch results.
-                        "sg_status_list": sg_shot["sg_status_list"],
-                        "sg_cut_order": min_cut_order,
                         "code": sg_shot["code"],
+                        "sg_cut_order": min_cut_order
                     }
+                    if self._update_shot_statuses:
+                        data["sg_status_list"] = sg_shot["sg_status_list"]
                     data.update(
                         self._get_shot_in_out_sg_data(
                             cut_diff.new_head_in,
