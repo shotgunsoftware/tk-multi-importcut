@@ -23,6 +23,10 @@ from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, \
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
+_ERROR_BAD_CUT = "%s contains CutItems with missing %s data. These timecode values are required to \
+ensure an accurate comparison.\n\n Please select another Cut or update the timecode data in %s \
+ to proceed."
+
 
 class EdlCut(QtCore.QObject):
     """
@@ -666,16 +670,19 @@ class EdlCut(QtCore.QObject):
                     if existing:
                         self._logger.debug("Found duplicated shot shot %s (%s)" % (
                             shot_name, existing))
+                        sg_cut_item = self.sg_cut_item_for_shot(
+                            sg_cut_items,
+                            existing[0].sg_shot,
+                            edit.get_sg_version(),
+                            edit
+                        )
+                        if sg_cut_item is False:
+                            return
                         cut_diff = self._summary.add_cut_diff(
                             shot_name,
                             sg_shot=existing[0].sg_shot,
                             edit=edit,
-                            sg_cut_item=self.sg_cut_item_for_shot(
-                                sg_cut_items,
-                                existing[0].sg_shot,
-                                edit.get_sg_version(),
-                                edit
-                            )
+                            sg_cut_item=sg_cut_item
                         )
                     else:
                         matching_cut_item = None
@@ -693,6 +700,8 @@ class EdlCut(QtCore.QObject):
                                 edit.get_sg_version(),
                                 edit,
                             )
+                            if matching_cut_item is False:
+                                return
                         cut_diff = self._summary.add_cut_diff(
                             shot_name,
                             sg_shot=matching_shot,
@@ -731,6 +740,8 @@ class EdlCut(QtCore.QObject):
                 if sg_shot["sg_status_list"] not in self._reinstate_statuses:
                     # In theory we shouldn't have any leftover cut items ...
                     matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
+                    if matching_cut_item is False:
+                        return
                     cut_diff = self._summary.add_cut_diff(
                         sg_shot["code"],
                         sg_shot=sg_shot,
@@ -772,40 +783,53 @@ class EdlCut(QtCore.QObject):
             if sg_cut_item["shot"] and sg_shot and \
                 sg_cut_item["shot"]["id"] == sg_shot["id"] and \
                     sg_cut_item["shot"]["type"] == sg_shot["type"]:
-                        # We can have multiple cut items for the same shot
-                        # use the linked version to pick the right one, if
-                        # available
-                        if not sg_version:
-                            # No particular version to match, score is based on
-                            # on differences between cut order, tc in and out
-                            # give score a bonus as we don't have an explicit mismatch
-                            potential_matches.append((
-                                sg_cut_item,
-                                100 + self._get_cut_item_score(sg_cut_item, edit)
-                                ))
-                        elif sg_cut_item["version"]:
-                                if sg_version["id"] == sg_cut_item["version"]["id"]:
-                                    # Give a bonus to score as we matched the right
-                                    # version
-                                    potential_matches.append((
-                                        sg_cut_item,
-                                        1000 + self._get_cut_item_score(sg_cut_item, edit)
-                                        ))
-                                else:
-                                    # Version mismatch, don't give any bonus
-                                    potential_matches.append((
-                                        sg_cut_item,
-                                        self._get_cut_item_score(sg_cut_item, edit)
-                                        ))
-                        else:
-                            # Will keep looking around but we keep a reference to cut item
-                            # linked to the same shot
-                            # give score a little bonus as we didn't have any explicit
-                            # mismatch
-                            potential_matches.append((
-                                sg_cut_item,
-                                100 + self._get_cut_item_score(sg_cut_item, edit)
-                                ))
+                        try:
+                            # We can have multiple cut items for the same shot
+                            # use the linked version to pick the right one, if
+                            # available
+                            if not sg_version:
+                                # No particular version to match, score is based on
+                                # on differences between cut order, tc in and out
+                                # give score a bonus as we don't have an explicit mismatch
+                                potential_matches.append((
+                                    sg_cut_item,
+                                    100 + self._get_cut_item_score(sg_cut_item, edit)
+                                    ))
+                            elif sg_cut_item["version"]:
+                                    if sg_version["id"] == sg_cut_item["version"]["id"]:
+                                        # Give a bonus to score as we matched the right
+                                        # version
+                                        potential_matches.append((
+                                            sg_cut_item,
+                                            1000 + self._get_cut_item_score(sg_cut_item, edit)
+                                            ))
+                                    else:
+                                        # Version mismatch, don't give any bonus
+                                        potential_matches.append((
+                                            sg_cut_item,
+                                            self._get_cut_item_score(sg_cut_item, edit)
+                                            ))
+                            else:
+                                # Will keep looking around but we keep a reference to cut item
+                                # linked to the same shot
+                                # give score a little bonus as we didn't have any explicit
+                                # mismatch
+                                potential_matches.append((
+                                    sg_cut_item,
+                                    100 + self._get_cut_item_score(sg_cut_item, edit)
+                                    ))
+                        except Exception, e:
+                            bad_fields = ""
+                            and_ = ""
+                            if sg_cut_item["timecode_cut_item_in_text"] is None:
+                                bad_fields = "Timecode Cut In"
+                                and_ = " and "
+                            if sg_cut_item["timecode_cut_item_out_text"] is None:
+                                bad_fields += "%sTimecode Cut Out" % and_
+                            cut_name = sg_cut_item["cut"]["name"]
+                            self._logger.exception(_ERROR_BAD_CUT % (
+                                cut_name, bad_fields, cut_name))
+                            return False
         if potential_matches:
             potential_matches.sort(key=lambda x: x[1], reverse=True)
             # Return just the cut item, not including the score
