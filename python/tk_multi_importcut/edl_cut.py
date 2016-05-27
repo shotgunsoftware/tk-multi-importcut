@@ -748,8 +748,6 @@ class EdlCut(QtCore.QObject):
                 if sg_shot["sg_status_list"] not in self._reinstate_statuses:
                     # In theory we shouldn't have any leftover cut items ...
                     matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
-                    if matching_cut_item is False:
-                        return
                     cut_diff = self._summary.add_cut_diff(
                         sg_shot["code"],
                         sg_shot=sg_shot,
