@@ -580,8 +580,8 @@ class EdlCut(QtCore.QObject):
                     # Index results with their SG id
                     for item_version in sg_cut_item_versions_list:
                         sg_cut_item_versions[item_version["id"]] = item_version
-                # We match fields that we would have retrieved with a sg.find("Version", ... )
-                # And collect a list of shots while we loop over cut items
+                # We match fields that we would have retrieved with an sg.find("Version", ...)
+                # And collect a list of shots while we loop over cut items.
                 sg_known_shot_ids = set()
                 for sg_cut_item in sg_cut_items:
                     bad_fields = ""
@@ -680,7 +680,7 @@ class EdlCut(QtCore.QObject):
                     existing = self._summary.diffs_for_shot(shot_name)
                     # Is it a duplicate ?
                     if existing:
-                        self._logger.debug("Found duplicated shot shot %s (%s)" % (
+                        self._logger.debug("Found duplicated shot, shot %s (%s)" % (
                             shot_name, existing))
                         sg_cut_item = self.sg_cut_item_for_shot(
                             sg_cut_items,
@@ -1094,7 +1094,7 @@ class EdlCut(QtCore.QObject):
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
                         "data": {"code": sg_shot["code"],
-                                 "sg_status_list": reinstate_status if self._update_shot_statuses else sg_shot["sg_status_list"]}})
+                                 "sg_status_list": self._omit_status if self._update_shot_statuses else sg_shot["sg_status_list"]}})
                 elif shot_diff_type == _DIFF_TYPES.REINSTATED:
                     reinstate_status = self._user_settings.retrieve("reinstate_status")
                     if reinstate_status == "Previous Status":
@@ -1137,7 +1137,7 @@ class EdlCut(QtCore.QObject):
                     data = {
                         "code": sg_shot["code"],
                         "sg_cut_order": min_cut_order,
-                        "sg_status_list": reinstate_status if self._update_shot_statuses else sg_shot["sg_status_list"]}
+                        "sg_status_list": sg_shot["sg_status_list"]}
                     data.update(
                         self._get_shot_in_out_sg_data(
                             cut_diff.new_head_in,

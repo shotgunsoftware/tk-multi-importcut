@@ -371,7 +371,6 @@ class SettingsDialog(QtGui.QDialog):
         if dtd <= 0:
             self._pop_error("Value must be positive (Default Tail Duration), can't be %s." % dtd)
 
-        # Note: this list has to line up with the field_names list below.
         self._new_values = {"update_shot_statuses": update_shot_statuses,
                             "use_smart_fields": use_smart_fields,
                             "email_groups": email_groups,
