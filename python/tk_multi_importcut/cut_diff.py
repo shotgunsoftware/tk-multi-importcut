@@ -755,11 +755,11 @@ class CutDiff(QtCore.QObject):
 
     def _check_changes(self):
         """
-        Set the cut difference type for this cut difference
+        Set the cut difference type for this cut difference.
         """
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
-        # The type of difference we are dealing with
+        # The type of difference we are dealing with.
         if not self.name:
             self._diff_type = _DIFF_TYPES.NO_LINK
             return
@@ -773,19 +773,20 @@ class CutDiff(QtCore.QObject):
             else:
                 self._diff_type = _DIFF_TYPES.OMITTED_IN_CUT
             return
-        # We have both a shot and an edit
+        # We have both a shot and an edit.
         omit_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is") or []
         if self._sg_shot["sg_status_list"] in omit_statuses:
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
 
-        # This cut_item hasn't appeared in previous Cuts
+        # This cut_item hasn't appeared in previous Cuts.
         if not self._sg_cut_item:
             self._diff_type = _DIFF_TYPES.NEW_IN_CUT
-            return
+            if self.repeated:
+                return
 
-        # Check if we have a difference
-        # If any of the previous value is not set, then assume all changed ( initial import )
+        # Check if we have a difference.
+        # If any of the previous value is not set, then assume all changed (initial import)
         if self.cut_order is None or self.cut_in is None or self.cut_out is None or \
             self.head_duration is None or self.tail_duration is None or self.duration is None:
                 self._diff_type = _DIFF_TYPES.CUT_CHANGE
