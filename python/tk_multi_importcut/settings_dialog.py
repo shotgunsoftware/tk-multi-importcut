@@ -42,7 +42,7 @@ _BAD_STATUS_MSG = "The following statuses for reinstating Shots do not match \
 valid statuses in Shotgun:\n\n%s\n\nPlease enter another status to proceed."
 
 _BAD_TIMECODE_MSG = '"%s" is not a valid timecode value. The Timecode Mapping \
-must match the pattern ##.##.##.## and contain valid timcode.'
+must match the pattern ##.##.##.## and contain valid timecode.'
 
 _BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
 Please check your Shotgun site."
@@ -389,7 +389,7 @@ class SettingsDialog(QtGui.QDialog):
         # At the moment certain settings require a refresh to be properly accounted for
         # while processing the EDL, etc. As a stop-gap, we warn the user and give them
         # the opportunity to restart the app if one of the known "non-refreshable"
-        # settings has been changedself (#36605).
+        # settings has been changed (#36605).
         if (update_shot_statuses != self._user_settings.get("update_shot_statuses") or
             use_smart_fields != self._user_settings.get("use_smart_fields") or
             omit_status != self._user_settings.get("omit_status") or
