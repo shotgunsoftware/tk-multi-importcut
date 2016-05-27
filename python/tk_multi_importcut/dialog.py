@@ -22,6 +22,7 @@ from operator import itemgetter
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
 
+from .user_settings import UserSettings
 from .widgets import DropAreaFrame, AnimatedStackedWidget
 from .search_widget import SearchWidget
 from .entity_line_widget import EntityLineWidget
@@ -132,49 +133,11 @@ class AppDialog(QtGui.QWidget):
         self._app = sgtk.platform.current_bundle()
         self._ctx = self._app.context
 
-        self._user_settings = self._app.user_settings
+        # Grab user settings class and check for updates.
+        self._user_settings = UserSettings()
+        self._user_settings.update()
+
         self.checked_entity_button = None
-
-        # Reset user settings if they are corrupt. This can happen if users using an older
-        # version of import cut have settings saved that don't match the variable type of
-        # the current settings. For example, if they have the old email_groups setting
-        # that was at one point a dict and is now a list. This may happen again if these
-        # settings are changed in unpredictable ways and conflict with local user settings
-        # we don't have accesss to.
-        reset_settings = False
-        if self._user_settings.retrieve("reset_settings"):
-            reset_settings = True
-
-        # set defaults, but don't override user settings.
-        if reset_settings or self._user_settings.retrieve("update_shot_statuses") is None:
-            self._user_settings.store("update_shot_statuses", True)
-        if reset_settings or self._user_settings.retrieve("use_smart_fields") is None:
-            self._user_settings.store("use_smart_fields", False)
-        if reset_settings or self._user_settings.retrieve("email_groups") is None:
-            self._user_settings.store("email_groups", [])
-        if reset_settings or self._user_settings.retrieve("omit_status") is None:
-            self._user_settings.store("omit_status", "omt")
-        if reset_settings or self._user_settings.retrieve("reinstate_shot_if_status_is") is None:
-            self._user_settings.store("reinstate_shot_if_status_is", ["omt", "hld"])
-        if reset_settings or self._user_settings.retrieve("reinstate_status") is None:
-            self._user_settings.store("reinstate_status", "Previous Status")
-        if reset_settings or self._user_settings.retrieve("default_frame_rate") is None:
-            self._user_settings.store("default_frame_rate", "24")
-        if reset_settings or self._user_settings.retrieve("timecode_to_frame_mapping") is None:
-            self._user_settings.store("timecode_to_frame_mapping", _ABSOLUTE_MODE)
-        if reset_settings or self._user_settings.retrieve("timecode_mapping") is None:
-            self._user_settings.store("timecode_mapping", "00:00:00:00")
-        if reset_settings or self._user_settings.retrieve("frame_mapping") is None:
-            self._user_settings.store("frame_mapping", "1000")
-        if reset_settings or self._user_settings.retrieve("default_head_in") is None:
-            self._user_settings.store("default_head_in", "1001")
-        if reset_settings or self._user_settings.retrieve("default_head_duration") is None:
-            self._user_settings.store("default_head_duration", "8")
-        if reset_settings or self._user_settings.retrieve("default_tail_duration") is None:
-            self._user_settings.store("default_tail_duration", "8")
-
-        if reset_settings:
-            self._user_settings.store("reset_settings", False)
 
         self._busy = False
         # Current step being displayed
@@ -197,7 +160,7 @@ class AppDialog(QtGui.QWidget):
 
         # Load the entity type we should show in Entities screen from user
         # preferences
-        self._preload_entity_type = self._user_settings.retrieve("preload_entity_type")
+        self._preload_entity_type = self._user_settings.get("preload_entity_type")
         self._logger.debug("Preferred entity type %s" % self._preload_entity_type)
 
         CutDiff.retrieve_default_timecode_frame_mapping()
@@ -947,7 +910,7 @@ class AppDialog(QtGui.QWidget):
         self._preload_entity_type = sg_entity_type
         # Save the value in user settings so it will persist across
         # sessions
-        self._user_settings.store("preload_entity_type", sg_entity_type)
+        self._user_settings.save({"preload_entity_type": sg_entity_type})
         entity_type_stacked_widget = self.ui.entities_type_stacked_widget
         # Retrieve the entity type view we should activate
         for i, view in enumerate(self._entities_views):

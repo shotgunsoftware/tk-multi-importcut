@@ -584,6 +584,17 @@ class EdlCut(QtCore.QObject):
                 # And collect a list of shots while we loop over cut items
                 sg_known_shot_ids = set()
                 for sg_cut_item in sg_cut_items:
+                    bad_fields = ""
+                    and_ = ""
+                    if sg_cut_item["timecode_cut_item_in_text"] is None:
+                        bad_fields = "Timecode Cut In"
+                        and_ = " and "
+                    if sg_cut_item["timecode_cut_item_out_text"] is None:
+                        bad_fields += "%sTimecode Cut Out" % and_
+                    if bad_fields:
+                        cut_name = sg_cut_item["cut"]["name"]
+                        raise ValueError(_ERROR_BAD_CUT % (
+                            cut_name, bad_fields, cut_name))
                     if sg_cut_item["shot"] and sg_cut_item["shot"]["type"] == "Shot":
                         sg_known_shot_ids.add(sg_cut_item["shot"]["id"])
                     if sg_cut_item["version"]:
@@ -677,8 +688,6 @@ class EdlCut(QtCore.QObject):
                             edit.get_sg_version(),
                             edit
                         )
-                        if sg_cut_item is False:
-                            return
                         cut_diff = self._summary.add_cut_diff(
                             shot_name,
                             sg_shot=existing[0].sg_shot,
@@ -701,8 +710,6 @@ class EdlCut(QtCore.QObject):
                                 edit.get_sg_version(),
                                 edit,
                             )
-                            if matching_cut_item is False:
-                                return
                         cut_diff = self._summary.add_cut_diff(
                             shot_name,
                             sg_shot=matching_shot,
@@ -784,53 +791,40 @@ class EdlCut(QtCore.QObject):
             if sg_cut_item["shot"] and sg_shot and \
                 sg_cut_item["shot"]["id"] == sg_shot["id"] and \
                     sg_cut_item["shot"]["type"] == sg_shot["type"]:
-                        try:
-                            # We can have multiple cut items for the same shot
-                            # use the linked version to pick the right one, if
-                            # available
-                            if not sg_version:
-                                # No particular version to match, score is based on
-                                # on differences between cut order, tc in and out
-                                # give score a bonus as we don't have an explicit mismatch
-                                potential_matches.append((
-                                    sg_cut_item,
-                                    100 + self._get_cut_item_score(sg_cut_item, edit)
-                                    ))
-                            elif sg_cut_item["version"]:
-                                    if sg_version["id"] == sg_cut_item["version"]["id"]:
-                                        # Give a bonus to score as we matched the right
-                                        # version
-                                        potential_matches.append((
-                                            sg_cut_item,
-                                            1000 + self._get_cut_item_score(sg_cut_item, edit)
-                                            ))
-                                    else:
-                                        # Version mismatch, don't give any bonus
-                                        potential_matches.append((
-                                            sg_cut_item,
-                                            self._get_cut_item_score(sg_cut_item, edit)
-                                            ))
-                            else:
-                                # Will keep looking around but we keep a reference to cut item
-                                # linked to the same shot
-                                # give score a little bonus as we didn't have any explicit
-                                # mismatch
-                                potential_matches.append((
-                                    sg_cut_item,
-                                    100 + self._get_cut_item_score(sg_cut_item, edit)
-                                    ))
-                        except Exception, e:
-                            bad_fields = ""
-                            and_ = ""
-                            if sg_cut_item["timecode_cut_item_in_text"] is None:
-                                bad_fields = "Timecode Cut In"
-                                and_ = " and "
-                            if sg_cut_item["timecode_cut_item_out_text"] is None:
-                                bad_fields += "%sTimecode Cut Out" % and_
-                            cut_name = sg_cut_item["cut"]["name"]
-                            self._logger.exception(_ERROR_BAD_CUT % (
-                                cut_name, bad_fields, cut_name))
-                            return False
+                        # We can have multiple cut items for the same shot
+                        # use the linked version to pick the right one, if
+                        # available
+                        if not sg_version:
+                            # No particular version to match, score is based on
+                            # on differences between cut order, tc in and out
+                            # give score a bonus as we don't have an explicit mismatch
+                            potential_matches.append((
+                                sg_cut_item,
+                                100 + self._get_cut_item_score(sg_cut_item, edit)
+                                ))
+                        elif sg_cut_item["version"]:
+                                if sg_version["id"] == sg_cut_item["version"]["id"]:
+                                    # Give a bonus to score as we matched the right
+                                    # version
+                                    potential_matches.append((
+                                        sg_cut_item,
+                                        1000 + self._get_cut_item_score(sg_cut_item, edit)
+                                        ))
+                                else:
+                                    # Version mismatch, don't give any bonus
+                                    potential_matches.append((
+                                        sg_cut_item,
+                                        self._get_cut_item_score(sg_cut_item, edit)
+                                        ))
+                        else:
+                            # Will keep looking around but we keep a reference to cut item
+                            # linked to the same shot
+                            # give score a little bonus as we didn't have any explicit
+                            # mismatch
+                            potential_matches.append((
+                                sg_cut_item,
+                                100 + self._get_cut_item_score(sg_cut_item, edit)
+                                ))
         if potential_matches:
             potential_matches.sort(key=lambda x: x[1], reverse=True)
             # Return just the cut item, not including the score
@@ -1097,15 +1091,12 @@ class EdlCut(QtCore.QObject):
             elif update_shots:
                 if shot_diff_type == _DIFF_TYPES.OMITTED:
                     # Add code in the update so it will be returned with batch results.
-                    data = {"code": sg_shot["code"]}
-                    if self._update_shot_statuses:
-                        data["sg_status_list"] = self._omit_status
                     sg_batch_data.append({
                         "request_type": "update",
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
-                        "data": data
-                    })
+                        "data": {"code": sg_shot["code"],
+                                 "sg_status_list": reinstate_status if self._update_shot_statuses else sg_shot["sg_status_list"]}})
                 elif shot_diff_type == _DIFF_TYPES.REINSTATED:
                     reinstate_status = self._user_settings.retrieve("reinstate_status")
                     if reinstate_status == "Previous Status":
@@ -1126,9 +1117,8 @@ class EdlCut(QtCore.QObject):
                         reinstate_status = event_log["meta"]["old_value"]
                     # Add code in the update so it will be returned with batch results.
                     data = {"code": sg_shot["code"],
-                            "sg_cut_order": min_cut_order}
-                    if self._update_shot_statuses:
-                        data["sg_status_list"] = reinstate_status
+                            "sg_cut_order": min_cut_order,
+                            "sg_status_list": reinstate_status if self._update_shot_statuses else sg_shot["sg_status_list"]}
                     data.update(
                         self._get_shot_in_out_sg_data(
                             cut_diff.new_head_in,
@@ -1148,10 +1138,8 @@ class EdlCut(QtCore.QObject):
                     # returned with batch results.
                     data = {
                         "code": sg_shot["code"],
-                        "sg_cut_order": min_cut_order
-                    }
-                    if self._update_shot_statuses:
-                        data["sg_status_list"] = sg_shot["sg_status_list"]
+                        "sg_cut_order": min_cut_order,
+                        "sg_status_list": reinstate_status if self._update_shot_statuses else sg_shot["sg_status_list"]}
                     data.update(
                         self._get_shot_in_out_sg_data(
                             cut_diff.new_head_in,

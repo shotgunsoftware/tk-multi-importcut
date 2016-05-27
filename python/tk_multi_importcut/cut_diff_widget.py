@@ -145,8 +145,7 @@ class CutDiffCard(QtGui.QFrame):
         self.ui.version_name_label.setToolTip(None)
         if not sg_version:
             # No Version
-            self.ui.version_name_label.setText("<font>%s</font>" %
-                                               self._cut_diff.version_name or "No Version")
+            self.ui.version_name_label.setText(self._cut_diff.version_name or "No Version")
         elif sg_version.get("entity.Shot.code") != self._cut_diff.name:
             # Version linked to another shot
             self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
@@ -301,7 +300,7 @@ class CutDiffCard(QtGui.QFrame):
                         _COLORS["lgrey"], old_value
                     ))
                 else:
-                    widget.setText("<font>%s</font>" % new_value)
+                    widget.setText(new_value)
             else:
                 widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
 

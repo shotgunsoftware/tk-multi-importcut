@@ -12,11 +12,11 @@
 # the code will be compatible with both PySide and PyQt.
 
 import re
-import sys
 import sgtk
 
 from .ui.settings_dialog import Ui_settings_dialog
 from .cut_diff import CutDiff
+from .user_settings import UserSettings
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 from sgtk.platform.qt import QtCore, QtGui
@@ -42,13 +42,16 @@ _BAD_STATUS_MSG = "The following statuses for reinstating Shots do not match \
 valid statuses in Shotgun:\n\n%s\n\nPlease enter another status to proceed."
 
 _BAD_TIMECODE_MSG = '"%s" is not a valid timecode value. The Timecode Mapping \
-must match the pattern ##.##.##.##. See message below for more details.'
+must match the pattern ##.##.##.## and contain valid timcode.'
 
 _BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
 Please check your Shotgun site."
 
-_BAD_SETTINGS_MSG = "Applying these Settings updates will require an app \
+_CHANGED_SETTINGS_MSG = "Applying these Settings updates will require an app \
 restart. All Import Cut progress will be lost."
+
+_CORRUPT_SETTINGS_MSG = "Corrupt user settings have been reset to default, \
+restart Import Cut: %s"
 
 
 class SettingsDialog(QtGui.QDialog):
@@ -67,42 +70,27 @@ class SettingsDialog(QtGui.QDialog):
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
-        self._user_settings = self._app.user_settings
+        self._user_settings = UserSettings()
         self._shot_schema = None
         self._new_values = None
 
         # Retrieve user settings and set UI values
         try:
-            # General tab
-            self._update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
-            self._user_smart_fields = self._user_settings.retrieve("use_smart_fields")
-            self._email_groups = self._user_settings.retrieve("email_groups")
-            self._omit_status = self._user_settings.retrieve("omit_status")
-            self._reinstate_status = self._user_settings.retrieve("reinstate_status")
-            self._reinstate_shot_if_status_is = self._user_settings.retrieve(
-                "reinstate_shot_if_status_is")
-            self._default_frame_rate = self._user_settings.retrieve("default_frame_rate")
-            self._timecode_to_frame_mapping = self._user_settings.retrieve(
-                "timecode_to_frame_mapping")
-            self._timecode_mapping = self._user_settings.retrieve("timecode_mapping")
-            self._frame_mapping = self._user_settings.retrieve("frame_mapping")
-            self._default_head_in = self._user_settings.retrieve("default_head_in")
-            self._default_head_duration = self._user_settings.retrieve("default_head_duration")
-            self._default_tail_duration = self._user_settings.retrieve("default_tail_duration")
-
             # Setting whether or not the shot status fields are enabled
             # and updating that if the user turns them on/off w/the checkbox.
-            self._set_enabled(self._update_shot_statuses)
-            self.ui.update_shot_statuses_checkbox.setChecked(self._update_shot_statuses)
+            self._set_enabled(
+                self._user_settings.get("update_shot_statuses"))
+            self.ui.update_shot_statuses_checkbox.setChecked(
+                self._user_settings.get("update_shot_statuses"))
             self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
 
             self.ui.use_smart_fields_checkbox.setChecked(
-                self._user_smart_fields)
+                self._user_settings.get("use_smart_fields"))
             self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(
                 self._change_text)
 
             # Turning the email_groups list into user editable csv text
-            email_groups = ", ".join(self._email_groups)
+            email_groups = ", ".join(self._user_settings.get("email_groups"))
             self.ui.email_groups_line_edit.setText(email_groups)
 
             # We're storing status lists with their internal codes and matching
@@ -123,10 +111,10 @@ class SettingsDialog(QtGui.QDialog):
             index = 1
             found_omit_index, found_reinstate_index = [False, False]
             for status in shot_statuses:
-                if self._omit_status == status:
+                if self._user_settings.get("omit_status") == status:
                     omit_index = index
                     found_omit_index = True
-                if self._reinstate_status == status:
+                if self._user_settings.get("reinstate_status") == status:
                     reinstate_index = index
                     found_reinstate_index = True
                 self.ui.omit_status_combo_box.addItem(status)
@@ -139,45 +127,54 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.reinstate_status_combo_box.addItem("Previous Status")
             if found_reinstate_index:
                 self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
-            elif self._reinstate_status == "Previous Status":
+            elif self._user_settings.get("reinstate_status") == "Previous Status":
                 # +1 to account for empty item at the head of the combo box list.
                 self.ui.reinstate_status_combo_box.setCurrentIndex(len(shot_statuses) + 1)
             else:
                 self.ui.reinstate_status_combo_box.setCurrentIndex(0)
 
             # Turning the reinstate status list into user editable csv text
-            statuses = ", ".join(self._reinstate_shot_if_status_is)
+            statuses = ", ".join(self._user_settings.get("reinstate_shot_if_status_is"))
             self.ui.reinstate_shot_if_status_is_line_edit.setText(statuses)
 
             # Timecode/Frames tab
-            self.ui.default_frame_rate_line_edit.setText(self._default_frame_rate)
+            self.ui.default_frame_rate_line_edit.setText(
+                self._user_settings.get("default_frame_rate"))
             self.ui.timecode_to_frame_mapping_combo_box.addItems(
                 ["Absolute", "Automatic", "Relative"])
             self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(
-                self._timecode_to_frame_mapping)
-            self.ui.timecode_mapping_line_edit.setText(self._timecode_mapping)
-            self.ui.frame_mapping_line_edit.setText(self._frame_mapping)
-            self.ui.default_head_in_line_edit.setText(self._default_head_in)
-            self.ui.default_head_duration_line_edit.setText(self._default_head_duration)
-            self.ui.default_tail_duration_line_edit.setText(self._default_tail_duration)
+                self._user_settings.get("timecode_to_frame_mapping"))
+            self.ui.timecode_mapping_line_edit.setText(
+                self._user_settings.get("timecode_mapping"))
+            self.ui.frame_mapping_line_edit.setText(
+                self._user_settings.get("frame_mapping"))
+            self.ui.default_head_in_line_edit.setText(
+                self._user_settings.get("default_head_in"))
+            self.ui.default_head_duration_line_edit.setText(
+                self._user_settings.get("default_head_duration"))
+            self.ui.default_tail_duration_line_edit.setText(
+                self._user_settings.get("default_tail_duration"))
 
             # Cancel or Save
             self.ui.cancel_button.clicked.connect(self.discard_settings)
             self.ui.apply_button.clicked.connect(self.save_settings)
 
         except Exception, e:
-            # This is a bit of code for dealing with bad values (if prefs var changes type).
-            # If something goes wrong, reset all settings to default next time the app is run.
-            self._user_settings.store("reset_settings", True)
-            self._logger.error(
-                    "Corrupt user settings will be reset to default, restart Import Cut: %s" % (e))
+            # Reset user settings if they are corrupt. This can happen if users using an older
+            # version of import cut have settings saved that don't match the variable type of
+            # the current settings. For example, if they have the old email_groups setting
+            # that was at one point a dict and is now a list. This may happen again if these
+            # settings are changed in unpredictable ways and conflict with local user settings
+            # we don't have accesss to.
+            self._user_settings.reset()
+            self._logger.error(_CORRUPT_SETTINGS_MSG % (e))
 
     @QtCore.Slot()
     def save_settings(self):
         """
         Save settings and close the dialog.
         """
-        if self._validate_settings():
+        if self._validate_and_save_settings():
             self.close_dialog()
 
     @QtCore.Slot()
@@ -185,7 +182,7 @@ class SettingsDialog(QtGui.QDialog):
         """
         Cancel changes to settings and close the dialog.
         """
-        self._logger.info("User canceled, settings not saved.")
+        self._logger.info("User canceled, Settings not saved.")
         self.close()
 
     @QtCore.Slot()
@@ -261,7 +258,7 @@ class SettingsDialog(QtGui.QDialog):
         msg_box.raise_()
         msg_box.activateWindow()
 
-    def _validate_settings(self):
+    def _validate_and_save_settings(self):
         """
         Validate user settings from current UI values.
 
@@ -321,11 +318,12 @@ class SettingsDialog(QtGui.QDialog):
         default_frame_rate = self.ui.default_frame_rate_line_edit.text()
         try:
             fps = float(default_frame_rate)
-            assert fps > 0, "Value must be positive."
         except Exception, e:
             self._pop_error("User Input", "Could not set frame rate to \"%s.\"" % (
                 default_frame_rate), e)
             return
+        if fps <= 0:
+            self._pop_error("Value must be positive (fps), can't be %s." % fps)
 
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
 
@@ -356,102 +354,82 @@ class SettingsDialog(QtGui.QDialog):
         default_head_duration = self.ui.default_head_duration_line_edit.text()
         try:
             dhd = int(default_head_duration)
-            assert dhd >= 0, "Value can't be nagative."
         except Exception, e:
             self._pop_error("User Input", "Could not set default head duration to \"%s.\"" % (
                 default_head_duration), e)
             return
+        if dhd <= 0:
+            self._pop_error("Value must be positive (Default Head Duration), can't be %s." % dhd)
 
         default_tail_duration = self.ui.default_tail_duration_line_edit.text()
         try:
             dtd = int(default_tail_duration)
-            assert dtd >= 0, "Value can't be negative."
         except Exception, e:
             self._pop_error("User Input", "Could not set default tail duration to \"%s.\"" % (
                 default_tail_duration), e)
             return
+        if dtd <= 0:
+            self._pop_error("Value must be positive (Default Tail Duration), can't be %s." % dtd)
 
         # Note: this list has to line up with the field_names list below.
-        self._new_values = [update_shot_statuses,
-                            use_smart_fields,
-                            email_groups,
-                            omit_status,
-                            reinstate_status,
-                            statuses,
-                            default_frame_rate,
-                            timecode_to_frame_mapping,
-                            timecode_mapping,
-                            frame_mapping,
-                            default_head_in,
-                            default_head_duration,
-                            default_tail_duration]
+        self._new_values = {"update_shot_statuses": update_shot_statuses,
+                            "use_smart_fields": use_smart_fields,
+                            "email_groups": email_groups,
+                            "omit_status": omit_status,
+                            "reinstate_status": reinstate_status,
+                            "reinstate_shot_if_status_is": statuses,
+                            "default_frame_rate": default_frame_rate,
+                            "timecode_to_frame_mapping": timecode_to_frame_mapping,
+                            "timecode_mapping": timecode_mapping,
+                            "frame_mapping": frame_mapping,
+                            "default_head_in": default_head_in,
+                            "default_head_duration": default_head_duration,
+                            "default_tail_duration": default_tail_duration}
 
         # At the moment certain settings require a refresh to be properly accounted for
         # while processing the EDL, etc. As a stop-gap, we warn the user and give them
         # the opportunity to restart the app if one of the known "non-refreshable"
         # settings has been changedself (#36605).
-        if (update_shot_statuses != self._update_shot_statuses or
-            use_smart_fields != self._user_smart_fields or
-            omit_status != self._omit_status or
-            timecode_mapping != self._timecode_mapping or
-            statuses != self._reinstate_shot_if_status_is or
-            timecode_to_frame_mapping != self._timecode_to_frame_mapping or
-            default_frame_rate != self._default_frame_rate or
-            frame_mapping != self._frame_mapping or
-            default_head_in != self._default_head_in or
-            default_head_duration != self._default_head_duration or
-                default_tail_duration != self._default_tail_duration):
+        if (update_shot_statuses != self._user_settings.get("update_shot_statuses") or
+            use_smart_fields != self._user_settings.get("use_smart_fields") or
+            omit_status != self._user_settings.get("omit_status") or
+            timecode_mapping != self._user_settings.get("timecode_mapping") or
+            statuses != self._user_settings.get("reinstate_shot_if_status_is") or
+            timecode_to_frame_mapping != self._user_settings.get("timecode_to_frame_mapping") or
+            default_frame_rate != self._user_settings.get("default_frame_rate") or
+            frame_mapping != self._user_settings.get("frame_mapping") or
+            default_head_in != self._user_settings.get("default_head_in") or
+            default_head_duration != self._user_settings.get("default_head_duration") or
+                default_tail_duration != self._user_settings.get("default_tail_duration")):
                     msg_box = QtGui.QMessageBox(
                         parent=self,
                         icon=QtGui.QMessageBox.Critical
                     )
                     msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
-                    msg_box.setText("%s\n\n%s" % ("Settings", _BAD_SETTINGS_MSG))
+                    msg_box.setText("%s\n\n%s" % ("Settings", _CHANGED_SETTINGS_MSG))
                     cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.YesRole)
-                    apply_button = msg_box.addButton("Apply and Close", QtGui.QMessageBox.NoRole)
-                    apply_button.clicked.connect(self._store_settings_and_close)
+                    apply_button = msg_box.addButton("Apply and Quit", QtGui.QMessageBox.NoRole)
+                    apply_button.clicked.connect(self._save_settings_and_close)
                     msg_box.show()
                     msg_box.raise_()
                     msg_box.activateWindow()
                     return
-        self._store_settings()
+        self._save_settings()
         return True
 
-    def _store_settings_and_close(self):
+    def _save_settings_and_close(self):
         """
-        Stores settings and closes since the App needs to be restarted.
+        Stores settings and closes the parent dialog since the App needs to be restarted.
         """
-        self._store_settings()
-        # todo: there is a better way to do this, but I don't know the best way,
-        # so waiting until code review for guidance.
-        sys.exit(0)
+        self._save_settings()
+        self.parent().close()
 
-    def _store_settings(self):
+    def _save_settings(self):
         """
         This method saves user settings.
         """
-
-        # Note: this list has to line up with the self._new_values list above.
-        field_names = ["update_shot_statuses",
-                       "use_smart_fields",
-                       "email_groups",
-                       "omit_status",
-                       "reinstate_status",
-                       "reinstate_shot_if_status_is",
-                       "default_frame_rate",
-                       "timecode_to_frame_mapping",
-                       "timecode_mapping",
-                       "frame_mapping",
-                       "default_head_in",
-                       "default_head_duration",
-                       "default_tail_duration"]
-
-        # Store all our new values in user_settings.
-        for field_name, new_value in zip(field_names, self._new_values):
-            self._user_settings.store(field_name, new_value)
-
+        self._user_settings.save(self._new_values)
         # An attempt to refresh some of the values, but it doesn't entirely work.
         CutDiff.retrieve_default_timecode_frame_mapping()
         self.close_dialog()
-
         self._logger.info("User settings saved.")

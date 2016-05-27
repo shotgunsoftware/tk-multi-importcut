@@ -554,6 +554,20 @@ ExtendedThumbnail QToolTip {
     color: white;
 }
 /*
+These "states" of CutDiffCard exist and can be styled. We're keeping
+these three "states" in here as example reference for future use.
+CutDiffCard[repeated=true] #shot_name_line{
+    color: #A1A51A;
+}
+CutDiffCard[cut_order_changed=true] ExtendedThumbnail {
+    color: #A1A51A;
+}
+CutDiffCard[diff_type="reinstated"]  #status_label {
+    color: #A1A51A;
+}
+*/
+
+/*
  Styling depending on the cut difference type
 */
 CutDiffCard ExtendedThumbnail {
