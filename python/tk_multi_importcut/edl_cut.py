@@ -584,17 +584,15 @@ class EdlCut(QtCore.QObject):
                 # And collect a list of shots while we loop over cut items.
                 sg_known_shot_ids = set()
                 for sg_cut_item in sg_cut_items:
-                    bad_fields = ""
-                    and_ = ""
+                    reasons = []
                     if sg_cut_item["timecode_cut_item_in_text"] is None:
-                        bad_fields = "Timecode Cut In"
-                        and_ = " and "
+                        reasons.append("Timecode Cut In")
                     if sg_cut_item["timecode_cut_item_out_text"] is None:
-                        bad_fields += "%sTimecode Cut Out" % and_
-                    if bad_fields:
+                        reasons.append("Timecode Cut Out")
+                    if reasons:
                         cut_name = sg_cut_item["cut"]["name"]
                         raise ValueError(_ERROR_BAD_CUT % (
-                            cut_name, bad_fields, cut_name))
+                            cut_name, " and ".join(reasons), cut_name))
                     if sg_cut_item["shot"] and sg_cut_item["shot"]["type"] == "Shot":
                         sg_known_shot_ids.add(sg_cut_item["shot"]["id"])
                     if sg_cut_item["version"]:
@@ -1094,7 +1092,8 @@ class EdlCut(QtCore.QObject):
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
                         "data": {"code": sg_shot["code"],
-                                 "sg_status_list": self._omit_status if self._update_shot_statuses else sg_shot["sg_status_list"]}})
+                                 "sg_status_list": self._omit_status if self._update_shot_statuses
+                                        else sg_shot["sg_status_list"]}})
                 elif shot_diff_type == _DIFF_TYPES.REINSTATED:
                     reinstate_status = self._user_settings.retrieve("reinstate_status")
                     if reinstate_status == "Previous Status":
@@ -1116,7 +1115,8 @@ class EdlCut(QtCore.QObject):
                     # Add code in the update so it will be returned with batch results.
                     data = {"code": sg_shot["code"],
                             "sg_cut_order": min_cut_order,
-                            "sg_status_list": reinstate_status if self._update_shot_statuses else sg_shot["sg_status_list"]}
+                            "sg_status_list": reinstate_status if self._update_shot_statuses
+                            else sg_shot["sg_status_list"]}
                     data.update(
                         self._get_shot_in_out_sg_data(
                             cut_diff.new_head_in,
@@ -1136,8 +1136,8 @@ class EdlCut(QtCore.QObject):
                     # returned with batch results.
                     data = {
                         "code": sg_shot["code"],
-                        "sg_cut_order": min_cut_order,
-                        "sg_status_list": sg_shot["sg_status_list"]}
+                        "sg_status_list": sg_shot["sg_status_list"],
+                        "sg_cut_order": min_cut_order}
                     data.update(
                         self._get_shot_in_out_sg_data(
                             cut_diff.new_head_in,

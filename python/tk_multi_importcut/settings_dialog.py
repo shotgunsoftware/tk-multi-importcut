@@ -389,17 +389,7 @@ class SettingsDialog(QtGui.QDialog):
         # while processing the EDL, etc. As a stop-gap, we warn the user and give them
         # the opportunity to restart the app if one of the known "non-refreshable"
         # settings has been changed (#36605).
-        if (update_shot_statuses != self._user_settings.get("update_shot_statuses") or
-            use_smart_fields != self._user_settings.get("use_smart_fields") or
-            omit_status != self._user_settings.get("omit_status") or
-            timecode_mapping != self._user_settings.get("timecode_mapping") or
-            statuses != self._user_settings.get("reinstate_shot_if_status_is") or
-            timecode_to_frame_mapping != self._user_settings.get("timecode_to_frame_mapping") or
-            default_frame_rate != self._user_settings.get("default_frame_rate") or
-            frame_mapping != self._user_settings.get("frame_mapping") or
-            default_head_in != self._user_settings.get("default_head_in") or
-            default_head_duration != self._user_settings.get("default_head_duration") or
-                default_tail_duration != self._user_settings.get("default_tail_duration")):
+        if (self._user_settings.restart_check(self._new_values)):
                     msg_box = QtGui.QMessageBox(
                         parent=self,
                         icon=QtGui.QMessageBox.Critical
