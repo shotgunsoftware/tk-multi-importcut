@@ -36,7 +36,7 @@ class UserSettings(object):
                  "default_tail_duration": "8",
                  "preload_entity_type": None}
 
-    # If any of these keys in the _defaults dict is changed, a restart of the
+    # If any of these keys in the _defaults dict are changed, a restart of the
     # app is required.
     _restart_keys = ["update_shot_statuses",
                      "use_smart_fields",
@@ -90,7 +90,7 @@ class UserSettings(object):
         Determines if a restart of the app is needed given a dict of settings.
 
         :param settings: A dict of settings to check against self._restart_keys.
-        :returns: Bool, True if restart is needed, None otherwise.
+        :returns: Bool, True if restart is needed, False otherwise.
         """
         restart_needed = False
         for setting in settings:
