@@ -21,36 +21,42 @@ class UserSettings(object):
     """
 
     # Define default settings.
-    _defaults = {"update_shot_statuses": True,
-                 "use_smart_fields": False,
-                 "email_groups": [],
-                 "omit_status": "omt",
-                 "reinstate_status": "Previous Status",
-                 "reinstate_shot_if_status_is": ["omt", "hld"],
-                 "default_frame_rate": "24",
-                 "timecode_to_frame_mapping": _ABSOLUTE_MODE,
-                 "timecode_mapping": "00:00:00:00",
-                 "frame_mapping": "1000",
-                 "default_head_in": "1001",
-                 "default_head_duration": "8",
-                 "default_tail_duration": "8",
-                 "preload_entity_type": None}
+    __defaults = {
+        "update_shot_statuses": True,
+        "use_smart_fields": False,
+        "email_groups": [],
+        "omit_status": "omt",
+        "reinstate_status": "Previous Status",
+        "reinstate_shot_if_status_is": ["omt", "hld"],
+        "default_frame_rate": "24",
+        "timecode_to_frame_mapping": _ABSOLUTE_MODE,
+        "timecode_mapping": "00:00:00:00",
+        "frame_mapping": "1000",
+        "default_head_in": "1001",
+        "default_head_duration": "8",
+        "default_tail_duration": "8",
+        "preload_entity_type": None
+    }
 
     # If any of these keys in the _defaults dict are changed, a restart of the
     # app is required.
-    _restart_keys = ["update_shot_statuses",
-                     "use_smart_fields",
-                     "omit_status",
-                     "timecode_mapping",
-                     "reinstate_shot_if_status_is",
-                     "timecode_to_frame_mapping",
-                     "default_frame_rate",
-                     "frame_mapping",
-                     "default_head_in",
-                     "default_head_duration",
-                     "default_tail_duration"]
+    __restart_keys = [
+        "update_shot_statuses",
+        "use_smart_fields",
+        "omit_status",
+        "timecode_mapping",
+        "reinstate_shot_if_status_is",
+        "timecode_to_frame_mapping",
+        "default_frame_rate",
+        "frame_mapping",
+        "default_head_in",
+        "default_head_duration",
+        "default_tail_duration"
+    ]
 
     def __init__(self):
+        # Provice access to the instanced object.
+        super(UserSettings, self).__init__()
         # Provide access to the user settings fw module.
         self._disk = sgtk.platform.current_bundle().user_settings
         # Retrieve our settings from disk.
@@ -72,7 +78,7 @@ class UserSettings(object):
         :returns: dict of settings.
         """
         settings = {}
-        for setting in self._defaults:
+        for setting in self.__defaults:
             settings[setting] = self._disk.retrieve(setting)
         return settings
 
@@ -85,22 +91,16 @@ class UserSettings(object):
         """
         return self._settings[setting]
 
-    def restart_check(self, settings):
+    def restart_needed(self, settings):
         """
         Determines if a restart of the app is needed given a dict of settings.
 
-        :param settings: A dict of settings to check against self._restart_keys.
-        :returns: Bool, True if restart is needed, False otherwise.
+        :param settings: A dict of settings to check against self.__restart_keys.
+        :returns: True if restart is needed, None otherwise.
         """
-        restart_needed = False
         for setting in settings:
-            if settings[setting] != self._settings[setting] and setting in self._restart_keys:
-                print setting
-                print settings[setting]
-                print "is not the same as:"
-                print self._defaults[setting]
-                restart_needed = True
-        return restart_needed
+            if settings[setting] != self._settings[setting] and setting in self.__restart_keys:
+                return True
 
     def save(self, settings):
         """
@@ -116,23 +116,23 @@ class UserSettings(object):
         """
         Restores all settings to their default values.
         """
-        for setting in self._defaults:
-            self._disk.store(setting, self._defaults[setting])
+        for setting in self.__defaults:
+            self._disk.store(setting, self.__defaults[setting])
         self._retrieve()
 
     def update(self):
         """
         Sets user settings to their default value if they have None value.
         """
-        for setting in self._defaults:
+        for setting in self.__defaults:
             if self._settings[setting] is None:
-                self._disk.store(setting, self._defaults[setting])
+                self._disk.store(setting, self.__defaults[setting])
         self._retrieve()
 
     def clear(self):
         """
         Sets all settings to None.
         """
-        for setting in self._defaults:
+        for setting in self.__defaults:
             self._disk.store(setting, None)
         self._retrieve()

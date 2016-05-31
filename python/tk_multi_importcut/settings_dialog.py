@@ -389,20 +389,20 @@ class SettingsDialog(QtGui.QDialog):
         # while processing the EDL, etc. As a stop-gap, we warn the user and give them
         # the opportunity to restart the app if one of the known "non-refreshable"
         # settings has been changed (#36605).
-        if (self._user_settings.restart_check(self._new_values)):
-                    msg_box = QtGui.QMessageBox(
-                        parent=self,
-                        icon=QtGui.QMessageBox.Critical
-                    )
-                    msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
-                    msg_box.setText("%s\n\n%s" % ("Settings", _CHANGED_SETTINGS_MSG))
-                    cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.YesRole)
-                    apply_button = msg_box.addButton("Apply and Quit", QtGui.QMessageBox.NoRole)
-                    apply_button.clicked.connect(self._save_settings_and_close)
-                    msg_box.show()
-                    msg_box.raise_()
-                    msg_box.activateWindow()
-                    return
+        if (self._user_settings.restart_needed(self._new_values)):
+            msg_box = QtGui.QMessageBox(
+                parent=self,
+                icon=QtGui.QMessageBox.Critical
+            )
+            msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
+            msg_box.setText("%s\n\n%s" % ("Settings", _CHANGED_SETTINGS_MSG))
+            cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.YesRole)
+            apply_button = msg_box.addButton("Apply and Quit", QtGui.QMessageBox.NoRole)
+            apply_button.clicked.connect(self._save_settings_and_close)
+            msg_box.show()
+            msg_box.raise_()
+            msg_box.activateWindow()
+            return
         self._save_settings()
         return True
 
