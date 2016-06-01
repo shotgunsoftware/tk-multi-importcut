@@ -110,29 +110,29 @@ class UserSettings(object):
         """
         for setting in settings:
             self._disk.store(setting, settings[setting])
-        self._retrieve()
+        self._settings = self._retrieve()
 
     def reset(self):
         """
-        Restores all settings to their default values.
+        Restores all settings to their default values and saves to disk.
         """
         for setting in self.__defaults:
             self._disk.store(setting, self.__defaults[setting])
-        self._retrieve()
+        self._settings = self._retrieve()
 
     def update(self):
         """
-        Sets user settings to their default value if they have None value.
+        Sets user settings to their default values if they have None values, and saves to disk.
         """
         for setting in self.__defaults:
             if self._settings[setting] is None:
                 self._disk.store(setting, self.__defaults[setting])
-        self._retrieve()
+        self._settings = self._retrieve()
 
     def clear(self):
         """
-        Sets all settings to None.
+        Sets all settings to None and saves to disk.
         """
         for setting in self.__defaults:
             self._disk.store(setting, None)
-        self._retrieve()
+        self._settings = self._retrieve()
