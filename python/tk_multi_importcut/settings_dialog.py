@@ -55,7 +55,15 @@ restart Import Cut: %s"
 
 
 class SettingsError(ValueError):
+    """
+    Helper class for raising Settings exceptions.
+    """
     def __init__(self, reason, message, details=None, *args, **kwargs):
+        """
+        :param reason: The "title" of the message in the dialog box.
+        :param message: The "body" of the message in the dialog box.
+        :param details: Optional exception or error to appear in the details pane of the dialog box.
+        """
         super(SettingsError, self).__init__(*args, **kwargs)
         self._reason = reason
         self._message = message
@@ -63,14 +71,23 @@ class SettingsError(ValueError):
 
     @property
     def reason(self):
+        """
+        Makes the self._reason attribute available.
+        """
         return self._reason
 
     @property
     def message(self):
+        """
+        Makes the self._message attribute available.
+        """
         return self._message
 
     @property
     def details(self):
+        """
+        Makes the self._message attribute available.
+        """
         return self._details
 
 
@@ -268,9 +285,9 @@ class SettingsDialog(QtGui.QDialog):
         """
         Helper method to display messages during validation and optional errors.
 
-        :param reason: The message type (for example "User Input")
-        :param message: Easy to read message for the user
-        :param details: Error coming back from an Exception, included in "Additional Details"
+        :param reason: The message type (for example "User Input").
+        :param message: Easy to read message for the user.
+        :param details: Error coming back from an Exception, included in "Show Details."
         """
         msg_box = QtGui.QMessageBox(
             parent=self,
@@ -342,7 +359,7 @@ class SettingsDialog(QtGui.QDialog):
             raise SettingsError("User Input", "Could not set frame rate to \"%s.\"" % (
                 default_frame_rate), e)
         if fps <= 0:
-            raise SettingsError("Value must be positive (fps), can't be %s." % fps)
+            raise SettingsError("User Input", "Value must be positive (fps), can't be %s." % fps)
 
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
 
@@ -374,7 +391,7 @@ class SettingsDialog(QtGui.QDialog):
             raise SettingsError("User Input", "Could not set default head duration to \"%s.\"" % (
                 default_head_duration), e)
         if dhd <= 0:
-            raise SettingsError("Value must be positive (Default Head Duration), can't be %s." % dhd)
+            raise SettingsError("User Input", "Value must be positive (Default Head Duration), can't be %s." % dhd)
 
         default_tail_duration = self.ui.default_tail_duration_line_edit.text()
         try:
@@ -383,7 +400,7 @@ class SettingsDialog(QtGui.QDialog):
             raise SettingsError("User Input", "Could not set default tail duration to \"%s.\"" % (
                 default_tail_duration), e)
         if dtd <= 0:
-            raise SettingsError("Value must be positive (Default Tail Duration), can't be %s." % dtd)
+            raise SettingsError("User Input", "Value must be positive (Default Tail Duration), can't be %s." % dtd)
 
         self._new_values = {"update_shot_statuses": update_shot_statuses,
                             "use_smart_fields": use_smart_fields,
