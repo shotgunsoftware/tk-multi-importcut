@@ -78,7 +78,7 @@ class CutDiff(QtCore.QObject):
 
     If a shot is repeated, that is, appears more than once in the cut (e.g. for
     flashback effects ), a single "media" is associated with all the entries
-    linked to this shot. All frames values are relative to the earliest entry
+    linked to this shot. All frame values are relative to the earliest entry
     head in value.
         --------------------------
         |       instance 1       |
