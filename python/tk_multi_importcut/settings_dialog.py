@@ -287,7 +287,7 @@ class SettingsDialog(QtGui.QDialog):
 
         :param reason: The message type (for example "User Input").
         :param message: Easy to read message for the user.
-        :param details: Error coming back frameom an Exception, included in "Show Details."
+        :param details: Error coming back from an Exception, included in "Show Details."
         """
         msg_box = QtGui.QMessageBox(
             parent=self,
@@ -359,7 +359,7 @@ class SettingsDialog(QtGui.QDialog):
             raise SettingsError("User Input", "Could not set frame rate to \"%s.\"" % (
                 default_frame_rate), e)
         if fps <= 0:
-            raise SettingsError("Value must be positive (fps), can't be %s." % fps)
+            raise SettingsError("User Input", "Value must be positive (fps), can't be %s." % fps)
 
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
 
