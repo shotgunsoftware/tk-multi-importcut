@@ -54,6 +54,26 @@ _CORRUPT_SETTINGS_MSG = "Corrupt user settings have been reset to default, \
 restart Import Cut: %s"
 
 
+class SettingsError(ValueError):
+    def __init__(self, reason, message, details=None, *args, **kwargs):
+        super(SettingsError, self).__init__(*args, **kwargs)
+        self._reason = reason
+        self._message = message
+        self._details = details
+
+    @property
+    def reason(self):
+        return self._reason
+
+    @property
+    def message(self):
+        return self._message
+
+    @property
+    def details(self):
+        return self._details
+
+
 class SettingsDialog(QtGui.QDialog):
     """
     Settings dialog, available on almost each page of the animated stacked
@@ -174,8 +194,15 @@ class SettingsDialog(QtGui.QDialog):
         """
         Save settings and close the dialog.
         """
-        if self._validate_and_save_settings():
-            self.close_dialog()
+        try:
+            if self._validate_and_save_settings():
+                self.close_dialog()
+        except SettingsError, se:
+            # Pop up specialised error dialog.
+            self._pop_error(se.reason, se.message, se.details)
+        except Exception, e:
+            # General case.
+            self._logger.exception(e)
 
     @QtCore.Slot()
     def discard_settings(self):
@@ -237,22 +264,22 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.default_head_in_line_edit.setEnabled(False)
             self.ui.default_head_in_label.setEnabled(False)
 
-    def _pop_error(self, title, message, error=None):
+    def _pop_error(self, reason, message, details=None):
         """
         Helper method to display messages during validation and optional errors.
 
-        :param title: The message type (for example "User Input")
+        :param reason: The message type (for example "User Input")
         :param message: Easy to read message for the user
-        :param error: Error coming back from an Exception, included in "Additional Details"
+        :param details: Error coming back from an Exception, included in "Additional Details"
         """
         msg_box = QtGui.QMessageBox(
             parent=self,
             icon=QtGui.QMessageBox.Critical
         )
         msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
-        if error:
-            msg_box.setDetailedText("%s" % error)
-        msg_box.setText("%s\n\n%s" % (title, message))
+        if details:
+            msg_box.setDetailedText("%s" % details)
+        msg_box.setText("%s\n\n%s" % (reason, message))
         msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
         msg_box.show()
         msg_box.raise_()
@@ -270,8 +297,7 @@ class SettingsDialog(QtGui.QDialog):
 
         use_smart_fields = self.ui.use_smart_fields_checkbox.isChecked()
         if use_smart_fields and not self._shot_schema.get("smart_cut_duration"):
-            self._pop_error("User Input", _BAD_SMART_FIELDS_MSG)
-            return
+            raise SettingsError("User Input", _BAD_SMART_FIELDS_MSG)
 
         # Break the to_text string into a list of Shotgun Group names
         to_text_list = re.sub(',\s+', ',', self.ui.email_groups_line_edit.text())
@@ -285,20 +311,15 @@ class SettingsDialog(QtGui.QDialog):
             existing_email_groups_list.append(existing_group["code"])
         for email_group in email_groups:
             if email_group not in existing_email_groups_list:
-                self._pop_error("User Input", _BAD_GROUP_MSG % (email_group, email_group))
-                return
+                raise SettingsError("User Input", _BAD_GROUP_MSG % (email_group, email_group))
 
         omit_status = self.ui.omit_status_combo_box.currentText()
         if not omit_status and update_shot_statuses:
-            self._pop_error("User Input", "%s" % (
-                "Please select an Omit Status."))
-            return
+            raise SettingsError("User Input", "%s" % ("Please select an Omit Status."))
 
         reinstate_status = self.ui.reinstate_status_combo_box.currentText()
         if not reinstate_status and update_shot_statuses:
-            self._pop_error("User Input", "%s" % (
-                "Please select a Reinstate Status"))
-            return
+            raise SettingsError("User Input", "%s" % ("Please select a Reinstate Status"))
 
         statuses = self.ui.reinstate_shot_if_status_is_line_edit.text().replace(
             ", ", ",").split(",")
@@ -310,8 +331,7 @@ class SettingsDialog(QtGui.QDialog):
                 bad_statuses.append('"%s"' % status)
         if bad_statuses:
             bad_statuses = "\n".join(bad_statuses)
-            self._pop_error("User Input", _BAD_STATUS_MSG % (bad_statuses))
-            return
+            raise SettingsError("User Input", _BAD_STATUS_MSG % (bad_statuses))
 
         # Timecode/Frames tab
 
@@ -319,11 +339,10 @@ class SettingsDialog(QtGui.QDialog):
         try:
             fps = float(default_frame_rate)
         except Exception, e:
-            self._pop_error("User Input", "Could not set frame rate to \"%s.\"" % (
+            raise SettingsError("User Input", "Could not set frame rate to \"%s.\"" % (
                 default_frame_rate), e)
-            return
         if fps <= 0:
-            self._pop_error("Value must be positive (fps), can't be %s." % fps)
+            raise SettingsError("Value must be positive (fps), can't be %s." % fps)
 
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
 
@@ -332,44 +351,39 @@ class SettingsDialog(QtGui.QDialog):
             # Using the timecode module to validate the timecode_mapping value
             edl.Timecode(timecode_mapping, fps=fps)
         except Exception, e:
-            self._pop_error("User Input", _BAD_TIMECODE_MSG % timecode_mapping, e)
-            return
+            raise SettingsError("User Input", _BAD_TIMECODE_MSG % timecode_mapping, e)
 
         frame_mapping = self.ui.frame_mapping_line_edit.text()
         try:
             int(frame_mapping)
         except Exception, e:
-            self._pop_error("User Input", "Could not set frame mapping to \"%s.\"" % (
+            raise SettingsError("User Input", "Could not set frame mapping to \"%s.\"" % (
                 frame_mapping), e)
-            return
 
         default_head_in = self.ui.default_head_in_line_edit.text()
         try:
             int(default_head_in)
         except Exception, e:
-            self._pop_error("User Input", "Could not set default head in to \"%s.\"" % (
+            raise SettingsError("User Input", "Could not set default head in to \"%s.\"" % (
                 default_head_in), e)
-            return
 
         default_head_duration = self.ui.default_head_duration_line_edit.text()
         try:
             dhd = int(default_head_duration)
         except Exception, e:
-            self._pop_error("User Input", "Could not set default head duration to \"%s.\"" % (
+            raise SettingsError("User Input", "Could not set default head duration to \"%s.\"" % (
                 default_head_duration), e)
-            return
         if dhd <= 0:
-            self._pop_error("Value must be positive (Default Head Duration), can't be %s." % dhd)
+            raise SettingsError("Value must be positive (Default Head Duration), can't be %s." % dhd)
 
         default_tail_duration = self.ui.default_tail_duration_line_edit.text()
         try:
             dtd = int(default_tail_duration)
         except Exception, e:
-            self._pop_error("User Input", "Could not set default tail duration to \"%s.\"" % (
+            raise SettingsError("User Input", "Could not set default tail duration to \"%s.\"" % (
                 default_tail_duration), e)
-            return
         if dtd <= 0:
-            self._pop_error("Value must be positive (Default Tail Duration), can't be %s." % dtd)
+            raise SettingsError("Value must be positive (Default Tail Duration), can't be %s." % dtd)
 
         self._new_values = {"update_shot_statuses": update_shot_statuses,
                             "use_smart_fields": use_smart_fields,
@@ -389,20 +403,20 @@ class SettingsDialog(QtGui.QDialog):
         # while processing the EDL, etc. As a stop-gap, we warn the user and give them
         # the opportunity to restart the app if one of the known "non-refreshable"
         # settings has been changed (#36605).
-        if (self._user_settings.restart_check(self._new_values)):
-                    msg_box = QtGui.QMessageBox(
-                        parent=self,
-                        icon=QtGui.QMessageBox.Critical
-                    )
-                    msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
-                    msg_box.setText("%s\n\n%s" % ("Settings", _CHANGED_SETTINGS_MSG))
-                    cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.YesRole)
-                    apply_button = msg_box.addButton("Apply and Quit", QtGui.QMessageBox.NoRole)
-                    apply_button.clicked.connect(self._save_settings_and_close)
-                    msg_box.show()
-                    msg_box.raise_()
-                    msg_box.activateWindow()
-                    return
+        if (self._user_settings.restart_needed(self._new_values)):
+            msg_box = QtGui.QMessageBox(
+                parent=self,
+                icon=QtGui.QMessageBox.Critical
+            )
+            msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
+            msg_box.setText("%s\n\n%s" % ("Settings", _CHANGED_SETTINGS_MSG))
+            cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.YesRole)
+            apply_button = msg_box.addButton("Apply and Quit", QtGui.QMessageBox.NoRole)
+            apply_button.clicked.connect(self._save_settings_and_close)
+            msg_box.show()
+            msg_box.raise_()
+            msg_box.activateWindow()
+            return
         self._save_settings()
         return True
 
