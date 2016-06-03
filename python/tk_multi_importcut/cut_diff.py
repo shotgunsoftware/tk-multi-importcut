@@ -444,6 +444,25 @@ class CutDiff(QtCore.QObject):
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_out"]
         if self._sg_shot:
+            if self.repeated:
+                latest = self._siblings.latest
+                if not latest:
+                    raise ValueError(
+                        "%s is repeated but does not have an latest entry defined" % self
+                    )
+                # If we are the latest, we will fall back to the default case below
+                if latest != self:  # We are not the latest
+                    # get its tc_cut_in
+                    latest_tc_cut_out = self._siblings.max_tc_cut_out
+                    if latest_tc_cut_out is None:
+                        raise ValueError(
+                            "Latest %s is not able to compute tc cut out" % latest_tc_cut_out
+                        )
+                    # Compute the difference with ours
+                    offset = self.new_tc_cut_out.to_frame() - latest_tc_cut_out.to_frame()
+                    # add it the earliest head in
+                    return self._siblings.max_cut_out + offset
+            # Default: not repeated or latest entry
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_cut_out")
             return self._sg_shot["sg_cut_out"]

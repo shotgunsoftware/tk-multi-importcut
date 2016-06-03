@@ -135,6 +135,12 @@ class ShotCutDiffList(list):
             return self._max_tc_cut_out
         return self._new_max_tc_cut_out
 
+    @property
+    def max_cut_out(self):
+        if self._latest_entry:
+            return self._latest_entry.cut_out
+        return self._new_latest_entry.new_cut_out
+
     def get_shot_values(self):
         """
         Loop over our cut diff list and return values which should be set on the
