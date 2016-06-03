@@ -147,27 +147,42 @@ class ShotCutDiffList(list):
         Return a tuple with :
         - A SG Shot dictionary or None
         - The smallest cut order
+        - The earliest head in
         - The earliest cut in
         - The latest cut out
+        - The latest tail out
         - The shot difference type
         """
         min_cut_order = None
+        min_head_in = None
         min_cut_in = None
         max_cut_out = None
+        max_tail_out = None
         sg_shot = None
         shot_diff_type = None
+        # Do a first pass with all entries to get min and max
         for cut_diff in self:
             if sg_shot is None and cut_diff.sg_shot:
                 sg_shot = cut_diff.sg_shot
             edit = cut_diff.edit
             if edit and (min_cut_order is None or edit.id < min_cut_order):
                 min_cut_order = edit.id
+            if cut_diff.new_head_in is not None and (
+                min_head_in is None or cut_diff.new_head_in < min_head_in):
+                    min_head_in = cut_diff.new_head_in
             if cut_diff.new_cut_in is not None and (
                 min_cut_in is None or cut_diff.new_cut_in < min_cut_in):
                     min_cut_in = cut_diff.new_cut_in
             if cut_diff.new_cut_out is not None and (
                 max_cut_out is None or cut_diff.new_cut_out > max_cut_out):
                     max_cut_out = cut_diff.new_cut_out
+            if cut_diff.new_tail_out is not None and (
+                max_tail_out is None or cut_diff.new_tail_out > max_tail_out):
+                    max_tail_out = cut_diff.new_tail_out
+        # We do a second pass for the shot difference type, as we might stop
+        # iteration at some point. Given that the number of duplicated shots is
+        # usually low, there shouldn't be a big performance hit in iterating twice
+        for cut_diff in self:
             # Special cases for diff type :
             # - A shot is no link if any of its items is no link (should be all of them)
             # - A shot is omitted if all its items are omitted
@@ -217,7 +232,15 @@ class ShotCutDiffList(list):
         # so the whole shot is _OMITTED
         if shot_diff_type == _DIFF_TYPES.OMITTED_IN_CUT:
             shot_diff_type = _DIFF_TYPES.OMITTED
-        return (sg_shot, min_cut_order, min_cut_in, max_cut_out, shot_diff_type,)
+        return (
+            sg_shot,
+            min_cut_order,
+            min_head_in,
+            min_cut_in,
+            max_cut_out,
+            max_tail_out,
+            shot_diff_type,
+        )
 
     def _update_min_and_max(self, cut_diff):
         """
@@ -568,7 +591,7 @@ class CutSummary(QtCore.QObject):
         """
         self._counts = {}
         for k, v in self._cut_diffs.iteritems():
-            _, _, _, _, shot_diff_type = v.get_shot_values()
+            _, _, _, _, _, _, shot_diff_type = v.get_shot_values()
             if shot_diff_type in [
                 _DIFF_TYPES.NEW,
                 _DIFF_TYPES.OMITTED,

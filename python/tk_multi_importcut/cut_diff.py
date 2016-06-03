@@ -378,6 +378,26 @@ class CutDiff(QtCore.QObject):
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_in"]
         if self._sg_shot:
+            # If repeated and we are not the first entry, we
+            # need to compute an offset from first entry
+            if self.repeated:
+                earliest = self._siblings.earliest
+                if not earliest:
+                    raise ValueError(
+                        "%s is repeated but does not have an earliest entry defined" % self)
+                # If we are the earliest, we will fall back to the default case below
+                if earliest != self:  # We are not the earliest
+                    # get its tc_cut_in
+                    earliest_tc_cut_in = self._siblings.min_tc_cut_in
+                    if earliest_tc_cut_in is None:
+                        raise ValueError(
+                            "Earliest %s is not able to compute tc cut in" % earliest_tc_cut_in
+                        )
+                    # Compute the difference with ours
+                    offset = self.new_tc_cut_in.to_frame() - earliest_tc_cut_in.to_frame()
+                    # add it the earliest head in
+                    return self._siblings.min_cut_in + offset
+            # Default case if not repeated or first entry
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_cut_in")
             return self._sg_shot["sg_cut_in"]

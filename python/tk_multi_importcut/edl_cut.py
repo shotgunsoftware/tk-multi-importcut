@@ -1045,7 +1045,22 @@ class EdlCut(QtCore.QObject):
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
             # Retrieve values for the shot, and the shot itself
-            sg_shot, min_cut_order, min_cut_in, max_cut_out, shot_diff_type = items.get_shot_values()
+            (sg_shot,
+            min_cut_order,
+            min_head_in,
+            min_cut_in,
+            max_cut_out,
+            max_tail_out,
+            shot_diff_type)= items.get_shot_values()
+            self._logger.info("Shot values for %s are %s" % (
+                shot_name,
+                str(( min_cut_order,
+                    min_head_in,
+                    min_cut_in,
+                    max_cut_out,
+                    max_tail_out,
+                    shot_diff_type)),
+            ))
             # Cut diff types should be the same for all repeated entries, except may be for
             # rescan / cut change, but we do the same thing in both cases, so it does not
             # matter, head in and tail out values can be evaluated on any repeated shot
@@ -1072,10 +1087,10 @@ class EdlCut(QtCore.QObject):
                     data[self._sg_shot_link_field_name] = self._sg_entity
                 data.update(
                     self._get_shot_in_out_sg_data(
-                        cut_diff.new_head_in,
+                        min_head_in,
                         min_cut_in,
                         max_cut_out,
-                        cut_diff.new_tail_out,
+                        max_tail_out,
                     )
                 )
                 sg_batch_data.append({
@@ -1122,10 +1137,10 @@ class EdlCut(QtCore.QObject):
                             }
                     data.update(
                         self._get_shot_in_out_sg_data(
-                            cut_diff.new_head_in,
+                            min_head_in,
                             min_cut_in,
                             max_cut_out,
-                            cut_diff.new_tail_out,
+                            max_tail_out,
                         )
                     )
                     sg_batch_data.append({
@@ -1144,10 +1159,10 @@ class EdlCut(QtCore.QObject):
                         }
                     data.update(
                         self._get_shot_in_out_sg_data(
-                            cut_diff.new_head_in,
+                            min_head_in,
                             min_cut_in,
                             max_cut_out,
-                            cut_diff.new_tail_out,
+                            max_tail_out,
                         )
                     )
                     sg_batch_data.append({
