@@ -172,7 +172,6 @@ class CutDiffCard(QtGui.QFrame):
 
         value = self._cut_diff.cut_in
         new_value = self._cut_diff.new_cut_in
-        self.ui.cut_in_label.setToolTip("%s %s" %(str(value), str(new_value)))
         self.display_values(self.ui.cut_in_label, new_value, value)
 
         value = self._cut_diff.cut_out

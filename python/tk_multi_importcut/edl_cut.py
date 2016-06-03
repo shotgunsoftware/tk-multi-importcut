@@ -1052,7 +1052,7 @@ class EdlCut(QtCore.QObject):
             max_cut_out,
             max_tail_out,
             shot_diff_type)= items.get_shot_values()
-            self._logger.info("Shot values for %s are %s" % (
+            self._logger.debug("Shot values for %s are %s" % (
                 shot_name,
                 str(( min_cut_order,
                     min_head_in,
