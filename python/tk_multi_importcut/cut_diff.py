@@ -378,6 +378,8 @@ class CutDiff(QtCore.QObject):
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_in"]
         if self._sg_shot:
+            if self._use_smart_fields:
+                return self._sg_shot.get("smart_cut_in")
             return self._sg_shot["sg_cut_in"]
         return None
 
@@ -422,6 +424,8 @@ class CutDiff(QtCore.QObject):
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_out"]
         if self._sg_shot:
+            if self._use_smart_fields:
+                return self._sg_shot.get("smart_cut_out")
             return self._sg_shot["sg_cut_out"]
         return None
 
@@ -472,7 +476,7 @@ class CutDiff(QtCore.QObject):
                 return cut_in + offset
         # If we don't have a previous cut item, we can't just compute an offset
         # from the previous cut values, so we need to compute brand new values
-        # If repeated our cut in is relative to the earliest entry
+        # If repeated, our cut in is relative to the earliest entry
         if self.repeated:
             # Get the head in for the earliest entry
             earliest = self._siblings.earliest
@@ -782,8 +786,7 @@ class CutDiff(QtCore.QObject):
         # This cut_item hasn't appeared in previous Cuts.
         if not self._sg_cut_item:
             self._diff_type = _DIFF_TYPES.NEW_IN_CUT
-            if self.repeated:
-                return
+            return
 
         # Check if we have a difference.
         # If any of the previous value is not set, then assume all changed (initial import)
