@@ -78,7 +78,7 @@ class CutDiff(QtCore.QObject):
 
     If a shot is repeated, that is, appears more than once in the cut (e.g. for
     flashback effects ), a single "media" is associated with all the entries
-    linked to this shot. All frames values are relative to the earliest entry
+    linked to this shot. All frame values are relative to the earliest entry
     head in value.
         --------------------------
         |       instance 1       |
@@ -378,6 +378,28 @@ class CutDiff(QtCore.QObject):
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_in"]
         if self._sg_shot:
+            # If repeated and we are not the first entry, we
+            # need to compute an offset from first entry
+            if self.repeated:
+                earliest = self._siblings.earliest
+                if not earliest:
+                    raise ValueError(
+                        "%s is repeated but does not have an earliest entry defined" % self)
+                # If we are the earliest, we will fall back to the default case below
+                if earliest != self:  # We are not the earliest
+                    # get its tc_cut_in
+                    earliest_tc_cut_in = self._siblings.min_tc_cut_in
+                    if earliest_tc_cut_in is None:
+                        raise ValueError(
+                            "Earliest %s is not able to compute tc cut in" % earliest_tc_cut_in
+                        )
+                    # Compute the difference with ours
+                    offset = self.new_tc_cut_in.to_frame() - earliest_tc_cut_in.to_frame()
+                    # add it the earliest head in
+                    return self._siblings.min_cut_in + offset
+            # Default case if not repeated or first entry
+            if self._use_smart_fields:
+                return self._sg_shot.get("smart_cut_in")
             return self._sg_shot["sg_cut_in"]
         return None
 
@@ -422,6 +444,27 @@ class CutDiff(QtCore.QObject):
         if self._sg_cut_item:
             return self._sg_cut_item["cut_item_out"]
         if self._sg_shot:
+            if self.repeated:
+                last = self._siblings.last
+                if not last:
+                    raise ValueError(
+                        "%s is repeated but does not have a last entry defined" % self
+                    )
+                # If we are the last, we will fall back to the default case below
+                if last != self:  # We are not the last
+                    # get its tc_cut_in
+                    last_tc_cut_out = self._siblings.max_tc_cut_out
+                    if last_tc_cut_out is None:
+                        raise ValueError(
+                            "Last %s is not able to compute tc cut out" % last_tc_cut_out
+                        )
+                    # Compute the difference with ours
+                    offset = self.new_tc_cut_out.to_frame() - last_tc_cut_out.to_frame()
+                    # add it the earliest head in
+                    return self._siblings.max_cut_out + offset
+            # Default: not repeated or last entry
+            if self._use_smart_fields:
+                return self._sg_shot.get("smart_cut_out")
             return self._sg_shot["sg_cut_out"]
         return None
 
@@ -472,7 +515,7 @@ class CutDiff(QtCore.QObject):
                 return cut_in + offset
         # If we don't have a previous cut item, we can't just compute an offset
         # from the previous cut values, so we need to compute brand new values
-        # If repeated our cut in is relative to the earliest entry
+        # If repeated, our cut in is relative to the earliest entry
         if self.repeated:
             # Get the head in for the earliest entry
             earliest = self._siblings.earliest
@@ -628,12 +671,12 @@ class CutDiff(QtCore.QObject):
             # Special case if we have an edit and are repeated
             # if we don't have an edit, the new_tail_duration is irrelevant
             if self._edit and self.repeated:
-                latest = self._siblings.latest
-                if not latest:
-                    raise ValueError("Couldn't get latest entry for repeated shot %s" % self)
-                if latest != self:
-                    # If we are not ourself the latest entry
-                    tail_out = latest.new_tail_out
+                last = self._siblings.last
+                if not last:
+                    raise ValueError("Couldn't get last entry for repeated shot %s" % self)
+                if last != self:
+                    # If we are not ourself the last entry
+                    tail_out = last.new_tail_out
         if tail_out is None:
             # Fallback to defaults
             return self._default_tail_out_duration
@@ -755,11 +798,11 @@ class CutDiff(QtCore.QObject):
 
     def _check_changes(self):
         """
-        Set the cut difference type for this cut difference
+        Set the cut difference type for this cut difference.
         """
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
-        # The type of difference we are dealing with
+        # The type of difference we are dealing with.
         if not self.name:
             self._diff_type = _DIFF_TYPES.NO_LINK
             return
@@ -773,19 +816,19 @@ class CutDiff(QtCore.QObject):
             else:
                 self._diff_type = _DIFF_TYPES.OMITTED_IN_CUT
             return
-        # We have both a shot and an edit
+        # We have both a shot and an edit.
         omit_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is") or []
         if self._sg_shot["sg_status_list"] in omit_statuses:
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
 
-        # This cut_item hasn't appeared in previous Cuts
+        # This cut_item hasn't appeared in previous Cuts.
         if not self._sg_cut_item:
             self._diff_type = _DIFF_TYPES.NEW_IN_CUT
             return
 
-        # Check if we have a difference
-        # If any of the previous value is not set, then assume all changed ( initial import )
+        # Check if we have a difference.
+        # If any of the previous value is not set, then assume all changed (initial import)
         if self.cut_order is None or self.cut_in is None or self.cut_out is None or \
             self.head_duration is None or self.tail_duration is None or self.duration is None:
                 self._diff_type = _DIFF_TYPES.CUT_CHANGE

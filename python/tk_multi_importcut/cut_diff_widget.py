@@ -283,7 +283,7 @@ class CutDiffCard(QtGui.QFrame):
         :param new_value: New value retrieved from the cut being imported
         :param old_value: Previous value retrieved from a former cut import
         """
-        if self._cut_diff.diff_type in [_DIFF_TYPES.NEW, _DIFF_TYPES.NEW_IN_CUT]:
+        if self._cut_diff.diff_type in [_DIFF_TYPES.NEW]:
             widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
         elif self._cut_diff.diff_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]:
             if old_value is not None:
@@ -300,7 +300,7 @@ class CutDiffCard(QtGui.QFrame):
                         _COLORS["lgrey"], old_value
                     ))
                 else:
-                    widget.setText(new_value)
+                    widget.setText(str(new_value))
             else:
                 widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
 

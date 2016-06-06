@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'submit_dialog.ui'
 #
-#      by: pyside-uic 0.2.15 running on PySide 1.2.4
+#      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -224,5 +224,5 @@ class Ui_submit_dialog(object):
         self.no_link_title_label.setText(QtGui.QApplication.translate("submit_dialog", "No Link", None, QtGui.QApplication.UnicodeUTF8))
         self.label_10.setText(QtGui.QApplication.translate("submit_dialog", "Repeated", None, QtGui.QApplication.UnicodeUTF8))
         self.update_shot_fields_checkbox.setToolTip(QtGui.QApplication.translate("submit_dialog", "If off, Shot fields will not be updated, but, if needed, new Shots will be created", None, QtGui.QApplication.UnicodeUTF8))
-        self.update_shot_fields_checkbox.setText(QtGui.QApplication.translate("submit_dialog", "Update Shot Fields", None, QtGui.QApplication.UnicodeUTF8))
+        self.update_shot_fields_checkbox.setText(QtGui.QApplication.translate("submit_dialog", "Update Cut Fields on Shots", None, QtGui.QApplication.UnicodeUTF8))
 

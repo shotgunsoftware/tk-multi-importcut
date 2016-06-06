@@ -836,7 +836,7 @@ class AppDialog(QtGui.QWidget):
                 )
             else:
                 self.ui.cut_summary_title_label.setText(
-                    "Showing %s for %s <b>%s</b>" % (
+                    "Comparing %s to Shotgun Shot Data for %s <b>%s</b>" % (
                         os.path.basename(self._processor.edl_file_path),
                         self._processor.entity_type_name,
                         self._processor.entity_name,

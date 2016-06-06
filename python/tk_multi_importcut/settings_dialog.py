@@ -103,6 +103,7 @@ class SettingsDialog(QtGui.QDialog):
         :param parent: a QWidget
         """
         super(SettingsDialog, self).__init__(parent)
+        self.setModal(True)
         self._logger = get_logger()
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)

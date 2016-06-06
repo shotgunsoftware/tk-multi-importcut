@@ -61,12 +61,12 @@ class ShotCutDiffList(list):
         self._min_tc_cut_in = None
         self._max_tc_cut_out = None
         self._earliest_entry = None
-        self._latest_entry = None
+        self._last_entry = None
         # From the new edit
         self._new_min_tc_cut_in = None
         self._new_max_tc_cut_out = None
         self._new_earliest_entry = None
-        self._new_latest_entry = None
+        self._new_last_entry = None
 
     def append(self, cut_diff):
         """
@@ -77,7 +77,7 @@ class ShotCutDiffList(list):
         super(ShotCutDiffList, self).append(cut_diff)
         self._update_min_and_max(cut_diff)
         cut_diff.set_siblings(self)
-        if cut_diff == self._earliest_entry or cut_diff == self._latest_entry:
+        if cut_diff == self._earliest_entry or cut_diff == self._last_entry:
             # We neeed to recompute in and out for all entries
             for cdiff in self:
                 self._update_min_and_max(cdiff)
@@ -107,15 +107,15 @@ class ShotCutDiffList(list):
         return self._new_earliest_entry
 
     @property
-    def latest(self):
+    def last(self):
         """
-        Return the entry with latest tc cut out from out list
+        Return the entry with last tc cut out from out list
 
         :returns: A CutDiff instance, or None
         """
-        if self._latest_entry:
-            return self._latest_entry
-        return self._new_latest_entry
+        if self._last_entry:
+            return self._last_entry
+        return self._new_last_entry
 
     @property
     def min_tc_cut_in(self):
@@ -135,6 +135,12 @@ class ShotCutDiffList(list):
             return self._max_tc_cut_out
         return self._new_max_tc_cut_out
 
+    @property
+    def max_cut_out(self):
+        if self._last_entry:
+            return self._last_entry.cut_out
+        return self._new_last_entry.new_cut_out
+
     def get_shot_values(self):
         """
         Loop over our cut diff list and return values which should be set on the
@@ -147,27 +153,42 @@ class ShotCutDiffList(list):
         Return a tuple with :
         - A SG Shot dictionary or None
         - The smallest cut order
+        - The earliest head in
         - The earliest cut in
-        - The latest cut out
+        - The last cut out
+        - The last tail out
         - The shot difference type
         """
         min_cut_order = None
+        min_head_in = None
         min_cut_in = None
         max_cut_out = None
+        max_tail_out = None
         sg_shot = None
         shot_diff_type = None
+        # Do a first pass with all entries to get min and max
         for cut_diff in self:
             if sg_shot is None and cut_diff.sg_shot:
                 sg_shot = cut_diff.sg_shot
             edit = cut_diff.edit
             if edit and (min_cut_order is None or edit.id < min_cut_order):
                 min_cut_order = edit.id
+            if cut_diff.new_head_in is not None and (
+                min_head_in is None or cut_diff.new_head_in < min_head_in):
+                    min_head_in = cut_diff.new_head_in
             if cut_diff.new_cut_in is not None and (
                 min_cut_in is None or cut_diff.new_cut_in < min_cut_in):
                     min_cut_in = cut_diff.new_cut_in
             if cut_diff.new_cut_out is not None and (
                 max_cut_out is None or cut_diff.new_cut_out > max_cut_out):
                     max_cut_out = cut_diff.new_cut_out
+            if cut_diff.new_tail_out is not None and (
+                max_tail_out is None or cut_diff.new_tail_out > max_tail_out):
+                    max_tail_out = cut_diff.new_tail_out
+        # We do a second pass for the shot difference type, as we might stop
+        # iteration at some point. Given that the number of duplicated shots is
+        # usually low, there shouldn't be a big performance hit in iterating twice
+        for cut_diff in self:
             # Special cases for diff type :
             # - A shot is no link if any of its items is no link (should be all of them)
             # - A shot is omitted if all its items are omitted
@@ -217,7 +238,15 @@ class ShotCutDiffList(list):
         # so the whole shot is _OMITTED
         if shot_diff_type == _DIFF_TYPES.OMITTED_IN_CUT:
             shot_diff_type = _DIFF_TYPES.OMITTED
-        return (sg_shot, min_cut_order, min_cut_in, max_cut_out, shot_diff_type,)
+        return (
+            sg_shot,
+            min_cut_order,
+            min_head_in,
+            min_cut_in,
+            max_cut_out,
+            max_tail_out,
+            shot_diff_type,
+        )
 
     def _update_min_and_max(self, cut_diff):
         """
@@ -234,7 +263,7 @@ class ShotCutDiffList(list):
         if tc_cut_out is not None and (
             self._max_tc_cut_out is None or tc_cut_out.to_frame() > self._max_tc_cut_out.to_frame()):
                 self._max_tc_cut_out = tc_cut_out
-                self._latest_entry = cut_diff
+                self._last_entry = cut_diff
 
         tc_cut_in = cut_diff.new_tc_cut_in
         if tc_cut_in is not None and (
@@ -245,7 +274,7 @@ class ShotCutDiffList(list):
         if tc_cut_out is not None and (
             self._new_max_tc_cut_out is None or tc_cut_out.to_frame() > self._new_max_tc_cut_out.to_frame()):
                 self._new_max_tc_cut_out = tc_cut_out
-                self._new_latest_entry = cut_diff
+                self._new_last_entry = cut_diff
 
 
 class CutSummary(QtCore.QObject):
@@ -568,7 +597,7 @@ class CutSummary(QtCore.QObject):
         """
         self._counts = {}
         for k, v in self._cut_diffs.iteritems():
-            _, _, _, _, shot_diff_type = v.get_shot_values()
+            _, _, _, _, _, _, shot_diff_type = v.get_shot_values()
             if shot_diff_type in [
                 _DIFF_TYPES.NEW,
                 _DIFF_TYPES.OMITTED,
