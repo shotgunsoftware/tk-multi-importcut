@@ -445,24 +445,24 @@ class CutDiff(QtCore.QObject):
             return self._sg_cut_item["cut_item_out"]
         if self._sg_shot:
             if self.repeated:
-                latest = self._siblings.latest
-                if not latest:
+                last = self._siblings.last
+                if not last:
                     raise ValueError(
-                        "%s is repeated but does not have an latest entry defined" % self
+                        "%s is repeated but does not have a last entry defined" % self
                     )
-                # If we are the latest, we will fall back to the default case below
-                if latest != self:  # We are not the latest
+                # If we are the last, we will fall back to the default case below
+                if last != self:  # We are not the last
                     # get its tc_cut_in
-                    latest_tc_cut_out = self._siblings.max_tc_cut_out
-                    if latest_tc_cut_out is None:
+                    last_tc_cut_out = self._siblings.max_tc_cut_out
+                    if last_tc_cut_out is None:
                         raise ValueError(
-                            "Latest %s is not able to compute tc cut out" % latest_tc_cut_out
+                            "Last %s is not able to compute tc cut out" % last_tc_cut_out
                         )
                     # Compute the difference with ours
-                    offset = self.new_tc_cut_out.to_frame() - latest_tc_cut_out.to_frame()
+                    offset = self.new_tc_cut_out.to_frame() - last_tc_cut_out.to_frame()
                     # add it the earliest head in
                     return self._siblings.max_cut_out + offset
-            # Default: not repeated or latest entry
+            # Default: not repeated or last entry
             if self._use_smart_fields:
                 return self._sg_shot.get("smart_cut_out")
             return self._sg_shot["sg_cut_out"]
@@ -671,12 +671,12 @@ class CutDiff(QtCore.QObject):
             # Special case if we have an edit and are repeated
             # if we don't have an edit, the new_tail_duration is irrelevant
             if self._edit and self.repeated:
-                latest = self._siblings.latest
-                if not latest:
-                    raise ValueError("Couldn't get latest entry for repeated shot %s" % self)
-                if latest != self:
-                    # If we are not ourself the latest entry
-                    tail_out = latest.new_tail_out
+                last = self._siblings.last
+                if not last:
+                    raise ValueError("Couldn't get last entry for repeated shot %s" % self)
+                if last != self:
+                    # If we are not ourself the last entry
+                    tail_out = last.new_tail_out
         if tail_out is None:
             # Fallback to defaults
             return self._default_tail_out_duration
