@@ -303,7 +303,9 @@ class EdlCut(QtCore.QObject):
                     )
                 for edit in edits:
                     edit._sg_version = sg_version
-                    if not edit.get_shot_name() and sg_version["entity.Shot.code"]:
+                    # If we have a linked Version, its linked Shot takes precedence
+                    # over shot names retrieved from locators, comments, etc...
+                    if sg_version["entity.Shot.code"]:
                         edit._shot_name = sg_version["entity.Shot.code"]
 
     @QtCore.Slot(dict)
