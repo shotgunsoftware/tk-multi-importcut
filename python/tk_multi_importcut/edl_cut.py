@@ -1217,7 +1217,7 @@ class EdlCut(QtCore.QObject):
                             "request_type": "create",
                             "entity_type": "Version",
                             "data": {
-                                "project": self._ctx.project,
+                                "project": self._project,
                                 "code": edit.get_version_name(),
                                 "entity": cut_diff.sg_shot,
                                 "updated_by": self._ctx.user,
