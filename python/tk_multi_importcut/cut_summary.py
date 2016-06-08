@@ -717,7 +717,7 @@ class CutSummary(QtCore.QObject):
             )
         ]
         no_link_details = [
-            edit.version_name for edit in sorted(
+            edit.version_name or str(edit.new_cut_order) for edit in sorted(
                 self.edits_for_type(_DIFF_TYPES.NO_LINK),
                 key=lambda x: x.new_cut_order
             )

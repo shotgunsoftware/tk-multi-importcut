@@ -169,9 +169,6 @@ class EdlCut(QtCore.QObject):
                     edit._shot_name = prefered_match
                 elif match:
                     edit._shot_name = match
-        if not edit.get_shot_name() and not edit.get_version_name():
-            raise RuntimeError("Couldn't extract a shot name nor a version name, \
-                one of them is required")
 
     @QtCore.Slot(str)
     def reset(self):
