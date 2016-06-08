@@ -169,9 +169,6 @@ class EdlCut(QtCore.QObject):
                     edit._shot_name = prefered_match
                 elif match:
                     edit._shot_name = match
-        if not edit.get_shot_name() and not edit.get_version_name():
-            raise RuntimeError("Couldn't extract a shot name nor a version name, \
-                one of them is required")
 
     @QtCore.Slot(str)
     def reset(self):
@@ -303,7 +300,9 @@ class EdlCut(QtCore.QObject):
                     )
                 for edit in edits:
                     edit._sg_version = sg_version
-                    if not edit.get_shot_name() and sg_version["entity.Shot.code"]:
+                    # If we have a linked Version, its linked Shot takes precedence
+                    # over shot names retrieved from locators, comments, etc...
+                    if sg_version["entity.Shot.code"]:
                         edit._shot_name = sg_version["entity.Shot.code"]
 
     @QtCore.Slot(dict)
@@ -675,6 +674,9 @@ class EdlCut(QtCore.QObject):
                     )
                 else:
                     lower_shot_name = shot_name.lower()
+                    self._logger.debug("Matching %s for %s" % (
+                        lower_shot_name, str(edit),
+                    ))
                     existing = self._summary.diffs_for_shot(shot_name)
                     # Is it a duplicate ?
                     if existing:
@@ -821,11 +823,18 @@ class EdlCut(QtCore.QObject):
                                 sg_cut_item,
                                 100 + self._get_cut_item_score(sg_cut_item, edit)
                                 ))
+            else:
+                self._logger.debug("Rejecting %s for %s" % ( sg_cut_item, edit))
         if potential_matches:
             potential_matches.sort(key=lambda x: x[1], reverse=True)
+            for pm in potential_matches:
+                self._logger.debug("Potential matches %s score %s" % (
+                    pm[0], pm[1],
+                ))
             # Return just the cut item, not including the score
             best = potential_matches[0][0]
             sg_cut_items.remove(best)  # Prevent this one to be used multiple times
+            self._logger.debug("Best is %s for %s" % ( best, edit))
             return best
         return None
 
@@ -877,7 +886,8 @@ class EdlCut(QtCore.QObject):
             self.progress_changed.emit(1)
             # When testing this app it might be time consuming to create
             # all needed Versions in SG. If the following line is un-commented
-            # it will create missing Versions for you, which can be handy
+            # it will create missing Versions for you, which can be handy for
+            # testing
             # self._create_missing_sg_versions()
             self.progress_changed.emit(2)
             self.create_sg_cut_items(self._sg_new_cut)
@@ -1192,39 +1202,52 @@ class EdlCut(QtCore.QObject):
         """
         Create versions in Shotgun for each shot which needs one
         """
-        # Temporary helper to create versions in SG for initial
-        # testing. Should be commented out before going into production
-        # unless it becomes part of the specs
+        # Helper to create versions in SG for testing
+        # This is not part of production specs, but very handy for developers
         self._logger.info("Updating versions ...")
         sg_batch_data = []
         for shot_name, items in self._summary.iteritems():
+            requested_names = []
             for cut_diff in items:
                 edit = cut_diff.edit
                 if edit and not edit.get_sg_version() and edit.get_version_name():
-                    sg_batch_data.append({
-                        "request_type": "create",
-                        "entity_type": "Version",
-                        "data": {
-                            "project": self._ctx.project,
-                            "code": edit.get_version_name(),
-                            "entity": cut_diff.sg_shot,
-                            "updated_by": self._ctx.user,
-                            "created_by": self._ctx.user,
-                            "entity": cut_diff.sg_shot,
-                        },
-                        "return_fields": [
-                            "entity.Shot.code",
-                        ]
-                    })
+                    version_name = edit.get_version_name().lower()
+                    if version_name not in requested_names:
+                        sg_batch_data.append({
+                            "request_type": "create",
+                            "entity_type": "Version",
+                            "data": {
+                                "project": self._project,
+                                "code": edit.get_version_name(),
+                                "entity": cut_diff.sg_shot,
+                                "updated_by": self._ctx.user,
+                                "created_by": self._ctx.user,
+                                "entity": cut_diff.sg_shot,
+                            },
+                            "return_fields": [
+                                "entity.Shot.code",
+                            ]
+                        })
+                        requested_names.append(version_name)
         if sg_batch_data:
             res = self._sg.batch(sg_batch_data)
             self._logger.info("Created %d new versions." % len(res))
             for shot_name, items in self._summary.iteritems():
+                # Versions with same names are shared for repeated shots
+                sg_versions = {}
                 for cut_diff in items:
                     edit = cut_diff.edit
                     if edit and not edit.get_sg_version():
-                        # Creation order should match
-                        cut_diff.set_sg_version(res.pop(0))
+                        version_name = edit.get_version_name().lower()
+                        if version_name not in sg_versions:
+                            # Creation order should match
+                            sg_version = res.pop(0)
+                            if sg_version["code"].lower() != version_name:
+                                raise RuntimeError("Version mismatch, expected %s got %s" % (
+                                    version_name, sg_version["code"].lower()
+                                ))
+                            sg_versions[sg_version["code"].lower()] = sg_version
+                        cut_diff.set_sg_version(sg_versions[version_name])
 
     def create_sg_cut_items(self, sg_cut):
         """

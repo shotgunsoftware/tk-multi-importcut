@@ -71,12 +71,6 @@ class CutCard(QtGui.QFrame):
         self.ui.select_button.setVisible(False)
         self.ui.select_button.clicked.connect(self.show_selected)
         self.set_thumbnail(":/tk_multi_importcut/sg_sequence_thumbnail.png")
-#        from random import randint
-#        self.set_thumbnail( [
-#            "/Users/steph/devs/sg/sgtk/apps/tk-multi-importcut/resources/no_thumbnail.png",
-#            "/Users/steph/Pictures/microsoftazurelogo.png",
-#            "/Users/steph/Pictures/IMG_4720.jpg"
-#        ][randint(0, 2)])
 
     @property
     def sg_entity(self):
