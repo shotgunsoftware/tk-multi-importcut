@@ -376,7 +376,10 @@ class CutSummary(QtCore.QObject):
         cut_diff.type_changed.connect(self.cut_diff_type_changed)
         # Use a lower case key, as shot names we retrieve from EDLs
         # can be upper cases, but actual SG shots be lower cases
-        shot_key = shot_name.lower() if shot_name else "_no_shot_name_"
+        # We might not have a valid shot name if we have an edit without any
+        # shot name or version name. To avoid considering all these entries
+        # as repeated shots we forge a key based on the cut order.
+        shot_key = shot_name.lower() if shot_name else "_no_shot_name_%s" % cut_diff.new_cut_order
         if shot_key in self._cut_diffs:
             self._cut_diffs[shot_key].append(cut_diff)
             if len(self._cut_diffs[shot_key]) > 1:
@@ -413,8 +416,10 @@ class CutSummary(QtCore.QObject):
         :param old_name: A string, the CutDiff previous name
         :param new_name: A string, the CutDiff new name
         """
-        new_shot_key = new_name.lower() if new_name else "_no_shot_name_"
-        old_shot_key = old_name.lower() if old_name else "_no_shot_name_"
+        # We might not have empty names here. To avoid considering all entries
+        # with no name as repeated shots we forge a key based on the cut order.
+        new_shot_key = new_name.lower() if new_name else "_no_shot_name_%s" % cut_diff.new_cut_order
+        old_shot_key = old_name.lower() if old_name else "_no_shot_name_%s" % cut_diff.new_cut_order
         if new_shot_key == old_shot_key:
             return
 
