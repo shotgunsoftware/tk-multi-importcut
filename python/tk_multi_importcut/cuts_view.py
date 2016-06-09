@@ -58,7 +58,7 @@ class CutsView(QtCore.QObject):
         self._logger.debug("Adding %s at %d %d %d" % (sg_entity, i, row, column))
         widget = CutCard(None, sg_entity)
         widget.highlight_selected.connect(self.cut_selected)
-        widget.show_cut.connect(self.show_cut)
+        widget.chosen.connect(self.show_cut)
         self._grid_widget.addWidget(widget, row, column, )
         self._grid_widget.setRowStretch(row, 0)
         self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
@@ -92,7 +92,7 @@ class CutsView(QtCore.QObject):
                 witem = self._grid_widget.itemAt(i)
                 widget = witem.widget()
                 # Case insentitive match
-                if text.lower() in widget._sg_cut["code"].lower():
+                if text.lower() in widget.sg_cut["code"].lower():
                     widget.setVisible(True)
                     match_count += 1
                 else:
@@ -154,10 +154,10 @@ class CutsView(QtCore.QObject):
         widgets.sort(
             key=lambda x: (
                 x.isVisible(),
-                x._sg_cut[field],
-                x._sg_cut["created_at"],
-                x._sg_cut["code"],
-                x._sg_cut["sg_status_list"],
+                x.sg_cut[field],
+                x.sg_cut["created_at"],
+                x.sg_cut["code"],
+                x.sg_cut["sg_status_list"],
             ), reverse=True
         )
         # Put them back into the grid layout
