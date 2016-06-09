@@ -33,15 +33,15 @@ class ProjectCard(CardWidget):
         """
         super(ProjectCard, self).__init__(parent, sg_project, Ui_ProjectCard)
         self.ui.title_label.setText("%s" % self.project_name)
-        # if self._sg_project["_display_status"]:
-        #     self.ui.status_label.setText(
-        #         "<font color=%s>%s</font>" % (
-        #             _STATUS_COLORS.get(self.project_status, _COLORS["lgrey"]),
-        #             self._sg_project["_display_status"]["name"].upper(),
-        #         )
-        #     )
-        # else:
-        #     self.ui.status_label.setText(self.project_status)
+        if self.sg_project["_display_status"]:
+            self.ui.status_label.setText(
+                "<font color=%s>%s</font>" % (
+                    _STATUS_COLORS.get(self.project_status, _COLORS["lgrey"]),
+                    self.sg_project["_display_status"]["name"].upper(),
+                )
+            )
+        else:
+            self.ui.status_label.setText(self.project_status)
         self.ui.details_label.setText("%s" % (self.project_description or ""))
         self.chosen.connect(self.show_project)
 

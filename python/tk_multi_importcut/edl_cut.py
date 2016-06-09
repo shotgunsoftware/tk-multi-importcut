@@ -411,9 +411,18 @@ class EdlCut(QtCore.QObject):
             order = [{"field_name": "name", "direction": "asc"}]
             # todo: do we want to filter for active projects?
             sg_projects = self._sg.find(
-                "Project", [["is_template", "is", False]], fields, order=order)
+                "Project",
+                [["is_template", "is", False]],
+                fields,
+                order=order
+            )
             self._logger.info("Retrieved %d Projects." % (len(sg_projects)))
             for sg_project in sg_projects:
+                status = sg_project["sg_status"] or ""
+                # Add a custom field with the status ready to be displayed
+                sg_project["_display_status"] = {
+                        "name": status.title(),
+                }
                 self.new_sg_project.emit(sg_project)
         except Exception, e:
             self._logger.exception(str(e))
