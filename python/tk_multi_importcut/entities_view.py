@@ -80,7 +80,7 @@ class EntitiesView(QtCore.QObject):
         widget = EntityCard(None, sg_entity)
         widget.entity_type = sg_entity["type"]
         widget.highlight_selected.connect(self.entity_selected)
-        widget.show_sequence.connect(self.sequence_chosen)
+        widget.chosen.connect(self.sequence_chosen)
         self._grid_widget.addWidget(widget, row, column, )
         self._grid_widget.setRowStretch(row, 0)
         # Put the stretcher back

@@ -55,23 +55,39 @@ class CardWidget(QtGui.QFrame):
         ))
 
     @property
-    def name(self):
+    def entity_name(self):
         """
-        Should be overidden in deriving classes and return a name used in logging
-        messages, e.g. the name of the SG entity this card is attached
+        Return the name of the SG entity attached to this card
 
         :returns: A string
         """
-        return str(self)
+        # Deal with name field not being consistent in SG
+        return self._sg_entity.get(
+            "code",
+            self._sg_entity.get(
+                "name",
+                self._sg_entity.get("title", "")
+            )
+        )
+
+    @property
+    def sg_entity(self):
+        """
+        Returns the SG entity attached to this card
+
+        :returns: A SG entity dictionary
+        """
+        return self._sg_entity
 
     @property
     def thumbnail_url(self):
         """
-        Should be overidden in deriving classes and return a downloadable url for
-        the thumbnail or None
+        Returns the thumbnail url for the SG entity attached to this card
 
         :returns: A url or None
         """
+        if self._sg_entity and self._sg_entity.get("image"):
+            return self._sg_entity["image"]
         return None
 
     @property
@@ -121,7 +137,7 @@ class CardWidget(QtGui.QFrame):
         """
         Called when a new thumbnail is available for this card
         """
-        self._logger.debug("Loading thumbnail %s for %s" % (path, self.name))
+        self._logger.debug("Loading thumbnail %s for %s" % (path, self.entity_name))
         self.set_thumbnail(path)
 
     def mouseDoubleClickEvent(self, event):
@@ -159,7 +175,7 @@ class CardWidget(QtGui.QFrame):
         self._thumbnail_requested = True
         if self.thumbnail_url:
             self._logger.debug("Requesting %s for %s" %
-                               (self.thumbnail_url, self.name))
+                               (self.thumbnail_url, self.entity_name))
             f, path = tempfile.mkstemp()
             os.close(f)
             downloader = DownloadRunner(
@@ -194,7 +210,7 @@ class CardWidget(QtGui.QFrame):
             self._logger.debug("Null pixmap %s %d %d for %s" % (
                 thumb_path,
                 pixmap.size().width(), pixmap.size().height(),
-                self.name))
+                self.entity_name))
             return
         psize = pixmap.size()
         pratio = psize.width() / float(psize.height())

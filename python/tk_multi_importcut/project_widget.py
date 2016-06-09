@@ -8,13 +8,9 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-import tempfile
-import os
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-from .downloader import DownloadRunner
-from .logger import get_logger
 
 from .ui.project_card import Ui_ProjectCard
 
@@ -39,7 +35,7 @@ class ProjectCard(CardWidget):
         :param sg_project: A Shotgun project, as a dictionary, to display
         """
         super(ProjectCard, self).__init__(parent, sg_project, Ui_ProjectCard)
-        self.ui.title_label.setText("%s" % self.name)
+        self.ui.title_label.setText("%s" % self.project_name)
         # if self._sg_project["_display_status"]:
         #     self.ui.status_label.setText(
         #         "<font color=%s>%s</font>" % (
@@ -68,26 +64,8 @@ class ProjectCard(CardWidget):
 
         :returns: A string
         """
-        return self.name
+        return self.entity_name
 
-    @property
-    def name(self):
-        """
-        Return the name of the attached project
-
-        :returns: A string
-        """
-        return self.sg_project.get("name", "")
-
-    @property
-    def thumbnail_url(self):
-        """
-        Returns the thumbnail url for the project held by this card
-        """
-        if self.sg_project and self.sg_project["image"]:
-            return self.sg_project["image"]
-        return None
-    
     @property
     def project_status(self):
         """
