@@ -17,22 +17,13 @@
    <property name="spacing">
     <number>-1</number>
    </property>
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
     <widget class="AnimatedStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>5</number>
      </property>
      <widget class="QWidget" name="drop_page">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -106,16 +97,7 @@
           <property name="spacing">
            <number>0</number>
           </property>
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <item>
@@ -458,20 +440,11 @@
             <x>0</x>
             <y>0</y>
             <width>943</width>
-            <height>441</height>
+            <height>444</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="project_grid" rowstretch="0">
-           <property name="leftMargin">
-            <number>2</number>
-           </property>
-           <property name="topMargin">
-            <number>2</number>
-           </property>
-           <property name="rightMargin">
-            <number>2</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -614,7 +587,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="sequence_list_page">
+     <widget class="QWidget" name="entities_list_page">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -671,7 +644,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QLabel" name="sequences_title_label">
+          <widget class="QLabel" name="entities_title_label">
            <property name="text">
             <string>Select Link for Cut</string>
            </property>
@@ -694,7 +667,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="SearchWidget" name="sequences_search_line_edit">
+          <widget class="SearchWidget" name="entities_search_line_edit">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -747,17 +720,17 @@
         </layout>
        </item>
        <item>
-        <widget class="QScrollArea" name="sequence_scroll_area">
+        <widget class="QScrollArea" name="entity_scroll_area">
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="sequence_area">
+         <widget class="QWidget" name="entity_area">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>943</width>
+            <height>444</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -767,16 +740,7 @@
            <property name="spacing">
             <number>-1</number>
            </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -786,16 +750,7 @@
              </property>
              <widget class="QWidget" name="page_1">
               <layout class="QGridLayout" name="gridLayout">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -818,16 +773,7 @@
              </widget>
              <widget class="QWidget" name="page_2">
               <layout class="QGridLayout" name="gridLayout_3">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -850,16 +796,7 @@
              </widget>
              <widget class="QWidget" name="page_3">
               <layout class="QGridLayout" name="gridLayout_4">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -882,16 +819,7 @@
              </widget>
              <widget class="QWidget" name="page_4">
               <layout class="QGridLayout" name="gridLayout_5">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -914,16 +842,7 @@
              </widget>
              <widget class="QWidget" name="page_5">
               <layout class="QGridLayout" name="gridLayout_6">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -1121,16 +1040,7 @@
            </rect>
           </property>
           <layout class="QGridLayout" name="cuts_grid">
-           <property name="leftMargin">
-            <number>2</number>
-           </property>
-           <property name="topMargin">
-            <number>2</number>
-           </property>
-           <property name="rightMargin">
-            <number>2</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -1163,16 +1073,7 @@
        <property name="spacing">
         <number>0</number>
        </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>0</number>
        </property>
        <item>
@@ -1188,7 +1089,7 @@
            <number>12</number>
           </property>
           <item>
-           <widget class="QPushButton" name="total_button">
+           <widget class="SelectorButton" name="total_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -1225,7 +1126,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="new_select_button">
+           <widget class="SelectorButton" name="new_select_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1256,7 +1157,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="omitted_select_button">
+           <widget class="SelectorButton" name="omitted_select_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1284,7 +1185,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="reinstated_select_button">
+           <widget class="SelectorButton" name="reinstated_select_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1312,7 +1213,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="cut_change_select_button">
+           <widget class="SelectorButton" name="cut_change_select_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1340,7 +1241,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="rescan_select_button">
+           <widget class="SelectorButton" name="rescan_select_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1463,24 +1364,15 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>98</width>
-              <height>28</height>
+              <width>943</width>
+              <height>382</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">
              <property name="spacing">
               <number>2</number>
              </property>
-             <property name="leftMargin">
-              <number>2</number>
-             </property>
-             <property name="topMargin">
-              <number>2</number>
-             </property>
-             <property name="rightMargin">
-              <number>2</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>2</number>
              </property>
              <item>
@@ -1916,6 +1808,11 @@
    <extends>QFrame</extends>
    <header>..dialog</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SelectorButton</class>
+   <extends>QPushButton</extends>
+   <header>..dialog</header>
   </customwidget>
  </customwidgets>
  <resources>

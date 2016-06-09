@@ -28,7 +28,14 @@ from .search_widget import SearchWidget
 from .entity_line_widget import EntityLineWidget
 from .extended_thumbnail import ExtendedThumbnail
 
-# Custom widgets must be imported before importing the UI
+class SelectorButton(QtGui.QPushButton):
+    """
+    Thin wrapping class for our selector buttons so styling can be done in the 
+    style sheet for all of them, using the class name
+    """
+    pass
+
+# Custom widgets must be imported or defined before importing the UI
 from .ui.dialog import Ui_Dialog
 
 from .processor import Processor
@@ -344,8 +351,8 @@ class AppDialog(QtGui.QWidget):
         self._entities_views[-1].selection_changed.connect(self.selection_changed)
         self._entities_views[-1].new_info_message.connect(self.display_info_message)
         self._processor.new_sg_entity.connect(self._entities_views[-1].new_sg_entity)
-        self.ui.sequences_search_line_edit.search_edited.connect(self._entities_views[-1].search)
-        self.ui.sequences_search_line_edit.search_changed.connect(self._entities_views[-1].search)
+        self.ui.entities_search_line_edit.search_edited.connect(self._entities_views[-1].search)
+        self.ui.entities_search_line_edit.search_changed.connect(self._entities_views[-1].search)
 
     def _create_entity_type_button(self, entity_type, entity_type_name):
         """
@@ -354,7 +361,7 @@ class AppDialog(QtGui.QWidget):
         :param entity_type_name: A nice name for this entity type
         :returns: A QPushButton
         """
-        entity_link_button = QtGui.QPushButton(entity_type_name)
+        entity_link_button = SelectorButton(entity_type_name)
         entity_link_button.setObjectName("dynamic_button_%s" % entity_type_name)
         entity_link_button.setFlat(True)
         entity_link_button.setAutoExclusive(True)
@@ -750,7 +757,7 @@ class AppDialog(QtGui.QWidget):
             self.clear_entities_view()
 
         if step < _ENTITY_STEP:
-            self.ui.sequences_search_line_edit.clear()
+            self.ui.entities_search_line_edit.clear()
             self.ui.create_entity_button.hide()
             self._selected_sg_entity[_ENTITY_STEP] = None
 
@@ -804,7 +811,7 @@ class AppDialog(QtGui.QWidget):
                 self.ui.create_entity_button.show()
                 self.ui.create_entity_button.setText("New %s" % sg_entity_type_name)
             self._logger.info("Showing %s(s)" % sg_entity_type_name)
-            self.ui.sequences_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
+            self.ui.entities_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
             entity_type_stacked_widget = self.ui.entities_type_stacked_widget
             active_view = None
             # Retrieve the entity type view we should activate
@@ -1104,7 +1111,7 @@ class AppDialog(QtGui.QWidget):
         url and open it up.
         """
         if not self._processor.sg_entity:
-            self._logger.warning("No selected sequence ...")
+            self._logger.warning("No selected entity ...")
             return
         links = ["%s/detail/%s/%s" % (
             self._app.shotgun.base_url,

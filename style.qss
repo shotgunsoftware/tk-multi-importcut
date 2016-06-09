@@ -304,7 +304,7 @@ QPushButton#back_button {
 /* Screens titles */
 QLabel#entity_picker_title_label_2,
 QLabel#entity_picker_title_label,
-QLabel#sequences_title_label,
+QLabel#entities_title_label,
 QLabel#cuts_title_label,
 QLabel#select_project_label {
     font-size: 20px;
@@ -329,7 +329,7 @@ widgets so the QScrollArea backgroun-color is used, making it yellow
 so it's obvious it is a "dummy" color. Not setting it or setting it
 to anything else than a real color doesn't work ...
 */
-#project_area, #sequence_area, #cuts_area, #cut_summary_widgets {
+#project_area, #entity_area, #cuts_area, #cut_summary_widgets {
     background-color: yellow;
 }
 
@@ -342,15 +342,10 @@ QFrame#cut_summary_selectors_frame {
     border: none;
 }
 /*
-Cut summary view mode buttons, defaults
+Selector buttons, they are regular QPushButtons
+styled to look like tab selectors
 */
-QAbstractButton#new_select_button,
-QAbstractButton#cut_change_select_button,
-QAbstractButton#omitted_select_button,
-QAbstractButton#reinstated_select_button,
-QAbstractButton#rescan_select_button,
-QAbstractButton#total_button,
-#sequence_list_page > QAbstractButton {
+SelectorButton {
     outline: none;
     font-size: 14px;
 }
@@ -358,13 +353,7 @@ QAbstractButton#total_button,
 /*
 Add a blue underline when they are checked and make them blue
 */
-QAbstractButton#new_select_button:checked,
-QAbstractButton#cut_change_select_button:checked,
-QAbstractButton#omitted_select_button:checked,
-QAbstractButton#reinstated_select_button:checked,
-QAbstractButton#rescan_select_button:checked,
-QAbstractButton#total_button:checked,
-#sequence_list_page > QAbstractButton:checked {
+SelectorButton:checked {
     border-top: 2px none #2C93E2;
     border-bottom: 2px solid #2C93E2;
     outline: none;
@@ -374,13 +363,7 @@ QAbstractButton#total_button:checked,
 Cut summary view mode buttons, disable regular
 press style
 */
-QAbstractButton#new_select_button:pressed,
-QAbstractButton#cut_change_select_button:pressed,
-QAbstractButton#omitted_select_button:pressed,
-QAbstractButton#reinstated_select_button:pressed,
-QAbstractButton#rescan_select_button:pressed,
-QAbstractButton#total_button:pressed,
-#sequence_list_page > QAbstractButton:pressed {
+SelectorButton:pressed {
     border-top: 2px none #2C93E2;
     border-bottom: 2px solid #2C93E2;
     outline: none;
@@ -394,7 +377,7 @@ QAbstractButton#omitted_select_button:!checked:hover,
 QAbstractButton#reinstated_select_button:!checked:hover,
 QAbstractButton#rescan_select_button:!checked:hover,
 QAbstractButton#total_button:!checked:hover,
-#sequence_list_page > QAbstractButton:!checked:hover {
+SelectorButton:!checked:hover {
     color: white;
 }
 QAbstractButton#only_vfx_check_box {
