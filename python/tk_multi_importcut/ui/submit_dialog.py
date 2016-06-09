@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'submit_dialog.ui'
 #
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_submit_dialog(object):
     def setupUi(self, submit_dialog):
         submit_dialog.setObjectName("submit_dialog")
-        submit_dialog.resize(382, 526)
+        submit_dialog.resize(382, 528)
         submit_dialog.setModal(True)
         self.gridLayout_2 = QtGui.QGridLayout(submit_dialog)
         self.gridLayout_2.setVerticalSpacing(12)
@@ -28,9 +28,10 @@ class Ui_submit_dialog(object):
         self.import_cut_button = QtGui.QPushButton(submit_dialog)
         self.import_cut_button.setObjectName("import_cut_button")
         self.horizontalLayout.addWidget(self.import_cut_button)
-        self.gridLayout_2.addLayout(self.horizontalLayout, 4, 1, 1, 1)
+        self.gridLayout_2.addLayout(self.horizontalLayout, 3, 1, 1, 1)
         self.formLayout = QtGui.QFormLayout()
         self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
+        self.formLayout.setLabelAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.formLayout.setContentsMargins(0, -1, 0, -1)
         self.formLayout.setObjectName("formLayout")
         self.label = QtGui.QLabel(submit_dialog)
@@ -55,11 +56,17 @@ class Ui_submit_dialog(object):
         self.label_5.setObjectName("label_5")
         self.formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self.label_5)
         self.description_text = QtGui.QTextEdit(submit_dialog)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(1)
+        sizePolicy.setHeightForWidth(self.description_text.sizePolicy().hasHeightForWidth())
+        self.description_text.setSizePolicy(sizePolicy)
         self.description_text.setObjectName("description_text")
         self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.description_text)
         self.gridLayout = QtGui.QGridLayout()
         self.gridLayout.setContentsMargins(1, 0, 1, 0)
         self.gridLayout.setHorizontalSpacing(0)
+        self.gridLayout.setVerticalSpacing(6)
         self.gridLayout.setObjectName("gridLayout")
         self.line_3 = QtGui.QFrame(submit_dialog)
         self.line_3.setFrameShadow(QtGui.QFrame.Plain)
@@ -192,11 +199,9 @@ class Ui_submit_dialog(object):
         self.line.setFrameShape(QtGui.QFrame.HLine)
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
         self.line.setObjectName("line")
-        self.gridLayout_2.addWidget(self.line, 2, 0, 1, 3)
+        self.gridLayout_2.addWidget(self.line, 1, 0, 1, 3)
         spacerItem2 = QtGui.QSpacerItem(0, 0, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.gridLayout_2.addItem(spacerItem2, 0, 2, 1, 1)
-        spacerItem3 = QtGui.QSpacerItem(20, 34, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_2.addItem(spacerItem3, 1, 1, 1, 1)
         self.gridLayout_2.setColumnStretch(0, 1)
         self.gridLayout_2.setRowStretch(0, 1)
 

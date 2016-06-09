@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'settings_dialog.ui'
 #
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -99,6 +99,7 @@ class Ui_settings_dialog(object):
         self.formLayout.setLabelAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.formLayout.setFormAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
         self.formLayout.setContentsMargins(14, -1, -1, 5)
+        self.formLayout.setHorizontalSpacing(6)
         self.formLayout.setVerticalSpacing(9)
         self.formLayout.setObjectName("formLayout")
         self.update_shot_statuses_label = QtGui.QLabel(self.general_tab)
@@ -108,6 +109,7 @@ class Ui_settings_dialog(object):
         self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.update_shot_statuses_label)
         self.update_shot_statuses_checkbox = QtGui.QCheckBox(self.general_tab)
         self.update_shot_statuses_checkbox.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.update_shot_statuses_checkbox.setStyleSheet("background-color: transparent;")
         self.update_shot_statuses_checkbox.setText("")
         self.update_shot_statuses_checkbox.setObjectName("update_shot_statuses_checkbox")
         self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.update_shot_statuses_checkbox)
@@ -144,6 +146,12 @@ class Ui_settings_dialog(object):
         self.reinstate_status_label.setObjectName("reinstate_status_label")
         self.horizontalLayout_4.addWidget(self.reinstate_status_label)
         self.reinstate_status_combo_box = QtGui.QComboBox(self.general_tab)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.reinstate_status_combo_box.sizePolicy().hasHeightForWidth())
+        self.reinstate_status_combo_box.setSizePolicy(sizePolicy)
+        self.reinstate_status_combo_box.setMinimumSize(QtCore.QSize(75, 0))
         self.reinstate_status_combo_box.setWhatsThis("")
         self.reinstate_status_combo_box.setAccessibleName("")
         self.reinstate_status_combo_box.setLayoutDirection(QtCore.Qt.LeftToRight)
@@ -164,6 +172,7 @@ class Ui_settings_dialog(object):
         self.horizontalLayout_5.addWidget(self.use_smart_fields_label)
         self.use_smart_fields_checkbox = QtGui.QCheckBox(self.general_tab)
         self.use_smart_fields_checkbox.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.use_smart_fields_checkbox.setStyleSheet("background-color: transparent")
         self.use_smart_fields_checkbox.setText("")
         self.use_smart_fields_checkbox.setObjectName("use_smart_fields_checkbox")
         self.horizontalLayout_5.addWidget(self.use_smart_fields_checkbox)
@@ -359,3 +368,4 @@ class Ui_settings_dialog(object):
         self.apply_button.setText(QtGui.QApplication.translate("settings_dialog", "Apply", None, QtGui.QApplication.UnicodeUTF8))
         self.apply_button.setShortcut(QtGui.QApplication.translate("settings_dialog", "Return", None, QtGui.QApplication.UnicodeUTF8))
 
+from . import resources_rc
