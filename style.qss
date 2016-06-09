@@ -276,53 +276,25 @@ Red text on errors
 No visible border for cards, and set the background color otherwise they will
 inherit the one from the scroll area they are in
 */
-EntityTypeCard {
-    background-color: #525252;
-    border: 1px none black;
-    background-color: #525252;
-    border-radius: 2px;
-    min-height: 120px;
-    max-height: 150px;
-    max-width: 180px;
-}
-EntityTypeCard #title_label {
-    font-weight: bold;
-    font-size: 15px;
-}
-EntityTypeCard #icon_label {
-    min-height: 100px;
-}
 
-EntityCard, CutCard, CutDiffCard, ProjectCard {
+CardWidget {
     border: 1px none black;
     background-color: #525252;
     border-radius: 2px;
 }
 
 /* Highlight selected cards */
-ProjectCard[selected="true"], EntityCard[selected="true"],
-CutCard[selected="true"], EntityTypeCard[selected="true"] {
+CardWidget[selected="true"] {
     border: 1px solid #2C93E2;
     background-color: rgba(44, 147, 226, 25%);
 }
-/* Labels on Sequence cards */
+/* Labels on Project and Entity cards */
 ProjectCard #title_label, EntityCard #title_label {
     font-weight: bold;
     font-size: 15px;
 }
 ProjectCard #status_label, EntityCard #status_label {
     font-weight: bold;
-}
-
-/* Make the Select button SG blue when enabled */
-EntityCard QPushButton:enabled#select_button, CutCard QPushButton:enabled#select_button,
-CutDiffCard QPushButton:enabled#select_button, ProjectCard QPushButton:enabled#select_button {
-    background-color: rgba(44, 147, 226, 0%);
-    border: none;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    padding-right: 0px;
-    padding-left: 0px;
 }
 
 QPushButton#back_button {
@@ -354,7 +326,7 @@ QScrollArea {
 /*
 Not sure why, but we need to define a background color for these
 widgets so the QScrollArea backgroun-color is used, making it yellow
-so it's obbvious it is a "dummy" color. Not setting it or setting it
+so it's obvious it is a "dummy" color. Not setting it or setting it
 to anything else than a real color doesn't work ...
 */
 #project_area, #sequence_area, #cuts_area, #cut_summary_widgets {
