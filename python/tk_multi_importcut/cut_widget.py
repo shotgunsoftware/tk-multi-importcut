@@ -8,9 +8,6 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-import tempfile
-import os
-
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
@@ -24,10 +21,10 @@ class CutCard(CardWidget):
     """
     Widget displaying a Shotgun Cut
     """
-
     def __init__(self, parent, sg_cut):
         """
         Instantiate a new CutCard for the given Shotgun cut
+
         :param parent: A parent QWidget
         :param sg_cut: A Shotgun cut, as a dictionary, to display
         """
@@ -61,6 +58,7 @@ class CutCard(CardWidget):
     def sg_cut(self):
         """
         Returns the SG cut attached to this card
+
         :returns: A SG Cut dictionary
         """
         return self._sg_entity

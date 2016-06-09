@@ -23,14 +23,11 @@ class ProjectCard(CardWidget):
     """
     # Emitted when cut changes for the attached Project should be displayed
     show_project = QtCore.Signal(dict)
-    # Emitted when this card wants to be selected
-    highlight_selected = QtCore.Signal(QtGui.QWidget)
-    # A Signal to discard pending download
-    discard_download = QtCore.Signal()
 
     def __init__(self, parent, sg_project):
         """
         Instantiate a new ProjectCard for the given Shotgun Project
+
         :param parent: A parent QWidget
         :param sg_project: A Shotgun project, as a dictionary, to display
         """
@@ -70,6 +67,7 @@ class ProjectCard(CardWidget):
     def project_status(self):
         """
         Return the status of the attached project
+
         :returns: A Shotgun Status
         """
         # Deal with status field not being consistent in SG
@@ -82,6 +80,8 @@ class ProjectCard(CardWidget):
     def project_description(self):
         """
         Return the description of the attached project
+
+        :returns: A string
         """
         # Deal with status field not being consistent in SG
         return self.sg_project.get("sg_description")

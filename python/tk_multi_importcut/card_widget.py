@@ -42,7 +42,7 @@ class CardWidget(QtGui.QFrame):
         :param args: Arbitrary list of parameters
         :param kargs: Arbitrary dictionary of parameters
         """
-        super(CardWidget, self).__init__(parent)
+        super(CardWidget, self).__init__(parent, *args, **kargs)
         self._thumbnail_requested = False
         self._sg_entity = sg_entity
         self._logger = get_logger()
@@ -136,6 +136,8 @@ class CardWidget(QtGui.QFrame):
     def new_thumbnail(self, path):
         """
         Called when a new thumbnail is available for this card
+
+        :param path: Full path to a thumbnail file
         """
         self._logger.debug("Loading thumbnail %s for %s" % (path, self.entity_name))
         self.set_thumbnail(path)
@@ -143,24 +145,32 @@ class CardWidget(QtGui.QFrame):
     def mouseDoubleClickEvent(self, event):
         """
         Handle double clicks : choose this card
+
+        :param event: A QEvent
         """
         self.choose_me()
 
     def mousePressEvent(self, event):
         """
         Handle single click events : select this card
+
+        :param event: A QEvent
         """
         self.highlight_selected.emit(self)
 
     def enterEvent(self, event):
         """
         Display a "chevron" button when the mouse enter the widget
+
+        :param event: A QEvent
         """
         self.select_button.setVisible(True)
 
     def leaveEvent(self, event):
         """
         Hide the "chevron" button when the mouse leave the widget
+
+        :param event: A QEvent
         """
         self.select_button.setVisible(False)
 
@@ -168,6 +178,8 @@ class CardWidget(QtGui.QFrame):
         """
         Request an async thumbnail download on first expose, if a thumbnail is
         avalaible in SG.
+
+        :param event: A QEvent
         """
         if self._thumbnail_requested:
             event.ignore()

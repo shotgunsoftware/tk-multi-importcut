@@ -8,14 +8,9 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-import tempfile
-import os
-
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-from .downloader import DownloadRunner
-from .logger import get_logger
 from .ui.sequence_card import Ui_SequenceCard
 from .constants import _COLORS, _STATUS_COLORS
 from .card_widget import CardWidget
@@ -23,11 +18,12 @@ from .card_widget import CardWidget
 
 class EntityCard(CardWidget):
     """
-    Widget displaying a Shotgun Entity
+    A Card Widget displaying a general Shotgun Entity
     """
     def __init__(self, parent, sg_entity):
         """
-        Instantiate a new EntityCard for the given Shotgun Sequence
+        Instantiate a new EntityCard for the given Shotgun Entity
+
         :param parent: A parent QWidget
         :param sg_entity: A Shotgun entity, as a dictionary, to display
         """
@@ -49,19 +45,25 @@ class EntityCard(CardWidget):
     def entity_status(self):
         """
         Return the status of the attached entity
+
+        :returns: A Shotgun status
         """
         # Deal with status field not being consistent in SG
-        return self._sg_entity.get("sg_status_list",
-                                   self._sg_entity.get("sg_status")
-                                   )
+        return self._sg_entity.get(
+            "sg_status_list",
+            self._sg_entity.get("sg_status")
+        )
 
     @property
     def entity_description(self):
         """
         Return the description of the attached entity
+
+        :returns: a string
         """
         # Deal with status field not being consistent in SG
-        return self._sg_entity.get("description",
-                                   self._sg_entity.get("sg_description")
-                                   )
+        return self._sg_entity.get(
+            "description",
+            self._sg_entity.get("sg_description")
+        )
 
