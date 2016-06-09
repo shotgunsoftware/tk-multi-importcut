@@ -49,7 +49,7 @@ class ProjectsView(QtCore.QObject):
         row = i / 2
         column = i % 2
         self._logger.debug("Adding %s at %d %d %d" % (sg_project, i, row, column))
-        widget = ProjectCard(None, sg_project)
+        widget = ProjectCard(parent=None, sg_project=sg_project)
         widget.highlight_selected.connect(self.project_selected)
         widget.show_project.connect(self.project_chosen)
         self._grid_widget.addWidget(widget, row, column, )

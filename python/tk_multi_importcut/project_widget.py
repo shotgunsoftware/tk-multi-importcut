@@ -19,9 +19,9 @@ from .logger import get_logger
 from .ui.project_card import Ui_ProjectCard
 
 from .constants import _COLORS, _STATUS_COLORS
+from .card_widget import CardWidget
 
-
-class ProjectCard(QtGui.QFrame):
+class ProjectCard(CardWidget):
     """
     Widget displaying a Shotgun Project
     """
@@ -38,14 +38,8 @@ class ProjectCard(QtGui.QFrame):
         :param parent: A parent QWidget
         :param sg_project: A Shotgun project, as a dictionary, to display
         """
-        super(ProjectCard, self).__init__(parent)
-        self._thumbnail_requested = False
-        self._sg_project = sg_project
-        self._logger = get_logger()
-
-        self.ui = Ui_ProjectCard()
-        self.ui.setupUi(self)
-        self.ui.title_label.setText("%s" % self.project_name)
+        super(ProjectCard, self).__init__(parent, sg_project, Ui_ProjectCard)
+        self.ui.title_label.setText("%s" % self.name)
         # if self._sg_project["_display_status"]:
         #     self.ui.status_label.setText(
         #         "<font color=%s>%s</font>" % (
@@ -56,32 +50,54 @@ class ProjectCard(QtGui.QFrame):
         # else:
         #     self.ui.status_label.setText(self.project_status)
         self.ui.details_label.setText("%s" % (self.project_description or ""))
-        self.ui.select_button.setVisible(False)
-        self.ui.select_button.clicked.connect(self.show_selected)
-        self.set_thumbnail(":/tk_multi_importcut/sg_%s_thumbnail.png" % (
-            self._sg_project["type"].lower()
-        ))
+        self.chosen.connect(self.show_project)
 
     @property
     def sg_project(self):
-        return self._sg_project
+        """
+        Returns the SG project for this card
+
+        :returns: A Shotgun Project dictionary
+        """
+        return self._sg_entity
 
     @property
     def project_name(self):
         """
         Return the name of the attached project
-        """
-        return self._sg_project.get("name", self._sg_project.get("title", ""))
 
+        :returns: A string
+        """
+        return self.name
+
+    @property
+    def name(self):
+        """
+        Return the name of the attached project
+
+        :returns: A string
+        """
+        return self.sg_project.get("name", "")
+
+    @property
+    def thumbnail_url(self):
+        """
+        Returns the thumbnail url for the project held by this card
+        """
+        if self.sg_project and self.sg_project["image"]:
+            return self.sg_project["image"]
+        return None
+    
     @property
     def project_status(self):
         """
         Return the status of the attached project
+        :returns: A Shotgun Status
         """
         # Deal with status field not being consistent in SG
-        return self._sg_project.get(
+        return self.sg_project.get(
             "sg_status_list",
-            self._sg_project.get("sg_status")
+            self.sg_project.get("sg_status")
         )
 
     @property
@@ -90,126 +106,7 @@ class ProjectCard(QtGui.QFrame):
         Return the description of the attached project
         """
         # Deal with status field not being consistent in SG
-        return self._sg_project.get("sg_description")
+        return self.sg_project.get("sg_description")
 
-    @QtCore.Slot()
-    def select(self):
-        """
-        Set this card UI to selected mode
-        """
-        self.setProperty("selected", True)
-        self.style().unpolish(self)
-        self.style().polish(self)
-        self.ui.select_button.setVisible(True)
 
-    @QtCore.Slot()
-    def unselect(self):
-        """
-        Set this card UI to unselected mode
-        """
-        self.setProperty("selected", False)
-        self.style().unpolish(self)
-        self.style().polish(self)
-        self.ui.select_button.setVisible(False)
-        self.setStyleSheet("")
 
-    @QtCore.Slot()
-    def show_selected(self):
-        """
-        Gently ask to show cut summary for the attached Shotgun project
-        """
-        self.highlight_selected.emit(self)
-        self.show_project.emit(self._sg_project)
-        self.ui.select_button.setVisible(False)
-
-    @QtCore.Slot(str)
-    def new_thumbnail(self, path):
-        """
-        Called when a new thumbnail is available for this card
-        """
-        self._logger.debug("Loading thumbnail %s for %s" % (path, self.project_name))
-        self.set_thumbnail(path)
-
-    def mouseDoubleClickEvent(self, event):
-        """
-        Handle double clicks : show cut changes for the attached project
-        """
-        self.show_selected()
-
-    def mousePressEvent(self, event):
-        """
-        Handle single click events : select this card
-        """
-        self.highlight_selected.emit(self)
-
-    def enterEvent(self, event):
-        """
-        Display a "chevron" button when the mouse enter the widget
-        """
-        self.ui.select_button.setVisible(True)
-
-    def leaveEvent(self, event):
-        """
-        Hide the "chevron" button when the mouse leave the widget
-        """
-        self.ui.select_button.setVisible(False)
-
-    def showEvent(self, event):
-        """
-        Request an async thumbnail download on first expose, if a thumbnail is
-        avalaible in SG.
-        """
-        if self._thumbnail_requested:
-            event.ignore()
-            return
-        self._thumbnail_requested = True
-        if self._sg_project and self._sg_project["image"]:
-            self._logger.debug("Requesting %s for %s" %
-                               (self._sg_project["image"], self.project_name))
-            f, path = tempfile.mkstemp()
-            os.close(f)
-            downloader = DownloadRunner(
-                sg_attachment=self._sg_project["image"],
-                path=path,
-            )
-            downloader.file_downloaded.connect(self.new_thumbnail)
-            self.discard_download.connect(downloader.abort)
-            downloader.queue()
-
-        event.ignore()
-
-    def closeEvent(self, evt):
-        """
-        Discard downloads when the widget is removed
-        """
-        self.discard_download.emit()
-        evt.accept()
-
-    def set_thumbnail(self, thumb_path):
-        """
-        Build a pixmap from the given file path and use it as icon, resizing it to
-        fit into the widget icon size
-
-        :param thumb_path: Full path to an image to use as thumbnail
-        """
-        size = self.ui.icon_label.size()
-        ratio = size.width() / float(size.height())
-        pixmap = QtGui.QPixmap(thumb_path)
-        qimage = QtGui.QImage()
-        # print QtGui.QImageReader.supportedImageFormats()
-        if pixmap.isNull():
-            self._logger.debug("Null pixmap %s %d %d for %s" % (
-                thumb_path,
-                pixmap.size().width(), pixmap.size().height(),
-                self.project_name))
-            return
-        psize = pixmap.size()
-        pratio = psize.width() / float(psize.height())
-        if pratio > ratio:
-            self.ui.icon_label.setPixmap(
-                pixmap.scaledToWidth(size.width(), mode=QtCore.Qt.SmoothTransformation)
-            )
-        else:
-            self.ui.icon_label.setPixmap(
-                pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
-            )
