@@ -12,8 +12,10 @@
 _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, \
     _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP = range(8)
 
+# Different timecode mapping mode
 _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE = range(3)
 
+# List of supported extensions for movies
 _VIDEO_EXTS = [".avi", ".m4v", ".mov", ".mp4", ".qt", ".webm"]
 
 # Some colors used in various places
