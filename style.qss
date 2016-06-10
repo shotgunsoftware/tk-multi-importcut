@@ -277,7 +277,7 @@ No visible border for cards, and set the background color otherwise they will
 inherit the one from the scroll area they are in
 */
 
-CardWidget {
+CardWidget, CutDiffCard {
     border: 1px none black;
     background-color: #525252;
     border-radius: 2px;
