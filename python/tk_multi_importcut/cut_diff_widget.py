@@ -254,6 +254,7 @@ class CutDiffCard(QtGui.QFrame):
     def cut_order(self):
         """
         Return a cut order that can be used to sort cards together
+        :returns: An integer
         """
         if self._cut_diff.new_cut_order is not None:
             return int(self._cut_diff.new_cut_order)
@@ -265,6 +266,7 @@ class CutDiffCard(QtGui.QFrame):
     def cut_diff(self):
         """
         Return the CutDiff instance this widget is showing
+        :returns: A CutDiff instance
         """
         return self._cut_diff
 
@@ -310,7 +312,8 @@ class CutDiffCard(QtGui.QFrame):
 
     def set_tool_tip(self):
         """
-        Build a toolitp displaying details about this cut difference
+        Build a toolitp displaying details about this cut difference and attach
+        it to the icon widget
         """
         shot_details, cut_item_details, version_details, edit_details = self._cut_diff.summary()
         msg = _TOOL_TIP_FORMAT % (

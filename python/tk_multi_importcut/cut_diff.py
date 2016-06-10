@@ -160,6 +160,10 @@ class CutDiff(QtCore.QObject):
 
     @classmethod
     def retrieve_default_timecode_frame_mapping(cls):
+        """
+        Read timecode to frame mapping user settings and store them at the class
+        level.
+        """
         user_settings = sgtk.platform.current_bundle().user_settings
         timecode_to_frame_mapping = user_settings.retrieve("timecode_to_frame_mapping")
         default_frame_rate = float(user_settings.retrieve("default_frame_rate"))
@@ -181,6 +185,7 @@ class CutDiff(QtCore.QObject):
     def sg_shot(self):
         """
         Return the Shotgun shot for this diff, if any
+        :returns: A SG Shot dictionary or None
         """
         return self._sg_shot
 
@@ -195,6 +200,7 @@ class CutDiff(QtCore.QObject):
     def sg_cut_item(self):
         """
         Return the Shotgun cut item for this diff, if any
+        :returns: A SG CutItem dictionary or None
         """
         return self._sg_cut_item
 
@@ -209,6 +215,7 @@ class CutDiff(QtCore.QObject):
     def edit(self):
         """
         Return the EditEntry for this diff, if any
+        :returns: An EditEvent or None
         """
         return self._edit
 
@@ -216,6 +223,7 @@ class CutDiff(QtCore.QObject):
     def name(self):
         """
         Return the name of this diff
+        :returns: A string
         """
         return self._name
 
@@ -223,6 +231,7 @@ class CutDiff(QtCore.QObject):
     def is_name_editable(self):
         """
         Return True if the name for this instance can be changed
+        :returns: True if the name is editable, False otherwise
         """
         # We can only change names coming from an edit entry
         if not self._edit:
@@ -254,6 +263,7 @@ class CutDiff(QtCore.QObject):
     def version_name(self):
         """
         Return the version name for this diff, if any
+        :returns: A string or None
         """
         if self._sg_version:
             return self._sg_version["code"]
@@ -263,13 +273,14 @@ class CutDiff(QtCore.QObject):
     def sg_version(self):
         """
         Return the Shotgun version for this diff, if any
+        :returns: A SG Version dictionary or None
         """
         return self._sg_version
 
     def set_sg_version(self, sg_version):
         """
         Set the Shotgun version associated with this diff
-        :param sg_version: A SG version, as a dictionary
+        :param sg_version: A SG Version, as a dictionary
         """
         self._sg_version = sg_version
 
@@ -277,6 +288,9 @@ class CutDiff(QtCore.QObject):
     def default_head_in(self):
         """
         Return the default head in value, e.g. 1001
+        :returns: An integer or None
+
+        Deprecated, shouldn't be used anymore
         """
         raise RuntimeErrror("This is deprecated and shouldn't be used")
         return self._default_head_in
@@ -326,6 +340,7 @@ class CutDiff(QtCore.QObject):
     def new_head_in(self):
         """
         Return the new head in value
+        :returns: An integer
         """
         # Special case if we are dealing with a repeated shot
         # Frames are relative to the earliest entry in our siblings
@@ -359,6 +374,7 @@ class CutDiff(QtCore.QObject):
     def new_tail_out(self):
         """
         Return the new tail out value
+        :returns: An integer
         """
         nt = self.shot_tail_out
         if nt is None:
@@ -684,6 +700,7 @@ class CutDiff(QtCore.QObject):
     def diff_type(self):
         """
         Return the CutDiff type of this cut difference
+        :returns: An _DIFF_TYPES
         """
         return self._diff_type
 
@@ -691,6 +708,7 @@ class CutDiff(QtCore.QObject):
     def diff_type_label(self):
         """
         Return a display string for the CutDiff type of this cut difference
+        :returns: A string
         """
         return self.get_diff_type_label(self._diff_type)
 
@@ -698,15 +716,19 @@ class CutDiff(QtCore.QObject):
     def reasons(self):
         """
         Return a list of reasons strings for this cut difference.
+
         Return an empty list for any difference which is not
         a CUT_CHANGE or a RESCAN
+
+        :returns: A possibly empty list of strings
         """
         return self._cut_changes_reasons
 
     @property
     def need_rescan(self):
         """
-        Return true if this cut change implies a rescan
+        Return True if this cut change implies a rescan
+        :returns: True if a rescan is needed, False otherwise
         """
         return self._diff_type == _DIFF_TYPES.RESCAN
 
@@ -715,10 +737,8 @@ class CutDiff(QtCore.QObject):
         """
         Return true if the associated shot appears more than once in the
         cut summary
+        :returns: True if the Shot is repeated, False otherwise
         """
-#        if not self._siblings or len(self._siblings) < 2:
-#            return False
-#        return True
         # We use an explicit flag for repeated shots and don't rely
         # on the self._siblings list containing more then one entry
         # as this is controlled by the cut summary and can be changed
@@ -731,6 +751,7 @@ class CutDiff(QtCore.QObject):
     def is_vfx_shot(self):
         """
         Return True if this item is linked to a VFX shot
+        :returns: True if a Vfx Shot, False otherwise
         """
         # Non vfx shots are not handled in SG by our current clients
         # so, for the time being, just check if the item is linked to
@@ -897,7 +918,7 @@ class CutDiff(QtCore.QObject):
         """
         Return a summary for this CutDiff instance as a tuple with :
          shot details, cut item details, version details and edit details
-        :return: A four entries tuple, where each entry is a potentially empty string
+        :returns: A four entries tuple, where each entry is a potentially empty string
         """
         shot_details = ""
         if self.sg_shot:
