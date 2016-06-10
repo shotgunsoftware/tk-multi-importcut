@@ -474,6 +474,8 @@ class CutSummary(QtCore.QObject):
                 self.cut_diff_type_changed(cdiff, cdiff.diff_type, None)
                 cut_diff.set_sg_shot(cdiff.sg_shot)
                 cut_diff.set_sg_cut_item(cdiff.sg_cut_item)
+                if cut_diff.edit:
+                    cut_diff.set_sg_version(cdiff.sg_version)
                 self._cut_diffs[new_shot_key].append(cut_diff)
             else:
                 self._logger.debug("Adding new entry for new shot key %s" % new_shot_key)
@@ -481,32 +483,40 @@ class CutSummary(QtCore.QObject):
                 cdiff = self._cut_diffs[new_shot_key][0]
                 cut_diff.set_sg_shot(cdiff.sg_shot)
                 cut_diff.set_sg_cut_item(cdiff.sg_cut_item)
+                if cut_diff.edit:
+                    cut_diff.set_sg_version(cdiff.sg_version)
                 # Append and flag everything as repeated
                 self._cut_diffs[new_shot_key].append(cut_diff)
                 for cdiff in self._cut_diffs[new_shot_key]:
                     cdiff.set_repeated(True)
         else:
-            fields = ["code",
-                      "sg_status_list",
-                      "sg_cut_order",
-                      "sg_cut_in",
-                      "sg_cut_out",
-                      "sg_head_in",
-                      "sg_tail_out"]
+            fields = [
+                "code",
+                "sg_status_list",
+                "sg_cut_order",
+                "sg_cut_in",
+                "sg_cut_out",
+                "sg_head_in",
+                "sg_tail_out"
+            ]
             existing_linked_shot = self._app.shotgun.find_one(
-                "Shot", [["project", "is", self._sg_project],
-                         [self._sg_shot_link_field_name, "is", self._sg_entity],
-                         ["code", "is", new_name]],
-                fields)
+                "Shot",
+                    [["project", "is", self._sg_project],
+                    [self._sg_shot_link_field_name, "is", self._sg_entity],
+                    ["code", "is", new_name]],
+                fields
+            )
             if existing_linked_shot:
                 # Link to the first shot found in the linked Entity whose name matches new_name
                 cut_diff.set_sg_shot(existing_linked_shot)
             else:
                 # Link to the first shot found whose name matches new_name
                 existing_unlinked_shot = self._app.shotgun.find_one(
-                    "Shot", [["project", "is", self._sg_project],
-                             ["code", "is", new_name]],
-                    fields)
+                    "Shot",
+                        [["project", "is", self._sg_project],
+                         ["code", "is", new_name]],
+                    fields
+                )
                 if existing_unlinked_shot:
                     cut_diff.set_sg_shot(existing_unlinked_shot)
             self._logger.debug("Creating single entry for new shot key %s" % new_shot_key)

@@ -121,6 +121,13 @@ class CutDiff(QtCore.QObject):
         self._sg_shot = sg_shot
         self._edit = edit
         self._sg_cut_item = sg_cut_item
+        self._sg_version = None
+        # Make a copy of SG Version so we can change it if needed, e.g. when
+        # editing shot name
+        if self._sg_cut_item and self._sg_cut_item["version"]:
+            self._sg_version = self._sg_cut_item["version"]
+        elif self._edit:
+            self._sg_version = self._edit.get_sg_version()
 
         # User settings for non-class methods
         self._user_settings = sgtk.platform.current_bundle().user_settings
@@ -221,7 +228,7 @@ class CutDiff(QtCore.QObject):
         if not self._edit:
             return False
         # And only if there is no version linked to it
-        if self._sg_cut_item and self._sg_cut_item["version.Version.code"]:
+        if self.sg_version:
             return False
         return True
 
@@ -248,10 +255,8 @@ class CutDiff(QtCore.QObject):
         """
         Return the version name for this diff, if any
         """
-        if self._edit:
-            return self._edit.get_version_name()
-        if self._sg_cut_item and self._sg_cut_item["version.Version.code"]:
-            return self._sg_cut_item["version.Version.code"]
+        if self._sg_version:
+            return self._sg_version["code"]
         return None
 
     @property
@@ -259,21 +264,14 @@ class CutDiff(QtCore.QObject):
         """
         Return the Shotgun version for this diff, if any
         """
-        if self._edit:
-            return self._edit.get_sg_version()
-        if self._sg_cut_item and self._sg_cut_item["version"]:
-            return self._sg_cut_item["version"]
-        return None
+        return self._sg_version
 
     def set_sg_version(self, sg_version):
         """
         Set the Shotgun version associated with this diff
         :param sg_version: A SG version, as a dictionary
-        :raises: ValueError if no EditEvent is associated to this diff
         """
-        if not self._edit:
-            raise ValueError("Can't set Shotgun version without an edit entry")
-        self._edit._sg_version = sg_version
+        self._sg_version = sg_version
 
     @property
     def default_head_in(self):

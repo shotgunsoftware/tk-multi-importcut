@@ -105,6 +105,7 @@ class CutDiffCard(QtGui.QFrame):
         self.set_property("diff_type", _DIFF_TYPES_PROPERTIES[self._cut_diff.diff_type])
         self.set_property("repeated", self._cut_diff.repeated)
         # Shot name widget
+        shot_name_tooltip = []
         if self._cut_diff.name:
             self.ui.shot_name_line.set_property("valid", True)
             self.ui.shot_name_line.setText("%s" % self._cut_diff.name)
@@ -112,11 +113,14 @@ class CutDiffCard(QtGui.QFrame):
             self.ui.shot_name_line.set_property("valid", False)
             self.ui.shot_name_line.setText("")
         self.ui.shot_name_line.value_changed.connect(self.shot_name_edited)
-        self.ui.shot_name_line.setReadOnly(not self._cut_diff.is_name_editable)
-        if self._cut_diff.repeated:
-            self.ui.shot_name_line.setToolTip("Shot is repeated")
+        if not self._cut_diff.is_name_editable:
+            shot_name_tooltip.append("Shot name is not editable")
+            self.ui.shot_name_line.setReadOnly(True)
         else:
-            self.ui.shot_name_line.setToolTip("")
+            self.ui.shot_name_line.setReadOnly(False)
+        if self._cut_diff.repeated:
+            shot_name_tooltip.append("Shot is repeated")
+        self.ui.shot_name_line.setToolTip("\n".join(shot_name_tooltip))
         # Cut order
         new_cut_order = self._cut_diff.new_cut_order or 0
         old_cut_order = self._cut_diff.cut_order or 0
