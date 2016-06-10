@@ -742,7 +742,7 @@ class CutDiff(QtCore.QObject):
             return True
         if not self._edit:
             # If we don't have an edit entry we should always have a sg_shot
-            # coming from the Sequence
+            # coming from the linked Entity
             return True
         # Return True if the edit has a shot name
         return bool(self._name)

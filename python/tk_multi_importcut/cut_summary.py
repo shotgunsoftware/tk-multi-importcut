@@ -703,7 +703,10 @@ class CutSummary(QtCore.QObject):
         # 1 Rescan Needed
         # HT0120 - Head extended 15 frs
 
-        subject = "Sequence Cut Summary changes on %s" % title
+        subject = "%s Cut Summary changes on %s" % (
+            self._sg_entity["type"].title(),
+            title
+        )
 
         cut_changes_details = [
             "%s - %s" % (
