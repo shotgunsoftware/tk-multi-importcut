@@ -11,7 +11,7 @@
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-from .ui.sequence_card import Ui_SequenceCard
+from .ui.entity_card import Ui_EntityCard
 from .constants import _COLORS, _STATUS_COLORS
 from .card_widget import CardWidget
 
@@ -27,7 +27,7 @@ class EntityCard(CardWidget):
         :param parent: A parent QWidget
         :param sg_entity: A Shotgun entity, as a dictionary, to display
         """
-        super(EntityCard, self).__init__(parent, sg_entity, Ui_SequenceCard)
+        super(EntityCard, self).__init__(parent, sg_entity, Ui_EntityCard)
 
         self.ui.title_label.setText("%s" % self.entity_name)
         if self._sg_entity["_display_status"]:

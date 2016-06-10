@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'sequence_card.ui'
+# Form implementation generated from reading ui file 'entity_card.ui'
 #
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
@@ -8,26 +8,26 @@
 
 from tank.platform.qt import QtCore, QtGui
 
-class Ui_SequenceCard(object):
-    def setupUi(self, SequenceCard):
-        SequenceCard.setObjectName("SequenceCard")
-        SequenceCard.resize(358, 70)
+class Ui_EntityCard(object):
+    def setupUi(self, EntityCard):
+        EntityCard.setObjectName("EntityCard")
+        EntityCard.resize(358, 70)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(SequenceCard.sizePolicy().hasHeightForWidth())
-        SequenceCard.setSizePolicy(sizePolicy)
-        SequenceCard.setMinimumSize(QtCore.QSize(310, 70))
-        SequenceCard.setBaseSize(QtCore.QSize(358, 70))
-        SequenceCard.setFocusPolicy(QtCore.Qt.StrongFocus)
-        SequenceCard.setStyleSheet("")
-        SequenceCard.setFrameShape(QtGui.QFrame.Box)
-        SequenceCard.setFrameShadow(QtGui.QFrame.Plain)
-        SequenceCard.setLineWidth(2)
-        self.horizontalLayout = QtGui.QHBoxLayout(SequenceCard)
+        sizePolicy.setHeightForWidth(EntityCard.sizePolicy().hasHeightForWidth())
+        EntityCard.setSizePolicy(sizePolicy)
+        EntityCard.setMinimumSize(QtCore.QSize(310, 70))
+        EntityCard.setBaseSize(QtCore.QSize(358, 70))
+        EntityCard.setFocusPolicy(QtCore.Qt.StrongFocus)
+        EntityCard.setStyleSheet("")
+        EntityCard.setFrameShape(QtGui.QFrame.Box)
+        EntityCard.setFrameShadow(QtGui.QFrame.Plain)
+        EntityCard.setLineWidth(2)
+        self.horizontalLayout = QtGui.QHBoxLayout(EntityCard)
         self.horizontalLayout.setContentsMargins(4, 1, 0, 1)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.icon_label = QtGui.QLabel(SequenceCard)
+        self.icon_label = QtGui.QLabel(EntityCard)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -47,17 +47,17 @@ class Ui_SequenceCard(object):
         self.verticalLayout_2.setSpacing(1)
         self.verticalLayout_2.setContentsMargins(-1, 4, -1, 4)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.title_label = QtGui.QLabel(SequenceCard)
+        self.title_label = QtGui.QLabel(EntityCard)
         self.title_label.setObjectName("title_label")
         self.verticalLayout_2.addWidget(self.title_label)
-        self.status_label = QtGui.QLabel(SequenceCard)
+        self.status_label = QtGui.QLabel(EntityCard)
         self.status_label.setObjectName("status_label")
         self.verticalLayout_2.addWidget(self.status_label)
-        self.details_label = QtGui.QLabel(SequenceCard)
+        self.details_label = QtGui.QLabel(EntityCard)
         self.details_label.setObjectName("details_label")
         self.verticalLayout_2.addWidget(self.details_label)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
-        self.select_button = QtGui.QPushButton(SequenceCard)
+        self.select_button = QtGui.QPushButton(EntityCard)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -76,13 +76,13 @@ class Ui_SequenceCard(object):
         self.horizontalLayout.addWidget(self.select_button)
         self.horizontalLayout.setStretch(1, 1)
 
-        self.retranslateUi(SequenceCard)
-        QtCore.QMetaObject.connectSlotsByName(SequenceCard)
+        self.retranslateUi(EntityCard)
+        QtCore.QMetaObject.connectSlotsByName(EntityCard)
 
-    def retranslateUi(self, SequenceCard):
-        SequenceCard.setWindowTitle(QtGui.QApplication.translate("SequenceCard", "Frame", None, QtGui.QApplication.UnicodeUTF8))
-        self.title_label.setText(QtGui.QApplication.translate("SequenceCard", "<big><b>Name</b></big>", None, QtGui.QApplication.UnicodeUTF8))
-        self.status_label.setText(QtGui.QApplication.translate("SequenceCard", "Status", None, QtGui.QApplication.UnicodeUTF8))
-        self.details_label.setText(QtGui.QApplication.translate("SequenceCard", "<small>details</small>", None, QtGui.QApplication.UnicodeUTF8))
+    def retranslateUi(self, EntityCard):
+        EntityCard.setWindowTitle(QtGui.QApplication.translate("EntityCard", "Frame", None, QtGui.QApplication.UnicodeUTF8))
+        self.title_label.setText(QtGui.QApplication.translate("EntityCard", "<big><b>Name</b></big>", None, QtGui.QApplication.UnicodeUTF8))
+        self.status_label.setText(QtGui.QApplication.translate("EntityCard", "Status", None, QtGui.QApplication.UnicodeUTF8))
+        self.details_label.setText(QtGui.QApplication.translate("EntityCard", "<small>details</small>", None, QtGui.QApplication.UnicodeUTF8))
 
 from . import resources_rc
