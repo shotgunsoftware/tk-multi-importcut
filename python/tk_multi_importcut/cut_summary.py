@@ -346,7 +346,6 @@ class CutSummary(QtCore.QObject):
         super(CutSummary, self).__init__()
         self._cut_diffs = {}
         self._counts = {}
-        self._cut_item_notes = {}
         self._rescans_count = 0
         self._logger = get_logger()
 
@@ -404,10 +403,6 @@ class CutSummary(QtCore.QObject):
         :returns: An integer
         """
         return self._edit_offset
-
-    @property
-    def cut_item_notes(self):
-        return self._cut_item_notes
 
     def add_cut_diff(self, shot_name, sg_shot=None, edit=None, sg_cut_item=None):
         """
@@ -616,6 +611,7 @@ class CutSummary(QtCore.QObject):
     def rescans_count(self):
         """
         Return the number of entries needing a rescan
+        :returns: An integer
         """
         return self._rescans_count
 
@@ -623,6 +619,7 @@ class CutSummary(QtCore.QObject):
     def repeated_count(self):
         """
         Return the number of entries which share their shot with another entry
+        :returns: An integer
         """
         return sum([len(self._cut_diffs[x]) for x in self._cut_diffs if len(self._cut_diffs[x]) > 1])
 
@@ -631,16 +628,18 @@ class CutSummary(QtCore.QObject):
         Return the number of entries for the given CutDiffType
 
         :param diff_type: A CutDiffType
+        :returns: An integer
         """
         return self._counts.get(diff_type, 0)
 
     def edits_for_type(self, diff_type, just_earliest=False):
         """
-        Return the CutDiff instances for the given CutDiffType
+        Iterate over CutDiff instances for the given CutDiffType
 
         :param diff_type: A CutDiffType
         :param just_earliest: Whether or not all matching CutDiff should be
                               returned or just the earliest(s)
+        :yields: CutDiff instances
         """
         for name, items in self._cut_diffs.iteritems():
             for item in items:
@@ -652,6 +651,7 @@ class CutSummary(QtCore.QObject):
         Return True if there is already an entry in this summary for the given shot
 
         :param shot_name: A shot name, as a string
+        :returns: True if the shot is already known, False otherwise
         """
         return shot_name.lower() in self._cut_diffs
 
@@ -660,6 +660,7 @@ class CutSummary(QtCore.QObject):
         Return the CutDiff(s) list for the given shot, if any.
 
         :param shot_name: A shot name, as a string
+        :returns: A list of CutDiffs
         """
         return self._cut_diffs.get(shot_name.lower())
 
@@ -712,12 +713,14 @@ class CutSummary(QtCore.QObject):
     def __len__(self):
         """
         Return the total number of entries in this summary
+        :returns: An integer
         """
         return sum([len(self._cut_diffs[k]) for k in self._cut_diffs], 0)
 
     def __iter__(self):
         """
         Iterate other shots for this summary
+        :yields: Shot names, as strings
         """
         for name in self._cut_diffs.keys():
             yield name
@@ -725,6 +728,7 @@ class CutSummary(QtCore.QObject):
     def __getitem__(self, key):
         """
         Return CutDiffs list for a given shot
+        :returns: A list of CutDiffs
         """
         return self._cut_diffs.get(key.lower())
 
@@ -732,6 +736,7 @@ class CutSummary(QtCore.QObject):
         """
         Iterate over shot names for this summary, yielding (name, CutDiffs list)
         tuple
+        :yields: (name, CutDiffs list) tuples
         """
         for name, items in self._cut_diffs.iteritems():
             yield (name, items)
@@ -742,7 +747,7 @@ class CutSummary(QtCore.QObject):
 
         :param title: A title for the report
         :param sg_links: Shotgun URLs to display in the report as links
-        :return: A subject, body tuple, as strings
+        :return: A (subject, body) tuple, as strings
         """
         # Body should look like that :
         # The changes in {Name of Cut/EDL} are as follows:
