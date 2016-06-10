@@ -117,7 +117,7 @@ class EntityTypeCard(QtGui.QFrame):
 
     def mouseDoubleClickEvent(self, event):
         """
-        Handle double clicks : show cut changes for the attached sequence
+        Handle double clicks : show cut changes for the attached Entity
         """
         self.show_selected()
 
@@ -181,7 +181,7 @@ class EntityTypesView(QtCore.QObject):
         # A one line message which can be displayed when the view is visible
         self._info_message = ""
 
-        # Retrieve all entity types which are accepted by Cut.sg_sequence field
+        # Retrieve all entity types which are accepted by Cut.entity field
         # in Shotgun
         cut_link_field = "entity"
         sg = sgtk.platform.current_bundle().shotgun

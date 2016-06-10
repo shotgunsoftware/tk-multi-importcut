@@ -501,7 +501,7 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(dict)
     def show_cut_diff(self, sg_cut):
         """
-        Build a cut summary for the current Shotgun entity ( Sequence ) and the given,
+        Build a cut summary for the current Shotgun entity (e.g. Sequence) and the given,
         potentially empty, Shotgun Cut.
         - Retrieve all shots linked to the Shotgun entity
         - Retrieve all cut items linked to the Cut
@@ -954,7 +954,7 @@ class EdlCut(QtCore.QObject):
 
     def create_sg_cut(self, title, description):
         """
-        Create a Cut in Shotgun, linked to the current Sequence
+        Create a Cut in Shotgun, linked to the current SG Entity
         """
         # Create a new cut
         self._logger.info("Creating Cut %s ..." % title)

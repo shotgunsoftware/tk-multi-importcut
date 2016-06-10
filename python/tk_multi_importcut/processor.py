@@ -110,7 +110,7 @@ class Processor(QtCore.QThread):
     @property
     def sg_entity(self):
         """
-        Return the current Shotgun entity ( Sequence ) we are displaying cut
+        Return the current Shotgun entity (e.g. Sequence) we are displaying cut
         changes for
         :returns: A Shotgun entity dictionary or None
         """

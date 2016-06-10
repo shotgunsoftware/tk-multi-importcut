@@ -17,9 +17,9 @@ class EntitiesView(QtCore.QObject):
     """
     Entities view page handler
     """
-    # Emitted when a sequence is chosen for next step
-    sequence_chosen = QtCore.Signal(dict)
-    # Emitted when a different sequence is selected
+    # Emitted when an Entity is chosen for next step
+    entity_chosen = QtCore.Signal(dict)
+    # Emitted when a different Entity is selected
     selection_changed = QtCore.Signal(dict)
 
     # Emitted when the info message changed
@@ -80,7 +80,7 @@ class EntitiesView(QtCore.QObject):
         widget = EntityCard(None, sg_entity)
         widget.entity_type = sg_entity["type"]
         widget.highlight_selected.connect(self.entity_selected)
-        widget.chosen.connect(self.sequence_chosen)
+        widget.chosen.connect(self.entity_chosen)
         self._grid_widget.addWidget(widget, row, column, )
         self._grid_widget.setRowStretch(row, 0)
         # Put the stretcher back
@@ -110,7 +110,7 @@ class EntitiesView(QtCore.QObject):
     @QtCore.Slot(unicode)
     def search(self, text):
         """
-        Display only sequences whose name matches the given text,
+        Display only Entities whose name matches the given text,
         display all of them if text is empty
 
         :param text: A string to match
@@ -118,7 +118,7 @@ class EntitiesView(QtCore.QObject):
         self._logger.debug("Searching for %s" % text)
         count = self._grid_widget.count() - 1  # We have stretcher
         if not count:
-            # Avoid 0 sequences message to be emitted if we don't have
+            # Avoid 0 Entities message to be emitted if we don't have
             # anything ... yet
             return
         match_count = 0
@@ -146,7 +146,7 @@ class EntitiesView(QtCore.QObject):
 
     def sort_changed(self):
         """
-        Called when sequences need to be sorted again
+        Called when Entities need to be sorted again
         """
         method = 0
         count = self._grid_widget.count() - 1  # We have stretcher
@@ -187,7 +187,7 @@ class EntitiesView(QtCore.QObject):
 
     def clear(self):
         """
-        Reset the page displaying available sequences
+        Reset the page displaying available Entities
         """
         self._selected_entity_card = None
         count = self._grid_widget.count() - 1  # We have stretcher

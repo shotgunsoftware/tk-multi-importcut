@@ -123,7 +123,7 @@ class CutsView(QtCore.QObject):
     @QtCore.Slot(dict)
     def show_cut(self, sg_cut):
         """
-        Called when cut changes needs to be shown for a particular sequence/cut
+        Called when cut changes needs to be shown for a particular cut
 
         :param sg_cut: A Shotgun cut dictionary, as retrieved from a find
         """

@@ -118,7 +118,7 @@ class AppDialog(QtGui.QWidget):
     get_projects = QtCore.Signal()
     get_entities = QtCore.Signal(str)
     set_active_project = QtCore.Signal(dict)
-    show_cuts_for_sequence = QtCore.Signal(dict)
+    show_cuts_for_entity = QtCore.Signal(dict)
     show_cut_diff = QtCore.Signal(dict)
 
     def __init__(self, edl_file_path=None, sg_entity=None, frame_rate=None):
@@ -181,7 +181,7 @@ class AppDialog(QtGui.QWidget):
         self.get_projects.connect(self._processor.retrieve_projects)
         self.set_active_project.connect(self._processor.set_sg_project)
         self.get_entities.connect(self._processor.retrieve_entities)
-        self.show_cuts_for_sequence.connect(self._processor.retrieve_cuts)
+        self.show_cuts_for_entity.connect(self._processor.retrieve_cuts)
         self.show_cut_diff.connect(self._processor.show_cut_diff)
 
         self._processor.valid_edl.connect(self.valid_edl)
@@ -347,7 +347,7 @@ class AppDialog(QtGui.QWidget):
         Create a view for the given entity type
         """
         self._entities_views.append(EntitiesView(entity_type, grid_layout))
-        self._entities_views[-1].sequence_chosen.connect(self.show_entity)
+        self._entities_views[-1].entity_chosen.connect(self.show_entity)
         self._entities_views[-1].selection_changed.connect(self.selection_changed)
         self._entities_views[-1].new_info_message.connect(self.display_info_message)
         self._processor.new_sg_entity.connect(self._entities_views[-1].new_sg_entity)
@@ -977,12 +977,12 @@ class AppDialog(QtGui.QWidget):
                 name,
             )
         )
-        self.show_cuts_for_sequence.emit(sg_entity)
+        self.show_cuts_for_entity.emit(sg_entity)
 
     @QtCore.Slot(dict)
     def show_cut(self, sg_cut):
         """
-        Called when cut changes needs to be shown for a particular sequence/cut
+        Called when cut changes needs to be shown for a particular Cut
         :param sg_cut: A Cut dictionary as retrieved from Shotgun
         """
         if sg_cut != {}:
@@ -1074,7 +1074,7 @@ class AppDialog(QtGui.QWidget):
         """
         try:
             new_entity = self._app.shotgun.create(entity_type, fields)
-            self.show_cuts_for_sequence.emit(new_entity)
+            self.show_cuts_for_entity.emit(new_entity)
         except Exception, e:
             msg_box = QtGui.QMessageBox(
                 parent=self,
