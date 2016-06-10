@@ -40,7 +40,6 @@ from .ui.dialog import Ui_Dialog
 
 from .processor import Processor
 from .logger import BundleLogHandler, get_logger, ShortNameFilter
-from .entity_types_view import EntityTypesView
 from .projects_view import ProjectsView
 from .entities_view import EntitiesView
 from .cuts_view import CutsView
@@ -720,10 +719,11 @@ class AppDialog(QtGui.QWidget):
         self._step = step
         # 0 : drag and drop
         # 1 : project select
-        # 2 : entity select
-        # 3 : cut select
-        # 4 : cut summary
-        # 5 : import completed
+        # 2 : entity type select (virtual, combined in entity view)
+        # 3 : entity select
+        # 4 : cut select
+        # 5 : cut summary
+        # 6 : import completed
         if step == _DROP_STEP:
             # Clear various things when we hit the first screen
             # doing a reset

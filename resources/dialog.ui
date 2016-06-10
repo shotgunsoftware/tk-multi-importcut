@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>969</width>
-    <height>580</height>
+    <width>982</width>
+    <height>555</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
    <item>
     <widget class="AnimatedStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>5</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="drop_page">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -470,9 +470,9 @@
       </layout>
      </widget>
      <widget class="QWidget" name="entity_types_page">
-      <layout class="QVBoxLayout" name="verticalLayout_8" stretch="0,1">
+      <layout class="QVBoxLayout" name="verticalLayout_8" stretch="0">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0">
          <property name="leftMargin">
           <number>12</number>
          </property>
@@ -480,12 +480,9 @@
           <number>0</number>
          </property>
          <item>
-          <layout class="QHBoxLayout" name="entity_buttons_layout_old"/>
-         </item>
-         <item>
           <widget class="QLabel" name="entity_picker_title_label">
            <property name="text">
-            <string>Select Link for Cut (old)</string>
+            <string>This screen is never shown as this step is now combined with the Entities screen (next screen)</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -538,52 +535,6 @@
           </widget>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QFrame" name="entity_picker_frame">
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_9" stretch="1,0,1">
-          <item>
-           <widget class="QLabel" name="entity_picker_title_label_2">
-            <property name="text">
-             <string>What do you want to link this Cut to ?</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QFrame" name="entity_types_frame">
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QHBoxLayout" name="entity_types_layout"/>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_10">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>0</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -729,8 +680,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>943</width>
-            <height>444</height>
+            <width>956</width>
+            <height>419</height>
            </rect>
           </property>
           <property name="styleSheet">

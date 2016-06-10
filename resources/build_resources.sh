@@ -38,7 +38,6 @@ function build_res {
 echo "building user interfaces..."
 build_ui dialog
 # add any additional .ui files you want converted here!
-build_ui entity_type_card
 build_ui project_card
 build_ui entity_card
 build_ui cut_card
