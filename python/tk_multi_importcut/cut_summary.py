@@ -501,9 +501,11 @@ class CutSummary(QtCore.QObject):
             ]
             existing_linked_shot = self._app.shotgun.find_one(
                 "Shot",
-                    [["project", "is", self._sg_project],
+                [
+                    ["project", "is", self._sg_project],
                     [self._sg_shot_link_field_name, "is", self._sg_entity],
-                    ["code", "is", new_name]],
+                    ["code", "is", new_name]
+                ],
                 fields
             )
             if existing_linked_shot:
@@ -513,8 +515,7 @@ class CutSummary(QtCore.QObject):
                 # Link to the first shot found whose name matches new_name
                 existing_unlinked_shot = self._app.shotgun.find_one(
                     "Shot",
-                        [["project", "is", self._sg_project],
-                         ["code", "is", new_name]],
+                    [["project", "is", self._sg_project], ["code", "is", new_name]],
                     fields
                 )
                 if existing_unlinked_shot:
