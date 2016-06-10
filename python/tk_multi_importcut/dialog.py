@@ -255,15 +255,20 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.clicked.connect(self.do_reset)
         self.ui.email_button.clicked.connect(self.email_cut_changes)
         self.ui.submit_button.clicked.connect(self.import_cut)
-        # We have a different settings button on each page of the stacked widget
-        num_pages = self.ui.stackedWidget.count()
-        if num_pages > 0:
-            for i in range(1, num_pages):
-                try:
-                    eval("self.ui.settings_page_%s_button.clicked.connect(\
-                        self.show_settings_dialog)" % i)
-                except:
-                    pass
+
+        # We have a different settings button on different pages of the stacked widget
+        # Connect them, making the settings dialog aware of the step it was started
+        # from, so later we will be able to check if the settings changes neeed a
+        # a restart or not, based on the step they were changed at
+        for step, button in {
+            _DROP_STEP : self.ui.drop_page_settings_button,
+            _PROJECT_STEP : self.ui.project_page_settings_button,
+            _ENTITY_STEP : self.ui.entities_page_settings_button,
+            _CUT_STEP : self.ui.cut_list_page_settings_button,
+            _SUMMARY_STEP : self.ui.cut_summary_page_settings_button,
+        }.iteritems():
+            button.clicked.connect(lambda x=step : self.show_settings_dialog(x))
+
         # Here we're dynamically creating link buttons on the ENTITY_STEP page,
         # as well as adding a Project type button.
 
@@ -1052,13 +1057,14 @@ class AppDialog(QtGui.QWidget):
         dialog.raise_()
         dialog.activateWindow()
 
-    @QtCore.Slot()
-    def show_settings_dialog(self):
+    @QtCore.Slot(int)
+    def show_settings_dialog(self, step):
         """
         Called when the settings dialog needs to be presented to the user. This can
         happen on almost every page of the animated stacked widget.
         """
-        show_settings_dialog = SettingsDialog(parent=self)
+        self._logger.debug("Settings at step %d" % step)
+        show_settings_dialog = SettingsDialog(parent=self, step=step)
         show_settings_dialog.show()
         show_settings_dialog.raise_()
         show_settings_dialog.activateWindow()

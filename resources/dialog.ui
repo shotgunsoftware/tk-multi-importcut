@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>982</width>
-    <height>555</height>
+    <width>984</width>
+    <height>598</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,7 +55,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="settings_page_1_button">
+          <widget class="QPushButton" name="drop_page_settings_button">
            <property name="maximumSize">
             <size>
              <width>22</width>
@@ -402,7 +402,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="settings_page_6_button">
+          <widget class="QPushButton" name="project_page_settings_button">
            <property name="maximumSize">
             <size>
              <width>22</width>
@@ -439,8 +439,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>943</width>
-            <height>444</height>
+            <width>956</width>
+            <height>419</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="project_grid" rowstretch="0">
@@ -472,7 +472,7 @@
      <widget class="QWidget" name="entity_types_page">
       <layout class="QVBoxLayout" name="verticalLayout_8" stretch="0">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1">
          <property name="leftMargin">
           <number>12</number>
          </property>
@@ -482,55 +482,11 @@
          <item>
           <widget class="QLabel" name="entity_picker_title_label">
            <property name="text">
-            <string>This screen is never shown as this step is now combined with the Entities screen (next screen)</string>
+            <string>This screen is never shown as this step is now combined with the Entities screen (next screen).
+This screen is kept so we have a direct match between internal steps and screens</string>
            </property>
            <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>360</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="settings_page_2_button">
-           <property name="maximumSize">
-            <size>
-             <width>30</width>
-             <height>22</height>
-            </size>
-           </property>
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="resources.qrc">
-             <normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>44</width>
-             <height>20</height>
-            </size>
-           </property>
-           <property name="default">
-            <bool>false</bool>
-           </property>
-           <property name="flat">
-            <bool>true</bool>
+            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
@@ -643,7 +599,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="settings_page_3_button">
+          <widget class="QPushButton" name="entities_page_settings_button">
            <property name="maximumSize">
             <size>
              <width>22</width>
@@ -949,7 +905,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="settings_page_4_button">
+          <widget class="QPushButton" name="cut_list_page_settings_button">
            <property name="maximumSize">
             <size>
              <width>22</width>
@@ -986,8 +942,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>956</width>
+            <height>417</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="cuts_grid">
@@ -1246,7 +1202,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="settings_page_5_button">
+           <widget class="QPushButton" name="cut_summary_page_settings_button">
             <property name="maximumSize">
              <size>
               <width>22</width>
@@ -1315,8 +1271,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>943</width>
-              <height>382</height>
+              <width>956</width>
+              <height>357</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">

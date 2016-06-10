@@ -97,16 +97,21 @@ class SettingsDialog(QtGui.QDialog):
     widget. Gives users access to app settings via a gui interface, stores those
     settings locally per user.
     """
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, step=None):
         """
         Instantiate a new dialog
         :param parent: a QWidget
+        :param step: The current app step we are at
         """
         super(SettingsDialog, self).__init__(parent)
         self.setModal(True)
+        # This is not used yet, but later we will be able to check if changes
+        # made require a restart, baser on the step we are at
+        self._step = step
         self._logger = get_logger()
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)
+        self.setWindowTitle("Settings")
         self._app = sgtk.platform.current_bundle()
         self._user_settings = UserSettings()
         self._shot_schema = None
