@@ -8,14 +8,15 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
+import sgtk
+
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
-
-import sgtk
 from sgtk.platform.qt import QtCore
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .logger import get_logger
 
+# Template used by summary report
 _BODY_REPORT_FORMAT = """
 %s
 Links : %s
@@ -45,8 +46,14 @@ class ShotCutDiffList(list):
     A list of cut differences for a given shot. Minimum and maximum values
     are computed when adding / removing entries. These values are used to deal
     with repeated shots, that is, shots which appears more than once in the cut.
+    
+    List of CutDiffs are typically stored in a dictionary where keys are Shot names
     """
     def __init__(self, cut_diff, *args, **kwargs):
+        """
+        Instantiate a new list with a single value
+        :param cut_diff: A CutDiff instance
+        """
         super(ShotCutDiffList, self).__init__(*args, **kwargs)
         self._logger = get_logger()
         self._reset_min_and_max()  # Just so attributes are defined
@@ -62,7 +69,7 @@ class ShotCutDiffList(list):
         self._max_tc_cut_out = None
         self._earliest_entry = None
         self._last_entry = None
-        # From the new edit
+        # From the new edit values
         self._new_min_tc_cut_in = None
         self._new_max_tc_cut_out = None
         self._new_earliest_entry = None
@@ -119,24 +126,40 @@ class ShotCutDiffList(list):
 
     @property
     def min_tc_cut_in(self):
+        """
+        Return the earliest cut in timecode
+        :returns: A Timecode
+        """
         if self._min_tc_cut_in is not None:
             return self._min_tc_cut_in
         return self._new_min_tc_cut_in
 
     @property
     def min_cut_in(self):
+        """
+        Return the cut in for the earliest entry in the list
+        :returns: An integer
+        """
         if self._earliest_entry:
             return self._earliest_entry.cut_in
         return self._new_earliest_entry.new_cut_in
 
     @property
     def max_tc_cut_out(self):
+        """
+        Return the maximum cut out timecode
+        :returns: A Timecode
+        """
         if self._max_tc_cut_out is not None:
             return self._max_tc_cut_out
         return self._new_max_tc_cut_out
 
     @property
     def max_cut_out(self):
+        """
+        Return the cut out for the last entry in this list
+        :returns: An integer
+        """
         if self._last_entry:
             return self._last_entry.cut_out
         return self._new_last_entry.new_cut_out
@@ -158,6 +181,7 @@ class ShotCutDiffList(list):
         - The last cut out
         - The last tail out
         - The shot difference type
+        :returns: A tuple
         """
         min_cut_order = None
         min_head_in = None
@@ -280,27 +304,44 @@ class ShotCutDiffList(list):
 class CutSummary(QtCore.QObject):
     """
     A list of cut differences, stored in CutDiff instances
+    
+    CutDiffs are organised in a dictionary where keys are Shot names, allowing
+    to group together entries for the same Shots
     """
+    # Emitted when a new CutDiff was added to the summary
     new_cut_diff = QtCore.Signal(CutDiff)
+    # Emitted when totals per diff type changed
     totals_changed = QtCore.Signal()
+    # Emitted when a CutDiff was removed from the summary
     delete_cut_diff = QtCore.Signal(CutDiff)
 
     def __init__(
             self,
+            sg_project,
+            sg_entity,
+            sg_shot_link_field_name,
             tc_edit_in=None,
             tc_edit_out=None,
-            sg_shot_link_field_name=None,
-            sg_entity=None,
-            sg_project=None
             ):
         """
         Create a new empty CutSummary
-        :param tc_edit_in: A Timecode instance, first edit timecode in
-        :param tc_edit_out: A Timecode instance, very last edit timecode out
+
+        Two timecodes can be given to define the whole edit range. If given, an
+        offset will be available so when creating CutItems all edit timecodes can
+        be 00:00:00:00 based, instead of being kept absolute.
+        
+        A Shotgun Project is needed, as it might differ from the current context
+        Project, if the user picked up another one.
+
+        The Shotgun Entity can be a Scene, a Sequence, or any other Shot container.
+        It is the Entity the Cut is related to
+
+        :param sg_project: A SG Project dictionary
+        :param sg_entity: A SG Entity dictionary
         :param sg_shot_link_field_name: The name of the field used to link Shots
-        :param sg_entity: The Shotgun Entity the Shot should be linked to
-        :param sg_project: The Shotgun project selected by the user (can be
-        different than the project stored in shotgun.context)
+                                        against the SG Entity
+        :param tc_edit_in: A Timecode instance, very first edit timecode in
+        :param tc_edit_out: A Timecode instance, very last edit timecode out
         """
         super(CutSummary, self).__init__()
         self._cut_diffs = {}
@@ -321,33 +362,48 @@ class CutSummary(QtCore.QObject):
         self._sg_shot_link_field_name = sg_shot_link_field_name
         self._edit_offset = 0
         self._duration = 0
-        self._fps = float(user_settings.retrieve("default_frame_rate"))
         if self._tc_start is not None:
             self._edit_offset = tc_edit_in.to_frame()
             if self._tc_end is not None:
+                # TC out is exclusive, the real formula would be
+                # duration = tc_out - 1 - tc_in + 1
+                # so we simplify it by not adding and substractin 1
+                # and reuse the frame conversion computed for the edit offset
                 self._duration = tc_edit_out.to_frame() - self._edit_offset
 
         self._logger.info("Edit offset %s, duration %s" % (self._edit_offset, self._duration))
 
     @property
     def timecode_start(self):
+        """
+        Return the very first edit timecode in
+        :returns: A Timecode or None
+        """
         return self._tc_start
 
     @property
     def timecode_end(self):
+        """
+        Return the very last edit timecode out
+        :returns: A Timecode or None
+        """
         return self._tc_end
 
     @property
     def duration(self):
+        """
+        Return the duration of the edit
+        :returns: An integer
+        """
         return self._duration
 
     @property
     def edit_offset(self):
+        """
+        Return an offset to rebase all edit timecodes to 00:00:00:00
+        :returns: An integer
+        """
         return self._edit_offset
-
-    @property
-    def fps(self):
-        return self._fps
 
     @property
     def cut_item_notes(self):

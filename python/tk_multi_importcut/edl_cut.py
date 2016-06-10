@@ -521,11 +521,11 @@ class EdlCut(QtCore.QObject):
             tc_start = self._edl.edits[0].record_in
             tc_end = self._edl.edits[-1].record_out
         self._summary = CutSummary(
+            self._project,
+            self._sg_entity,
+            self._sg_shot_link_field_name,
             tc_start,
             tc_end,
-            self._sg_shot_link_field_name,
-            self._sg_entity,
-            self._project
         )
         # Connect CutSummary signals to ours as pass through, so any listener
         # on our signals will receive signals emitted by the CutSummary
