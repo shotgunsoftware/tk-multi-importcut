@@ -85,7 +85,9 @@ def show_dialog(app_instance):
 
 def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
     """
-    Run the app with a pre-selected edl file and SG entity
+    Run the app with a pre-selected edl file and SG entity, typically from
+    command line arguments.
+
     :param edl_file_path: Full path to an EDL file
     :param sg_entity: A SG entity dictionary as a string, e.g.
                       '{"code" : "001", "id" : 19, "type" : "Sequence"}'
@@ -111,18 +113,47 @@ def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
 class AppDialog(QtGui.QWidget):
     """
     Main application dialog window
+
+    All data is handled on a dedicated thread started with a Processor instance.
+    Data is allocated in the dedicated Processor running thread, so slots are
+    honored in this thread. Pass through signals are used to communicate between
+    this thread, the Processor and the EdlCut data which is not available when the
+    app is started, but only after the Processor was started.
+
+    This app follows a wizard style approach: some steps are defined, signals are
+    emitted to ask the data manager to retrieve data needed for the next step. The
+    data manager validate that the current step is done, so the UI can move to the
+    next one.
+
+    Each step has a dedicated screen, except for the Entity Type / Entity steps
+    which are combined in a single screen. Therefore, the Entity Type step is a
+    'virtual' step which, when done, does not move the UI to the next screen.
+
+    Intermediate screens are views displaying cards for various SG Entities. The
+    user selects one of them, we ask the data manager to retrieve data linked to
+    this Entity, and move forward to next step when the data is retrieved.
     """
+    # Emitted when a new EDL file should be loaded
     new_edl = QtCore.Signal(str)
+    # Emitted when a new movie file should be considered
     new_movie = QtCore.Signal(str)
+    # Emitted to ask the data manager to retrieve SG projects
     get_projects = QtCore.Signal()
+    # Emitted to ask the data manager to retrieve SG entities
     get_entities = QtCore.Signal(str)
+    # Emitted when the current SG project should be set
     set_active_project = QtCore.Signal(dict)
-    show_cuts_for_entity = QtCore.Signal(dict)
-    show_cut_diff = QtCore.Signal(dict)
+    # Emitted to ask the data manager to retrieve SG Cuts for a given SG Entity
+    get_cuts_for_entity = QtCore.Signal(dict)
+    # Emitted to ask the data manager to retrieve SG CutItems for a given SG Cut
+    # and CutDiffs with edit entries / cut items
+    get_cut_diff = QtCore.Signal(dict)
 
     def __init__(self, edl_file_path=None, sg_entity=None, frame_rate=None):
         """
-        Constructor
+        Create a new app instance. Optional parameters can be given to skip
+        the first screens.
+
         :param edl_file_path: Full path to an EDL file
         :param sg_entity: An SG entity dictionary
         :param frame_rate: Use a specific frame rate for the import
@@ -149,18 +180,13 @@ class AppDialog(QtGui.QWidget):
         # Current step being displayed
         self._step = 0
 
-        # Selected sg entity per step : selection only happen in steps 1 and 2
+        # Selected sg entity per step : selection only happen in first steps
         # but we create entries for all steps allowing to index the list
         # with the current step and blindly disable the select button on the
         # value for each step
         self._selected_sg_entity = [None]*(_LAST_STEP+1)
 
-        # via the self._app handle we can for example access:
-        # - The engine, via self._app.engine
-        # - A Shotgun API instance, via self._app.shotgun
-        # - A tk API instance, via self._app.tk
-
-        # lastly, set up our very basic UI
+        # Load styling and build our main logger
         self.set_custom_style()
         self.set_logger(logging.INFO)
 
@@ -172,60 +198,93 @@ class AppDialog(QtGui.QWidget):
         CutDiff.retrieve_default_timecode_frame_mapping()
 
         # Keep this thread for UI stuff
-        # Handle data and processong in a separate thread
+        # Handle data and processing in a separate thread
         self._processor = Processor(frame_rate)
 
+        # Connect signal which will allow us to communicate with the data
+        # manager
+        # Let the data manager know that we have a new EDL or new movie
         self.new_edl.connect(self._processor.new_edl)
         self.new_movie.connect(self._processor.new_movie)
-        self.get_projects.connect(self._processor.retrieve_projects)
-        self.set_active_project.connect(self._processor.set_sg_project)
-        self.get_entities.connect(self._processor.retrieve_entities)
-        self.show_cuts_for_entity.connect(self._processor.retrieve_cuts)
-        self.show_cut_diff.connect(self._processor.show_cut_diff)
-
+        # Validating the EDL / movie is left to the data manager so we need to
+        # know if it considered them valid
         self._processor.valid_edl.connect(self.valid_edl)
         self._processor.valid_movie.connect(self.valid_movie)
 
+        # Let the data manager know that we need it to retrieve data from SG
+        self.get_projects.connect(self._processor.retrieve_projects)
+        self.set_active_project.connect(self._processor.set_sg_project)
+        self.get_entities.connect(self._processor.retrieve_entities)
+        self.get_cuts_for_entity.connect(self._processor.retrieve_cuts)
+        self.get_cut_diff.connect(self._processor.show_cut_diff)
+
+        # The data manager will let us know if we can move the UI to the next step
+        # or if the current step failed
         self._processor.step_done.connect(self.step_done)
         self._processor.step_failed.connect(self.step_failed)
+
+        # When the data manager is busy, we want to highlight it in the UI,
+        # preventing user interactions
         self._processor.got_busy.connect(self.set_busy)
         self._processor.got_idle.connect(self.set_idle)
+
+        # Ensure all data is cleared when we reach back the first screen
         self.ui.stackedWidget.first_page_reached.connect(self._processor.reset)
 
         # Let's do something when something is dropped
         self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
         self.ui.drop_area_frame.set_restrict_to_ext(_VIDEO_EXTS + [".edl"])
 
-        # Instantiate a projects view handler
+        # Build views and connect them to the data manager
+
+        # Instantiate a Projects view handler
         self._projects_view = ProjectsView(self.ui.project_grid)
-        self._projects_view.project_chosen.connect(self.show_project)
+        # The view will let us know when a Project was picked up
+        self._projects_view.project_chosen.connect(self.project_chosen)
+        # We need to know the current selection for the "Select" button
         self._projects_view.selection_changed.connect(self.selection_changed)
+        # Display messages from the view
         self._projects_view.new_info_message.connect(self.display_info_message)
+        # When SG Projects are retrieved by the data manager, let the view know
+        # that new cards should be build for them
         self._processor.new_sg_project.connect(self._projects_view.new_sg_project)
         self.ui.projects_search_line_edit.search_edited.connect(self._projects_view.search)
         self.ui.projects_search_line_edit.search_changed.connect(self._projects_view.search)
 
-        # Instantiate an empty entities views handler
+        # Instantiate an empty entities views handler. This will be populated later
+        # and we will have one view per Entity type
         self._entities_views = []
 
-        # Instantiate a cuts view handler
+        # Instantiate a Cuts view handler
         self._cuts_view = CutsView(self.ui.cuts_grid, self.ui.cuts_sort_button)
-        self._cuts_view.show_cut_diff.connect(self.show_cut)
+        # Show cut differences when a SG Cut is picked up
+        self._cuts_view.cut_chosen.connect(self.show_cut_diff)
+        # We need to know the current selection for the "Select" button
         self._cuts_view.selection_changed.connect(self.selection_changed)
+        # Display messages from the view
         self._cuts_view.new_info_message.connect(self.display_info_message)
+        # When SG Cuts are retrieved by the data manager, let the view know
+        # that new cards should be build for them
         self._processor.new_sg_cut.connect(self._cuts_view.new_sg_cut)
         self.ui.search_line_edit.search_edited.connect(self._cuts_view.search)
         self.ui.search_line_edit.search_changed.connect(self._cuts_view.search)
 
-        # Instantiate a cut differences view handler
+        # Instantiate a Cut differences view handler
         self._cut_diffs_view = CutDiffsView(self.ui.cutsummary_list)
+        # We display some totals per Cut Diff type above the CutDiffsView, we need
+        # to know when we should update them
         self._cut_diffs_view.totals_changed.connect(self.set_cut_summary_view_selectors)
-        self._cut_diffs_view.new_info_message.connect(self.display_info_message)
         self._processor.totals_changed.connect(self.set_cut_summary_view_selectors)
+        # Display messages from the view
+        self._cut_diffs_view.new_info_message.connect(self.display_info_message)
+        # When CutDiffs are retrieved by the data manager, let the view know
+        # that new cards should be build for them
         self._processor.new_cut_diff.connect(self._cut_diffs_view.new_cut_diff)
+        # and when some should be discarded
         self._processor.delete_cut_diff.connect(self._cut_diffs_view.delete_cut_diff)
 
-        # Cut summary view selectors
+        # Cut summary view selectors, displaying totals per type and allowing to
+        # show only a particular type of Cut differences
         self.ui.new_select_button.toggled.connect(
             lambda x: self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.NEW))
         self.ui.cut_change_select_button.toggled.connect(
@@ -244,6 +303,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.stackedWidget.set_current_index(_DROP_STEP)
         self.set_ui_for_step(_DROP_STEP)
 
+        # Callbacks for buttons at the bottom of the app UI
         self.ui.back_button.clicked.connect(self.previous_page)
         self.ui.next_button.clicked.connect(self.process_edl_mov)
         self.ui.create_entity_button.clicked.connect(self.create_entity_dialog)
@@ -269,20 +329,22 @@ class AppDialog(QtGui.QWidget):
         }.iteritems():
             button.clicked.connect(lambda x=step : self.show_settings_dialog(x))
 
-        # Here we're dynamically creating link buttons on the ENTITY_STEP page,
-        # as well as adding a Project type button.
-
+        # The Entities page allows to select different Entity types, dynamically
+        # create these buttons. A Project button is always added
         self._create_entity_type_buttons()
 
+        # A button to see the import result in Shotgun
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
+        # Report import progress
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
 
+        # If we had some preselect input, wait for the processor to be ready
+        # before doing anything
         if edl_file_path:
-            # Wait for the processor to be ready before doing anything
             self._processor.ready.connect(lambda: self._preselected_input(
                 edl_file_path, sg_entity
             ))
-
+        # Start the data manager thread
         self._processor.start()
 
     def _create_entity_type_buttons(self):
@@ -474,7 +536,7 @@ class AppDialog(QtGui.QWidget):
                 # do show it when moving backward, so we skip the step but ask
                 # the data manager to retrieve projects
                 self.show_projects()
-                self.show_project(self._ctx.project)
+                self.project_chosen(self._ctx.project)
             else:
                 self.show_projects()
         if next_step == _ENTITY_TYPE_STEP:
@@ -894,7 +956,7 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def skip_button_callback(self):
-        self.show_cut({})
+        self.show_cut_diff({})
 
     @QtCore.Slot()
     def select_button_callback(self):
@@ -905,11 +967,11 @@ class AppDialog(QtGui.QWidget):
         if not self._selected_sg_entity[self._step]:
             raise RuntimeError("No selection for current step %d" % self._step)
         elif self._step == _PROJECT_STEP:
-            self.show_project(self._selected_sg_entity[self._step])
+            self.project_chosen(self._selected_sg_entity[self._step])
         elif self._step == _ENTITY_STEP:
             self.show_entity(self._selected_sg_entity[self._step])
         elif self._step == _CUT_STEP:
-            self.show_cut(self._selected_sg_entity[self._step])
+            self.show_cut_diff(self._selected_sg_entity[self._step])
         else:
             # Should never happen
             raise RuntimeError("Invalid step %d for selection callback" % self._step)
@@ -951,8 +1013,8 @@ class AppDialog(QtGui.QWidget):
         self._logger.info("Retrieving Project(s)")
         self.get_projects.emit()
 
-    @QtCore.Slot()
-    def show_project(self, sg_project):
+    @QtCore.Slot(dict)
+    def project_chosen(self, sg_project):
         """
         Called when the given Project becomes the active one
 
@@ -982,17 +1044,17 @@ class AppDialog(QtGui.QWidget):
                 name,
             )
         )
-        self.show_cuts_for_entity.emit(sg_entity)
+        self.get_cuts_for_entity.emit(sg_entity)
 
     @QtCore.Slot(dict)
-    def show_cut(self, sg_cut):
+    def show_cut_diff(self, sg_cut):
         """
         Called when cut changes needs to be shown for a particular Cut
         :param sg_cut: A Cut dictionary as retrieved from Shotgun
         """
         if sg_cut != {}:
             self._logger.info("Retrieving cut information for %s" % sg_cut["code"])
-        self.show_cut_diff.emit(sg_cut)
+        self.get_cut_diff.emit(sg_cut)
 
     @QtCore.Slot()
     def set_cut_summary_view_selectors(self):
@@ -1080,7 +1142,7 @@ class AppDialog(QtGui.QWidget):
         """
         try:
             new_entity = self._app.shotgun.create(entity_type, fields)
-            self.show_cuts_for_entity.emit(new_entity)
+            self.get_cuts_for_entity.emit(new_entity)
         except Exception, e:
             msg_box = QtGui.QMessageBox(
                 parent=self,

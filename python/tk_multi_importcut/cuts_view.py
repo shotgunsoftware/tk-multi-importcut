@@ -21,7 +21,7 @@ class CutsView(QtCore.QObject):
     A view which shows CutCards arranged in a gird layout
     """
     # Emitted when the cut summary for a cut should be shown
-    show_cut_diff = QtCore.Signal(dict)
+    cut_chosen = QtCore.Signal(dict)
 
     # Emitted when a different cut is selected
     selection_changed = QtCore.Signal(dict)
@@ -138,7 +138,7 @@ class CutsView(QtCore.QObject):
         :param sg_cut: A Shotgun cut dictionary, as retrieved from a find
         """
         self._logger.info("%s selected for cut summary" % sg_cut["code"])
-        self.show_cut_diff.emit(sg_cut)
+        self.cut_chosen.emit(sg_cut)
 
     @QtCore.Slot(QtGui.QAction)
     def sort_changed(self, action):
