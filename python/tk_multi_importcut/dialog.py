@@ -442,14 +442,16 @@ class AppDialog(QtGui.QWidget):
         width = entity_link_button.fontMetrics().boundingRect(entity_type_name).width() + 7
         entity_link_button.setMaximumWidth(width)
         entity_link_button.clicked.connect(
-            lambda: self.activate_entity_type_view(entity_type, entity_link_button)
+            lambda: self.activate_entity_type_view(entity_type)
         )
         return entity_link_button
 
-    @QtCore.Slot(str, QtGui.QWidget)
-    def activate_entity_type_view(self, entity_type, button):
+    @QtCore.Slot(str)
+    def activate_entity_type_view(self, entity_type):
         """
-        Called when an Entity Type button is clicked
+        Called when an Entity Type button is clicked, activate the Entity type
+        in the Entities view
+        :param entity_type: A SG Entity type
         """
         # Show the view for the entity type
         self.show_entities(entity_type)
@@ -460,8 +462,12 @@ class AppDialog(QtGui.QWidget):
         self.set_ui_for_step(self._step)
 
     def _preselected_input(self, edl_file_path, sg_entity):
-        # Special mode for Premiere integration : load the given EDL
-        # and select the given SG entity
+        """
+        Special mode for Premiere integration : load the given EDL
+        and select the given SG entity
+        :param edl_file_path: Full path to EDL file
+        :param sg_entity: A SG Entity dictionary
+        """
 
         # There is not command line support yet for passing in a base layer
         # media file, so we set mov_file_path to None
@@ -476,6 +482,10 @@ class AppDialog(QtGui.QWidget):
 
     @property
     def no_cut_for_entity(self):
+        """
+        Returns True if there is no Cut associated with the current SG Entity
+        :returns: False if there is a least one Cut available, True otherwise
+        """
         return self._processor.no_cut_for_entity
 
     @QtCore.Slot()
@@ -520,7 +530,11 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(int)
     def step_done(self, which):
         """
-        Called when a step is done, and next page can be displayed
+        Called when a step is done, and next page can be displayed. This is
+        typically triggered by the data manager emitting a step_done signal.
+
+        We determine what the next step is, ask the data manager to retrieve
+        the data we need, and show the screen associated with the next step
         """
         next_step = which + 1
         cur_step = self.ui.stackedWidget.currentIndex()
@@ -543,13 +557,6 @@ class AppDialog(QtGui.QWidget):
             self.show_entities(self._preload_entity_type)
             # This is a "virtual" step, no UI is shown for it, so we skip it
             next_step = _ENTITY_STEP
-#        if next_step == _ENTITY_STEP and self._entity_types_view.select_and_skip():
-#            # Skip single entity type screen, autoselecting the single entry
-#            next_step += 1
-#        if next_step == _ENTITY_STEP and self._entities_view.select_and_skip():
-#            next_step += 1
-#        if next_step == _ENTITY_STEP:
-#            self.get_entities.emit(self._preload_entity_type)
         self.goto_step(next_step)
 
     @QtCore.Slot()
@@ -564,8 +571,8 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(list)
     def process_drop(self, paths):
         """
-        Process a drop event, paths can either be
-        local filesystem paths or SG urls
+        Process a drop event
+        :param paths: A list of local paths on the file system
         """
         num_paths = len(paths)
         if num_paths > 2:
@@ -653,7 +660,10 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(int, str)
     def new_message(self, levelno, message):
         """
-        Display a new message in the feedback widget
+        Display a message in the feedback widget
+
+        :param levelno: A standard logging level
+        :param message: A string
         """
 
         if levelno == logging.ERROR or levelno == logging.CRITICAL:
@@ -672,6 +682,10 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(str)
     def display_info_message(self, message):
+        """
+        Display an information message in the feedback widget
+        :param message: A string
+        """
         self.ui.feedback_label.setProperty("level", "info")
         self.style().unpolish(self.ui.feedback_label)
         self.style().polish(self.ui.feedback_label)
@@ -684,14 +698,10 @@ class AppDialog(QtGui.QWidget):
         """
         self.close()
 
-    @property
-    def hide_tk_title_bar(self):
-        return False
-
     def is_busy(self):
         """
-        Return True if the app is busy doing something,
-        False if idle
+        Return True if the app is busy doing something, False if idle
+        :returns: A boolean
         """
         return self._busy
 
@@ -701,6 +711,7 @@ class AppDialog(QtGui.QWidget):
         """
         Set the app as busy, disabling some widgets
         Display a progress bar if a maximum is given
+        :param maximum: An integer or None
         """
         self._busy = True
         # Prevent some buttons to be used
@@ -734,7 +745,7 @@ class AppDialog(QtGui.QWidget):
 
     def goto_step(self, which):
         """
-        Go to a particular step
+        Move the UI to a particular step
         """
         self.set_ui_for_step(which)
         self.ui.stackedWidget.goto_page(which)
@@ -742,8 +753,7 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot()
     def previous_page(self):
         """
-        Go back to previous page
-        Skip intermediate screens if needed
+        Move the UI back to previous page, skipping intermediate screens if needed
         """
         current_page = self.ui.stackedWidget.currentIndex()
         previous_page = current_page - 1
@@ -752,19 +762,11 @@ class AppDialog(QtGui.QWidget):
             # Skip cut selection screen
             previous_page = _ENTITY_STEP
 
-#        if previous_page == _ENTITY_STEP:
-#            # Skip project selection
-#            previous_page = _PROJECT_STEP
-
         if previous_page == _ENTITY_TYPE_STEP:
             # Pure virtual step, no UI for it, so we skip it
             previous_page = _PROJECT_STEP
 
-#        if previous_page == _ENTITY_STEP and self._entity_types_view.count() < 2:
-#            # If only one entity is available, no need to choose it
-#            previous_page = _PROJECT_STEP
-
-        # todo: leaving this in here because it seems like we may want to
+        # Leaving this in here because it seems like we may want to
         # go back to this behavior.
         # if previous_page == _PROJECT_STEP:
         #     # Skip Project chooser page if we have a project from
@@ -780,7 +782,11 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(int)
     def set_ui_for_step(self, step):
         """
-        Set the UI for the given step
+        Set the UI for the given step:
+        - Show hide / buttons
+        - Clear out views for steps bigger than the given one
+        - Reset selection for steps bigger than the given one
+        :param step: One of our knwow steps
         """
         self._step = step
         # 0 : drag and drop
@@ -932,6 +938,7 @@ class AppDialog(QtGui.QWidget):
     def has_valid_selection_for_step(self, step):
         """
         Return True is a valid selection is held for the given step
+        :returns: A boolean
         """
         if not self._selected_sg_entity[step]:
             # Nothing selected
@@ -955,6 +962,10 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def skip_button_callback(self):
+        """
+        Allow to skip Cut comparison, by asking for Cut differences with an
+        empty Cut dictionary
+        """
         self.show_cut_diff({})
 
     @QtCore.Slot()
@@ -978,7 +989,12 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(str)
     def show_entities(self, sg_entity_type):
         """
-        Called when entities needs to be shown for a particular entity type
+        Called when entities needs to be shown for a particular entity type.
+
+        Ensure we have a view for the given Entity type, ask if needed the data
+        manager to retrieve a list of entities for this Entity type
+
+        :param sg_entity_type: A SG Entity type, e.g. 'Sequence'
         """
         self._preload_entity_type = sg_entity_type
         # Save the value in user settings so it will persist across
@@ -1007,7 +1023,8 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(str)
     def show_projects(self):
         """
-        Called when projects need to be shown
+        Called when projects need to be shown, just ask the data manager to retrieve
+        a list of Projects
         """
         self._logger.info("Retrieving Project(s)")
         self.get_projects.emit()
@@ -1015,9 +1032,11 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(dict)
     def project_chosen(self, sg_project):
         """
-        Called when the given Project becomes the active one
+        Called when the given Project becomes the active one.
 
-        :param sg_project: The Shotgun Project dict to check for entities with
+        Just tell the data manager that the current Project changed
+
+        :param sg_project: A SG Project dictionary
         """
         self._logger.info("Using Project %s" % sg_project["name"])
         self.set_active_project.emit(sg_project)
@@ -1025,7 +1044,11 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(dict)
     def show_cuts(self, sg_entity):
         """
-        Called when cuts needs to be shown for an entity
+        Called when a SG Entity was chosen and cuts needs to be shown for it
+
+        Ask the data manager to retrieve Cuts linked to this Entity
+
+        :param sg_entity: A SG Entity dictionary
         """
         name = sg_entity.get("code",
                              sg_entity.get("name",
@@ -1048,8 +1071,12 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(dict)
     def show_cut_diff(self, sg_cut):
         """
-        Called when cut changes needs to be shown for a particular Cut
-        :param sg_cut: A Cut dictionary as retrieved from Shotgun
+        Called when a SG Cut was chosen and cut differences need to be shown for
+        it.
+
+        By giving an empty Cut dictionary, the comparison to a previous Cut is skipped
+
+        :param sg_cut: A SG Cut or an empty dictionary
         """
         if sg_cut != {}:
             self._logger.info("Retrieving cut information for %s" % sg_cut["code"])
@@ -1192,6 +1219,10 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot()
     def show_in_shotgun(self):
+        """
+        Called at the end of the import if the user clicks on the 'Show in SG'
+        button: show the new Cut in default web browse and close the app
+        """
         sg_url = QtCore.QUrl(self._processor.sg_new_cut_url)
         QtGui.QDesktopServices.openUrl(sg_url)
         self.close()
@@ -1199,8 +1230,11 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(str, list)
     def display_exception(self, msg, exec_info):
         """
-        Display a popup window with the error message
-        and the exec_info in the "details"
+        Display a popup window with the error message and the exec_info 
+        in the "details"
+
+        :param msg: A string
+        :param exec_info: A list of strings
         """
         msg_box = QtGui.QMessageBox(
             parent=self,
@@ -1220,6 +1254,7 @@ class AppDialog(QtGui.QWidget):
 
         Warn the user if it's not safe to quit,
         and leave the decision to him
+        :param evt: A QEvent
         """
         if self.is_busy():
             answer = QtGui.QMessageBox.warning(
@@ -1242,7 +1277,9 @@ class AppDialog(QtGui.QWidget):
 
     def set_logger(self, level=logging.INFO):
         """
-        Retrieve a logger
+        Set the logger for this app
+
+        :param level: A standard logging level
         """
         self._logger = get_logger()
         handler = BundleLogHandler(self._app)
@@ -1275,6 +1312,9 @@ class AppDialog(QtGui.QWidget):
     def set_custom_style(self):
         """
         Append our custom style to the inherited style sheet
+
+        If the 'css_watcher' setting is on, set up a file watcher which will
+        reload the app style sheet file on changes
         """
         self._css_watcher = None
         this_folder = self._app.disk_location  # os.path.abspath(os.path.dirname(__file__))
@@ -1287,6 +1327,10 @@ class AppDialog(QtGui.QWidget):
                 self._css_watcher.fileChanged.connect(self.reload_css)
 
     def _load_css(self, css_file):
+        """
+        Load the given style sheet file onto the UI
+        :param css_file: Full path a to a css file
+        """
         self.setStyleSheet("")
         if os.path.exists(css_file):
             try:
@@ -1318,6 +1362,12 @@ class AppDialog(QtGui.QWidget):
 
     @QtCore.Slot(str)
     def reload_css(self, path):
+        """
+        Reload the given style sheet file onto the UI
+        Re-position the style sheet file watcher if needed
+
+        :param path: Full path a to a css file
+        """
         self._logger.info("Reloading %s" % path)
         self._load_css(path)
         # Some code editors rename files on save, so the watcher will
