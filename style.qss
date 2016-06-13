@@ -110,72 +110,77 @@ DropAreaFrame QLabel {
     outline: 0;
 }
 
-#settings_page_1_button,
-#settings_page_2_button,
-#settings_page_3_button,
-#settings_page_4_button,
-#settings_page_5_button,
-#settings_page_6_button,
-#settings_page_7_button,
-#settings_page_8_button,
-#settings_page_9_button {
+/* Font size for mov and edl label on drop screen */
+#file_added_label,
+#instructions_label {
+    font-size: 14px;
+}
+/* Instruction label on drop screen */
+#instructions_label {
+    color: #707070;
+}
+
+
+/* Settings buttons on different screens */
+#drop_page_settings_button,
+#project_page_settings_button,
+#entities_page_settings_button,
+#cut_list_page_settings_button,
+#cut_summary_page_settings_button {
     border: 0px solid black;
 }
 
-#create_entity_line_1, #create_entity_line_2 {
+
+/*
+    Create Entity Dialog
+*/
+#create_entity_dialog #create_entity_line_1,
+#create_entity_dialog #create_entity_line_2 {
     color: black;
     height: 1px;
 }
 
+#create_entity_dialog QLabel {
+    color: #A8A8A8;
+}
+
+#create_entity_dialog #create_new_entity_label {
+    font-size: 20px;
+    color: #909090;
+}
+/* darkening the bg for selection widgets */
+#create_entity_dialog QComboBox,
+#create_entity_dialog QCheckBox,
+#create_entity_dialog QLineEdit
+{
+    background-color: #2a2a2a;
+}
+
+
+/*
+    Settings dialog
+*/
+
 /* styling the tab border */
-#general_timecode_frames_tab::pane {
+#settings_dialog #general_timecode_frames_tab::pane {
     border-top: 0px solid #3c3e42;
     border-bottom: 0px solid #3c3e42;
 }
 
 /* getting fonts to be the right size */
-#description_1_label, #email_group_combo_box, #omit_status_combo_box,
-#reinstate_shot_if_status_is_combo_box, #reinstate_status_combo_box,
-#timecode_to_frame_mapping_combo_box, #timecode_to_frame_mapping_instructions_label,
-#description_2_label, #default_frame_rate_line_edit, #timecode_mapping_line_edit,
-#frame_mapping_line_edit, #default_head_in_line_edit, #default_head_duration_line_edit,
-#default_tail_duration_line_edit, #email_groups_line_edit,
-#reinstate_shot_if_status_is_line_edit, #entity_name_label, #description_label,
-#status_label, #project_label {
+#settings_dialog #settings_label {
+    font-size: 22px;
+    color: #909090;
+}
+/* general sizes for labels, combo boxes, line edits */
+#settings_dialog QLabel,
+#settings_dialog QComboBox,
+#settings_dialog QLineEdit {
     font-size: 12px;
 }
 
-/* setting font size for mov and edl label on drop */
-#file_added_label, #instructions_label {
-    font-size: 14px;
-}
-
-#instructions_label {
-    color: #707070;
-}
-
-#success_page #success_label {
-    font-size: 20px;
-}
-
-#success_page #shotgun_button,
-#create_entity_dialog #create_entity_button,
-#settings_dialog #apply_button,
-#submit_dialog #import_cut_button,
-#next_button:enabled,
-#select_button:enabled,
-#submit_button:enabled {
-    background-color: #12bbff;
-}
-
-#entity_name_line_edit, #description_line_edit {
-    background-color: #2f3033;
-}
-
-/* todo: this is bad, it's going to style all QTabBar widgets
-try to figure out how to focus on just the one in the
-settings_dialog (doesn't really matter now cuz there is only one) */
-QTabBar::tab {
+/* tab styling in settings dialog */
+#settings_dialog QTabBar::tab {
     font-size: 14px;
     padding-top: 8px;
     padding-bottom: 8px;
@@ -188,67 +193,72 @@ QTabBar::tab {
     border-bottom-width: 2px;
 }
 
-/* todo: same badness */
-QTabBar::tab:selected {
+#settings_dialog QTabBar::tab:selected {
     color: #C8C8C8;
     border-bottom-color: #26beff;
 }
 
 /* darkening the bg for selection widgets */
-#email_group_combo_box, #update_shot_statuses_checkbox, #omit_status_combo_box,
-#reinstate_shot_if_status_is_combo_box, #reinstate_status_combo_box,
-#use_smart_fields_checkbox, #default_frame_rate_line_edit,
-#timecode_to_frame_mapping_combo_box, #default_head_in_line_edit,
-#default_head_duration_line_edit, #default_tail_duration_line_edit,
-#timecode_mapping_line_edit, #frame_mapping_line_edit {
+#settings_dialog QComboBox,
+#settings_dialog QCheckBox,
+#settings_dialog QLineEdit
+{
     background-color: #2a2a2a;
 }
 
 /* fading out widgets that aren't enabled */
-#omit_status_combo_box:!enabled, #reinstate_shot_if_status_is_combo_box:!enabled,
-#reinstate_status_combo_box:!enabled {
+#settings_dialog QComboBox:!enabled {
     background-color: #3c3e42;
     color: #3c3e42;
 }
 
 /* fading out text that isn't enabled */
-#omit_status_label:!enabled, #reinstate_shot_if_status_is_label:!enabled,
-#reinstate_status_label:!enabled, #default_head_in_label:!enabled,
-#default_head_in_line_edit:!enabled, #reinstate_shot_if_status_is_line_edit:!enabled {
+#settings_dialog QLabel:!enabled {
     color: #606060;
 }
 
 /* dimming certain text for dramatic effect */
-#send_cut_summary_note_to_label, #update_shot_statuses_label, #omit_status_label,
-#reinstate_shot_if_status_is_label, #reinstate_status_label, #use_smart_fields_label,
-#default_frame_rate_label, #timecode_to_frame_mapping_label, #default_head_in_label,
-#default_head_duration_label, #default_tail_duration_label, #timecode_mapping_label,
-#frame_mapping_label, #entity_name_label, #description_label, #status_label,
-#project_label, #project_name_label {
-    font-family: "Open Sans";
-    font-size: 12px;
+#settings_dialog #send_cut_summary_note_to_label,
+#settings_dialog #update_shot_statuses_label,
+#settings_dialog #omit_status_label,
+#settings_dialog #reinstate_shot_if_status_is_label,
+#settings_dialog #reinstate_status_label,
+#settings_dialog #use_smart_fields_label,
+#settings_dialog #default_frame_rate_label,
+#settings_dialog #timecode_to_frame_mapping_label,
+#settings_dialog #default_head_in_label,
+#settings_dialog #default_head_duration_label,
+#settings_dialog #default_tail_duration_label,
+#settings_dialog #timecode_mapping_label,
+#settings_dialog #frame_mapping_label {
     color: #A8A8A8;
 }
 
-/* Font size for "Settings" in Settings dialog */
-#settings_label {
-    font-size: 22px;
+/* making section headings bold */
+#settings_dialog #note_addressing_label,
+#settings_dialog #statuses_label,
+#settings_dialog #cut_fields_on_shot_label,
+#settings_dialog #timecode_label,
+#settings_dialog #new_shots_label {
+    font-weight: bold;
 }
 
-#create_new_entity_label {
+/* Font size on last screeen */
+#success_page #success_label {
     font-size: 20px;
 }
 
-#settings_label, #create_new_entity_label {
-    color: #909090;
+/* Highlight some buttons in SG blue */
+#success_page #shotgun_button,
+#create_entity_dialog #create_entity_button,
+#settings_dialog #apply_button,
+#submit_dialog #import_cut_button,
+#next_button:enabled,
+#select_button:enabled,
+#submit_button:enabled {
+    background-color: #12bbff;
 }
 
-/* making section headings bold */
-#note_addressing_label, #statuses_label, #cut_fields_on_shot_label,
-#timecode_label, #new_shots_label {
-    font-size: 12px;
-    font-weight: bold;
-}
 
 /*
 Highlight the drop area when something is dragged over

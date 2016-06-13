@@ -36,6 +36,7 @@ class CreateEntityDialog(QtGui.QDialog):
         self._logger = get_logger()
         self.ui = Ui_create_entity_dialog()
         self.ui.setupUi(self)
+        self.setModal(True)
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
@@ -45,6 +46,7 @@ class CreateEntityDialog(QtGui.QDialog):
         entity_type_name = sgtk.util.get_entity_type_display_name(
             self._app.sgtk, entity_type,
         )
+        self.setWindowTitle("Create %s" % entity_type_name)
 
         # Set text on labels and buttons
         self.ui.create_new_entity_label.setText("%s" % entity_type_name)

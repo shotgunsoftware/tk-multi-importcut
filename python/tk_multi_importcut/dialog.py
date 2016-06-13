@@ -349,12 +349,11 @@ class AppDialog(QtGui.QWidget):
 
     def _create_entity_type_buttons(self):
         """
-        Create buttons allowing to choose which entity type the Cut
+        Create buttons allowing to choose which Entity type the Cut
         will be imported against.
 
         A maximum number of different entity types is supported, as the
         current UI will not allow to display them correctly if bigger.
-
         """
         # Retrieve the stack widget used to display different list of entities
         entity_type_stacked_widget = self.ui.entities_type_stacked_widget
@@ -408,14 +407,21 @@ class AppDialog(QtGui.QWidget):
                 # the Project is not currently set, so we just
                 button.setChecked(True)
 
-    def _create_entity_type_view(self, entity_type, grid_layout):
+    def _create_entity_type_view(self, sg_entity_type, grid_layout):
         """
-        Create a view for the given entity type
+        Create a view for the given SG entity type
+        :param sg_entity_type: A SG Entity type as a string, e.g. 'Shot'
+        :param grid_layout: A QGridLayout used to layout Entity Cards
         """
-        self._entities_views.append(EntitiesView(entity_type, grid_layout))
-        self._entities_views[-1].entity_chosen.connect(self.show_entity)
+        self._entities_views.append(EntitiesView(sg_entity_type, grid_layout))
+        # Show Cuts for the chosen entity once it is picked up
+        self._entities_views[-1].entity_chosen.connect(self.show_cuts)
+        # We need to know the current selection for the "Select" button
         self._entities_views[-1].selection_changed.connect(self.selection_changed)
+        # Display messages from the view
         self._entities_views[-1].new_info_message.connect(self.display_info_message)
+        # When SG Entities are retrieved by the data manager, let the view know
+        # that new cards should be build for them
         self._processor.new_sg_entity.connect(self._entities_views[-1].new_sg_entity)
         self.ui.entities_search_line_edit.search_edited.connect(self._entities_views[-1].search)
         self.ui.entities_search_line_edit.search_changed.connect(self._entities_views[-1].search)
@@ -435,17 +441,10 @@ class AppDialog(QtGui.QWidget):
         entity_link_button.setFont(QtGui.QFont("SansSerif", 20))
         width = entity_link_button.fontMetrics().boundingRect(entity_type_name).width() + 7
         entity_link_button.setMaximumWidth(width)
-        entity_link_button.clicked.connect(self._get_link_cb(entity_type, entity_link_button))
+        entity_link_button.clicked.connect(
+            lambda: self.activate_entity_type_view(entity_type, entity_link_button)
+        )
         return entity_link_button
-
-    def _get_link_cb(self, entity_name, button):
-        """
-        Returns a callback which can be connected to an Entity Type button clicked
-        signal
-
-        http://stackoverflow.com/questions/19837486/python-lambda-in-a-loop
-        """
-        return lambda: self.activate_entity_type_view(entity_name, button)
 
     @QtCore.Slot(str, QtGui.QWidget)
     def activate_entity_type_view(self, entity_type, button):
@@ -472,7 +471,7 @@ class AppDialog(QtGui.QWidget):
             self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
             self.show_entities(sg_entity["type"])
             self._selected_sg_entity[_ENTITY_STEP] = sg_entity
-            self.show_entity(sg_entity)
+            self.show_cuts(sg_entity)
             self.goto_step(_CUT_STEP)
 
     @property
@@ -969,7 +968,7 @@ class AppDialog(QtGui.QWidget):
         elif self._step == _PROJECT_STEP:
             self.project_chosen(self._selected_sg_entity[self._step])
         elif self._step == _ENTITY_STEP:
-            self.show_entity(self._selected_sg_entity[self._step])
+            self.show_cuts(self._selected_sg_entity[self._step])
         elif self._step == _CUT_STEP:
             self.show_cut_diff(self._selected_sg_entity[self._step])
         else:
@@ -1024,7 +1023,7 @@ class AppDialog(QtGui.QWidget):
         self.set_active_project.emit(sg_project)
 
     @QtCore.Slot(dict)
-    def show_entity(self, sg_entity):
+    def show_cuts(self, sg_entity):
         """
         Called when cuts needs to be shown for an entity
         """
