@@ -50,6 +50,11 @@ class DownloadRunner(QtCore.QRunnable):
         file_downloaded = QtCore.Signal(str)
 
         def __init__(self, *args, **kwargs):
+            """
+            Instantiate a new _Notifier
+            :param args: Arbitrary list of parameters send to base class init
+            :param kwargs: Arbitrary dictionary of parameters send to base class init
+            """
             QtCore.QObject.__init__(self, *args, **kwargs)
             self._aborted = False
 
@@ -77,6 +82,7 @@ class DownloadRunner(QtCore.QRunnable):
     def get_thread_pool(cls):
         """
         Return the download thread pool used by all downloaders
+        :returns: A QThreadPool
         """
         return _download_thread_pool
     
@@ -84,6 +90,7 @@ class DownloadRunner(QtCore.QRunnable):
     def file_downloaded(self):
         """
         Return the signal from the _notifier worker instance
+        :returns: A QSignal
         """
         return self._notifier.file_downloaded
 
@@ -91,6 +98,7 @@ class DownloadRunner(QtCore.QRunnable):
     def abort(self):
         """
         Pass through to access the _Notifier slot
+        :returns: A QSignal
         """
         return self._notifier.abort
 

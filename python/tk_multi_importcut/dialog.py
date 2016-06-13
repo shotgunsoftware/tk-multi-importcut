@@ -403,8 +403,6 @@ class AppDialog(QtGui.QWidget):
             button = self._create_entity_type_button(entity_type[0], entity_type[1])
             self.ui.entity_buttons_layout.addWidget(button)
             if entity_type[0] == self._preload_entity_type:
-                # We can't build the view now, as we might be in a case where
-                # the Project is not currently set, so we just
                 button.setChecked(True)
 
     def _create_entity_type_view(self, sg_entity_type, grid_layout):
@@ -801,7 +799,6 @@ class AppDialog(QtGui.QWidget):
             # doing a reset
             self.ui.back_button.hide()
             self.ui.reset_button.hide()
-            self._selected_sg_entity[_ENTITY_STEP] = None
             self.ui.edl_added_icon.hide()
             self.ui.mov_added_icon.hide()
             self.ui.file_added_label.setText("")
