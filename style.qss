@@ -381,12 +381,6 @@ SelectorButton:pressed {
 /*
 Cut summary view mode buttons, highlight they are clickable
 */
-QAbstractButton#new_select_button:!checked:hover,
-QAbstractButton#cut_change_select_button:!checked:hover,
-QAbstractButton#omitted_select_button:!checked:hover,
-QAbstractButton#reinstated_select_button:!checked:hover,
-QAbstractButton#rescan_select_button:!checked:hover,
-QAbstractButton#total_button:!checked:hover,
 SelectorButton:!checked:hover {
     color: white;
 }
