@@ -17,7 +17,7 @@ from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
 from .entity_line_widget import EntityLineWidget
 
-# Different steps in the process
+# Different wizard style steps in our process
 from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, \
     _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
@@ -30,25 +30,55 @@ ensure an accurate comparison.\n\n Please select another Cut or update the timec
 
 class EdlCut(QtCore.QObject):
     """
-    Worker which handles all data
+    Worker which handles all data, our main data manager.
+    
+    After reading and validating an EDL file, the data manager will typically
+    retrieve all SG Entites of a certain type linked to a chosen Project.
+    Then, it will build a summary of cut differences against a SG Cut linked to one
+    of these Entities.
+
+    Signals are used to drive UI components running on other threads
     """
+    # Emitted when a step is considered done, allowing for example to let the
+    # UI knows that it can move on to next screen
     step_done            = QtCore.Signal(int)
+    # Emitted when a step failed
     step_failed          = QtCore.Signal(int)
+
+    # These signals allow the data manager to tell listeners that new data is available.
+    # For example, views will create cards the emitted data when the signals
+    # are emitted
+    # Emitted when a new Project was retrieved from SG
     new_sg_project       = QtCore.Signal(dict)
+    # Emitted when a new Entity was retrieved from SG
     new_sg_entity        = QtCore.Signal(dict)
+    # Emitted when a new Cut was retrieved from SG
     new_sg_cut           = QtCore.Signal(dict)
+    # Emitted when a new CutDiff is available
     new_cut_diff         = QtCore.Signal(CutDiff)
+
+    # Emitted when the data manager is busy doing something with an optional
+    # integer when a "range" is known so a progress bar should be shown
     got_busy             = QtCore.Signal(int)
+    # Emitted when the data manager is not busy anymore
     got_idle             = QtCore.Signal()
+    # Emitted when the progress value changed
     progress_changed     = QtCore.Signal(int)
+    # Emitted when the Cut summary totals should be recomputed, e.g. by the
+    # Cut summary view
     totals_changed       = QtCore.Signal()
+    # Emitted when some Cut Differences should be discarded, which can happen
+    # when Shot names are edited in the summary view
     delete_cut_diff      = QtCore.Signal(CutDiff)
+    # Emitted when an EDL was successfully loaded and is considered valid
     valid_edl            = QtCore.Signal(str)
+    # Emitted to acknowledge we have a valid movie
     valid_movie          = QtCore.Signal(str)
 
     def __init__(self, frame_rate=None):
         """
-        Instantiate a new empty worker
+        Instantiate a new empty worker, with the given explicit frame rate
+        :param frame_rate: A float or None
         """
         super(EdlCut, self).__init__()
 
@@ -88,7 +118,8 @@ class EdlCut(QtCore.QObject):
     @property
     def entity_name(self):
         """
-        Return the name of the attached entity
+        Return the name of the attached SG Entity
+        :returns: A string or None
         """
         if not self._sg_entity:
             return None
@@ -104,7 +135,8 @@ class EdlCut(QtCore.QObject):
     @property
     def entity_type_name(self):
         """
-        Return a nice name for the attached entity's type
+        Return a nice name for the attached SG Entity's type
+        :returns: A string or None
         """
         if not self._sg_entity:
             return None
