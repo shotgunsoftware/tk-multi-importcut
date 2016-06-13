@@ -29,7 +29,7 @@ class SubmitDialog(QtGui.QDialog):
         """
         Instantiate a new dialog
         :param parent: a QWidget
-        :param title: a string, used a imported Cut name
+        :param title: a string, used as imported Cut name
         :param summary: a CutSummary instance
         """
         super(SubmitDialog, self).__init__(parent)
