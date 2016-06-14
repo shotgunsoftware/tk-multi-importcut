@@ -147,15 +147,26 @@ class EdlCut(QtCore.QObject):
 
     @property
     def has_valid_edl(self):
+        """
+        Return True if a valid EDL file was loaded
+        :returns: A boolean
+        """
         return bool(self._edl)
 
     @property
     def has_valid_movie(self):
+        """
+        Return True if a valid movie file was retrieved
+        :returns: A boolean
+        """
         return bool(self._mov_file_path)
 
     def process_edit(self, edit, logger):
         """
         Visitor used when parsing an EDL file
+
+        Extract Shot / Version informations from EDL edits and add lambdas
+        to retrieve extracted properties
 
         :param edit: Current EditEvent being parsed
         :param logger: Editorial framework logger, not used
@@ -222,7 +233,7 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(str, str)
     def process_edl_and_mov(self, edl_file_path, mov_file_path):
         """
-        Set _mov_file path member and pass edl_file_path to load_edl
+        Process the given EDL and movie files
 
         :param edl_file_path: String, full path to EDL file.
         :param mov_file_path: String, full path to MOV file.
@@ -249,7 +260,7 @@ class EdlCut(QtCore.QObject):
         """
         Load an EDL file.
 
-        :param edl_file_path: String, full path to the EDL file.
+        :param edl_file_path: A string, full path to the EDL file.
         """
         self._logger.info("Loading %s ..." % edl_file_path)
         try:
@@ -287,7 +298,7 @@ class EdlCut(QtCore.QObject):
 
     def _bind_versions(self):
         """
-        Bind Versions to loaded EDL edits
+        Bind SG Versions to loaded EDL edits
         """
         # Shouldn't happen, but raise an error if it does
         if not self._edl:
@@ -341,6 +352,10 @@ class EdlCut(QtCore.QObject):
     def set_sg_project(self, sg_project):
         """
         Set the given Project as the active one
+
+        Retrieve Versions from the Project and bind them to the edit entries
+
+        :param sg_project: A SG Project dictionary
         """
         self._project = sg_project
         self._bind_versions()
@@ -350,7 +365,7 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(str)
     def retrieve_entities(self, entity_type):
         """
-        Retrieve all entities with the given type for the current project
+        Retrieve all Entities with the given type for the current Project
 
         :param entity_type: A Shotgun entity type name, e.g. "Sequence"
         """
@@ -536,7 +551,7 @@ class EdlCut(QtCore.QObject):
         Build a cut summary for the current Shotgun entity (e.g. Sequence) and the given,
         potentially empty, Shotgun Cut.
         - Retrieve all shots linked to the Shotgun entity
-        - Retrieve all cut items linked to the Cut
+        - Retrieve all cut items linked to the SG Cut, if a Cut is given
         - Reconciliate them with the current edit list previously loaded
 
         :param sg_cut: A Shotgun Cut dictionary retrieved from Shotgun, or an empty dictionary
@@ -822,6 +837,7 @@ class EdlCut(QtCore.QObject):
         :param sg_shot: A SG shot dictionary
         :param sg_version: A SG version dictionary
         :param edit: An EditEvent instance or None
+        :returns: A SG CutItem dictionary, or None
         """
 
         potential_matches = []
@@ -890,6 +906,7 @@ class EdlCut(QtCore.QObject):
 
         :param sg_cut_item: a CutItem instance
         :param edit: An EditEvent instance
+        :returns: A score, as an integer
         """
         if not edit:
             return 0
@@ -917,6 +934,19 @@ class EdlCut(QtCore.QObject):
     def do_cut_import(self, title, sender, to, description, update_shots):
         """
         Import the cut changes in Shotgun
+        - Create a new SG Cut
+        - Create new SG CutItems
+        - Create new SG Shots
+        - Update existing SG Shots if update_shots is True
+        - Create a Note in SG with a summary of changes
+
+        :param title: A string, the new SG Cut name and a title for the Note 
+                      that will be created
+        :param sender: A SG user dictionary, the Note sender
+        :param to: A SG Group dictionary, the recipient for the Note
+        :param description: Comments as a string, used in the Note's body
+        :param update_shots: A boolean, whether or not existing Shots data will
+                             be updated
         """
         self._logger.info("Importing cut %s" % title)
         self.got_busy.emit(4)
@@ -952,11 +982,11 @@ class EdlCut(QtCore.QObject):
         Create a note in Shotgun, linked to the current Shotgun entity, typically
         a Sequence and optionally linked to the list of sg_links
 
-        :param title: A title for the note
+        :param title: A string, the Note title
         :param sender: A Shotgun user dictionary
-        :param sender: A Shotgun group dictionary
-        :param description: Some comments which will be added to the note
-        :param sg_linkgs: A list of Shotgun entity dictionaries to link the note to
+        :param to: A Shotgun group dictionary
+        :param description: Some comments which will be added to the Note
+        :param sg_links: A list of Shotgun entity dictionaries to link the note to
         """
         summary = self._summary
         links = ["%s/detail/%s/%s" % (
@@ -986,7 +1016,15 @@ class EdlCut(QtCore.QObject):
 
     def create_sg_cut(self, title, description):
         """
-        Create a Cut in Shotgun, linked to the current SG Entity
+        Create a new Cut in Shotgun, linked to the current SG Entity
+
+        If a movie was provided, create a new Version from it, linked to the
+        new SG Cut.
+
+        Upload the EDL file onto the new SG Cut
+
+        :param title: A string, the new SG Cut name
+        :param description: A string, a description for the Cut
         """
         # Create a new cut
         self._logger.info("Creating Cut %s ..." % title)
@@ -1082,6 +1120,7 @@ class EdlCut(QtCore.QObject):
         """
         Update shots in Shotgun
         - Create them if needed
+
         If udpate_shots is true :
         - Change their status
         - Update cut in, cut out values
@@ -1174,7 +1213,7 @@ class EdlCut(QtCore.QObject):
                             ["entity.Shot.id", "is", sg_shot["id"]]
                         ]
                         fields = ["meta"]
-                        sort = [{'field_name': 'created_at', 'direction': 'desc'}]
+                        sort = [{"field_name": "created_at", "direction": "desc"}]
                         event_log = self._sg.find_one("EventLogEntry", filters, fields, order=[
                             {"field_name": "created_at", "direction": "desc"}])
                         # Set the reinstate status value to the value previous to the
@@ -1241,7 +1280,7 @@ class EdlCut(QtCore.QObject):
 
     def _create_missing_sg_versions(self):
         """
-        Create versions in Shotgun for each shot which needs one
+        Create Versions in Shotgun for each Shot which needs one
         """
         # Helper to create versions in SG for testing
         # This is not part of production specs, but very handy for developers
@@ -1292,7 +1331,8 @@ class EdlCut(QtCore.QObject):
 
     def create_sg_cut_items(self, sg_cut):
         """
-        Create the cut items in Shotgun, linked to the given cut
+        Create the CutItems in Shotgun, linked to the given cut
+        :param sg_cut: A SG Cut dictionary
         """
         # Loop through all edits and create CutItems for them
         self._logger.info("Creating Cut Items...")
