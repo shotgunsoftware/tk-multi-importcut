@@ -21,9 +21,6 @@ class ProjectCard(CardWidget):
     """
     Widget displaying a Shotgun Project
     """
-    # Emitted when cut changes for the attached Project should be displayed
-    show_project = QtCore.Signal(dict)
-
     def __init__(self, parent, sg_project):
         """
         Instantiate a new ProjectCard for the given Shotgun Project
@@ -43,7 +40,6 @@ class ProjectCard(CardWidget):
         else:
             self.ui.status_label.setText(self.project_status)
         self.ui.details_label.setText("%s" % (self.project_description or ""))
-        self.chosen.connect(self.show_project)
 
     @property
     def sg_project(self):
@@ -66,15 +62,11 @@ class ProjectCard(CardWidget):
     @property
     def project_status(self):
         """
-        Return the status of the attached project
+        Return the status of the attached SG Project
 
         :returns: A Shotgun Status
         """
-        # Deal with status field not being consistent in SG
-        return self.sg_project.get(
-            "sg_status_list",
-            self.sg_project.get("sg_status")
-        )
+        return self.sg_project.get("sg_status")
 
     @property
     def project_description(self):

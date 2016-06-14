@@ -51,7 +51,7 @@ class ProjectsView(QtCore.QObject):
         self._logger.debug("Adding %s at %d %d %d" % (sg_project, i, row, column))
         widget = ProjectCard(parent=None, sg_project=sg_project)
         widget.highlight_selected.connect(self.project_selected)
-        widget.show_project.connect(self.project_chosen)
+        widget.chosen.connect(self.project_chosen)
         self._grid_widget.addWidget(widget, row, column, )
         self._grid_widget.setRowStretch(row, 0)
         # Put the stretcher back
