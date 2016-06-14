@@ -31,6 +31,7 @@ class EntityLineWidget(QtGui.QLineEdit):
     }
 
     """
+    # A list of possible values for completion
     __known_list = []
 
     # Our own signal to emit new values as provided ones didn't work in our case
@@ -39,6 +40,8 @@ class EntityLineWidget(QtGui.QLineEdit):
     def __init__(self, *args, **kwargs):
         """
         Instantiate a new EntityLineWidget
+        :param args: Arbitrary list of parameters used in base class init
+        :param kwargs: Arbitrary dictionary of parameters used in base class init
         """
         super(EntityLineWidget, self).__init__(*args, **kwargs)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)

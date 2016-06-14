@@ -56,9 +56,14 @@ class ShortNameFilter(logging.Filter):
 
 class BundleLogHandler(logging.StreamHandler):
     """
-    A logging Handler to log messages with the app log_xxxx methods
+    A logging Handler to log messages with the app log_xxxx methods and emit
+    messages through Qt Signals
     """
     class _QtEmitter(QtCore.QObject):
+        """
+        As BundleLogHandler does not derive from a QObject, we need a small
+        class to emit Qt Signals
+        """
         # Emitted when some new message is available
         # First parameter is the logging level
         # the second is the new message
@@ -71,9 +76,11 @@ class BundleLogHandler(logging.StreamHandler):
 
     def __init__(self, bundle, *args, **kwargs):
         """
-        Instantiante a new handler for the given Framework
+        Instantiante a new handler for the given bundle
 
-        :param framework: A Toolkit framework
+        :param framework: A Toolkit Bundle
+        :param args: Arbitrary list of parameters used in base class init
+        :param kwargs: Arbitrary dictionary of parameters used in base class init
         """
         super(BundleLogHandler, self).__init__(*args, **kwargs)
         self._bundle = bundle
@@ -81,15 +88,28 @@ class BundleLogHandler(logging.StreamHandler):
 
     @property
     def new_message(self):
+        """
+        Returns the new_message signal
+        :returns: A Qt Signal
+        """
         return self._qt_emitter.new_message
 
     @property
     def new_error_with_exc_info(self):
+        """
+        Returns the new_error_with_exc_info signal
+        :returns: A Qt Signal
+        """
         return self._qt_emitter.new_error_with_exc_info
 
     def emit(self, record):
         """
         Emit the given record
+
+        If the record has some exec info, the new_error_with_exc_info signal will
+        be emitted. If not, new_message will be emitted.
+
+        :param record: A standard logging record
         """
         if record.exc_info is not None:
             self.new_error_with_exc_info.emit(
