@@ -253,10 +253,13 @@ class CutDiff(QtCore.QObject):
     @property
     def version_name(self):
         """
-        Return the version name for this diff, if any
+        Return the Version name for this diff, if any. The Version name can come
+        from a linked Version, or from a name extracted from the EDL edit
         """
         if self._sg_version:
             return self._sg_version["code"]
+        if self._edit:
+            return self._edit.get_version_name()
         return None
 
     @property
