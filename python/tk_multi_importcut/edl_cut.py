@@ -46,7 +46,7 @@ class EdlCut(QtCore.QObject):
     step_failed          = QtCore.Signal(int)
 
     # These signals allow the data manager to tell listeners that new data is available.
-    # For example, views will create cards the emitted data when the signals
+    # For example, views will create cards for the emitted data when the signals
     # are emitted
     # Emitted when a new Project was retrieved from SG
     new_sg_project       = QtCore.Signal(dict)
