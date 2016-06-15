@@ -11,6 +11,12 @@
 import sgtk
 from sgtk.platform.qt import QtCore, QtGui
 
+# TODO : This is based on TK search widget code, before it was available in Qt widgets
+# framework. So, at some point, this code should be replaced with the TK
+# implementation, when it is available.
+# This is why styling is kept inlined, as it is likely to go away when the switch
+# happens
+
 # Style sheet for the QLineEdit
 _LINE_EDIT_STYLE = """
 QLineEdit {

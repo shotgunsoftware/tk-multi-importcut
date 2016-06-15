@@ -251,7 +251,7 @@ DropAreaFrame QLabel {
 /* Highlight some buttons in SG blue */
 #success_page #shotgun_button,
 #create_entity_dialog #create_entity_button,
-#settings_dialog #apply_button,
+#settings_dialog #apply_button:enabled,
 #submit_dialog #import_cut_button,
 #next_button:enabled,
 #select_button:enabled,
