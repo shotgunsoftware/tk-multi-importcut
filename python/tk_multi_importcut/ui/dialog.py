@@ -663,6 +663,7 @@ class Ui_Dialog(object):
         self.line.setObjectName("line")
         self.main_layout.addWidget(self.line)
         self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setContentsMargins(12, 0, 12, 12)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.back_button = QtGui.QPushButton(Dialog)
@@ -704,7 +705,7 @@ class Ui_Dialog(object):
         self.main_layout.addLayout(self.horizontalLayout)
 
         self.retranslateUi(Dialog)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(7)
         self.entities_type_stacked_widget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 

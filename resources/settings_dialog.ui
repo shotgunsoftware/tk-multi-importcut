@@ -725,6 +725,9 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
+     <property name="spacing">
+      <number>6</number>
+     </property>
      <item>
       <spacer name="horizontalSpacer_4">
        <property name="orientation">

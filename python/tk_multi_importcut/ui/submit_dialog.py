@@ -186,7 +186,7 @@ class Ui_submit_dialog(object):
         self.line.setObjectName("line")
         self.verticalLayout.addWidget(self.line)
         self.horizontalLayout = QtGui.QHBoxLayout()
-        self.horizontalLayout.setSpacing(10)
+        self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName("horizontalLayout")
         spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem1)

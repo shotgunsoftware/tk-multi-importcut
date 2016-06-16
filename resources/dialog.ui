@@ -23,7 +23,7 @@
    <item>
     <widget class="AnimatedStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>7</number>
      </property>
      <widget class="QWidget" name="drop_page">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -1696,6 +1696,9 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0,0,0,0,0,0,0">
+     <property name="spacing">
+      <number>6</number>
+     </property>
      <property name="leftMargin">
       <number>12</number>
      </property>
