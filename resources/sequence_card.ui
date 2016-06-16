@@ -22,6 +22,12 @@
     <height>70</height>
    </size>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>470</width>
+    <height>16777215</height>
+   </size>
+  </property>
   <property name="baseSize">
    <size>
     <width>358</width>
@@ -128,7 +134,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="details_label">
+      <widget class="ElidedLabel" name="details_label">
        <property name="text">
         <string>&lt;small&gt;details&lt;/small&gt;</string>
        </property>
@@ -176,6 +182,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ElidedLabel</class>
+   <extends>QLabel</extends>
+   <header>..dialog</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'project_card.ui'
 #
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -54,7 +54,7 @@ class Ui_ProjectCard(object):
         self.status_label = QtGui.QLabel(ProjectCard)
         self.status_label.setObjectName("status_label")
         self.verticalLayout_2.addWidget(self.status_label)
-        self.details_label = QtGui.QLabel(ProjectCard)
+        self.details_label = ElidedLabel(ProjectCard)
         self.details_label.setObjectName("details_label")
         self.verticalLayout_2.addWidget(self.details_label)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
@@ -86,4 +86,5 @@ class Ui_ProjectCard(object):
         self.status_label.setText(QtGui.QApplication.translate("ProjectCard", "Status", None, QtGui.QApplication.UnicodeUTF8))
         self.details_label.setText(QtGui.QApplication.translate("ProjectCard", "<small>details</small>", None, QtGui.QApplication.UnicodeUTF8))
 
+from ..dialog import ElidedLabel
 from . import resources_rc
