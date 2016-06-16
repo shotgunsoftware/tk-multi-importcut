@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>530</width>
-    <height>426</height>
+    <width>518</width>
+    <height>373</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -86,7 +86,7 @@
      <widget class="QWidget" name="general_tab">
       <property name="maximumSize">
        <size>
-        <width>510</width>
+        <width>16777215</width>
         <height>16777215</height>
        </size>
       </property>
@@ -98,7 +98,7 @@
         <number>12</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>12</number>
        </property>
        <property name="bottomMargin">
         <number>0</number>
@@ -314,6 +314,9 @@
            </item>
            <item row="3" column="1">
             <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <property name="spacing">
+              <number>10</number>
+             </property>
              <item>
               <widget class="QLineEdit" name="reinstate_shot_if_status_is_line_edit"/>
              </item>
@@ -337,7 +340,7 @@
                </property>
                <property name="minimumSize">
                 <size>
-                 <width>75</width>
+                 <width>100</width>
                  <height>0</height>
                 </size>
                </property>
@@ -743,8 +746,11 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
+     <property name="spacing">
+      <number>10</number>
+     </property>
      <property name="rightMargin">
-      <number>5</number>
+      <number>10</number>
      </property>
      <property name="bottomMargin">
       <number>5</number>
@@ -771,22 +777,6 @@
         <string>Esc</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_5">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>10</width>
-         <height>1</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item>
       <widget class="QPushButton" name="apply_button">
