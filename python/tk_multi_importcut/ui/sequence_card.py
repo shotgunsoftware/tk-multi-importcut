@@ -18,6 +18,7 @@ class Ui_SequenceCard(object):
         sizePolicy.setHeightForWidth(SequenceCard.sizePolicy().hasHeightForWidth())
         SequenceCard.setSizePolicy(sizePolicy)
         SequenceCard.setMinimumSize(QtCore.QSize(310, 70))
+        SequenceCard.setMaximumSize(QtCore.QSize(470, 16777215))
         SequenceCard.setBaseSize(QtCore.QSize(358, 70))
         SequenceCard.setFocusPolicy(QtCore.Qt.StrongFocus)
         SequenceCard.setStyleSheet("")
@@ -53,7 +54,7 @@ class Ui_SequenceCard(object):
         self.status_label = QtGui.QLabel(SequenceCard)
         self.status_label.setObjectName("status_label")
         self.verticalLayout_2.addWidget(self.status_label)
-        self.details_label = QtGui.QLabel(SequenceCard)
+        self.details_label = ElidedLabel(SequenceCard)
         self.details_label.setObjectName("details_label")
         self.verticalLayout_2.addWidget(self.details_label)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
@@ -85,4 +86,5 @@ class Ui_SequenceCard(object):
         self.status_label.setText(QtGui.QApplication.translate("SequenceCard", "Status", None, QtGui.QApplication.UnicodeUTF8))
         self.details_label.setText(QtGui.QApplication.translate("SequenceCard", "<small>details</small>", None, QtGui.QApplication.UnicodeUTF8))
 
+from ..dialog import ElidedLabel
 from . import resources_rc
