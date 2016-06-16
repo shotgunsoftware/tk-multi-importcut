@@ -14,7 +14,7 @@ class Ui_submit_dialog(object):
         submit_dialog.resize(354, 542)
         submit_dialog.setModal(True)
         self.verticalLayout = QtGui.QVBoxLayout(submit_dialog)
-        self.verticalLayout.setContentsMargins(5, 5, 5, 5)
+        self.verticalLayout.setContentsMargins(9, 9, 9, 9)
         self.verticalLayout.setObjectName("verticalLayout")
         spacerItem = QtGui.QSpacerItem(0, 0, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.verticalLayout.addItem(spacerItem)
