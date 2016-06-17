@@ -165,7 +165,7 @@ class EdlCut(QtCore.QObject):
         """
         Visitor used when parsing an EDL file
 
-        Extract Shot / Version informations from EDL edits and add lambdas
+        Extract Shot / Version information from EDL edits and add lambdas
         to retrieve extracted properties
 
         :param edit: Current EditEvent being parsed

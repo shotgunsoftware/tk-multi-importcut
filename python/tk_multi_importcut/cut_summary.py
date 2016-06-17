@@ -53,6 +53,8 @@ class ShotCutDiffList(list):
         """
         Instantiate a new list with a single value
         :param cut_diff: A CutDiff instance
+        :param args: An arbitrary list of parameters
+        :param kargs: An arbitrary dictionary of parameters
         """
         super(ShotCutDiffList, self).__init__(*args, **kwargs)
         self._logger = get_logger()

@@ -52,8 +52,8 @@ class DownloadRunner(QtCore.QRunnable):
         def __init__(self, *args, **kwargs):
             """
             Instantiate a new _Notifier
-            :param args: Arbitrary list of parameters send to base class init
-            :param kwargs: Arbitrary dictionary of parameters send to base class init
+            :param args: Arbitrary list of parameters to send to base class init
+            :param kwargs: Arbitrary dictionary of parameters to send to base class init
             """
             QtCore.QObject.__init__(self, *args, **kwargs)
             self._aborted = False

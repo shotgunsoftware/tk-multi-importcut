@@ -28,9 +28,9 @@ class Processor(QtCore.QThread):
     The data  manager is instantiated in the run method, so its slots will be
     honored in the the running thread.
 
-    Signals are exposed and connected to matching EdlCut's signals, as an inteface
-    for the caller, which does not access the data manager directly, and don't have
-    to wait for the EdlCut creation to connect its own signals and slots.
+    Signals are exposed and connected to matching EdlCut's signals, as an interface
+    for the caller, which does not access the data manager directly, and doesn't
+    have to wait for the EdlCut creation to connect its own signals and slots.
 
     Similarily, some properties are exposed, so the caller does not need to access
     the EdlCut instance directly.

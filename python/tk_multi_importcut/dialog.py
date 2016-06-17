@@ -114,7 +114,7 @@ class AppDialog(QtGui.QWidget):
     """
     Main application dialog window
 
-    All data is handled on a dedicated thread started with a Processor instance.
+    All data, which is handled on a dedicated thread started with a Processor instance.
     Data is allocated in the dedicated Processor running thread, so slots are
     honored in this thread. Pass through signals are used to communicate between
     this thread, the Processor and the EdlCut data which is not available when the
@@ -461,8 +461,10 @@ class AppDialog(QtGui.QWidget):
 
     def _preselected_input(self, edl_file_path, sg_entity):
         """
-        Special mode for Premiere integration : load the given EDL
-        and select the given SG entity
+        Special mode when the app is launched with command line parameters,
+        e.g. for Premiere integration : load the given EDL and select the given
+        SG Entity
+
         :param edl_file_path: Full path to EDL file
         :param sg_entity: A SG Entity dictionary
         """
@@ -784,7 +786,7 @@ class AppDialog(QtGui.QWidget):
         - Show hide / buttons
         - Clear out views for steps bigger than the given one
         - Reset selection for steps bigger than the given one
-        :param step: One of our knwow steps
+        :param step: One of our known steps
         """
         self._step = step
         # 0 : drag and drop
@@ -986,10 +988,11 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(str)
     def show_entities(self, sg_entity_type):
         """
-        Called when entities needs to be shown for a particular entity type.
+        Called when Entities needs to be shown for a particular entity type.
 
-        Ensure we have a view for the given Entity type, ask if needed the data
-        manager to retrieve a list of entities for this Entity type
+        Ensures we have a view for the given Entity type.
+        If needed, ask the data manager to retrieve a list of entities for this
+        Entity type.
 
         :param sg_entity_type: A SG Entity type, e.g. 'Sequence'
         """
@@ -1041,9 +1044,9 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(dict)
     def show_cuts(self, sg_entity):
         """
-        Called when a SG Entity was chosen and cuts needs to be shown for it
+        Called when a SG Entity was chosen and cuts need to be shown for it
 
-        Ask the data manager to retrieve Cuts linked to this Entity
+        Asks the data manager to retrieve Cuts linked to this Entity
 
         :param sg_entity: A SG Entity dictionary
         """
@@ -1147,6 +1150,7 @@ class AppDialog(QtGui.QWidget):
         """
         Called when the settings dialog needs to be presented to the user. This can
         happen on almost every page of the animated stacked widget.
+        :param step: One of our known steps
         """
         self._logger.debug("Settings at step %d" % step)
         show_settings_dialog = SettingsDialog(parent=self, step=step)
@@ -1218,7 +1222,7 @@ class AppDialog(QtGui.QWidget):
     def show_in_shotgun(self):
         """
         Called at the end of the import if the user clicks on the 'Show in SG'
-        button: show the new Cut in default web browse and close the app
+        button: show the new Cut in default web browser and closes the app
         """
         sg_url = QtCore.QUrl(self._processor.sg_new_cut_url)
         QtGui.QDesktopServices.openUrl(sg_url)

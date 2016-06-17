@@ -70,7 +70,7 @@ class SettingsError(ValueError):
         """
         self._details = None
         if "details" in kwargs:
-            # If we have some details, remove it from parameters send to the
+            # If we have some details, remove them from parameters sent to the
             # base class
             self._details = kwargs.pop("details")
         super(SettingsError, self).__init__(*args, **kwargs)
@@ -407,7 +407,6 @@ class SettingsDialog(QtGui.QDialog):
         if bad_statuses:
             bad_statuses = "\n".join(bad_statuses)
             raise SettingsError(_BAD_STATUS_MSG % (bad_statuses))
-
 
         new_values = {
             "update_shot_statuses": update_shot_statuses,
