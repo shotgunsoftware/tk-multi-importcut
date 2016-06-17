@@ -10,37 +10,38 @@
 
 import tempfile
 import os
-# by importing QT from sgtk rather than directly, we ensure that
+# by importing QT from sgtk we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
 from .downloader import DownloadRunner
 from .logger import get_logger
 
+
 class CardWidget(QtGui.QFrame):
     """
-    Base class for Card widgets, dealing with thumbnail downloads and
-    selection.
+    Base class for Card widgets, handles downloading and selection of thumbnails.
 
-    Card widgets allow to select SG entities and display a thumbnail.
+    Card widgets display a thumbnail and are used to select SG Entities.
     """
     # Emitted when this card is selected and something should be done
-    # with the entity it is holding
+    # with the attached Entity
     chosen = QtCore.Signal(dict)
-    # Emitted when this card wants to be selected
+    # Emitted when this card wants to be selected, letting the view it is
+    # displayed in handle the selection e.g. unselecting other cards
     highlight_selected = QtCore.Signal(QtGui.QWidget)
     # A Signal to discard pending download
     discard_download = QtCore.Signal()
 
     def __init__(self, parent, sg_entity, ui_builder, *args, **kargs):
         """
-        Instantiate a new Card Widget
+        Instantiates a new Card Widget.
 
         :param parent: A parent widget
         :param sg_entity: A Shotgun Entity dictionary
         :param ui_builder: A callable typically retrieved from Designer generated
                            Python files
-        :param args: Arbitrary list of parameters
-        :param kargs: Arbitrary dictionary of parameters
+        :param args: An arbitrary list of parameters
+        :param kargs: An arbitrary dictionary of parameters
         """
         super(CardWidget, self).__init__(parent, *args, **kargs)
         self._thumbnail_requested = False
@@ -57,7 +58,7 @@ class CardWidget(QtGui.QFrame):
     @property
     def entity_name(self):
         """
-        Return the name of the SG entity attached to this card
+        Returns the name of the SG Entity attached to this card
 
         :returns: A string
         """
@@ -66,25 +67,27 @@ class CardWidget(QtGui.QFrame):
             "code",
             self._sg_entity.get(
                 "name",
-                self._sg_entity.get("title", "")
+                self._sg_entity.get(
+                    "title", ""
+                )
             )
         )
 
     @property
     def sg_entity(self):
         """
-        Returns the SG entity attached to this card
+        Returns the SG Entity attached to this card
 
-        :returns: A SG entity dictionary
+        :returns: A SG Entity dictionary
         """
         return self._sg_entity
 
     @property
     def thumbnail_url(self):
         """
-        Returns the thumbnail url for the SG entity attached to this card
+        Returns the thumbnail url for the SG Entity attached to this card
 
-        :returns: A url or None
+        :returns: A url string or None
         """
         if self._sg_entity and self._sg_entity.get("image"):
             return self._sg_entity["image"]
@@ -93,10 +96,10 @@ class CardWidget(QtGui.QFrame):
     @property
     def select_button(self):
         """
-        Return the chevron button used to select this card.
+        Returns the 'chevron' button used to select this card.
 
-        Could be overidden in deriving classes if the expected UI structure is
-        not followed and the select button was named differently.
+        Could be overridden in deriving classes if the expected UI structure is
+        not respected and the select button is named differently.
 
         :returns: A button widget
         """
@@ -105,7 +108,7 @@ class CardWidget(QtGui.QFrame):
     @QtCore.Slot()
     def select(self):
         """
-        Set this card UI to selected mode
+        Sets this card UI 'selected' property to True
         """
         self.setProperty("selected", True)
         self.style().unpolish(self)
@@ -115,7 +118,7 @@ class CardWidget(QtGui.QFrame):
     @QtCore.Slot()
     def unselect(self):
         """
-        Set this card UI to unselected mode
+        Sets this card UI 'selected' property to False
         """
         self.setProperty("selected", False)
         self.style().unpolish(self)
@@ -126,7 +129,7 @@ class CardWidget(QtGui.QFrame):
     @QtCore.Slot()
     def choose_me(self):
         """
-        Notify listeners that this card was chosen
+        Notifies listeners that this card was chosen
         """
         self.highlight_selected.emit(self)
         self.chosen.emit(self._sg_entity)
@@ -135,16 +138,17 @@ class CardWidget(QtGui.QFrame):
     @QtCore.Slot(str)
     def new_thumbnail(self, path):
         """
-        Called when a new thumbnail is available for this card
+        Called when a new thumbnail is available for this card, replace the
+        current thumbnail with the new one.
 
         :param path: Full path to a thumbnail file
         """
-        self._logger.debug("Loading thumbnail %s for %s" % (path, self.entity_name))
+        self._logger.debug("Loading thumbnail %s for %s." % (path, self.entity_name))
         self.set_thumbnail(path)
 
     def mouseDoubleClickEvent(self, event):
         """
-        Handle double clicks : choose this card
+        Handles double clicks : choose this card
 
         :param event: A QEvent
         """
@@ -152,7 +156,7 @@ class CardWidget(QtGui.QFrame):
 
     def mousePressEvent(self, event):
         """
-        Handle single click events : select this card
+        Handles single click events : select this card
 
         :param event: A QEvent
         """
@@ -160,7 +164,7 @@ class CardWidget(QtGui.QFrame):
 
     def enterEvent(self, event):
         """
-        Display a "chevron" button when the mouse enter the widget
+        Displays a "chevron" button when the mouse enters the widget
 
         :param event: A QEvent
         """
@@ -168,7 +172,7 @@ class CardWidget(QtGui.QFrame):
 
     def leaveEvent(self, event):
         """
-        Hide the "chevron" button when the mouse leave the widget
+        Hides the "chevron" button when the mouse leaves the widget
 
         :param event: A QEvent
         """
@@ -202,7 +206,8 @@ class CardWidget(QtGui.QFrame):
 
     def closeEvent(self, evt):
         """
-        Discard downloads when the widget is removed
+        Discards downloads when the widget is removed
+        :param evt: A QEvent
         """
         self.discard_download.emit()
         evt.accept()
@@ -234,5 +239,3 @@ class CardWidget(QtGui.QFrame):
             self.ui.icon_label.setPixmap(
                 pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
             )
-
-
