@@ -212,26 +212,27 @@ DropAreaFrame QLabel {
     color: #3c3e42;
 }
 
-/* fading out text that isn't enabled */
-#settings_dialog QLabel:!enabled {
-    color: #606060;
-}
-
 /* dimming certain text for dramatic effect */
 #settings_dialog #send_cut_summary_note_to_label,
-#settings_dialog #update_shot_statuses_label,
-#settings_dialog #omit_status_label,
-#settings_dialog #reinstate_shot_if_status_is_label,
-#settings_dialog #reinstate_status_label,
+#settings_dialog #update_shot_statuses_label:enabled,
+#settings_dialog #omit_status_label:enabled,
+#settings_dialog #reinstate_shot_if_status_is_label:enabled,
+#settings_dialog #reinstate_status_label:enabled,
 #settings_dialog #use_smart_fields_label,
 #settings_dialog #default_frame_rate_label,
 #settings_dialog #timecode_to_frame_mapping_label,
-#settings_dialog #default_head_in_label,
-#settings_dialog #default_head_duration_label,
-#settings_dialog #default_tail_duration_label,
+#settings_dialog #default_head_in_label:enabled,
+#settings_dialog #default_head_duration_label:enabled,
+#settings_dialog #default_tail_duration_label:enabled,
 #settings_dialog #timecode_mapping_label,
 #settings_dialog #frame_mapping_label {
     color: #A8A8A8;
+}
+
+/* fading out text that isn't enabled */
+#settings_dialog QLabel:!enabled,
+#settings_dialog QLineEdit:!enabled {
+    color: #606060;
 }
 
 /* making section headings bold */
