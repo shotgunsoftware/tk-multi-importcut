@@ -36,3 +36,18 @@ _STATUS_COLORS = {
     "apr": _COLORS["green"],
     "fin": _COLORS["green"],
 }
+# Fields we need to retrieve on Shots
+_SHOT_FIELDS = [
+    "code",
+    "sg_status_list",
+    "sg_head_in",
+    "sg_tail_out",
+    "sg_cut_in",
+    "sg_cut_out",
+    "smart_head_in",
+    "smart_tail_out",
+    "smart_cut_in",
+    "smart_cut_out",
+    "sg_cut_order",
+    "image"
+]

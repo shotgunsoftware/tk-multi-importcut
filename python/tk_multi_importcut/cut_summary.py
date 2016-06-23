@@ -15,6 +15,7 @@ import sgtk
 from sgtk.platform.qt import QtCore
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .logger import get_logger
+from .constants import _SHOT_FIELDS
 
 # Template used by summary report
 _BODY_REPORT_FORMAT = """
@@ -559,7 +560,7 @@ class CutSummary(QtCore.QObject):
                     [self._sg_shot_link_field_name, "is", self._sg_entity],
                     ["code", "is", new_name]
                 ],
-                fields
+                _SHOT_FIELDS
             )
             if existing_linked_shot:
                 # Link to the first shot found in the linked Entity whose name matches new_name
@@ -569,7 +570,7 @@ class CutSummary(QtCore.QObject):
                 existing_unlinked_shot = self._app.shotgun.find_one(
                     "Shot",
                     [["project", "is", self._sg_project], ["code", "is", new_name]],
-                    fields
+                    _SHOT_FIELDS
                 )
                 if existing_unlinked_shot:
                     cut_diff.set_sg_shot(existing_unlinked_shot)

@@ -20,6 +20,7 @@ from .entity_line_widget import EntityLineWidget
 # Different wizard style steps in our process
 from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, \
     _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
+from .constants import _SHOT_FIELDS
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
@@ -581,20 +582,7 @@ class EdlCut(QtCore.QObject):
         self._summary.totals_changed.connect(self.totals_changed)
         try:
             # Fields that we need to retrieve on Shots
-            shot_fields = [
-                    "code",
-                    "sg_status_list",
-                    "sg_head_in",
-                    "sg_tail_out",
-                    "sg_cut_in",
-                    "sg_cut_out",
-                    "smart_head_in",
-                    "smart_tail_out",
-                    "smart_cut_in",
-                    "smart_cut_out",
-                    "sg_cut_order",
-                    "image"
-            ]
+            shot_fields = _SHOT_FIELDS
             if self._sg_shot_link_field_name:
                 shot_fields.append(self._sg_shot_link_field_name)
             sg_cut_items = []
