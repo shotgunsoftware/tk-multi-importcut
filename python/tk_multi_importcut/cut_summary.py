@@ -484,8 +484,8 @@ class CutSummary(QtCore.QObject):
         count = len(self._cut_diffs[old_shot_key])
         if count == 0:
             self._logger.debug("No more entry for old shot key %s" % old_shot_key)
-            # If we have a SG shot, it is now an omitted one
-            if cut_diff.sg_shot:
+            # If we have a SG shot, and a CutItem, it is now an omitted one
+            if cut_diff.sg_cut_item and cut_diff.sg_shot:
                 self._logger.debug("Adding omitted entry for old shot key %s" % old_shot_key)
                 sg_shot = cut_diff.sg_shot
                 sg_cut_item = cut_diff.sg_cut_item
