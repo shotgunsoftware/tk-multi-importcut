@@ -37,7 +37,7 @@ class CutCard(CardWidget):
         else:
             self.ui.title_label.setText("<big><b>%s</b></big> (No Revision Number)" % (
                 self.sg_cut["code"]))
-        if self.sg_cut["_display_status"]:
+        if self.sg_cut.get("_display_status"):
             self.ui.status_label.setText(
                 "<b><font color=%s>%s</font></b>" % (
                     _STATUS_COLORS.get(self.sg_cut["sg_status_list"], _COLORS["lgrey"]),
