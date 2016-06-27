@@ -183,10 +183,16 @@ class Processor(QtCore.QThread):
         sg_new_cut = self.sg_new_cut
         if not sg_new_cut:
             return None
-        return "%s/detail/%s/%s" % (
+        tree_path = "/cuts_tree/Project/%s/Cut/%s" % (
+            sg_new_cut["project"]["id"],
+            sg_new_cut["entity"]["id"])
+        return "%s/page/media_center?type=%s&id=%s&project_id=%s&tree_path=%s&global=true&project_sel=all" % (
             self._edl_cut._app.shotgun.base_url,
-            sg_new_cut["type"],
-            sg_new_cut["id"],
+            sg_new_cut["entity"]["type"],
+            sg_new_cut["entity"]["id"],
+            sg_new_cut["project"]["id"],
+            # urllib.quote(tree_path)
+            QtCore.QUrl.encodedPath(QtCore.QUrl(tree_path))
         )
 
     @property
