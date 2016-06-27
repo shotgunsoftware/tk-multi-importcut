@@ -470,7 +470,7 @@ class CutSummary(QtCore.QObject):
         :param old_name: A string, the CutDiff previous name
         :param new_name: A string, the CutDiff new name
         """
-        # We might not have empty names here. To avoid considering all entries
+        # We might have empty names here. To avoid considering all entries
         # with no name as repeated shots we forge a key based on the cut order.
         new_shot_key = new_name.lower() if new_name else "_no_shot_name_%s" % cut_diff.new_cut_order
         old_shot_key = old_name.lower() if old_name else "_no_shot_name_%s" % cut_diff.new_cut_order
@@ -481,24 +481,23 @@ class CutSummary(QtCore.QObject):
         if old_shot_key not in self._cut_diffs:
             raise RuntimeError("Can't retrieve shot %s in internal list" % old_shot_key)
         self._cut_diffs[old_shot_key].remove(cut_diff)
+        # If we have a SG shot, and a CutItem, it is now an omitted one
+        if cut_diff.sg_cut_item and cut_diff.sg_shot:
+            self._logger.debug("Adding omitted entry for old shot key %s" % old_shot_key)
+            sg_shot = cut_diff.sg_shot
+            sg_cut_item = cut_diff.sg_cut_item
+            cdiff = self.add_cut_diff(
+                    sg_shot["code"],
+                    sg_shot=sg_shot,
+                    edit=None,
+                    sg_cut_item=sg_cut_item,
+                )
         count = len(self._cut_diffs[old_shot_key])
         if count == 0:
             self._logger.debug("No more entry for old shot key %s" % old_shot_key)
-            # If we have a SG shot, and a CutItem, it is now an omitted one
-            if cut_diff.sg_cut_item and cut_diff.sg_shot:
-                self._logger.debug("Adding omitted entry for old shot key %s" % old_shot_key)
-                sg_shot = cut_diff.sg_shot
-                sg_cut_item = cut_diff.sg_cut_item
-                cdiff = self.add_cut_diff(
-                        sg_shot["code"],
-                        sg_shot=sg_shot,
-                        edit=None,
-                        sg_cut_item=sg_cut_item,
-                    )
-            else:
-                self._logger.debug("Discarding list for old shot key %s" % old_shot_key)
-                # We can discard the list for this shot
-                del self._cut_diffs[old_shot_key]
+            self._logger.debug("Discarding list for old shot key %s" % old_shot_key)
+            # We can discard the list for this shot
+            del self._cut_diffs[old_shot_key]
         elif count == 1:
             self._logger.debug("Single entry for old shot key %s" % old_shot_key)
             # This guy is alone now, so not repeated
@@ -518,21 +517,42 @@ class CutSummary(QtCore.QObject):
                 self._logger.debug("%s %s %s %s" % cdiff.summary())
             count = len(self._cut_diffs[new_shot_key])
             self._logger.debug("%d Entrie(s) for new shot key %s" % (count, new_shot_key))
-            if count == 1 and not self._cut_diffs[new_shot_key][0].edit:
-                self._logger.debug("Single omitted entry for new shot key %s" % new_shot_key)
-                # If only one entry, that could be an omitted shot (no edit)
-                # in that case the shot is not omitted anymore
-                cdiff = self._cut_diffs[new_shot_key].pop()
-                self.delete_cut_diff.emit(cdiff)
+            # Check if there is some omitted entries (no edit) which we should
+            # replace, and choose to best one to replace
+            matching_omit_entries = [
+                x for x in self._cut_diffs[new_shot_key] if not x.edit
+            ]
+            self._logger.debug("Potential matches: %s" % matching_omit_entries)
+            if matching_omit_entries:
+                # Loop over candidates and choose the best one
+                best_cdiff = None
+                best_score = -1
+                for cdiff in matching_omit_entries:
+                    score = cut_diff.get_matching_score(cdiff)
+                    if best_cdiff is None or score > best_score:
+                        best_cdiff = cdiff
+                        best_score = score
+                self._logger.debug(
+                    "Found omitted entry for new shot key %s: %s" % (
+                        new_shot_key, str(best_cdiff)
+                ))
+                # Remove the chosen CutDiff
+                self._cut_diffs[new_shot_key].remove(best_cdiff)
+                self.delete_cut_diff.emit(best_cdiff)
                 # Recompute totals with the removed cut diff
-                self.cut_diff_type_changed(cdiff, cdiff.diff_type, None)
-                cut_diff.set_sg_shot(cdiff.sg_shot)
-                cut_diff.set_sg_cut_item(cdiff.sg_cut_item)
+                self.cut_diff_type_changed(best_cdiff, best_cdiff.diff_type, None)
+                # And add the edited CutDiff, reusing some data of the CutDiff
+                # we are replacing
+                cut_diff.set_sg_shot(best_cdiff.sg_shot)
+                cut_diff.set_sg_cut_item(best_cdiff.sg_cut_item)
                 if cut_diff.edit:
-                    cut_diff.set_sg_version(cdiff.sg_version)
+                    cut_diff.set_sg_version(best_cdiff.sg_version)
                 self._cut_diffs[new_shot_key].append(cut_diff)
+                if count > 1:
+                    # If the Shot is repeated, flag the edited CutDiff as repeated
+                    cut_diff.set_repeated(True)
             else:
-                self._logger.debug("Adding new entry for new shot key %s" % new_shot_key)
+                self._logger.info("Adding new entry for new shot key %s" % new_shot_key)
                 # SG shot and cut item are shared by all entries in this list
                 cdiff = self._cut_diffs[new_shot_key][0]
                 cut_diff.set_sg_shot(cdiff.sg_shot)
@@ -544,15 +564,6 @@ class CutSummary(QtCore.QObject):
                 for cdiff in self._cut_diffs[new_shot_key]:
                     cdiff.set_repeated(True)
         else:
-            fields = [
-                "code",
-                "sg_status_list",
-                "sg_cut_order",
-                "sg_cut_in",
-                "sg_cut_out",
-                "sg_head_in",
-                "sg_tail_out"
-            ]
             existing_linked_shot = self._app.shotgun.find_one(
                 "Shot",
                 [

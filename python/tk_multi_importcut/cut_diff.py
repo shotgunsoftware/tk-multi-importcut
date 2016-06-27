@@ -180,6 +180,57 @@ class CutDiff(QtCore.QObject):
             default_head_in = int(user_settings.retrieve("default_head_in"))
             cls.__default_timecode_frame_mapping = (None, default_head_in)
 
+    def get_matching_score(self, other):
+        """
+        Compares this CutDiff with the other and returns a matching score, based
+        on:
+        - Similar cut order
+        - Similar timecode cut in
+        - Similar timecode cut out
+
+        :returns: An integer, the higher the
+        """
+        # A CutDiff always has either a CutItem or an edit event, so if one is
+        # available, the other will be. Edit events contain new values, so we
+        # use them if available and fall back on CutItem values
+        if self._edit:
+            cut_order = self._edit.id
+            cut_in = self._edit.source_in
+            cut_out = self._edit.source_out
+        else:
+            cut_order = self._sg_cut_item["cut_order"]
+            cut_in = edl.Timecode(
+                    self._sg_cut_item["timecode_cut_item_in_text"],
+                    self._sg_cut_item["cut.Cut.fps"]
+                ).to_frame()
+            cut_out = edl.Timecode(
+                    self._sg_cut_item["timecode_cut_item_out_text"],
+                    self._sg_cut_item["cut.Cut.fps"]
+                ).to_frame()
+
+        if other._edit:
+            other_cut_order = other._edit.id
+            other_cut_in = other._edit.source_in
+            other_cut_out = other._edit.source_out
+        else:
+            other_cut_order = other._sg_cut_item["cut_order"]
+            other_cut_in = edl.Timecode(
+                    other._sg_cut_item["timecode_cut_item_in_text"],
+                    other._sg_cut_item["cut.Cut.fps"]
+                ).to_frame()
+            other_cut_out = edl.Timecode(
+                    other._sg_cut_item["timecode_cut_item_out_text"],
+                    other._sg_cut_item["cut.Cut.fps"]
+                ).to_frame()
+        score = 0
+        if cut_order - other_cut_order == 0:
+            score += 1
+        if cut_in - other_cut_in == 0:
+            score += 1
+        if cut_out - other_cut_out == 0:
+            score += 1
+        return score
+
     @property
     def sg_shot(self):
         """
