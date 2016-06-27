@@ -107,6 +107,7 @@ DropAreaFrame QLabel {
 
 * {
     font-family: "Open Sans";
+    font-weight: normal;
     outline: 0;
 }
 
@@ -258,6 +259,7 @@ DropAreaFrame QLabel {
 #select_button:enabled,
 #submit_button:enabled {
     background-color: #12bbff;
+    font-weight: bold;
 }
 
 
