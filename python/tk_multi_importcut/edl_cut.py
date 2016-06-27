@@ -1088,12 +1088,24 @@ class EdlCut(QtCore.QObject):
         :param tail_out: Shot tail out value to set
         :returns: A SG data dictionary suitable for an update
         """
+        # Note: smart_head_duration shouldn't have to be set (it should be
+        # calculated automatically by Shotgun). When the bug in Shotgun is fixed
+        # that prevents this from happening, we should stop setting this field.
+        # Also note that setting smart_head_duration triggers the calculation
+        # of smart_working_duration. So there is potentially a problem with
+        # multiple fields, although it's likely these two problems are related.
+        # Additionally you may notice we are NOT adding a +1 to the
+        # smart_head_duration. This is to get the smart fields to act the same
+        # as the normal CutItem feilds. When this bug with smart fields is
+        # worked out, we'll likely need to add the +1 to the smart_head_duration
+        # calculation (if it's needed at all at that point).
         if self._use_smart_fields:
             return {
                 "smart_head_in": head_in,
                 "smart_cut_in": cut_in,
                 "smart_cut_out": cut_out,
                 "smart_tail_out": tail_out,
+                "smart_head_duration": cut_in - head_in
             }
         else:
             return {
