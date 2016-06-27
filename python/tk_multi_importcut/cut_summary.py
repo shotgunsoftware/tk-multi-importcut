@@ -552,7 +552,7 @@ class CutSummary(QtCore.QObject):
                     # If the Shot is repeated, flag the edited CutDiff as repeated
                     cut_diff.set_repeated(True)
             else:
-                self._logger.info("Adding new entry for new shot key %s" % new_shot_key)
+                self._logger.debug("Adding new entry for new shot key %s" % new_shot_key)
                 # SG shot and cut item are shared by all entries in this list
                 cdiff = self._cut_diffs[new_shot_key][0]
                 cut_diff.set_sg_shot(cdiff.sg_shot)
