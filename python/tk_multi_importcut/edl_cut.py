@@ -1101,7 +1101,8 @@ class EdlCut(QtCore.QObject):
                 "sg_cut_in": cut_in,
                 "sg_cut_out": cut_out,
                 "sg_tail_out": tail_out,
-                "sg_cut_duration": cut_out - cut_in + 1
+                "sg_cut_duration": cut_out - cut_in + 1,
+                "sg_working_duration": tail_out - head_in + 1
             }
 
     def update_sg_shots(self, update_shots):
