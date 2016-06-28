@@ -321,13 +321,13 @@ class AppDialog(QtGui.QWidget):
         # from, so later we will be able to check if the settings changes neeed a
         # a restart or not, based on the step they were changed at
         for step, button in {
-            _DROP_STEP : self.ui.drop_page_settings_button,
-            _PROJECT_STEP : self.ui.project_page_settings_button,
-            _ENTITY_STEP : self.ui.entities_page_settings_button,
-            _CUT_STEP : self.ui.cut_list_page_settings_button,
-            _SUMMARY_STEP : self.ui.cut_summary_page_settings_button,
+            _DROP_STEP: self.ui.drop_page_settings_button,
+            _PROJECT_STEP: self.ui.project_page_settings_button,
+            _ENTITY_STEP: self.ui.entities_page_settings_button,
+            _CUT_STEP: self.ui.cut_list_page_settings_button,
+            _SUMMARY_STEP: self.ui.cut_summary_page_settings_button,
         }.iteritems():
-            button.clicked.connect(lambda x=step : self.show_settings_dialog(x))
+            button.clicked.connect(lambda x=step: self.show_settings_dialog(x))
 
         # The Entities page allows to select different Entity types, dynamically
         # create these buttons. A Project button is always added
@@ -1301,6 +1301,10 @@ class AppDialog(QtGui.QWidget):
         else:
             raise NotImplementedError("Unknown platform: %s" % sys.platform)
 
+        # Create log directory if it doesn't already exist.
+        log_dir = os.path.dirname(fname)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
         handler = logging.handlers.RotatingFileHandler(fname, maxBytes=1024*1024, backupCount=5)
         handler.addFilter(ShortNameFilter())
         handler.setFormatter(logging.Formatter(
