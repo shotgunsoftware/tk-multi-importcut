@@ -538,6 +538,8 @@ class EdlCut(QtCore.QObject):
                 # Register a display status if one available
                 if sg_cut["sg_status_list"] in status_dict:
                     sg_cut["_display_status"] = status_dict[sg_cut["sg_status_list"]]
+                else:
+                    sg_cut["_display_status"] = sg_cut["sg_status_list"]
                 self.new_sg_cut.emit(sg_cut)
             self._logger.info("Retrieved %d Cuts." % len(sg_cuts))
             self.step_done.emit(_ENTITY_STEP)
@@ -1096,9 +1098,10 @@ class EdlCut(QtCore.QObject):
         # multiple fields, although it's likely these two problems are related.
         # Additionally you may notice we are NOT adding a +1 to the
         # smart_head_duration. This is to get the smart fields to act the same
-        # as the normal CutItem feilds. When this bug with smart fields is
+        # as the normal CutItem fields. When this bug with smart fields is
         # worked out, we'll likely need to add the +1 to the smart_head_duration
-        # calculation (if it's needed at all at that point).
+        # calculation (if it's needed at all at that point). Also note that
+        # smart_tail_duration does not need to be set here.
         if self._use_smart_fields:
             return {
                 "smart_head_in": head_in,

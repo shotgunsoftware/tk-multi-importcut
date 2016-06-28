@@ -1303,7 +1303,7 @@ class AppDialog(QtGui.QWidget):
 
         # Create log directory if it doesn't already exist.
         log_dir = os.path.dirname(fname)
-        if not os.path.exists(log_dir):
+        if not os.path.isdir(log_dir):
             os.makedirs(log_dir)
         handler = logging.handlers.RotatingFileHandler(fname, maxBytes=1024*1024, backupCount=5)
         handler.addFilter(ShortNameFilter())

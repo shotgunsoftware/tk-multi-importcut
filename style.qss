@@ -105,6 +105,9 @@ DropAreaFrame QLabel {
     font-size: 30px;
 }
 
+/* We explicitly specify the normal font weight here, otherwise some text
+defaults to bold when not enabled -- event though it should only be bold when
+enabled */
 * {
     font-family: "Open Sans";
     font-weight: normal;
