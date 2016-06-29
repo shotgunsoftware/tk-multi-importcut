@@ -112,9 +112,15 @@ class ShotCutDiffList(list):
 
         :returns: A CutDiff instance, or None
         """
-        if self._earliest_entry:
-            return self._earliest_entry
-        return self._new_earliest_entry
+
+        # We might have a mix of omitted edits (no new value) and non omitted edits
+        # (with new values) in our list. If we have at least one entry which is
+        # not omitted (has new value) we consider entries with new values, so we
+        # will consider omitted edits only if all edits are omitted
+
+        if self._new_earliest_entry:
+            return self._new_earliest_entry
+        return self._earliest_entry
 
     @property
     def last(self):
@@ -123,9 +129,15 @@ class ShotCutDiffList(list):
 
         :returns: A CutDiff instance, or None
         """
-        if self._last_entry:
-            return self._last_entry
-        return self._new_last_entry
+
+        # We might have a mix of omitted edits (no new value) and non omitted edits
+        # (with new values) in our list. If we have at least one entry which is
+        # not omitted (has new value) we consider entries with new values, so we
+        # will consider omitted edits only if all edits are omitted
+
+        if self._new_last_entry:
+            return self._new_last_entry
+        return self._last_entry
 
     @property
     def min_tc_cut_in(self):
@@ -133,9 +145,9 @@ class ShotCutDiffList(list):
         Return the earliest cut in timecode
         :returns: A Timecode
         """
-        if self._min_tc_cut_in is not None:
-            return self._min_tc_cut_in
-        return self._new_min_tc_cut_in
+        if self._new_min_tc_cut_in is not None:
+            return self._new_min_tc_cut_in
+        return self._min_tc_cut_in
 
     @property
     def min_cut_in(self):
@@ -143,9 +155,9 @@ class ShotCutDiffList(list):
         Return the cut in for the earliest entry in the list
         :returns: An integer
         """
-        if self._earliest_entry:
-            return self._earliest_entry.cut_in
-        return self._new_earliest_entry.new_cut_in
+        if self._new_earliest_entry:
+            return self._new_earliest_entry.new_cut_in
+        return self._earliest_entry.cut_in
 
     @property
     def max_tc_cut_out(self):
@@ -153,9 +165,9 @@ class ShotCutDiffList(list):
         Return the maximum cut out timecode
         :returns: A Timecode
         """
-        if self._max_tc_cut_out is not None:
-            return self._max_tc_cut_out
-        return self._new_max_tc_cut_out
+        if self._new_max_tc_cut_out is not None:
+            return self._new_max_tc_cut_out
+        return self._max_tc_cut_out
 
     @property
     def max_cut_out(self):
@@ -163,9 +175,9 @@ class ShotCutDiffList(list):
         Return the cut out for the last entry in this list
         :returns: An integer
         """
-        if self._last_entry:
-            return self._last_entry.cut_out
-        return self._new_last_entry.new_cut_out
+        if self._new_last_entry:
+            return self._new_last_entry.new_cut_out
+        return self._last_entry.cut_out
 
     def get_shot_values(self):
         """
@@ -550,7 +562,15 @@ class CutSummary(QtCore.QObject):
                 self._cut_diffs[new_shot_key].append(cut_diff)
                 if count > 1:
                     # If the Shot is repeated, flag the edited CutDiff as repeated
-                    cut_diff.set_repeated(True)
+                    try:
+                        cut_diff.set_repeated(True)
+                    except TypeError, e:
+                        # Adding some extra debug information here, because a lot
+                        # of edge cases exist when editing shot names for repeated
+                        # shots
+                        self._logger.debug("%s".join(cut_diff.summary()))
+                        self._logger.debug(str(self._cut_diffs[new_shot_key]))
+                        raise
             else:
                 self._logger.debug("Adding new entry for new shot key %s" % new_shot_key)
                 # SG shot and cut item are shared by all entries in this list

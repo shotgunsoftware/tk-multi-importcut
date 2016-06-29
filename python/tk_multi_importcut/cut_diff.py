@@ -421,9 +421,6 @@ class CutDiff(QtCore.QObject):
             if self._timecode_to_frame_mapping != _AUTOMATIC_MODE:  # Explicit timecode
                 base_tc = self._timecode_frame_map[0]
                 base_frame = self._timecode_frame_map[1]
-                print("Base TC %s, Base frame %s, New TC cut in %s" % (
-                    base_tc, base_frame, self.new_tc_cut_in,
-                ))
                 cut_in = self.new_tc_cut_in.to_frame() - base_tc.to_frame() + base_frame
                 nh = cut_in - self._default_head_in_duration
             else:
