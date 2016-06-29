@@ -395,12 +395,17 @@ class CutDiff(QtCore.QObject):
         Return the new head in value
         :returns: An integer
         """
+        # If we don't have any edit entry, then we don't have
+        # any new head in by definition
+        if not self._edit:
+            return None
+
         # Special case if we are dealing with a repeated shot
         # Frames are relative to the earliest entry in our siblings
         # If we don't have any edit we don't need to do it and the
         # earliest entry might be None, as it is based on tc cut in,
         # and this is not defined without edits
-        if self._edit and self.repeated:
+        if self.repeated:
             # Get the head in for the earliest entry
             earliest = self._siblings.earliest
             if not earliest:
@@ -416,6 +421,9 @@ class CutDiff(QtCore.QObject):
             if self._timecode_to_frame_mapping != _AUTOMATIC_MODE:  # Explicit timecode
                 base_tc = self._timecode_frame_map[0]
                 base_frame = self._timecode_frame_map[1]
+                print("Base TC %s, Base frame %s, New TC cut in %s" % (
+                    base_tc, base_frame, self.new_tc_cut_in,
+                ))
                 cut_in = self.new_tc_cut_in.to_frame() - base_tc.to_frame() + base_frame
                 nh = cut_in - self._default_head_in_duration
             else:
@@ -1021,4 +1029,5 @@ class CutDiff(QtCore.QObject):
                 sg_version["entity"]["type"] if sg_version["entity"] else "None",
                 sg_version["entity.Shot.code"] if sg_version["entity.Shot.code"] else "",
             )
-        return (shot_details, cut_item_details, version_details, str(self._edit))
+        edit_details = str(self._edit) if self._edit else ""
+        return (shot_details, cut_item_details, version_details, edit_details)
