@@ -1107,8 +1107,7 @@ class EdlCut(QtCore.QObject):
                 "smart_head_in": head_in,
                 "smart_cut_in": cut_in,
                 "smart_cut_out": cut_out,
-                "smart_tail_out": tail_out,
-                "smart_head_duration": cut_in - head_in
+                "smart_tail_out": tail_out
             }
         else:
             return {
@@ -1237,6 +1236,15 @@ class EdlCut(QtCore.QObject):
                             max_tail_out,
                         )
                     )
+                    # Smart fields do not behave as expected, this value must be
+                    # set before other cut values to get the right effect.
+                    if self._use_smart_fields:
+                        sg_batch_data.append({
+                            "request_type": "update",
+                            "entity_type": "Shot",
+                            "entity_id": sg_shot["id"],
+                            "data": {"smart_head_duration": min_cut_in - min_head_in + 1}
+                        })
                     sg_batch_data.append({
                         "request_type": "update",
                         "entity_type": "Shot",
@@ -1259,17 +1267,58 @@ class EdlCut(QtCore.QObject):
                             max_tail_out,
                         )
                     )
+                    # Smart fields do not behave as expected, this value must be
+                    # set before other cut values to get the right effect.
+                    if self._use_smart_fields:
+                        sg_batch_data.append({
+                            "request_type": "update",
+                            "entity_type": "Shot",
+                            "entity_id": sg_shot["id"],
+                            "data": {"smart_head_duration": min_cut_in - min_head_in + 1}
+                        })
                     sg_batch_data.append({
                         "request_type": "update",
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
                         "data": data
                     })
+
         if sg_batch_data:
+            sg_batch_data_update = []
             res = self._sg.batch(sg_batch_data)
             self._logger.info("Created/Updated %d shot(s)." % len(res))
             # Update cut_diffs with the new shots
             for sg_shot in res:
+                # Skip entries without a "code" key coming from the smart fields
+                # workaround
+                if "code" not in sg_shot:
+                    continue
+                # Smart fields do not behave as expected, so we gather data from
+                # the current Shot to do a deferred and staggered update; first
+                # we have to set the smart_head_duration field, and after that
+                # we update the other fields. This is inefficient but necessary
+                # and only happens when smart fields are used.
+                if self._use_smart_fields:
+                    sg_batch_data_update.append({
+                        "request_type": "update",
+                        "entity_type": "Shot",
+                        "entity_id": sg_shot["id"],
+                        "data": {
+                            "smart_head_duration": (
+                                sg_shot["smart_cut_in"] - sg_shot["smart_head_in"])
+                            }
+                    })
+                    sg_batch_data_update.append({
+                        "request_type": "update",
+                        "entity_type": "Shot",
+                        "entity_id": sg_shot["id"],
+                        "data": {
+                            "smart_head_in": sg_shot["smart_head_in"],
+                            "smart_cut_in": sg_shot["smart_cut_in"],
+                            "smart_cut_out": sg_shot["smart_cut_out"],
+                            "smart_tail_out": sg_shot["smart_tail_out"]
+                        }
+                    })
                 shot_name = sg_shot["code"].lower()
                 if shot_name not in self._summary:
                     raise RuntimeError(
@@ -1281,6 +1330,10 @@ class EdlCut(QtCore.QObject):
                         cut_diff.sg_shot.update(sg_shot)
                     else:
                         cut_diff._sg_shot = sg_shot
+        if sg_batch_data_update:
+            # Do the deffered update of Shots for smart fields workaround.
+            res = self._sg.batch(sg_batch_data_update)
+            self._logger.info("Updated smart fields on %d shot(s)." % len(res))
 
     def _create_missing_sg_versions(self):
         """
