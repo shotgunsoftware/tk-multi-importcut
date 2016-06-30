@@ -14,7 +14,7 @@ from sgtk.platform import Application
 class ImportCutApp(Application):
     """
     The app entry point. This class is responsible for intializing and tearing down
-    the application, handle menu registration etc.
+    the application, handling menu registration, etc.
     """
 
     def init_app(self):
@@ -24,7 +24,7 @@ class ImportCutApp(Application):
         # first, we use the special import_module command to access the app module
         # that resides inside the python folder in the app. This is where the actual UI
         # and business logic of the app is kept. By using the import_module command,
-        # toolkit's code reload mechanism will work properly.
+        # Toolkit's code reload mechanism will work properly.
         app_payload = self.import_module("tk_multi_importcut")
 
         # now register a *command*, which is normally a menu entry of some kind on a Shotgun
@@ -59,7 +59,7 @@ class ImportCutApp(Application):
 
     def load_edl_for_entity(self, edl_file_path, sg_entity, frame_rate):
         """
-        Allow import cut to run with pre-selected edl file path and SG
+        Allow import cut to run with pre-selected EDL file path and SG
         entity, and to change the frame rate for the EDL file
 
         :param edl_file_path: Full path to an EDL file
