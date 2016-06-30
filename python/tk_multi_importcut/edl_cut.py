@@ -114,7 +114,6 @@ class EdlCut(QtCore.QObject):
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
         self._omit_status = self._user_settings.retrieve("omit_status")
         self._reinstate_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is")
-        self._revision_num = 0
 
     @property
     def entity_name(self):
@@ -519,14 +518,6 @@ class EdlCut(QtCore.QObject):
                 ],
                 order=[{"field_name": "id", "direction": "desc"}]
             )
-            # if sg_cuts is empty, set the revision number of this Cut to 1, else
-            # take the highest revision number from all Cuts and increment by 1.
-            max_revision = 0
-            for cut in sg_cuts:
-                if cut["revision_number"] > max_revision:
-                    max_revision = cut["revision_number"]
-            self._revision_num = max_revision + 1
-            # self._logger.info(sg_cuts[len(sg_cuts) - 1]["code"])
             # If no cut, go directly to next step
             if not sg_cuts:
                 self.show_cut_diff({})
