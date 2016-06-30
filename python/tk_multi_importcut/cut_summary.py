@@ -360,8 +360,8 @@ class CutSummary(QtCore.QObject):
         """
         super(CutSummary, self).__init__()
         self._cut_diffs = {}
+        self._total_count = 0
         self._counts = {}
-        self._rescans_count = 0
         self._logger = get_logger()
 
         self._app = sgtk.platform.current_bundle()
@@ -454,22 +454,9 @@ class CutSummary(QtCore.QObject):
         else:
             self._cut_diffs[shot_key] = ShotCutDiffList(cut_diff)
             cut_diff.set_repeated(False)
+
         diff_type = cut_diff.diff_type
-        # Some counts are per shot, some others per edits, so only update some
-        # of them if the new entry is not repeated
-        if diff_type not in [
-            _DIFF_TYPES.NEW,
-            _DIFF_TYPES.OMITTED,
-            _DIFF_TYPES.REINSTATED,
-            _DIFF_TYPES.RESCAN
-        ] or not cut_diff.repeated:
-            if diff_type in self._counts:
-                self._counts[diff_type] += 1
-            else:
-                self._counts[diff_type] = 1
-
         self._recompute_counts()
-
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
 
@@ -639,7 +626,23 @@ class CutSummary(QtCore.QObject):
                 self._counts[new_type] += 1
             else:
                 self._counts[new_type] = 1
+
+        if(old_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
+            new_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
+            self._total_count += 1
+        elif(old_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
+            new_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
+            self._total_count += 1
         self.totals_changed.emit()
+
+    @property
+    def total_count(self):
+        """
+        Return the total number of entries
+
+        :returns: An integer
+        """
+        return self._total_count
 
     @property
     def rescans_count(self):
@@ -647,7 +650,7 @@ class CutSummary(QtCore.QObject):
         Return the number of entries needing a rescan
         :returns: An integer
         """
-        return self._rescans_count
+        return self._counts.get(_DIFF_TYPES.RESCAN, 0)
 
     @property
     def repeated_count(self):
@@ -703,8 +706,9 @@ class CutSummary(QtCore.QObject):
         Recompute internal counts from Cut differences
         """
         self._counts = {}
-        for k, v in self._cut_diffs.iteritems():
-            _, _, _, _, _, _, shot_diff_type = v.get_shot_values()
+        self._total_count = 0
+        for shot, diff_list in self._cut_diffs.iteritems():
+            _, _, _, _, _, _, shot_diff_type = diff_list.get_shot_values()
             if shot_diff_type in [
                 _DIFF_TYPES.NEW,
                 _DIFF_TYPES.OMITTED,
@@ -716,9 +720,12 @@ class CutSummary(QtCore.QObject):
                     self._counts[shot_diff_type] += 1
                 else:
                     self._counts[shot_diff_type] = 1
+                # We don't want to include omitted entries in our total
+                if shot_diff_type != _DIFF_TYPES.OMITTED:
+                    self._total_count += 1
             else:
                 # We count others per entries
-                for cut_diff in v:
+                for cut_diff in diff_list:
                     # We don't use cut_diff.interpreted_type here, as it will
                     # loop over all siblings, repeated shots cases are handled
                     # with the shot_diff_type
@@ -727,10 +734,10 @@ class CutSummary(QtCore.QObject):
                         self._counts[diff_type] += 1
                     else:
                         self._counts[diff_type] = 1
-        # Legacy thing : rescan count was once not handled with a diff type
-        # so keep updating it until all references to it is removed from the
-        # code
-        self._rescans_count = self._counts.get(_DIFF_TYPES.RESCAN, 0)
+                    # We don't want to include omitted entries in our total
+                    if cut_diff.diff_type not in [
+                        _DIFF_TYPES.OMITTED_IN_CUT, _DIFF_TYPES.OMITTED]:
+                        self._total_count += 1
         self._logger.debug(str(self._counts))
         self.totals_changed.emit()
 

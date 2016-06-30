@@ -1088,6 +1088,10 @@ class AppDialog(QtGui.QWidget):
         Set labels on top views selectors in Cut summary view, from the current
         cut summary
         """
+        # Here we are taking a shortcut and accessing values directly from some
+        # data owned by another thread. But, we are only reading pre-computed
+        # int values, so it should be alright. If not, those values should be
+        # emitted in the signal, so real data access is not needed
         summary = self._processor.summary
         self.ui.new_select_button.setText("New : %d" % summary.count_for_type(_DIFF_TYPES.NEW))
         self.ui.cut_change_select_button.setText(
@@ -1097,7 +1101,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reinstated_select_button.setText(
             "Reinstated : %d" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
         self.ui.rescan_select_button.setText("Rescan Needed : %d" % summary.rescans_count)
-        self.ui.total_button.setText("Total : %d" % len(summary))
+        self.ui.total_button.setText("Total : %d" % summary.total_count)
 
     def clear_entities_view(self):
         """
