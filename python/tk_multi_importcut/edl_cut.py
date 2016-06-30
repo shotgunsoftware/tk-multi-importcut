@@ -1025,6 +1025,18 @@ class EdlCut(QtCore.QObject):
         tc_end = self._summary.timecode_end
         if tc_end is not None:
             tc_end = str(tc_end)
+        # Get a revision number for this Cut, look for Cuts with the same name
+        # linked to the same Entity
+        sg_previous_cut = self._sg.find_one(
+            "Cut",
+            [["entity", "is", self._sg_entity], ["code", "is", title]],
+            ["revision_number"],
+            order=[{"field_name": "revision_number", "direction": "desc"}]
+        )
+        revision_number = 1
+        if sg_previous_cut and sg_previous_cut["revision_number"]:
+            revision_number = sg_previous_cut["revision_number"]+1
+
         cut_payload = {
             "project"             : self._project,
             "code"                : title,
@@ -1036,7 +1048,7 @@ class EdlCut(QtCore.QObject):
             "timecode_start_text" : tc_start,
             "timecode_end_text"   : tc_end,
             "duration"            : self._summary.duration,
-            "revision_number"     : self._revision_num,
+            "revision_number"     : revision_number,
         }
         # Upload base layer media file to the new Cut record if it exists.
         if self._mov_file_path:
@@ -1243,17 +1255,31 @@ class EdlCut(QtCore.QObject):
                             max_tail_out,
                         )
                     )
+                    # Smart fields do not behave as expected, this value must be
+                    # set before other cut values to get the right effetc
+                    if self._use_smart_fields:
+                        sg_batch_data.append({
+                            "request_type": "update",
+                            "entity_type": "Shot",
+                            "entity_id": sg_shot["id"],
+                            "data": { "smart_head_duration": min_cut_in -  min_head_in + 1}
+                        })
                     sg_batch_data.append({
                         "request_type": "update",
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
                         "data": data
                     })
+
         if sg_batch_data:
             res = self._sg.batch(sg_batch_data)
             self._logger.info("Created/Updated %d shot(s)." % len(res))
             # Update cut_diffs with the new shots
             for sg_shot in res:
+                # Skip entries without a "code" key coming from the smart fields
+                # workaround
+                if "code" not in sg_shot:
+                    continue
                 shot_name = sg_shot["code"].lower()
                 if shot_name not in self._summary:
                     raise RuntimeError(
