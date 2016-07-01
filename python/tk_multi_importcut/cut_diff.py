@@ -162,6 +162,22 @@ class CutDiff(QtCore.QObject):
         """
         Read timecode to frame mapping user settings and store them at the class
         level.
+        
+        Three mapping modes are available, which are only relevant for first 
+        imports:
+        - Automatic: On first import, the timecode in is mapped to the Shot head in.
+        - Absolute: On first import, timecode in is converted to an absolute frame
+                    number.
+        - Relative: On first import, timecode in is converted to an arbitrary frame
+                    number specified through settings.
+
+        Subsequent imports for all modes compute an offset between the previous 
+        timecode in and the new one, and apply this offset to the previous cut
+        in value to compute the new cut in. This allows to change the mapping mode
+        without affecting existing imported Cuts. Users have the ability to import
+        Cuts without comparing to an existing one, which acts as an initial import.
+        So, if needed, they can change the mapping mode by just ignoring previous
+        imports.
         """
         user_settings = sgtk.platform.current_bundle().user_settings
         timecode_to_frame_mapping = user_settings.retrieve("timecode_to_frame_mapping")
