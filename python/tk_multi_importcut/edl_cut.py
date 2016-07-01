@@ -1135,21 +1135,20 @@ class EdlCut(QtCore.QObject):
         else:
             self._logger.info("Creating new shots ...")
         sg_batch_data = []
-        if self._use_smart_fields:
-            post_create = {}
+        post_create = {}
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
             # Retrieve values for the shot, and the shot itself
             (sg_shot,
-             min_cut_order,
-             min_head_in,
-             min_cut_in,
-             max_cut_out,
-             max_tail_out,
-             shot_diff_type) = items.get_shot_values()
+            min_cut_order,
+            min_head_in,
+            min_cut_in,
+            max_cut_out,
+            max_tail_out,
+            shot_diff_type) = items.get_shot_values()
             self._logger.debug("Shot values for %s are %s" % (
                 shot_name,
-                str((min_cut_order,
+                str(( min_cut_order,
                     min_head_in,
                     min_cut_in,
                     max_cut_out,
@@ -1188,6 +1187,10 @@ class EdlCut(QtCore.QObject):
                         max_tail_out,
                     )
                 )
+                # Smart fields do not behave as expected, so in preparation for
+                # an update to a Shot not yet created, we store the Shot's data
+                # in a dict that will later be used to update smart field values
+                # in a specific order.
                 if self._use_smart_fields:
                     post_create[data["code"]] = data
                 sg_batch_data.append({
