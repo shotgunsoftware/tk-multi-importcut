@@ -1135,19 +1135,21 @@ class EdlCut(QtCore.QObject):
         else:
             self._logger.info("Creating new shots ...")
         sg_batch_data = []
+        if self._use_smart_fields:
+            post_create = {}
         # Loop over all shots that we need to create
         for shot_name, items in self._summary.iteritems():
             # Retrieve values for the shot, and the shot itself
             (sg_shot,
-            min_cut_order,
-            min_head_in,
-            min_cut_in,
-            max_cut_out,
-            max_tail_out,
-            shot_diff_type) = items.get_shot_values()
+             min_cut_order,
+             min_head_in,
+             min_cut_in,
+             max_cut_out,
+             max_tail_out,
+             shot_diff_type) = items.get_shot_values()
             self._logger.debug("Shot values for %s are %s" % (
                 shot_name,
-                str(( min_cut_order,
+                str((min_cut_order,
                     min_head_in,
                     min_cut_in,
                     max_cut_out,
@@ -1186,6 +1188,8 @@ class EdlCut(QtCore.QObject):
                         max_tail_out,
                     )
                 )
+                if self._use_smart_fields:
+                    post_create[data["code"]] = data
                 sg_batch_data.append({
                     "request_type": "create",
                     "entity_type": "Shot",
@@ -1293,19 +1297,20 @@ class EdlCut(QtCore.QObject):
                 # workaround
                 if "code" not in sg_shot:
                     continue
+                shot_code = sg_shot["code"]
                 # Smart fields do not behave as expected, so we gather data from
                 # the current Shot to do a deferred and staggered update; first
                 # we have to set the smart_head_duration field, and after that
                 # we update the other fields. This is inefficient but necessary
-                # and only happens when smart fields are used.
-                if self._use_smart_fields:
+                # and only happens when smart fields are used on newly created Shots.
+                if self._use_smart_fields and sg_shot["code"] in post_create:
                     sg_batch_data_update.append({
                         "request_type": "update",
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
                         "data": {
                             "smart_head_duration": (
-                                sg_shot["smart_cut_in"] - sg_shot["smart_head_in"])
+                                post_create[shot_code]["smart_cut_in"] - post_create[shot_code]["smart_head_in"])
                             }
                     })
                     sg_batch_data_update.append({
@@ -1313,13 +1318,13 @@ class EdlCut(QtCore.QObject):
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
                         "data": {
-                            "smart_head_in": sg_shot["smart_head_in"],
-                            "smart_cut_in": sg_shot["smart_cut_in"],
-                            "smart_cut_out": sg_shot["smart_cut_out"],
-                            "smart_tail_out": sg_shot["smart_tail_out"]
+                            "smart_head_in": post_create[shot_code]["smart_head_in"],
+                            "smart_cut_in": post_create[shot_code]["smart_cut_in"],
+                            "smart_cut_out": post_create[shot_code]["smart_cut_out"],
+                            "smart_tail_out": post_create[shot_code]["smart_tail_out"]
                         }
                     })
-                shot_name = sg_shot["code"].lower()
+                shot_name = shot_code.lower()
                 if shot_name not in self._summary:
                     raise RuntimeError(
                         "Created/Updated shot %s, but couldn't retrieve it in our list" %
