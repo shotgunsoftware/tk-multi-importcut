@@ -27,12 +27,12 @@ class CardWidget(QtGui.QFrame):
     # with the attached Entity
     chosen = QtCore.Signal(dict)
     # Emitted when this card wants to be selected, letting the view it is
-    # displayed in handle the selection e.g. unselecting other cards
+    # displayed in handle the selection e.g. deselecting other cards
     highlight_selected = QtCore.Signal(QtGui.QWidget)
     # A Signal to discard pending download
     discard_download = QtCore.Signal()
 
-    def __init__(self, parent, sg_entity, ui_builder, *args, **kargs):
+    def __init__(self, parent, sg_entity, ui_builder, *args, **kwargs):
         """
         Instantiates a new Card Widget.
 
@@ -41,9 +41,9 @@ class CardWidget(QtGui.QFrame):
         :param ui_builder: A callable typically retrieved from Designer generated
                            Python files
         :param args: An arbitrary list of parameters
-        :param kargs: An arbitrary dictionary of parameters
+        :param kwargs: An arbitrary dictionary of parameters
         """
-        super(CardWidget, self).__init__(parent, *args, **kargs)
+        super(CardWidget, self).__init__(parent, *args, **kwargs)
         self._thumbnail_requested = False
         self._sg_entity = sg_entity
         self._logger = get_logger()
@@ -181,7 +181,7 @@ class CardWidget(QtGui.QFrame):
     def showEvent(self, event):
         """
         Request an async thumbnail download on first expose, if a thumbnail is
-        avalaible in SG.
+        available in SG.
 
         :param event: A QEvent
         """
@@ -204,13 +204,14 @@ class CardWidget(QtGui.QFrame):
 
         event.ignore()
 
-    def closeEvent(self, evt):
+    def closeEvent(self, event):
         """
         Discards downloads when the widget is removed
-        :param evt: A QEvent
+
+        :param event: A QEvent
         """
         self.discard_download.emit()
-        evt.accept()
+        event.accept()
 
     def set_thumbnail(self, thumb_path):
         """
@@ -222,7 +223,6 @@ class CardWidget(QtGui.QFrame):
         size = self.ui.icon_label.size()
         ratio = size.width() / float(size.height())
         pixmap = QtGui.QPixmap(thumb_path)
-        qimage = QtGui.QImage()
         if pixmap.isNull():
             self._logger.debug("Null pixmap %s %d %d for %s" % (
                 thumb_path,
