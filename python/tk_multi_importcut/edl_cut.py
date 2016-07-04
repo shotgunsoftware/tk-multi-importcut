@@ -649,7 +649,7 @@ class EdlCut(QtCore.QObject):
                     for item_version in sg_cut_item_versions_list:
                         sg_cut_item_versions[item_version["id"]] = item_version
                 # We match fields that we would have retrieved with an sg.find("Version", ...)
-                # And collect a list of shots while we loop over CutItems.
+                # And collect a list of Shots while we loop over CutItems.
                 sg_known_shot_ids = set()
                 for sg_cut_item in sg_cut_items:
                     reasons = []
@@ -674,7 +674,7 @@ class EdlCut(QtCore.QObject):
                             sg_cut_item["version"]["entity.Shot.code"] = item_version["entity.Shot.code"]
                         else:
                             sg_cut_item["version"]["entity.Shot.code"] = None
-                # Retrieve details for shots linked to the CutItems
+                # Retrieve details for Shots linked to the CutItems
                 if sg_known_shot_ids:
                     sg_shots = self._sg.find(
                         "Shot",
@@ -684,7 +684,7 @@ class EdlCut(QtCore.QObject):
                     # Build a dictionary where Shot names are the keys, use the Shot id
                     # if the name is not set
                     sg_shots_dict = dict(((x["code"] or str(x["id"])).lower(), x) for x in sg_shots)
-            # Retrieve additional shots from the edits if needed
+            # Retrieve additional Shots from the edits if needed
             more_shot_names = set()
             for edit in self._edl.edits:
                 shot_name = edit.get_shot_name()
@@ -705,7 +705,7 @@ class EdlCut(QtCore.QObject):
             # of this edit by removing entries when we use them. We only need a shallow copy
             # here
             leftover_shots = [x for x in sg_shots_dict.itervalues()]
-            # Record the list of shots for completion purpose, we don't use the keys as
+            # Record the list of Shots for completion purpose, we don't use the keys as
             # they are lower cased, but the original Shot names
             EntityLineWidget.set_known_list(x["code"] for x in sg_shots_dict.itervalues() if x["code"])
 
@@ -836,7 +836,7 @@ class EdlCut(QtCore.QObject):
         they are chosen.
 
         Best matching CutItem is returned, a score is computed for each entry
-        from :
+        from:
         - Is it linked to the right shot?
         - Is it linked to the right version?
         - Is the Cut order the same?
@@ -908,7 +908,7 @@ class EdlCut(QtCore.QObject):
 
     def _get_cut_item_score(self, sg_cut_item, edit):
         """
-        Return a matching score for the given CutItem and edit, based on :
+        Return a matching score for the given CutItem and edit, based on:
         - Is the Cut order the same?
         - Is the tc in the same?
         - Is the tc out the same?
@@ -1133,21 +1133,21 @@ class EdlCut(QtCore.QObject):
 
     def update_sg_shots(self, update_shots):
         """
-        Update shots in Shotgun
+        Update Shots in Shotgun
         - Create them if needed
 
-        If update_shots is true :
+        If update_shots is true:
         - Change their status
         - Update cut in, cut out values
 
         :param update_shots: Boolean indicating whether or not Shot fields should be updated
         """
         if update_shots:
-            self._logger.info("Updating shots ...")
+            self._logger.info("Updating Shots ...")
         else:
-            self._logger.info("Creating new shots ...")
+            self._logger.info("Creating new Shots ...")
         sg_batch_data = []
-        # Loop over all shots that we need to create
+        # Loop over all Shots that we need to create
         for shot_name, items in self._summary.iteritems():
             # Retrieve values for the shot, and the Shot itself
             (sg_shot,
@@ -1176,7 +1176,7 @@ class EdlCut(QtCore.QObject):
             if shot_diff_type == _DIFF_TYPES.NO_LINK:
                 pass
             elif shot_diff_type == _DIFF_TYPES.NEW:
-                # We always create shots if needed
+                # We always create Shots if needed
                 self._logger.info("Will create Shot %s for %s" % (
                     shot_name,
                     self.entity_name
@@ -1202,7 +1202,7 @@ class EdlCut(QtCore.QObject):
                     "entity_type": "Shot",
                     "data": data
                 })
-            # We only update shots if asked to do so
+            # We only update Shots if asked to do so
             elif update_shots:
                 if shot_diff_type == _DIFF_TYPES.OMITTED:
                     # Add code in the update so it will be returned with batch results.
@@ -1278,7 +1278,7 @@ class EdlCut(QtCore.QObject):
         if sg_batch_data:
             res = self._sg.batch(sg_batch_data)
             self._logger.info("Created/Updated %d shot(s)." % len(res))
-            # Update cut_diffs with the new shots
+            # Update cut_diffs with the new Shots
             for sg_shot in res:
                 shot_name = sg_shot["code"].lower()
                 if shot_name not in self._summary:
@@ -1326,7 +1326,7 @@ class EdlCut(QtCore.QObject):
             res = self._sg.batch(sg_batch_data)
             self._logger.info("Created %d new versions." % len(res))
             for shot_name, items in self._summary.iteritems():
-                # Versions with same names are shared for repeated shots
+                # Versions with same names are shared for repeated Shots
                 sg_versions = {}
                 for cut_diff in items:
                     edit = cut_diff.edit
