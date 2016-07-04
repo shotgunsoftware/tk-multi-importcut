@@ -103,6 +103,7 @@ class EdlCut(QtCore.QObject):
     def __init__(self, frame_rate=None):
         """
         Instantiate a new empty worker, with the given explicit frame rate
+
         :param frame_rate: A float or None
         """
         super(EdlCut, self).__init__()
@@ -160,6 +161,7 @@ class EdlCut(QtCore.QObject):
     def entity_type_name(self):
         """
         Return a nice name for the attached SG Entity's type
+
         :returns: A string or None
         """
         if not self._sg_entity:
@@ -173,6 +175,7 @@ class EdlCut(QtCore.QObject):
     def has_valid_edl(self):
         """
         Return True if a valid EDL file was loaded
+
         :returns: A boolean
         """
         return bool(self._edl)
@@ -181,6 +184,7 @@ class EdlCut(QtCore.QObject):
     def has_valid_movie(self):
         """
         Return True if a valid movie file was retrieved
+
         :returns: A boolean
         """
         return bool(self._mov_file_path)
@@ -508,6 +512,7 @@ class EdlCut(QtCore.QObject):
     def retrieve_cuts(self, sg_entity):
         """
         Retrieve all Cuts for the given Shotgun Entity
+
         :param sg_entity: A Shotgun Entity dictionary, typically a Sequence
         """
         self._sg_entity = sg_entity
@@ -1345,6 +1350,7 @@ class EdlCut(QtCore.QObject):
     def create_sg_cut_items(self, sg_cut):
         """
         Create the CutItems in Shotgun, linked to the given Cut
+
         :param sg_cut: A SG Cut dictionary
         """
         # Loop through all edits and create CutItems for them
