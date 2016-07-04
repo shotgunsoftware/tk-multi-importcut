@@ -647,7 +647,7 @@ class CutDiff(QtCore.QObject):
         """
         if self.cut_in is None or self.shot_head_in is None:
             return None
-        # shot head_out would be cut_in -1, so head_duration would be:
+        # Shot head_out would be cut_in -1, so head_duration would be:
         # cut_in -1 - head_in + 1, we use a simplified formula below
         return self.cut_in - self.shot_head_in
 
