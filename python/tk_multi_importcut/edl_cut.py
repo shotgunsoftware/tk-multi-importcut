@@ -737,7 +737,7 @@ class EdlCut(QtCore.QObject):
                 shot_name = edit.get_shot_name()
                 if not shot_name:
                     # If we don't have a Shot name, we can't match anything
-                    cut_diff = self._summary.add_cut_diff(
+                    self._summary.add_cut_diff(
                         None,
                         sg_shot=None,
                         edit=edit,
@@ -759,7 +759,7 @@ class EdlCut(QtCore.QObject):
                             edit.get_sg_version(),
                             edit
                         )
-                        cut_diff = self._summary.add_cut_diff(
+                        self._summary.add_cut_diff(
                             shot_name,
                             sg_shot=existing[0].sg_shot,
                             edit=edit,
@@ -781,23 +781,24 @@ class EdlCut(QtCore.QObject):
                                 edit.get_sg_version(),
                                 edit,
                             )
-                        cut_diff = self._summary.add_cut_diff(
+                        self._summary.add_cut_diff(
                             shot_name,
                             sg_shot=matching_shot,
                             edit=edit,
                             sg_cut_item=matching_cut_item
                         )
 
-            # Process CutItems left over
+            # Process CutItems left over, they are all the CutItems which were
+            # not matched to an edit event in the loaded EDL.
             for sg_cut_item in sg_cut_items:
                 # If not compliant to what we expect, just ignore it
-                if(sg_cut_item["shot"] and sg_cut_item["shot"]["id"] and
+                if (sg_cut_item["shot"] and sg_cut_item["shot"]["id"] and
                     sg_cut_item["shot"]["type"] == "Shot"):
                         shot_name = "No Link"
                         matching_shot = None
                         for sg_shot in sg_shots_dict.itervalues():
                             if sg_shot["id"] == sg_cut_item["shot"]["id"]:
-                                # yes we do
+                                # We found a matching Shot
                                 self._logger.debug("Found matching existing Shot %s" %
                                                    shot_name)
                                 shot_name = sg_shot["code"]
@@ -806,25 +807,18 @@ class EdlCut(QtCore.QObject):
                                 if sg_shot in leftover_shots:
                                     leftover_shots.remove(sg_shot)
                                 break
-                        cut_diff = self._summary.add_cut_diff(
+                        self._summary.add_cut_diff(
                             shot_name,
                             sg_shot=matching_shot,
                             edit=None,
                             sg_cut_item=sg_cut_item
                         )
 
-            # Now process all sg shots that are leftover
-            for sg_shot in leftover_shots:
-                # Don't show omitted shots which are not in this Cut
-                if sg_shot["sg_status_list"] not in self._reinstate_statuses:
-                    # In theory we shouldn't have any leftover CutItems...
-                    matching_cut_item = self.sg_cut_item_for_shot(sg_cut_items, sg_shot)
-                    cut_diff = self._summary.add_cut_diff(
-                        sg_shot["code"],
-                        sg_shot=sg_shot,
-                        edit=None,
-                        sg_cut_item=matching_cut_item
-                    )
+            if leftover_shots:
+                # This shouldn't happen, as our list of Shots comes from edits
+                # and CutItems, and we should have processed all of them. Issue
+                # a warning if it is the case.
+                self._logger.warning("Found %s left over Shots..." % leftover_shots)
 
             self._logger.info("Retrieved %d Cut differences." % len(self._summary))
             self.step_done.emit(_CUT_STEP)
@@ -859,7 +853,7 @@ class EdlCut(QtCore.QObject):
         potential_matches = []
         for sg_cut_item in sg_cut_items:
             # Is it linked to the given Shot ?
-            if( sg_cut_item["shot"] and sg_shot and
+            if (sg_cut_item["shot"] and sg_shot and
                 sg_cut_item["shot"]["id"] == sg_shot["id"] and
                 sg_cut_item["shot"]["type"] == sg_shot["type"]):
                         # We can have multiple CutItems for the same Shot
@@ -889,7 +883,7 @@ class EdlCut(QtCore.QObject):
                                         ))
                         else:
                             # Will keep looking around but we keep a reference to
-                            # CutItem linked to the same Shot
+                            # CutItem since it is linked to the same Shot
                             # give score a little bonus as we didn't have any explicit
                             # mismatch
                             potential_matches.append((
@@ -897,7 +891,7 @@ class EdlCut(QtCore.QObject):
                                 100 + self._get_cut_item_score(sg_cut_item, edit)
                                 ))
             else:
-                self._logger.debug("Rejecting %s for %s" % ( sg_cut_item, edit))
+                self._logger.debug("Rejecting %s for %s" % (sg_cut_item, edit))
         if potential_matches:
             potential_matches.sort(key=lambda x: x[1], reverse=True)
             for pm in potential_matches:
@@ -906,8 +900,9 @@ class EdlCut(QtCore.QObject):
                 ))
             # Return just the CutItem, not including the score
             best = potential_matches[0][0]
-            sg_cut_items.remove(best)  # Prevent this one to be used multiple times
-            self._logger.debug("Best is %s for %s" % ( best, edit))
+            # Prevent this one to be matched multiple times
+            sg_cut_items.remove(best)
+            self._logger.debug("Best is %s for %s" % (best, edit))
             return best
         return None
 
@@ -918,7 +913,7 @@ class EdlCut(QtCore.QObject):
         - Is the tc in the same?
         - Is the tc out the same?
 
-        So the best score is 3 if all matches
+        So the best score is 3 if all of them match
 
         :param sg_cut_item: a CutItem instance
         :param edit: An EditEvent instance
@@ -927,7 +922,7 @@ class EdlCut(QtCore.QObject):
         if not edit:
             return 0
         score = 0
-        # Compute the Cut order difference
+        # Compute the Cut order difference (edit.id is the Cut order in an EDL)
         diff = edit.id - sg_cut_item["cut_order"]
         if diff == 0:
             score += 1
@@ -941,9 +936,9 @@ class EdlCut(QtCore.QObject):
                                     sg_cut_item["timecode_cut_item_out_text"],
                                     sg_cut_item["cut.Cut.fps"]
                                 ).to_frame()
-
         if diff == 0:
             score += 1
+
         return score
 
     @QtCore.Slot(str, dict, dict, str, bool)
@@ -971,10 +966,10 @@ class EdlCut(QtCore.QObject):
             self._sg_new_cut = self.create_sg_cut(title, description)
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
-            # When testing this app it might be time consuming to create
-            # all needed Versions in SG. If the following line is un-commented
-            # it will create missing Versions for you, which can be handy for
-            # testing
+            # When testing this app it is time consuming to create
+            # all required Versions in SG. Uncomment the following line to
+            # create missing Versions automatically for you, which can be
+            # handy for testing.
             # self._create_missing_sg_versions()
             self.progress_changed.emit(2)
             self.create_sg_cut_items(self._sg_new_cut)
@@ -1011,11 +1006,12 @@ class EdlCut(QtCore.QObject):
             self._sg_entity["id"],
         )]
         if sg_links:
-            url_links += ["%s/detail/%s/%s" % (
-                self._app.shotgun.base_url,
-                sg_link["type"],
-                sg_link["id"],
-            ) for sg_link in sg_links]
+            for sg_link in sg_links:
+                url_links.append("%s/detail/%s/%s" % (
+                    self._app.shotgun.base_url,
+                    sg_link["type"],
+                    sg_link["id"],
+                )
         subject, body = summary.get_report(title, url_links)
         contents = "%s\n%s" % (description, body)
         data = {
@@ -1045,8 +1041,9 @@ class EdlCut(QtCore.QObject):
         # Create a new Cut
         self._logger.info("Creating Cut %s ..." % title)
         # If start and end timecodes are not defined, we keep them as is,
-        # so no value will be set when creating the Cut. We convert them
-        # to string otherwise
+        # so no value will be set when creating the Cut, avoiding to get a 'None'
+        # string from str(None).
+        # We convert them to string otherwise.
         tc_start = self._summary.timecode_start
         if tc_start is not None:
             tc_start = str(tc_start)
@@ -1100,8 +1097,10 @@ class EdlCut(QtCore.QObject):
             ["id", "code"])
         # Upload edl file to the new Cut record.
         self._sg.upload(
-            sg_cut["type"], sg_cut["id"],
-            self._edl_file_path, "attachments"
+            sg_cut["type"],
+            sg_cut["id"],
+            self._edl_file_path,
+            "attachments"
         )
         return sg_cut
 
@@ -1141,7 +1140,7 @@ class EdlCut(QtCore.QObject):
         - Change their status
         - Update cut in, cut out values
 
-        :param update_shots: Whether or not Shot fields should be updated
+        :param update_shots: Boolean indicating whether or not Shot fields should be updated
         """
         if update_shots:
             self._logger.info("Updating shots ...")
@@ -1152,26 +1151,25 @@ class EdlCut(QtCore.QObject):
         for shot_name, items in self._summary.iteritems():
             # Retrieve values for the shot, and the Shot itself
             (sg_shot,
-            min_cut_order,
-            min_head_in,
-            min_cut_in,
-            max_cut_out,
-            max_tail_out,
-            shot_diff_type) = items.get_shot_values()
+             min_cut_order,
+             min_head_in,
+             min_cut_in,
+             max_cut_out,
+             max_tail_out,
+             shot_diff_type) = items.get_shot_values()
             self._logger.debug("Shot values for %s are %s" % (
                 shot_name,
-                str(( min_cut_order,
-                    min_head_in,
-                    min_cut_in,
-                    max_cut_out,
-                    max_tail_out,
-                    shot_diff_type)),
+                str((min_cut_order,
+                     min_head_in,
+                     min_cut_in,
+                     max_cut_out,
+                     max_tail_out,
+                     shot_diff_type)),
             ))
-            # Cut diff types should be the same for all repeated entries, except may be for
-            # rescan / Cut change, but we do the same thing in both cases, so it does not
-            # matter, head in and tail out values can be evaluated on any repeated Shot
-            # entry
-            # so arbitrarily use the first entry
+            # Cut diff types should be the same for all repeated entries except maybe for
+            # rescan / cut changes. However, we do the same thing in both cases, so it doesn't
+            # matter. Head in and tail out values can be evaluated on any repeated Shot
+            # entry so we arbitrarily use the first entry
             cut_diff = items[0]
 
             # Skip entries where the Shot name couldn't be retrieved
@@ -1256,8 +1254,8 @@ class EdlCut(QtCore.QObject):
                     })
                 else:
                     # Cut change or rescan or no change.
-                    # Add code and status in the update so it will be
-                    # returned with batch results.
+                    # Add code and status in the update so it will be returned
+                    # with batch results.
                     data = {
                         "code": sg_shot["code"],
                         "sg_status_list": sg_shot["sg_status_list"],
@@ -1318,7 +1316,6 @@ class EdlCut(QtCore.QObject):
                                 "entity": cut_diff.sg_shot,
                                 "updated_by": self._ctx.user,
                                 "created_by": self._ctx.user,
-                                "entity": cut_diff.sg_shot,
                             },
                             "return_fields": [
                                 "entity.Shot.code",
