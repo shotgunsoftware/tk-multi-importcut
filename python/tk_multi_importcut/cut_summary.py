@@ -576,7 +576,7 @@ class CutSummary(QtCore.QObject):
                     cut_diff.set_sg_shot(existing_unlinked_shot)
             self._logger.debug("Creating single entry for new shot key %s" % new_shot_key)
             self._cut_diffs[new_shot_key] = ShotCutDiffList(cut_diff)
-        cut_diff.check_changes()
+        cut_diff.check_and_set_changes()
         self._recompute_counts()
 
     @QtCore.Slot(CutDiff, int, int)

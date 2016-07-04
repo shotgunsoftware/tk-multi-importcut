@@ -1016,7 +1016,7 @@ class EdlCut(QtCore.QObject):
                     self._app.shotgun.base_url,
                     sg_link["type"],
                     sg_link["id"],
-                )
+                ))
         subject, body = summary.get_report(title, url_links)
         contents = "%s\n%s" % (description, body)
         data = {
