@@ -8,10 +8,6 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-# by importing QT from sgtk rather than directly, we ensure that
-# the code will be compatible with both PySide and PyQt.
-from sgtk.platform.qt import QtCore, QtGui
-
 from .ui.cut_card import Ui_CutCard
 from .constants import _COLORS, _STATUS_COLORS
 from .card_widget import CardWidget
@@ -23,7 +19,7 @@ class CutCard(CardWidget):
     """
     def __init__(self, parent, sg_cut):
         """
-        Instantiate a new CutCard for the given Shotgun cut
+        Instantiate a new CutCard for the given Shotgun Cut
 
         :param parent: A parent QWidget
         :param sg_cut: A Shotgun cut, as a dictionary, to display
@@ -48,7 +44,6 @@ class CutCard(CardWidget):
             self.ui.status_label.setText(self.sg_cut["sg_status_list"])
 
         self.ui.date_label.setText(self.sg_cut["created_at"].strftime("%m/%d/%y %I:%M %p"))
-        # self.ui.details_label.setText("<small>%s</small>" % self.sg_cut["description"])
         if self.sg_cut["description"]:
             self.setToolTip(self.sg_cut["description"])
         self.ui.details_label.setVisible(False)
