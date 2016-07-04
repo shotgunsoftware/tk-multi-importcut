@@ -21,8 +21,8 @@ from .logger import get_logger
 class CreateEntityDialog(QtGui.QDialog):
     """
     This dialog is available by clicking the "New [Entity]" button on the select
-    entities page. A user can enter an entity name with description, on submit
-    the entity is create and the stacked widget moves to the next page.
+    entities page. A user can enter an entity name with a description. On submit
+    the entity is created and the stacked widget moves to the next page.
     """
     create_entity = QtCore.Signal(str, dict)
 
