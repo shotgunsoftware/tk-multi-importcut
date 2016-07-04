@@ -1,4 +1,3 @@
-
 # Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
@@ -164,6 +163,7 @@ class CutDiff(QtCore.QObject):
     def get_diff_type_label(cls, diff_type):
         """
         Return a display name for the given cut diff type
+
         :param diff_type: A _DIFF_TYPES entry
         """
         return _DIFF_LABELS[diff_type]
@@ -211,6 +211,7 @@ class CutDiff(QtCore.QObject):
     def sg_shot(self):
         """
         Return the Shotgun Shot for this diff, if any
+
         :returns: A SG Shot dictionary or None
         """
         return self._sg_shot
@@ -218,6 +219,7 @@ class CutDiff(QtCore.QObject):
     def set_sg_shot(self, sg_shot):
         """
         Set the SG Shot associated with this CutDiff
+
         :param sg_shot: A SG Shot dictionary, or None
         """
         self._sg_shot = sg_shot
@@ -226,6 +228,7 @@ class CutDiff(QtCore.QObject):
     def sg_cut_item(self):
         """
         Return the Shotgun CutItem for this diff, if any
+
         :returns: A SG CutItem dictionary or None
         """
         return self._sg_cut_item
@@ -233,6 +236,7 @@ class CutDiff(QtCore.QObject):
     def set_sg_cut_item(self, sg_cut_item):
         """
         Set the SG CutItem for this CutDiff
+
         :param sg_cut_item: A SG CutItem dictionary or None
         """
         self._sg_cut_item = sg_cut_item
@@ -241,6 +245,7 @@ class CutDiff(QtCore.QObject):
     def edit(self):
         """
         Return the EditEntry for this diff, if any
+
         :returns: An EditEvent or None
         """
         return self._edit
@@ -249,6 +254,7 @@ class CutDiff(QtCore.QObject):
     def name(self):
         """
         Return the name of this diff
+
         :returns: A string
         """
         return self._name
@@ -257,6 +263,7 @@ class CutDiff(QtCore.QObject):
     def is_name_editable(self):
         """
         Return True if the name for this instance can be changed
+
         :returns: True if the name is editable, False otherwise
         """
         # We can only change names coming from an edit entry
@@ -270,6 +277,7 @@ class CutDiff(QtCore.QObject):
     def set_name(self, name):
         """
         Set a new name for this cut diff
+
         :param name: A string
         :raises: RuntimeError if the name is not editable
         """
@@ -290,6 +298,7 @@ class CutDiff(QtCore.QObject):
         """
         Return the Version name for this diff, if any. The Version name can come
         from a linked Version, or from a name extracted from the EDL edit
+
         :returns: A string or None
         """
         if self._sg_version:
@@ -302,6 +311,7 @@ class CutDiff(QtCore.QObject):
     def sg_version(self):
         """
         Return the Shotgun Version for this diff, if any
+
         :returns: A SG Version dictionary or None
         """
         return self._sg_version
@@ -309,6 +319,7 @@ class CutDiff(QtCore.QObject):
     def set_sg_version(self, sg_version):
         """
         Set the Shotgun Version associated with this diff
+
         :param sg_version: A SG Version, as a dictionary
         """
         self._sg_version = sg_version
@@ -362,6 +373,7 @@ class CutDiff(QtCore.QObject):
     def new_head_in(self):
         """
         Return the new head in value
+
         :returns: An integer
         """
         # Special case if we are dealing with a repeated Shot
@@ -395,6 +407,7 @@ class CutDiff(QtCore.QObject):
     def new_tail_out(self):
         """
         Return the new tail out value
+
         :returns: An integer
         """
         nt = self.shot_tail_out
@@ -729,7 +742,8 @@ class CutDiff(QtCore.QObject):
     def diff_type(self):
         """
         Return the CutDiff type of this cut difference
-        :returns: An _DIFF_TYPES
+
+        :returns: A _DIFF_TYPES
         """
         return self._diff_type
 
@@ -737,6 +751,7 @@ class CutDiff(QtCore.QObject):
     def diff_type_label(self):
         """
         Return a display string for the CutDiff type of this cut difference
+
         :returns: A string
         """
         return self.get_diff_type_label(self._diff_type)
@@ -757,6 +772,7 @@ class CutDiff(QtCore.QObject):
     def need_rescan(self):
         """
         Return True if this cut change implies a rescan
+
         :returns: True if a rescan is needed, False otherwise
         """
         return self._diff_type == _DIFF_TYPES.RESCAN
@@ -766,6 +782,7 @@ class CutDiff(QtCore.QObject):
         """
         Return true if the associated Shot appears more than once in the
         cut summary
+
         :returns: True if the Shot is repeated, False otherwise
         """
         # We use an explicit flag for repeated Shots and don't rely
@@ -780,6 +797,7 @@ class CutDiff(QtCore.QObject):
     def is_vfx_shot(self):
         """
         Return True if this item is linked to a VFX Shot
+
         :returns: True if a Vfx Shot, False otherwise
         """
         # Non vfx Shots are not handled in SG by our current clients so, for the
@@ -798,6 +816,7 @@ class CutDiff(QtCore.QObject):
     def set_siblings(self, siblings):
         """
         Set our list of siblings, which is other entries for the same Shot
+
         :param siblings: a ShotCutDiffList or None
         """
         self._siblings = siblings
@@ -806,6 +825,7 @@ class CutDiff(QtCore.QObject):
         """
         Return True if this CutDiff is the earliest in repeated shots.
         If the Shot is not repeated, this entry is the earliest.
+
         :returns: True of False
         """
         if not self._siblings:
@@ -944,6 +964,7 @@ class CutDiff(QtCore.QObject):
     def set_repeated(self, repeated):
         """
         Set this cut difference as repeated
+
         :param repeated: A boolean
         """
         # This is set explicitly by the cut summary, so we have a chance to
@@ -962,6 +983,7 @@ class CutDiff(QtCore.QObject):
         """
         Return a summary for this CutDiff instance as a tuple with :
          Shot details, Cut item details, Version details and Edit details
+
         :returns: A four entries tuple, where each entry is a potentially empty string
         """
         shot_details = ""
