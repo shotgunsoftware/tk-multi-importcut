@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_settings_dialog(object):
     def setupUi(self, settings_dialog):
         settings_dialog.setObjectName("settings_dialog")
-        settings_dialog.resize(530, 373)
+        settings_dialog.resize(530, 426)
         self.verticalLayout_2 = QtGui.QVBoxLayout(settings_dialog)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.verticalLayout_7 = QtGui.QVBoxLayout()
@@ -171,7 +171,6 @@ class Ui_settings_dialog(object):
         self.horizontalLayout_5.addWidget(self.use_smart_fields_label)
         self.use_smart_fields_checkbox = QtGui.QCheckBox(self.general_tab)
         self.use_smart_fields_checkbox.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.use_smart_fields_checkbox.setStyleSheet("background-color: transparent")
         self.use_smart_fields_checkbox.setText("")
         self.use_smart_fields_checkbox.setObjectName("use_smart_fields_checkbox")
         self.horizontalLayout_5.addWidget(self.use_smart_fields_checkbox)

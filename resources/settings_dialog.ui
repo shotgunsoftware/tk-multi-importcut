@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>530</width>
-    <height>373</height>
+    <height>426</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -369,9 +369,6 @@
           <widget class="QCheckBox" name="use_smart_fields_checkbox">
            <property name="layoutDirection">
             <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">background-color: transparent</string>
            </property>
            <property name="text">
             <string/>
