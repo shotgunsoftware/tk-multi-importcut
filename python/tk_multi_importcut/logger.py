@@ -19,8 +19,7 @@ def get_logger():
     """
     logger_parts = __name__.split(".")
     if len(logger_parts) > 1:
-        # Remove the last part which should be this file
-        # name
+        # Remove the last part which should be this file name
         logger_name = ".".join(logger_parts[:-1])
     else:
         logger_name = logger_parts[0]
@@ -29,13 +28,13 @@ def get_logger():
 
 class ShortNameFilter(logging.Filter):
     """
-    A logging filter which add a short_name and a base_name to records,
+    A logging filter which adds a short_name and a base_name to records,
     which can be used in formatting string, e.g. "%(short_name)s %(msg)s"
 
-    The short_name strip the two first parts in the logger path, allowing
+    The short_name strips the two first parts of the logger path, allowing
     to not print the <uuid>.<app name> part in logs.
 
-    The base_name is the last part in the splitted path
+    The base_name is the last part in the split path
     """
 
     def __init__(self, name=""):
@@ -44,6 +43,8 @@ class ShortNameFilter(logging.Filter):
     def filter(self, record):
         """
         Filter the given record, adding short_name and base_name properties.
+
+        :param record: A standard logging record
         :return: True
         """
         record.short_name = ""
@@ -76,7 +77,7 @@ class BundleLogHandler(logging.StreamHandler):
 
     def __init__(self, bundle, *args, **kwargs):
         """
-        Instantiante a new handler for the given bundle
+        Instantiate a new handler for the given bundle
 
         :param framework: A Toolkit Bundle
         :param args: Arbitrary list of parameters used in base class init
@@ -111,6 +112,8 @@ class BundleLogHandler(logging.StreamHandler):
 
         :param record: A standard logging record
         """
+        # Emit one of our signals, depending on if we have a traceback or not, so
+        # listeners can log or display the message
         if record.exc_info is not None:
             self.new_error_with_exc_info.emit(
                 record.getMessage(),
@@ -119,11 +122,12 @@ class BundleLogHandler(logging.StreamHandler):
             return
         self.new_message.emit(record.levelno, record.getMessage())
         if self._bundle:
-            # Special cases for tk-shotgun and tk-desktop :
+            # Dispatch message to standard TK log_xxxx methods, except when the
+            # current engine is tk-shotgun or tk-desktop:
             # - tk-shotgun : messages are displayed in a pop up window after
             #                the app is closed, which is confusing
-            # - tk-desktop : messages are send through a pipe to desktop server
-            #                and logged into tk-desktop logs. We have our own
+            # - tk-desktop : messages are sent through a pipe to the desktop server
+            #                and are logged in the tk-desktop log. We have our own
             #                logging file and sometimes tk-desktop will hang when
             #                writing data, so don't log anything
             engine_name = sgtk.platform.current_engine().name

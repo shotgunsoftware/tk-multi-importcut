@@ -8,9 +8,6 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-# by importing QT from sgtk rather than directly, we ensure that
-# the code will be compatible with both PySide and PyQt.
-from sgtk.platform.qt import QtCore, QtGui
 from .ui.entity_card import Ui_EntityCard
 from .constants import _COLORS, _STATUS_COLORS
 from .card_widget import CardWidget
@@ -48,7 +45,8 @@ class EntityCard(CardWidget):
 
         :returns: A Shotgun status
         """
-        # Deal with status field not being consistent in SG
+        # Some entity types (like Project) have a non-standard status
+        # field name
         return self._sg_entity.get(
             "sg_status_list",
             self._sg_entity.get("sg_status")
@@ -61,7 +59,8 @@ class EntityCard(CardWidget):
 
         :returns: a string
         """
-        # Deal with status field not being consistent in SG
+        # Some entity types (like Project) have a non-standard description
+        # field name
         return self._sg_entity.get(
             "description",
             self._sg_entity.get("sg_description")

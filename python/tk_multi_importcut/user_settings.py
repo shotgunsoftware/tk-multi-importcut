@@ -52,7 +52,7 @@ class UserSettings(object):
     ]
 
     def __init__(self):
-        # Provice access to the instanced object.
+        # Provide access to the instanced object.
         super(UserSettings, self).__init__()
         # Provide access to the user settings fw module.
         self._disk = sgtk.platform.current_bundle().user_settings

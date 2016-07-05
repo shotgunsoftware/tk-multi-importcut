@@ -9,6 +9,8 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 # Metadata defining the behaviour and requirements for this engine
+# Please not that settings for this app are handled in the UI itself
+# and saved per user.
 
 # expected fields in the configuration file for this engine
 configuration:
@@ -22,10 +24,10 @@ requires_shotgun_fields:
 
 # More verbose description of this item 
 display_name: "Import Cut"
-description: "An app to import cut changes."
+description: "An app to import Cut changes."
 
 # Required minimum versions for this item to run
-requires_shotgun_version:
+requires_shotgun_version: v7.0.0
 requires_core_version: "v0.16.18"
 requires_engine_version:
 
