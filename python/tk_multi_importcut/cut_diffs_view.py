@@ -44,7 +44,8 @@ class CutDiffsView(QtCore.QObject):
     def info_message(self):
         """
         Returns the info message
-        :returns: A string
+
+        :returns: A the info message as a string
         """
         return self._info_message
 
@@ -53,13 +54,13 @@ class CutDiffsView(QtCore.QObject):
         """
         Called when a new cut diff card widget needs to be added to the list
         of retrieved changes
+
         :param cut_diff: A CutDiff instance for whose a widget needs to be added
         """
         self._logger.debug("Adding %s" % cut_diff.name)
         self.totals_changed.emit()
         widget = CutDiffCard(parent=None, cut_diff=cut_diff)
 
-        cut_order = widget.cut_order
         count = self._list_layout.count()
         insert_index = self._get_insert_index(widget)
         self._list_layout.insertWidget(insert_index, widget)
@@ -73,7 +74,9 @@ class CutDiffsView(QtCore.QObject):
     def _get_insert_index(self, widget):
         """
         Return the insert index for this cut diff card, based on its cut order
-        :param cut_diff: A CutDiffCard instance
+
+        :param widget: A CutDiffCard instance
+        :returns: An insert index as an integer
         """
         cut_order = widget.cut_order
         count = self._list_layout.count()
@@ -91,16 +94,17 @@ class CutDiffsView(QtCore.QObject):
                 if widget.cut_diff.diff_type == _DIFF_TYPES.OMITTED:
                     return i
                 else:
-                    return (i+1)
+                    return i+1
             elif witem.widget().cut_order > cut_order:  # Insert before next widget
                 return i
         # Insert at the end
-        return (count-1)
+        return count-1
 
     @QtCore.Slot(CutDiff)
     def delete_cut_diff(self, cut_diff):
         """
         Delete the widget associated with the given CutDiff instance
+
         :param cut_diff: A CutDiff instance
         """
         # Retrieve the widget we can delete
@@ -125,6 +129,7 @@ class CutDiffsView(QtCore.QObject):
     def display_repeated_cuts(self, checked):
         """
         Only display cut diff cards widget affecting the same shot(s)
+
         :param checked: A boolean, whether or not repeated cuts should be displayed
         """
         self._cuts_display_repeated = checked
@@ -134,6 +139,7 @@ class CutDiffsView(QtCore.QObject):
     def display_vfx_cuts(self, checked):
         """
         Only display cut diff cards for VFX shots
+
         :param checked: A boolean, whether or not non VFX cuts should be displayed
         """
         self._vfx_shots_only = checked
@@ -141,8 +147,9 @@ class CutDiffsView(QtCore.QObject):
 
     def set_display_summary_mode(self, activated, mode):
         """
-        Called when the user click on the top views selectors in the cut summary
+        Called when the user clicks on the top views selectors in the Cut summary
         page
+
         :param activated: A boolean, whether or not the selector was turned on
         :param mode: The mode which was activated
         """
@@ -157,8 +164,11 @@ class CutDiffsView(QtCore.QObject):
     def _display_for_summary_mode(self):
         """
         Hide / show CutDiff widgets depending on the current mode
+
+        Modes are DiffTypes, plus two special modes:
+        * -1: To show everything
+        * 99: To show entries which need rescan
         """
-        show_only_repeated = self._cuts_display_repeated
         show_only_vfx = self._vfx_shots_only
         count = self._list_layout.count() - 1  # We have stretcher
         match_count = 0

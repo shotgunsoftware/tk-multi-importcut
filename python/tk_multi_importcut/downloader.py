@@ -14,6 +14,7 @@
 from sgtk.platform.qt import QtCore
 import sgtk
 
+
 class DownloadThreadPool(QtCore.QThreadPool):
     """
     Thin wrapper around QThreadPool allowing to shut it down
@@ -37,6 +38,7 @@ class DownloadThreadPool(QtCore.QThreadPool):
 
 # We use a single download thread pool for all downloads
 _download_thread_pool = DownloadThreadPool()
+
 
 class DownloadRunner(QtCore.QRunnable):
     """
@@ -69,7 +71,7 @@ class DownloadRunner(QtCore.QRunnable):
         """
         Instantiate a new download runner
 
-        :param sg_attachment: Either a Shotgun URL or an attachment dictionary
+        :param sg_attachment: Either a URL or an attachment dictionary
         :param path: Full file path to save the downloaded data
         """
         super(DownloadRunner, self).__init__()
@@ -82,6 +84,7 @@ class DownloadRunner(QtCore.QRunnable):
     def get_thread_pool(cls):
         """
         Return the download thread pool used by all downloaders
+
         :returns: A QThreadPool
         """
         return _download_thread_pool
@@ -90,6 +93,7 @@ class DownloadRunner(QtCore.QRunnable):
     def file_downloaded(self):
         """
         Return the signal from the _notifier worker instance
+
         :returns: A QSignal
         """
         return self._notifier.file_downloaded
@@ -98,6 +102,7 @@ class DownloadRunner(QtCore.QRunnable):
     def abort(self):
         """
         Pass through to access the _Notifier slot
+
         :returns: A QSignal
         """
         return self._notifier.abort
@@ -120,14 +125,11 @@ class DownloadRunner(QtCore.QRunnable):
             if isinstance(self._sg_attachment, str):
                 sgtk.util.download_url(sg, self._sg_attachment, self._path)
             else:
-                # todo: test this code. But how do we create a situation
-                # where the thumbnail (is it always a thumbnail?) an
-                # attachment and not a string path to an aws bucket?
                 attachment = sg.download_attachment(
                     attachment=self._sg_attachment,
                     file_path=self._path)
             self._notifier.file_downloaded.emit(self._path)
-        except Exception, e:
+        except Exception:
             raise
         finally:
             pass

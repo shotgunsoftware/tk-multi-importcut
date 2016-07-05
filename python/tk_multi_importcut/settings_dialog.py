@@ -97,13 +97,13 @@ class SettingsDialog(QtGui.QDialog):
         The current step is not used yet, but could be later to refine our
         'restart needed' decision on some value changes
 
-        :param parent: a QWidget
-        :param step: The current app step we are at
+        :param parent: (optional) QWidget
+        :param step: (optional) current app step we are at
         """
         super(SettingsDialog, self).__init__(parent)
         self.setModal(True)
         # This is not used yet, but later we will be able to check if changes
-        # made require a restart, baser on the step we are at
+        # made require a restart, based on the step we are at
         self._step = step
         self._logger = get_logger()
         self.ui = Ui_settings_dialog()
@@ -115,8 +115,8 @@ class SettingsDialog(QtGui.QDialog):
 
         # Retrieve user settings and set UI values
         try:
-            # Setting whether or not the shot status fields are enabled
-            # and updating that if the user turns them on/off w/the checkbox.
+            # Determine whether the Shot status fields are enabled
+            # and update the setting if the user turns them on/off w/the checkbox.
             self._set_enabled(
                 self._user_settings.get("update_shot_statuses"))
             self.ui.update_shot_statuses_checkbox.setChecked(
@@ -138,7 +138,7 @@ class SettingsDialog(QtGui.QDialog):
             # and we throw an error to warn the user. This should probably happen
             # when the app launches, not only when the settings dialog is opened.
             # The reason we warn the user is: if someone deletes a status from
-            # sg that this app references, it obviously can't be used anymore, so
+            # SG that this app references, it obviously can't be used anymore, so
             # we arbitrarily choose whatever status is at 0.
             self._shot_schema = self._app.shotgun.schema_field_read("Shot")
             shot_statuses = self._shot_schema[
@@ -233,9 +233,9 @@ class SettingsDialog(QtGui.QDialog):
             # the current settings. For example, if they have the old email_groups setting
             # that was at one point a dict and is now a list. This may happen again if these
             # settings are changed in unpredictable ways and conflict with local user settings
-            # we don't have accesss to.
+            # we don't have access to.
             self._user_settings.reset()
-            self._logger.error(_CORRUPT_SETTINGS_MSG % (e))
+            self._logger.error(_CORRUPT_SETTINGS_MSG % e)
 
     @QtCore.Slot()
     def save_settings(self):
@@ -362,7 +362,7 @@ class SettingsDialog(QtGui.QDialog):
         """
         Validate user settings from current UI values.
 
-        :returns: True if all settings can be safetly saved, and None otherwise.
+        :returns: True if all settings can be safely saved, and None otherwise.
         """
 
         # General tab
@@ -390,11 +390,11 @@ class SettingsDialog(QtGui.QDialog):
 
         omit_status = self.ui.omit_status_combo_box.currentText()
         if not omit_status and update_shot_statuses:
-            raise SettingsError("%s" % ("Please select an Omit Status."))
+            raise SettingsError("Please select an Omit Status.")
 
         reinstate_status = self.ui.reinstate_status_combo_box.currentText()
         if not reinstate_status and update_shot_statuses:
-            raise SettingsError("%s" % ("Please select a Reinstate Status"))
+            raise SettingsError("Please select a Reinstate Status")
 
         statuses = self.ui.reinstate_shot_if_status_is_line_edit.text().replace(
             ", ", ",").split(",")
@@ -406,7 +406,7 @@ class SettingsDialog(QtGui.QDialog):
                 bad_statuses.append('"%s"' % status)
         if bad_statuses:
             bad_statuses = "\n".join(bad_statuses)
-            raise SettingsError(_BAD_STATUS_MSG % (bad_statuses))
+            raise SettingsError(_BAD_STATUS_MSG % bad_statuses)
 
         new_values = {
             "update_shot_statuses": update_shot_statuses,
@@ -418,14 +418,13 @@ class SettingsDialog(QtGui.QDialog):
         }
 
         # Timecode/Frames tab
-        # We have some validators or imput masks to prevent bad values to be
+        # We have some validators or input masks to prevent bad values to be
         # entered, but we still need to check for partially edited values, e.g.
         # an empty field
         if not self.ui.default_frame_rate_line_edit.hasAcceptableInput():
             raise SettingsError("Default Frame Rate must be set")
 
         default_frame_rate = self.ui.default_frame_rate_line_edit.text()
-        fps = float(default_frame_rate)
         new_values["default_frame_rate"] = default_frame_rate
 
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
@@ -455,7 +454,7 @@ class SettingsDialog(QtGui.QDialog):
         # while processing the EDL, etc. As a stop-gap, we warn the user and give them
         # the opportunity to restart the app if one of the known "non-refreshable"
         # settings has been changed (#36605).
-        if (self._user_settings.restart_needed(new_values)):
+        if self._user_settings.restart_needed(new_values):
             msg_box = QtGui.QMessageBox(
                 parent=self,
                 icon=QtGui.QMessageBox.Critical
@@ -464,7 +463,7 @@ class SettingsDialog(QtGui.QDialog):
             msg_box.setText("%s\n\n%s" % ("Settings", _CHANGED_SETTINGS_MSG))
             cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.YesRole)
             apply_button = msg_box.addButton("Apply and Quit", QtGui.QMessageBox.NoRole)
-            apply_button.clicked.connect(lambda : self._save_settings_and_close(new_values))
+            apply_button.clicked.connect(lambda: self._save_settings_and_close(new_values))
             msg_box.show()
             msg_box.raise_()
             msg_box.activateWindow()

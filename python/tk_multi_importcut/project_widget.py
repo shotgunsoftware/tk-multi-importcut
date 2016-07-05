@@ -8,14 +8,11 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-# by importing QT from sgtk rather than directly, we ensure that
-# the code will be compatible with both PySide and PyQt.
-from sgtk.platform.qt import QtCore, QtGui
-
 from .ui.project_card import Ui_ProjectCard
 
 from .constants import _COLORS, _STATUS_COLORS
 from .card_widget import CardWidget
+
 
 class ProjectCard(CardWidget):
     """
@@ -44,7 +41,7 @@ class ProjectCard(CardWidget):
     @property
     def sg_project(self):
         """
-        Returns the SG project for this card
+        Returns the SG Project for this card
 
         :returns: A Shotgun Project dictionary
         """
@@ -53,9 +50,9 @@ class ProjectCard(CardWidget):
     @property
     def project_name(self):
         """
-        Return the name of the attached project
+        Return the name of the attached Project
 
-        :returns: A string
+        :returns: A Project name as a string
         """
         return self.entity_name
 
@@ -64,18 +61,17 @@ class ProjectCard(CardWidget):
         """
         Return the status of the attached SG Project
 
-        :returns: A Shotgun Status
+        :returns: A Shotgun Status as a string
         """
         return self.sg_project.get("sg_status")
 
     @property
     def project_description(self):
         """
-        Return the description of the attached project
+        Return the description of the attached Project
 
-        :returns: A string
+        :returns: A Project description as a string
         """
-        # Deal with status field not being consistent in SG
         return self.sg_project.get("sg_description")
 
 

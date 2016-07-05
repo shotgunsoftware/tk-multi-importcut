@@ -61,6 +61,7 @@ class CutDiffCard(QtGui.QFrame):
     def __init__(self, parent, cut_diff):
         """
         Instantiate a new cut diff card for the given CutDiff instance
+
         :param parent: A parent QWidget for this widget
         :param cut_diff: A CutDiff instance
         """
@@ -81,6 +82,7 @@ class CutDiffCard(QtGui.QFrame):
         Set the given property to the given value and ensure styling
         is refreshed so the property is taken into account from the
         style sheet
+
         :param name: An arbitrary property
         :param value: An arbitrary value
         """
@@ -139,7 +141,7 @@ class CutDiffCard(QtGui.QFrame):
         reasons = ", ".join(self._cut_diff.reasons)
         if diff_type_label:
             if reasons:
-                self.ui.status_label.setText("<b>%s :</b> %s" % (diff_type_label, reasons))
+                self.ui.status_label.setText("<b>%s:</b> %s" % (diff_type_label, reasons))
             else:
                 self.ui.status_label.setText("<b>%s</b>" % diff_type_label)
         else:
@@ -202,6 +204,8 @@ class CutDiffCard(QtGui.QFrame):
     def new_thumbnail(self, path):
         """
         Called when a new thumbnail is available for this card
+
+        :param path: Full path to an image to use as thumbnail
         """
         self.set_thumbnail(path)
 
@@ -210,7 +214,7 @@ class CutDiffCard(QtGui.QFrame):
         """
         Called when the diff type changed for the CutDiff being displayed
 
-        Some parameter are ignored as we have the CutDiff instance as member
+        Some parameters are ignored as we have the CutDiff instance as a member
         of our class.
 
         :param cut_diff: A CutDiff instance
@@ -223,7 +227,7 @@ class CutDiffCard(QtGui.QFrame):
         # even if it actually didn't change. This is asynchronous so it shouldn't
         # harm to request the same thumbnail again. If it is, then sg version
         # changes should be handled in a dedicated slot and thumbnail requests
-        # issued from it
+        # issued from it.
         self.retrieve_thumbnail()
 
     @QtCore.Slot(CutDiff, int, int)
@@ -233,9 +237,10 @@ class CutDiffCard(QtGui.QFrame):
 
         Some parameter are ignored as we have the CutDiff instance as member
         of our class.
+
         :param cut_diff: A CutDiff instance
         :param old_repeated: The old repeated value for the CutDiff instance
-        :param new_type: The new repeated value for the CutDiff instance
+        :param new_repeated: The new repeated value for the CutDiff instance
         """
         self._set_ui_values()
 
@@ -243,6 +248,7 @@ class CutDiffCard(QtGui.QFrame):
     def shot_name_edited(self, value):
         """
         Called when the shot name was edited
+
         :param value: The value from the widget
         """
         if value != self._cut_diff.name:
@@ -254,6 +260,7 @@ class CutDiffCard(QtGui.QFrame):
     def cut_order(self):
         """
         Return a cut order that can be used to sort cards together
+
         :returns: An integer
         """
         if self._cut_diff.new_cut_order is not None:
@@ -266,6 +273,7 @@ class CutDiffCard(QtGui.QFrame):
     def cut_diff(self):
         """
         Return the CutDiff instance this widget is showing
+
         :returns: A CutDiff instance
         """
         return self._cut_diff
@@ -312,7 +320,7 @@ class CutDiffCard(QtGui.QFrame):
 
     def set_tool_tip(self):
         """
-        Build a toolitp displaying details about this cut difference and attach
+        Build a tooltip displaying details about this cut difference and attach
         it to the icon widget
         """
         shot_details, cut_item_details, version_details, edit_details = self._cut_diff.summary()
@@ -327,7 +335,9 @@ class CutDiffCard(QtGui.QFrame):
     def showEvent(self, event):
         """
         Request an async thumbnail download on first expose, if a thumbnail is
-        avalaible in SG.
+        available in SG.
+
+        :param event: A QEvent
         """
         if self._thumbnail_requested:
             event.ignore()
@@ -337,17 +347,20 @@ class CutDiffCard(QtGui.QFrame):
         self.retrieve_thumbnail()
         event.ignore()
 
-    def closeEvent(self, evt):
+    def closeEvent(self, event):
         """
         Discard downloads when the widget is removed
+
+        :param event: A QEvent
         """
         self.discard_download.emit()
-        evt.accept()
+        event.accept()
 
     def retrieve_thumbnail(self):
         """
-        Check if a SG version can be retrieved from the CutDiff, request an
-        asynchronous thumbnail download if it is the case
+        Asynchronously request a thumbnail download for the linked SG Version.
+        Fall back on the linked SG Shot if the Version doesn't exist or doesn't
+        have a thumbnail.
         """
         thumb_url = None
         if self._cut_diff.sg_version and self._cut_diff.sg_version.get("image"):
