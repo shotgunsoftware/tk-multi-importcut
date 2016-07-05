@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="main_layout" stretch="0,0,0,0">
    <property name="spacing">
-    <number>-1</number>
+    <number>6</number>
    </property>
    <property name="margin">
     <number>0</number>
@@ -439,8 +439,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>949</width>
+            <height>469</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="project_grid" rowstretch="0">
@@ -636,8 +636,8 @@ This screen is kept so we have a direct match between internal steps and screens
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>943</width>
+            <height>469</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -645,7 +645,7 @@ This screen is kept so we have a direct match between internal steps and screens
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0">
            <property name="spacing">
-            <number>-1</number>
+            <number>6</number>
            </property>
            <property name="margin">
             <number>0</number>
@@ -991,7 +991,7 @@ This screen is kept so we have a direct match between internal steps and screens
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0,0,0,0,0,1,0,0">
+         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0,0,0,0,0,1,0,0,0">
           <property name="spacing">
            <number>12</number>
           </property>
@@ -1202,6 +1202,19 @@ This screen is kept so we have a direct match between internal steps and screens
            </widget>
           </item>
           <item>
+           <spacer name="horizontalSpacer_11">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QPushButton" name="cut_summary_page_settings_button">
             <property name="maximumSize">
              <size>
@@ -1271,8 +1284,8 @@ This screen is kept so we have a direct match between internal steps and screens
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>98</width>
-              <height>28</height>
+              <width>943</width>
+              <height>423</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">
@@ -1590,6 +1603,9 @@ This screen is kept so we have a direct match between internal steps and screens
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0,0,0,0,0,0,0">
+     <property name="spacing">
+      <number>6</number>
+     </property>
      <property name="leftMargin">
       <number>12</number>
      </property>
