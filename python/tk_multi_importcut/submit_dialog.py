@@ -28,9 +28,9 @@ class SubmitDialog(QtGui.QDialog):
     def __init__(self, parent=None, title=None, summary=None):
         """
         Instantiate a new dialog
-        :param parent: a QWidget
-        :param title: a string, used as imported Cut name
-        :param summary: a CutSummary instance
+        :param parent: (optional) QWidget
+        :param title: (optional) string, used as imported Cut name
+        :param summary: (optional) CutSummary instance
         """
         super(SubmitDialog, self).__init__(parent)
         self.ui = Ui_submit_dialog()
