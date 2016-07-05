@@ -18,9 +18,9 @@ class ProjectsView(QtCore.QObject):
     """
     Projects view page handler, display Project cards in a grid layout
     """
-    # Emitted when a project is chosen for next step
+    # Emitted when a Project is chosen for next step
     project_chosen = QtCore.Signal(dict)
-    # Emitted when a different project is selected
+    # Emitted when a different Project is selected
     selection_changed = QtCore.Signal(dict)
     # Emitted when the info message changed
     new_info_message = QtCore.Signal(str)
@@ -28,6 +28,7 @@ class ProjectsView(QtCore.QObject):
     def __init__(self, grid_layout):
         """
         Instantiate a new Project view with the given layout
+
         :param grid_layout: A QGridLayout
         """
         super(ProjectsView, self).__init__()
@@ -38,21 +39,32 @@ class ProjectsView(QtCore.QObject):
         self._info_message = ""
 
     @property
+    def card_count(self):
+        """
+        Return the number of cards held by this view
+
+        :returns: The number of cards, as an integer
+        """
+        return self._grid_layout.count() - 1  # We have a stretcher
+
+    @property
     def info_message(self):
         """
         Returns the info message
-        :returns: A string
+
+        :returns: The info message as a string
         """
         return self._info_message
 
     @QtCore.Slot(dict)
     def new_sg_project(self, sg_project):
         """
-        Called when a new project card widget needs to be added to the list
-        of retrieved projects
+        Called when a new Project card widget needs to be added to the list
+        of retrieved Projects
+
         :param sg_project: A SG Project dictionary
         """
-        i = self._grid_layout.count() - 1  # We have a stretcher
+        i = self.card_count
         # Remove it
         spacer = self._grid_layout.takeAt(i)
         row = i / 2
@@ -74,8 +86,9 @@ class ProjectsView(QtCore.QObject):
     @QtCore.Slot(QtGui.QWidget)
     def project_selected(self, card):
         """
-        Called when an project card is selected, ensure only one is selected at
+        Called when a Project card is selected, ensure only one is selected at
         a time
+
         :param card: A Project card
         """
         if self._selected_project_card:
@@ -95,7 +108,7 @@ class ProjectsView(QtCore.QObject):
         :param text: A string to match
         """
         self._logger.debug("Searching for %s" % text)
-        count = self._grid_layout.count() - 1  # We have stretcher
+        count = self.card_count
         if not count:
             # Avoid 0 projects message to be emitted if we don't have
             # anything ... yet
@@ -127,8 +140,7 @@ class ProjectsView(QtCore.QObject):
         """
         Called when projects need to be sorted again
         """
-        method = 0
-        count = self._grid_layout.count() - 1  # We have stretcher
+        count = self.card_count
         if count < 2:  # Not a lot of things that we can do ...
             return
         # Remove the stretcher
@@ -138,7 +150,6 @@ class ProjectsView(QtCore.QObject):
         for i in range(count-1, -1, -1):
             witem = self._grid_layout.takeAt(i)
             widgets.append(witem.widget())
-        field = "code"
         widgets.sort(
             key=lambda x: (
                 x.isHidden(),
@@ -169,7 +180,7 @@ class ProjectsView(QtCore.QObject):
         Reset the page displaying available projects
         """
         self._selected_project_card = None
-        count = self._grid_layout.count() - 1  # We have stretcher
+        count = self.card_count
         for i in range(count-1, -1, -1):
             witem = self._grid_layout.takeAt(i)
             widget = witem.widget()
