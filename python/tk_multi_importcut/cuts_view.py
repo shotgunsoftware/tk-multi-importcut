@@ -18,10 +18,10 @@ _SORT_METHODS = ["Sort by Date", "Sort by Name", "Sort by Status"]
 
 class CutsView(QtCore.QObject):
     """
-    Cuts view page handler
+    A view which shows CutCards arranged in a gird layout
     """
     # Emitted when the cut summary for a cut should be shown
-    show_cut_diff = QtCore.Signal(dict)
+    cut_chosen = QtCore.Signal(dict)
 
     # Emitted when a different cut is selected
     selection_changed = QtCore.Signal(dict)
@@ -29,9 +29,15 @@ class CutsView(QtCore.QObject):
     # Emitted when the info message changed
     new_info_message = QtCore.Signal(str)
 
-    def __init__(self, grid_widget, sort_menu_button):
+    def __init__(self, grid_layout, sort_menu_button):
+        """
+        Instantiate a new Cuts view
+
+        :param grid_layout: A QGridLayout used to arrange all CutCards
+        :param sort_menu_button: A QPushButton, QActions are added to it
+        """
         super(CutsView, self).__init__()
-        self._grid_widget = grid_widget
+        self._grid_layout = grid_layout
         self._sort_menu_button = sort_menu_button
         self._selected_card_cut = None
         self._action_group = None
@@ -42,27 +48,41 @@ class CutsView(QtCore.QObject):
 
     @property
     def info_message(self):
+        """
+        Returns the info message for this view
+
+        :returns: A the info message as a string
+        """
         return self._info_message
+
+    @property
+    def card_count(self):
+        """
+        Return the number of cards currently held by this view
+        """
+        return self._grid_layout.count() - 1  # We have a stretcher
 
     @QtCore.Slot(dict)
     def new_sg_cut(self, sg_entity):
         """
         Called when a new cut card widget needs to be added to the list
         of retrieved cuts
+
+        :param sg_entity: A SG Cut dictionary
         """
-        i = self._grid_widget.count() - 1  # We have a stretcher
+        i = self.card_count
         # Remove it
-        spacer = self._grid_widget.takeAt(i)
+        spacer = self._grid_layout.takeAt(i)
         row = i / 2
         column = i % 2
         self._logger.debug("Adding %s at %d %d %d" % (sg_entity, i, row, column))
         widget = CutCard(None, sg_entity)
         widget.highlight_selected.connect(self.cut_selected)
-        widget.show_cut.connect(self.show_cut)
-        self._grid_widget.addWidget(widget, row, column, )
-        self._grid_widget.setRowStretch(row, 0)
-        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
-        self._grid_widget.setRowStretch(row+1, 1)
+        widget.chosen.connect(self.show_cut)
+        self._grid_layout.addWidget(widget, row, column, )
+        self._grid_layout.setRowStretch(row, 0)
+        self._grid_layout.addItem(spacer, row+1, 0, colSpan=2)
+        self._grid_layout.setRowStretch(row+1, 1)
         self._info_message = ("%d Cuts" % (i + 1)) if (i + 1) > 1 else (
             "%d Cut" % (i + 1))
         self.new_info_message.emit(self._info_message)
@@ -70,29 +90,30 @@ class CutsView(QtCore.QObject):
     @QtCore.Slot(unicode)
     def search(self, text):
         """
-        Display only cuts whose name matches the given text,
-        display all of them if text is empty
+        Display only Cuts whose name matches the given text.
+
+        Display all of them if text is empty.
 
         :param text: A string to match
         """
         self._logger.debug("Searching for %s" % text)
-        count = self._grid_widget.count() - 1  # We have stretcher
+        count = self.card_count
         match_count = 0
         if not count:
             return
         if not text:
             # Show everything
             for i in range(count-1, -1, -1):
-                witem = self._grid_widget.itemAt(i)
+                witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
                 widget.setVisible(True)
             match_count = count
         else:
             for i in range(count-1, -1, -1):
-                witem = self._grid_widget.itemAt(i)
+                witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
-                # Case insentitive match
-                if text.lower() in widget._sg_cut["code"].lower():
+                # Case insensitive match
+                if text.lower() in widget.sg_cut["code"].lower():
                     widget.setVisible(True)
                     match_count += 1
                 else:
@@ -107,8 +128,9 @@ class CutsView(QtCore.QObject):
     @QtCore.Slot(QtGui.QWidget)
     def cut_selected(self, card):
         """
-        Called when a cut card is selected, ensure only one is selected at
-        a time
+        Called when a cut card is selected.
+
+        Ensure only one is selected at a time.
 
         :param card: The CutCard widget to select
         """
@@ -123,12 +145,12 @@ class CutsView(QtCore.QObject):
     @QtCore.Slot(dict)
     def show_cut(self, sg_cut):
         """
-        Called when cut changes needs to be shown for a particular sequence/cut
+        Called when cut changes needs to be shown for a particular Cut
 
-        :param sg_cut: A Shotgun cut dictionary, as retrieved from a find
+        :param sg_cut: A Shotgun Cut dictionary, as retrieved from a find
         """
         self._logger.info("%s selected for cut summary" % sg_cut["code"])
-        self.show_cut_diff.emit(sg_cut)
+        self.cut_chosen.emit(sg_cut)
 
     @QtCore.Slot(QtGui.QAction)
     def sort_changed(self, action):
@@ -138,15 +160,15 @@ class CutsView(QtCore.QObject):
         :param action: The QAction to activate
         """
         method = action.data()
-        count = self._grid_widget.count() - 1  # We have stretcher
+        count = self.card_count
         if count < 2:  # Not a lot of things that we can do ...
             return
         # Remove the stretcher
-        spacer = self._grid_widget.takeAt(count)
+        spacer = self._grid_layout.takeAt(count)
         # Retrieve all cut cards
         widgets = []
         for i in range(count-1, -1, -1):
-            witem = self._grid_widget.takeAt(i)
+            witem = self._grid_layout.takeAt(i)
             widgets.append(witem.widget())
         # Sort them by prepending a primary field to our usual sort
         # order
@@ -154,10 +176,10 @@ class CutsView(QtCore.QObject):
         widgets.sort(
             key=lambda x: (
                 x.isVisible(),
-                x._sg_cut[field],
-                x._sg_cut["created_at"],
-                x._sg_cut["code"],
-                x._sg_cut["sg_status_list"],
+                x.sg_cut[field],
+                x.sg_cut["created_at"],
+                x.sg_cut["code"],
+                x.sg_cut["sg_status_list"],
             ), reverse=True
         )
         # Put them back into the grid layout
@@ -165,12 +187,12 @@ class CutsView(QtCore.QObject):
             row = i / 2
             column = i % 2
             widget = widgets[i]
-            self._grid_widget.addWidget(widget, row, column, )
-            self._grid_widget.setRowStretch(row, 0)
+            self._grid_layout.addWidget(widget, row, column, )
+            self._grid_layout.setRowStretch(row, 0)
 
         # Put back the stretcher
-        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
-        self._grid_widget.setRowStretch(row+1, 1)
+        self._grid_layout.addItem(spacer, row+1, 0, colSpan=2)
+        self._grid_layout.setRowStretch(row+1, 1)
         # And update the menu label
         self._sort_menu_button.setText(action.text())
 
@@ -183,13 +205,13 @@ class CutsView(QtCore.QObject):
         self._sort_menu_button.setMenu(self._cuts_sort_menu)
         self._action_group = QtGui.QActionGroup(self)
         self._action_group.triggered.connect(self.sort_changed)
-        for s in _SORT_METHODS:
+        for smeth in _SORT_METHODS:
             sort_action = QtGui.QAction(
-                s,
+                smeth,
                 self._action_group,
             )
             sort_action.setCheckable(True)
-            sort_action.setData(_SORT_METHODS.index(s))
+            sort_action.setData(_SORT_METHODS.index(smeth))
             self._cuts_sort_menu.addAction(sort_action)
         action = self._action_group.actions()[0]
         action.setChecked(True)
@@ -200,9 +222,9 @@ class CutsView(QtCore.QObject):
         Reset the page displaying available cuts
         """
         self._selected_card_cut = None
-        count = self._grid_widget.count() - 1  # We have stretcher
+        count = self.card_count
         for i in range(count-1, -1, -1):
-            witem = self._grid_widget.takeAt(i)
+            witem = self._grid_layout.takeAt(i)
             widget = witem.widget()
             widget.close()
         action = self._action_group.actions()[0]

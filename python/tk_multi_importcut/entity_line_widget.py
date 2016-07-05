@@ -8,7 +8,6 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-import sgtk
 from sgtk.platform.qt import QtCore, QtGui
 
 
@@ -17,7 +16,7 @@ class EntityLineWidget(QtGui.QLineEdit):
     A custom line edit with a completer. Using a custom widget allows easy
     style sheet styling with the class name, e.g.
 
-    /* Make the line edit looks like a QLabel when not in edit mode */
+    /* Make the line edit look like a QLabel when not in edit mode */
     EntityLineWidget {
         border: none;
         background: #424242;
@@ -31,6 +30,7 @@ class EntityLineWidget(QtGui.QLineEdit):
     }
 
     """
+    # A list of possible values for completion
     __known_list = []
 
     # Our own signal to emit new values as provided ones didn't work in our case
@@ -39,6 +39,9 @@ class EntityLineWidget(QtGui.QLineEdit):
     def __init__(self, *args, **kwargs):
         """
         Instantiate a new EntityLineWidget
+
+        :param args: Arbitrary list of parameters used in base class init
+        :param kwargs: Arbitrary dictionary of parameters used in base class init
         """
         super(EntityLineWidget, self).__init__(*args, **kwargs)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
@@ -58,6 +61,7 @@ class EntityLineWidget(QtGui.QLineEdit):
     def set_known_list(cls, known_list):
         """
         Define the list of known names for the completer
+
         :param known_list: A list of possible values
         """
         cls.__known_list = sorted(known_list)
@@ -65,6 +69,7 @@ class EntityLineWidget(QtGui.QLineEdit):
     def set_property(self, name, value):
         """
         Set the given property to the given value
+
         :param name: A property name
         :param value: The value to set
         """

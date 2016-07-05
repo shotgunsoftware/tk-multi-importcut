@@ -8,13 +8,13 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-# by importing QT from sgtk rather than directly, we ensure that
-# the code will be compatible with both PySide and PyQt.
-
 import re
 import sgtk
 
+# by importing QT from sgtk rather than directly, we ensure that
+# the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
+
 from .ui.submit_dialog import Ui_submit_dialog
 from .cut_diff import _DIFF_TYPES
 
@@ -28,9 +28,9 @@ class SubmitDialog(QtGui.QDialog):
     def __init__(self, parent=None, title=None, summary=None):
         """
         Instantiate a new dialog
-        :param parent: a QWidget
-        :param title: a string, used a imported Cut name
-        :param summary: a CutSummary instance
+        :param parent: (optional) QWidget
+        :param title: (optional) string, used as imported Cut name
+        :param summary: (optional) CutSummary instance
         """
         super(SubmitDialog, self).__init__(parent)
         self.ui = Ui_submit_dialog()

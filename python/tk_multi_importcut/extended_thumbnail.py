@@ -8,9 +8,6 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-import sgtk
-import tempfile
-
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
@@ -23,7 +20,10 @@ class ExtendedThumbnail(QtGui.QLabel):
     def __init__(self, text, *args, **kwargs):
         """
         Instantiate a new ExtendedThumbnail
+
         :param text: A string
+        :param args: Arbitrary list of parameters used in base class init
+        :param kwargs: Arbitrary dictionary of parameters used in base class init
         """
         super(ExtendedThumbnail, self).__init__(*args, **kwargs)
         self._text = text or ""
@@ -32,10 +32,11 @@ class ExtendedThumbnail(QtGui.QLabel):
 
     def set_text(self, text, color, strike_through=False):
         """
-        Set the text, color and if this thumbnail should be striked through
+        Set the text, color and if this thumbnail should have a strike-through
+
         :param text: A string
         :param color: An optional color to override the QColor used when drawing
-        :param strike_through: Whether or not a strike through should be drawn
+        :param strike_through: Whether or not a strike-through should be drawn
         """
         self._text = str(text)
         if color:
@@ -46,6 +47,8 @@ class ExtendedThumbnail(QtGui.QLabel):
     def paintEvent(self, event):
         """
         Override QLabel paintEvent
+
+        :param event: A QEvent
         """
         super(ExtendedThumbnail, self).paintEvent(event)
         painter = QtGui.QPainter()
@@ -62,6 +65,7 @@ class ExtendedThumbnail(QtGui.QLabel):
     def _paint_overlay(self, painter):
         """
         Paint the overlay using the given painter
+
         :param painter: An active QPainter
         """
         painter.setRenderHints(QtGui.QPainter.Antialiasing)

@@ -16,47 +16,68 @@ from .project_widget import ProjectCard
 
 class ProjectsView(QtCore.QObject):
     """
-    Projects view page handler
+    Projects view page handler, display Project cards in a grid layout
     """
-    # Emitted when a project is chosen for next step
+    # Emitted when a Project is chosen for next step
     project_chosen = QtCore.Signal(dict)
-    # Emitted when a different project is selected
+    # Emitted when a different Project is selected
     selection_changed = QtCore.Signal(dict)
     # Emitted when the info message changed
     new_info_message = QtCore.Signal(str)
 
-    def __init__(self, grid_widget):
+    def __init__(self, grid_layout):
+        """
+        Instantiate a new Project view with the given layout
+
+        :param grid_layout: A QGridLayout
+        """
         super(ProjectsView, self).__init__()
-        self._grid_widget = grid_widget
+        self._grid_layout = grid_layout
         self._selected_project_card = None
         self._logger = get_logger()
         # A one line message which can be displayed when the view is visible
         self._info_message = ""
 
     @property
+    def card_count(self):
+        """
+        Return the number of cards held by this view
+
+        :returns: The number of cards, as an integer
+        """
+        return self._grid_layout.count() - 1  # We have a stretcher
+
+    @property
     def info_message(self):
+        """
+        Returns the info message
+
+        :returns: The info message as a string
+        """
         return self._info_message
 
     @QtCore.Slot(dict)
     def new_sg_project(self, sg_project):
         """
-        Called when a new project card widget needs to be added to the list
-        of retrieved projects
+        Called when a new Project card widget needs to be added to the list
+        of retrieved Projects
+
+        :param sg_project: A SG Project dictionary
         """
-        i = self._grid_widget.count() - 1  # We have a stretcher
+        i = self.card_count
         # Remove it
-        spacer = self._grid_widget.takeAt(i)
+        spacer = self._grid_layout.takeAt(i)
         row = i / 2
         column = i % 2
         self._logger.debug("Adding %s at %d %d %d" % (sg_project, i, row, column))
-        widget = ProjectCard(None, sg_project)
+        widget = ProjectCard(parent=None, sg_project=sg_project)
         widget.highlight_selected.connect(self.project_selected)
-        widget.show_project.connect(self.project_chosen)
-        self._grid_widget.addWidget(widget, row, column, )
-        self._grid_widget.setRowStretch(row, 0)
+        widget.chosen.connect(self.project_chosen)
+        self._grid_layout.addWidget(widget, row, column, )
+        self._grid_layout.setRowStretch(row, 0)
         # Put the stretcher back
-        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
-        self._grid_widget.setRowStretch(row+1, 1)
+        self._grid_layout.addItem(spacer, row+1, 0, colSpan=2)
+        self._grid_layout.setRowStretch(row+1, 1)
         count = i + 1
         self._info_message = ("%d %ss" % (count, sg_project["type"])) if count > 1 else (
             "%d %s" % (count, sg_project["type"]))
@@ -65,8 +86,10 @@ class ProjectsView(QtCore.QObject):
     @QtCore.Slot(QtGui.QWidget)
     def project_selected(self, card):
         """
-        Called when an project card is selected, ensure only one is selected at
+        Called when a Project card is selected, ensure only one is selected at
         a time
+
+        :param card: A Project card
         """
         if self._selected_project_card:
             self._selected_project_card.unselect()
@@ -85,7 +108,7 @@ class ProjectsView(QtCore.QObject):
         :param text: A string to match
         """
         self._logger.debug("Searching for %s" % text)
-        count = self._grid_widget.count() - 1  # We have stretcher
+        count = self.card_count
         if not count:
             # Avoid 0 projects message to be emitted if we don't have
             # anything ... yet
@@ -93,13 +116,13 @@ class ProjectsView(QtCore.QObject):
         match_count = 0
         if not text:  # Show everything
             for i in range(count-1, -1, -1):
-                witem = self._grid_widget.itemAt(i)
+                witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
                 widget.setVisible(True)
             match_count = count
         else:
             for i in range(count-1, -1, -1):
-                witem = self._grid_widget.itemAt(i)
+                witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
                 if text.lower() in widget.project_name.lower():
                     match_count += 1
@@ -117,18 +140,16 @@ class ProjectsView(QtCore.QObject):
         """
         Called when projects need to be sorted again
         """
-        method = 0
-        count = self._grid_widget.count() - 1  # We have stretcher
+        count = self.card_count
         if count < 2:  # Not a lot of things that we can do ...
             return
         # Remove the stretcher
-        spacer = self._grid_widget.takeAt(count)
+        spacer = self._grid_layout.takeAt(count)
         # Retrieve all cut cards
         widgets = []
         for i in range(count-1, -1, -1):
-            witem = self._grid_widget.takeAt(i)
+            witem = self._grid_layout.takeAt(i)
             widgets.append(witem.widget())
-        field = "code"
         widgets.sort(
             key=lambda x: (
                 x.isHidden(),
@@ -141,17 +162,17 @@ class ProjectsView(QtCore.QObject):
             row = i / 2
             column = i % 2
             widget = widgets[i]
-            self._grid_widget.addWidget(widget, row, column, )
-            self._grid_widget.setRowStretch(row, 0)
+            self._grid_layout.addWidget(widget, row, column, )
+            self._grid_layout.setRowStretch(row, 0)
 
         # Put back the stretcher
-        self._grid_widget.addItem(spacer, row+1, 0, colSpan=2)
-        self._grid_widget.setRowStretch(row+1, 1)
+        self._grid_layout.addItem(spacer, row+1, 0, colSpan=2)
+        self._grid_layout.setRowStretch(row+1, 1)
         # Avoid flashes and jittering by resizing the grid widget to a size
         # suitable to hold all cards
         wsize = widgets[0].size()
-        self._grid_widget.parentWidget().resize(
-            self._grid_widget.parentWidget().size().width(),
+        self._grid_layout.parentWidget().resize(
+            self._grid_layout.parentWidget().size().width(),
             wsize.height() * row_count)
 
     def clear(self):
@@ -159,8 +180,8 @@ class ProjectsView(QtCore.QObject):
         Reset the page displaying available projects
         """
         self._selected_project_card = None
-        count = self._grid_widget.count() - 1  # We have stretcher
+        count = self.card_count
         for i in range(count-1, -1, -1):
-            witem = self._grid_widget.takeAt(i)
+            witem = self._grid_layout.takeAt(i)
             widget = witem.widget()
             widget.close()

@@ -12,7 +12,6 @@ import sgtk
 from sgtk.platform.qt import QtCore
 from .logger import get_logger
 from .cut_diff import CutDiff
-from .cut_summary import CutSummary
 
 # Our data handler
 from .edl_cut import EdlCut
@@ -24,11 +23,21 @@ class Processor(QtCore.QThread):
     """
     Processing thread. A EdlCut instance is created at runtime, and is the owner
     of all the data.
+
+    The data  manager is instantiated in the run method, so its slots will be
+    honored in the the running thread.
+
+    Signals are exposed and connected to matching EdlCut's signals, as an interface
+    for the caller, which does not access the data manager directly, and doesn't
+    have to wait for the EdlCut creation to connect its own signals and slots.
+
+    Similarly, some properties are exposed, so the caller does not need to access
+    the EdlCut instance directly.
     """
     # Pass through signals which will be redirected to
     # the worker instance created in the running thread, so signals
     # will be processed in the running thread.
-    # Typical signals chain is as follow
+    # Typical signals chain is as follows
     # | UI | <-> | Processor | <-> | EdlCut | <-> | CutSummary |
     #
     #
@@ -60,6 +69,8 @@ class Processor(QtCore.QThread):
     def __init__(self, frame_rate=None):
         """
         Instantiate a new Processor
+
+        :param frame_rate: A frame rate, as a float
         """
         super(Processor, self).__init__()
         self._logger = get_logger()
@@ -71,6 +82,8 @@ class Processor(QtCore.QThread):
     def title(self):
         """
         Return a title, retrieved from the loaded EDL, if any
+
+        :returns: A string or None
         """
         if self._edl_cut and self._edl_cut._edl:
             return self._edl_cut._edl.title
@@ -80,6 +93,8 @@ class Processor(QtCore.QThread):
     def edl_file_path(self):
         """
         Return the full file path of the EDL file being imported
+
+        :returns: A string or None
         """
         if self._edl_cut:
             return self._edl_cut._edl_file_path
@@ -88,7 +103,9 @@ class Processor(QtCore.QThread):
     @property
     def summary(self):
         """
-        Return the current CutSummary instance
+        Return the current CutSummary instance, if any
+
+        :returns: A CutSummary instance or None
         """
         if self._edl_cut and self._edl_cut._summary:
             return self._edl_cut._summary
@@ -97,9 +114,10 @@ class Processor(QtCore.QThread):
     @property
     def sg_project(self):
         """
-        Return the current Shotgun Project we are importing the Cut in.
-        This can be None if this app was started outside of Project
-        context, and a Project is not yet selected
+        Return the current Shotgun Project we are importing the Cut into.
+
+        This can be None if this app was started outside of a Project
+        context, and a Project has not been selected yet.
 
         :returns: A Shotgun Project dictionary or None
         """
@@ -110,9 +128,10 @@ class Processor(QtCore.QThread):
     @property
     def sg_entity(self):
         """
-        Return the current Shotgun entity ( Sequence ) we are displaying cut
+        Return the current Shotgun Entity (e.g. Sequence) we are displaying Cut
         changes for
-        :returns: A Shotgun entity dictionary or None
+
+        :returns: A Shotgun Entity dictionary or None
         """
         if self._edl_cut and self._edl_cut._sg_entity:
             return self._edl_cut._sg_entity
@@ -121,7 +140,8 @@ class Processor(QtCore.QThread):
     @property
     def entity_name(self):
         """
-        Return the name of entity which was picked, if any
+        Return the name of the Entity which was picked, if any
+
         :returns: A string or None
         """
         if not self._edl_cut:
@@ -131,10 +151,10 @@ class Processor(QtCore.QThread):
     @property
     def entity_type_name(self):
         """
-        Return the nice name of entity's type which was picked, if any
+        Return the display name of Entity's type which was picked, if any
+
         :returns: A string or None
         """
-
         if not self._edl_cut:
             return None
         return self._edl_cut.entity_type_name
@@ -142,9 +162,9 @@ class Processor(QtCore.QThread):
     @property
     def sg_cut(self):
         """
-        Return the current Shotgun Cut we are displaying cut
-        changes for.
-        :returns: A Cut dictionary or None if no Cut are yet available in SG
+        Return the current Shotgun Cut we are displaying Cut changes for.
+
+        :returns: A Cut dictionary or None
         """
         if self._edl_cut and self._edl_cut._sg_cut:
             return self._edl_cut._sg_cut
@@ -153,7 +173,9 @@ class Processor(QtCore.QThread):
     @property
     def sg_new_cut(self):
         """
-        Return the cut created in Shotgun
+        Return the new Cut created in Shotgun
+
+        :returns: A SG Cut dictionary or None
         """
         if self._edl_cut:
             return self._edl_cut._sg_new_cut
@@ -161,6 +183,11 @@ class Processor(QtCore.QThread):
 
     @property
     def sg_new_cut_url(self):
+        """
+        Return the SG url for the new Cut, if any
+
+        :returns: A string or None
+        """
         sg_new_cut = self.sg_new_cut
         if not sg_new_cut:
             return None
@@ -172,27 +199,44 @@ class Processor(QtCore.QThread):
 
     @property
     def no_cut_for_entity(self):
+        """
+        Return True if there is no existing SG Cut for the current SG Entity,
+        False otherwise
+
+        :returns: A boolean
+        """
         return self._edl_cut._no_cut_for_entity
 
     @property
     def has_valid_edl(self):
+        """
+        Return True if a valid EDL file was loaded, False otherwise
+
+        :returns: A boolean
+        """
         return self._edl_cut.had_valid_edl
 
     @property
     def has_valid_movie(self):
+        """
+        Return True if a valid movie file was retrieved, False otherwise
+
+        :returns: A boolean
+        """
         return self._edl_cut.had_valid_movie
 
     def run(self):
         """
         Run the processor
         - Create a EdlCut worker instance
-        - Connect this processor signals to worker's ones
+        - Connect this processor's signals to worker ones
+        - Emit ready Signal
         - Then wait for events to process
         """
         # Create a worker
         self._edl_cut = EdlCut(frame_rate=self._frame_rate)
         # Connect signals from the worker to ours as a gateway, so anything
-        # connected to the Processor signals will be connected to the worker
+        # connected to the Processor signals will be connected to the worker.
         # Orders we receive
         self.new_edl.connect(self._edl_cut.load_edl)
         self.new_movie.connect(self._edl_cut.register_movie_path)

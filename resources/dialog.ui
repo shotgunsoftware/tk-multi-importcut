@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>969</width>
-    <height>580</height>
+    <width>984</width>
+    <height>598</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,22 +17,13 @@
    <property name="spacing">
     <number>-1</number>
    </property>
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
     <widget class="AnimatedStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="drop_page">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -64,7 +55,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="settings_page_1_button">
+          <widget class="QPushButton" name="drop_page_settings_button">
            <property name="maximumSize">
             <size>
              <width>22</width>
@@ -106,16 +97,7 @@
           <property name="spacing">
            <number>0</number>
           </property>
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <item>
@@ -420,7 +402,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="settings_page_6_button">
+          <widget class="QPushButton" name="project_page_settings_button">
            <property name="maximumSize">
             <size>
              <width>22</width>
@@ -457,21 +439,12 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>943</width>
-            <height>441</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="project_grid" rowstretch="0">
-           <property name="leftMargin">
-            <number>2</number>
-           </property>
-           <property name="topMargin">
-            <number>2</number>
-           </property>
-           <property name="rightMargin">
-            <number>2</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -497,9 +470,9 @@
       </layout>
      </widget>
      <widget class="QWidget" name="entity_types_page">
-      <layout class="QVBoxLayout" name="verticalLayout_8" stretch="0,1">
+      <layout class="QVBoxLayout" name="verticalLayout_8" stretch="0">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1">
          <property name="leftMargin">
           <number>12</number>
          </property>
@@ -507,114 +480,21 @@
           <number>0</number>
          </property>
          <item>
-          <layout class="QHBoxLayout" name="entity_buttons_layout_old"/>
-         </item>
-         <item>
           <widget class="QLabel" name="entity_picker_title_label">
            <property name="text">
-            <string>Select Link for Cut (old)</string>
+            <string>This screen is never shown as this step is now combined with the Entities screen (next screen).
+This screen is kept so we have a direct match between internal steps and screens</string>
            </property>
            <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>360</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="settings_page_2_button">
-           <property name="maximumSize">
-            <size>
-             <width>30</width>
-             <height>22</height>
-            </size>
-           </property>
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="resources.qrc">
-             <normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</normaloff>:/tk_multi_importcut/settings_dialog_gear_icon.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>44</width>
-             <height>20</height>
-            </size>
-           </property>
-           <property name="default">
-            <bool>false</bool>
-           </property>
-           <property name="flat">
-            <bool>true</bool>
+            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
         </layout>
        </item>
-       <item>
-        <widget class="QFrame" name="entity_picker_frame">
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_9" stretch="1,0,1">
-          <item>
-           <widget class="QLabel" name="entity_picker_title_label_2">
-            <property name="text">
-             <string>What do you want to link this Cut to ?</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QFrame" name="entity_types_frame">
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QHBoxLayout" name="entity_types_layout"/>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_10">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>0</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
-       </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="sequence_list_page">
+     <widget class="QWidget" name="entities_list_page">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -671,7 +551,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QLabel" name="sequences_title_label">
+          <widget class="QLabel" name="entities_title_label">
            <property name="text">
             <string>Select Link for Cut</string>
            </property>
@@ -694,7 +574,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="SearchWidget" name="sequences_search_line_edit">
+          <widget class="SearchWidget" name="entities_search_line_edit">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -719,7 +599,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="settings_page_3_button">
+          <widget class="QPushButton" name="entities_page_settings_button">
            <property name="maximumSize">
             <size>
              <width>22</width>
@@ -747,11 +627,11 @@
         </layout>
        </item>
        <item>
-        <widget class="QScrollArea" name="sequence_scroll_area">
+        <widget class="QScrollArea" name="entity_scroll_area">
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="sequence_area">
+         <widget class="QWidget" name="entity_area">
           <property name="geometry">
            <rect>
             <x>0</x>
@@ -767,16 +647,7 @@
            <property name="spacing">
             <number>-1</number>
            </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -786,16 +657,7 @@
              </property>
              <widget class="QWidget" name="page_1">
               <layout class="QGridLayout" name="gridLayout">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -818,16 +680,7 @@
              </widget>
              <widget class="QWidget" name="page_2">
               <layout class="QGridLayout" name="gridLayout_3">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -850,16 +703,7 @@
              </widget>
              <widget class="QWidget" name="page_3">
               <layout class="QGridLayout" name="gridLayout_4">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -882,16 +726,7 @@
              </widget>
              <widget class="QWidget" name="page_4">
               <layout class="QGridLayout" name="gridLayout_5">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -914,16 +749,7 @@
              </widget>
              <widget class="QWidget" name="page_5">
               <layout class="QGridLayout" name="gridLayout_6">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -987,7 +813,7 @@
           <number>4</number>
          </property>
          <item>
-          <widget class="QLabel" name="selected_sequence_label">
+          <widget class="QLabel" name="selected_entity_label">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -1079,7 +905,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="settings_page_4_button">
+          <widget class="QPushButton" name="cut_list_page_settings_button">
            <property name="maximumSize">
             <size>
              <width>22</width>
@@ -1116,21 +942,12 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>958</width>
+            <height>460</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="cuts_grid">
-           <property name="leftMargin">
-            <number>2</number>
-           </property>
-           <property name="topMargin">
-            <number>2</number>
-           </property>
-           <property name="rightMargin">
-            <number>2</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -1163,16 +980,7 @@
        <property name="spacing">
         <number>0</number>
        </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>0</number>
        </property>
        <item>
@@ -1188,7 +996,7 @@
            <number>12</number>
           </property>
           <item>
-           <widget class="QPushButton" name="total_button">
+           <widget class="SelectorButton" name="total_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -1225,7 +1033,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="new_select_button">
+           <widget class="SelectorButton" name="new_select_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1256,7 +1064,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="omitted_select_button">
+           <widget class="SelectorButton" name="omitted_select_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1284,7 +1092,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="reinstated_select_button">
+           <widget class="SelectorButton" name="reinstated_select_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1312,7 +1120,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="cut_change_select_button">
+           <widget class="SelectorButton" name="cut_change_select_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1340,7 +1148,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="rescan_select_button">
+           <widget class="SelectorButton" name="rescan_select_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1394,7 +1202,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="settings_page_5_button">
+           <widget class="QPushButton" name="cut_summary_page_settings_button">
             <property name="maximumSize">
              <size>
               <width>22</width>
@@ -1471,16 +1279,7 @@
              <property name="spacing">
               <number>2</number>
              </property>
-             <property name="leftMargin">
-              <number>2</number>
-             </property>
-             <property name="topMargin">
-              <number>2</number>
-             </property>
-             <property name="rightMargin">
-              <number>2</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>2</number>
              </property>
              <item>
@@ -1916,6 +1715,11 @@
    <extends>QFrame</extends>
    <header>..dialog</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SelectorButton</class>
+   <extends>QPushButton</extends>
+   <header>..dialog</header>
   </customwidget>
  </customwidgets>
  <resources>

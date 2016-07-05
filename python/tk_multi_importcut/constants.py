@@ -8,12 +8,21 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-# Different steps in the process
+# Different steps in the wizar process
 _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, \
     _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP = range(8)
 
+# Different timecode mapping mode
+# Three mapping modes are available, which are only relevant for first
+# imports:
+# - Automatic: On first import, the timecode in is mapped to the Shot head in.
+# - Absolute: On first import, timecode in is converted to an absolute frame
+#             number.
+# - Relative: On first import, timecode in is converted to an arbitrary frame
+#             number specified through settings.
 _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE = range(3)
 
+# List of supported extensions for movies
 _VIDEO_EXTS = [".avi", ".m4v", ".mov", ".mp4", ".qt", ".webm"]
 
 # Some colors used in various places
@@ -34,3 +43,18 @@ _STATUS_COLORS = {
     "apr": _COLORS["green"],
     "fin": _COLORS["green"],
 }
+# Fields we need to retrieve on Shots
+_SHOT_FIELDS = [
+    "code",
+    "sg_status_list",
+    "sg_head_in",
+    "sg_tail_out",
+    "sg_cut_in",
+    "sg_cut_out",
+    "smart_head_in",
+    "smart_tail_out",
+    "smart_cut_in",
+    "smart_cut_out",
+    "sg_cut_order",
+    "image"
+]

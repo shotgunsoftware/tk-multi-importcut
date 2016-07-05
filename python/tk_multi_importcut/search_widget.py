@@ -8,8 +8,13 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-import sgtk
 from sgtk.platform.qt import QtCore, QtGui
+
+# TODO : This is based on TK search widget code, before it was available in Qt widgets
+# framework. So, at some point, this code should be replaced with the TK
+# implementation, when it is available.
+# This is why styling is kept inline, as it is likely to go away when the switch
+# happens
 
 # Style sheet for the QLineEdit
 _LINE_EDIT_STYLE = """
@@ -54,12 +59,14 @@ class SearchWidget(QtGui.QLineEdit):
     def __init__(self, parent=None):
         """
         Instantiate a new search widget
+
+        :param parent: Parent QWidget for this widget
         """
         super(SearchWidget, self).__init__(parent)
         self.setStyleSheet(_LINE_EDIT_STYLE)
 
         # dynamically create the clear button so that we can place it over the
-        # edit widget:
+        # edit widget.
         self._clear_btn = QtGui.QPushButton(self)
         self._clear_btn.setFocusPolicy(QtCore.Qt.StrongFocus)
         self._clear_btn.setFlat(True)
@@ -79,11 +86,9 @@ class SearchWidget(QtGui.QLineEdit):
         self.returnPressed.connect(self._on_return_pressed)
         self._clear_btn.clicked.connect(self.clear)
 
-    # @property
     def _get_search_text(self):
         return self._safe_get_text()
 
-    # @search_text.setter
     def _set_search_text(self, value):
         self.setText(value)
 

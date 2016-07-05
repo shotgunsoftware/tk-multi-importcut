@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
@@ -16,7 +16,7 @@ from tank.platform.qt import QtCore, QtGui
 
 def drop_area(cls):
     """
-    A class decorator which add needed overrides to any QWidget
+    A class decorator which adds needed overrides to any QWidget
     so it can behave like a drop area and emit something_dropped signals
     """
     class WrappedClass(cls):
@@ -26,11 +26,14 @@ def drop_area(cls):
         # Emitted when something is dropped on the widget
         something_dropped = QtCore.Signal(list)
 
-        def __init__(self, *args, **kargs):
+        def __init__(self, *args, **kwargs):
             """
             Instantiate the class and enable drops
+
+            :param args: Arbitrary list of parameters used in base class init
+            :param args: Arbitrary dictionary of parameters used in base class init
             """
-            super(WrappedClass, self).__init__(*args, **kargs)
+            super(WrappedClass, self).__init__(*args, **kwargs)
             self.setAcceptDrops(True)
             self._set_property("dragging", False)
             self._restrict_to_ext = []
@@ -38,53 +41,62 @@ def drop_area(cls):
         def set_restrict_to_ext(self, ext_list):
             """
             Optionally set a list of extensions to restrict the drop area to accept.
+
             :param ext_list: list of extensions to restrict drop area to accept, these
-            should be included WITH a dot so, for example, [".edl", ".mov"]
+                              should be included WITH a dot so, for example, 
+                              [".edl", ".mov"]
             """
             self._restrict_to_ext = ext_list
 
         # Override dragEnterEvent
-        def dragEnterEvent(self, e):
+        def dragEnterEvent(self, event):
             """
             Check if we can handle the drop, basically if we will receive local file path
+
+            :param event: A QEvent
             """
             # Set a property which can used to change the look of the widget
             # in a style sheet using a pseudo state, e.g. :
             # DropAreaLabel[dragging="true"] {
             #     border: 2px solid white;
             # }
-            if e.mimeData().hasFormat("text/plain"):
-                e.accept()
-            elif e.mimeData().hasFormat("text/uri-list"):
-                for url in e.mimeData().urls():
+            if event.mimeData().hasFormat("text/plain"):
+                event.accept()
+            elif event.mimeData().hasFormat("text/uri-list"):
+                for url in event.mimeData().urls():
                     _, ext = os.path.splitext(url.path())
-                    # Accept anything if no extentions are specified.
+                    # Accept anything if no extensions are specified.
                     if not self._restrict_to_ext or ext.lower() in self._restrict_to_ext:
                         # We don't activate the dragging state unless ext is valid.
                         self._set_property("dragging", True)
                         # Accept if there is at least one local file
                         if url.isLocalFile():
-                            e.accept()
+                            event.accept()
                             break
                 else:
-                    e.ignore()
+                    event.ignore()
             else:
-                e.ignore()
+                event.ignore()
 
         # Override dragLeaveEvent
-        def dragLeaveEvent(self, e):
+        def dragLeaveEvent(self, event):
             """
             Just unset our dragging property
+
+            :param event: A QEvent
             """
             self._set_property("dragging", False)
 
         # Override dropEvent
-        def dropEvent(self, e):
+        def dropEvent(self, event):
             """
             Process a drop event, build a list of local files and emit somethingDropped if not empty
+
+            :param event: A QEvent
             """
             self._set_property("dragging", False)
-            urls = e.mimeData().urls()
+            urls = event.mimeData().urls()
+            contents = None
             if urls:
                 if sys.platform == "darwin":
                     # Fix for Yosemite and later, file paths are not actual file paths
@@ -107,18 +119,19 @@ def drop_area(cls):
                     except:
                         pass
                 contents = [x.toLocalFile() for x in urls if x.isLocalFile()]
-            elif e.mimeData().hasFormat("text/plain"):
-                contents = [e.mimeData().text()]
+            elif event.mimeData().hasFormat("text/plain"):
+                contents = [event.mimeData().text()]
             if contents:
-                e.accept()
+                event.accept()
                 self.something_dropped.emit(contents)
             else:
-                e.ignore()
+                event.ignore()
 
         def _set_property(self, name, value):
             """
             Helper to set custom properties which can be used in style sheets
             Set the value and do a unpolish / polish to force an update
+
             :param name: A property name
             :param value: A value for this property
             """

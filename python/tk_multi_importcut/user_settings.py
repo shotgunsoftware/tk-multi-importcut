@@ -8,9 +8,6 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-# by importing QT from sgtk rather than directly, we ensure that
-# the code will be compatible with both PySide and PyQt.
-
 import sgtk
 from .constants import _ABSOLUTE_MODE
 
@@ -55,7 +52,7 @@ class UserSettings(object):
     ]
 
     def __init__(self):
-        # Provice access to the instanced object.
+        # Provide access to the instanced object.
         super(UserSettings, self).__init__()
         # Provide access to the user settings fw module.
         self._disk = sgtk.platform.current_bundle().user_settings

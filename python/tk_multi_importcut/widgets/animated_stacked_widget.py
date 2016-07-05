@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Shotgun Software Inc.
+# Copyright (c) 2016 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 from tank.platform.qt import QtCore, QtGui
+
 
 class AnimatedStackedWidget(QtGui.QStackedWidget):
     """
@@ -24,7 +25,7 @@ class AnimatedStackedWidget(QtGui.QStackedWidget):
     def __init__(self, parent=None, animation_duration=600):
         QtGui.QStackedWidget.__init__(self, parent)
         # Will be used to keep animations around
-        # For garbage collection purpose
+        # For garbage collection purposes
         self.__anims = [None, None]
         self.__anim_grp = None
         self._animation_duration = animation_duration
@@ -45,9 +46,10 @@ class AnimatedStackedWidget(QtGui.QStackedWidget):
 
     def set_current_index(self, index):
         """
-        Thin wrapper around setCurrentIndex
-        Ensuring first_page_reached and last_page_reached
-        are emitted when needed
+        Thin wrapper around setCurrentIndex ensuring first_page_reached
+        and last_page_reached are emitted when needed
+
+        :param index: An integer, the index of the page to move to
         """
         self.setCurrentIndex(index)
         # Emit signals if needed
@@ -61,6 +63,8 @@ class AnimatedStackedWidget(QtGui.QStackedWidget):
     def goto_page(self, to_index):
         """
         Animate transition from the current page to the one with the given index
+
+        :param to_index: An integer, the index of the page to go to
         """
         from_index = self.currentIndex()
         if from_index == to_index: # Already on the wanted page
@@ -73,11 +77,11 @@ class AnimatedStackedWidget(QtGui.QStackedWidget):
             return
 
         if not hasattr(QtCore, "QAbstractAnimation"):
-            # this version of Qt (probably PyQt4) doesn't contain
-            # Q*Animation classes so just change the page:
+            # Older versions of Qt don't contain Q*Animation classes
+            # so just change the page
             self.set_current_index(to_index)
             return
-        geometry =  self.geometry()
+        geometry = self.geometry()
         if from_index > to_index: # Backward
             rest_pos = -geometry.width()
         else: # Forward
@@ -98,13 +102,13 @@ class AnimatedStackedWidget(QtGui.QStackedWidget):
 
         # Animations
         if self._animation_duration < 1 or not hasattr(QtCore, "QAbstractAnimation"):
-            # this version of Qt (probably PyQt4) doesn't contain
-            # Q*Animation classes so just change the page:
+            # Older versions of Qt don't contain Q*Animation classes
+            # so just change the page
             this_page.hide()
             return
         
-        # Keep them around for garbage collection purpose
-        # That might not be needed, but who knows ...
+        # Keep them around for garbage collection purposes
+        # Might not be needed, but who knows ...
         self.__anims[0] = QtCore.QPropertyAnimation(this_page, "pos")
         self.__anims[0].setDuration(self._animation_duration)
         self.__anims[0].setStartValue(QtCore.QPoint(this_page.x(), this_page.y()))
@@ -124,8 +128,6 @@ class AnimatedStackedWidget(QtGui.QStackedWidget):
         # Hide the old page when the animation is finished
         # otherwise it might become visible when the window is
         # made very large
-        self.__anim_grp.finished.connect( lambda : this_page.hide())
+        self.__anim_grp.finished.connect(lambda: this_page.hide())
 
         self.__anim_grp.start()
-
-

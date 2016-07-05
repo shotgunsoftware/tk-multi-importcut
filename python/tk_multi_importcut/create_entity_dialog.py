@@ -8,13 +8,12 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-# by importing QT from sgtk rather than directly, we ensure that
-# the code will be compatible with both PySide and PyQt.
-
 import re
 import sgtk
 
 from .ui.create_entity_dialog import Ui_create_entity_dialog
+# by importing QT from sgtk rather than directly, we ensure that
+# the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
 
@@ -22,8 +21,8 @@ from .logger import get_logger
 class CreateEntityDialog(QtGui.QDialog):
     """
     This dialog is available by clicking the "New [Entity]" button on the select
-    entities page. A user can enter an entity name with description, on submit
-    the entity is create and the stacked widget moves to the next page.
+    entities page. A user can enter an entity name with a description. On submit
+    the entity is created and the stacked widget moves to the next page.
     """
     create_entity = QtCore.Signal(str, dict)
 
@@ -36,6 +35,7 @@ class CreateEntityDialog(QtGui.QDialog):
         self._logger = get_logger()
         self.ui = Ui_create_entity_dialog()
         self.ui.setupUi(self)
+        self.setModal(True)
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
         self._ctx = self._app.context
@@ -45,6 +45,7 @@ class CreateEntityDialog(QtGui.QDialog):
         entity_type_name = sgtk.util.get_entity_type_display_name(
             self._app.sgtk, entity_type,
         )
+        self.setWindowTitle("Create %s" % entity_type_name)
 
         # Set text on labels and buttons
         self.ui.create_new_entity_label.setText("%s" % entity_type_name)
