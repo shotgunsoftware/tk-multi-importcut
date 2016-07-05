@@ -27,7 +27,8 @@ class EntitiesView(QtCore.QObject):
 
     def __init__(self, sg_entity_type, grid_layout):
         """
-        Instantiate a new view for the given entity type
+        Instantiate a new view for the given Entity type
+
         :param sg_entity_type: The SG Entities we will show
         :param grid_layout: A grid layout
         """
@@ -40,9 +41,19 @@ class EntitiesView(QtCore.QObject):
         self._info_message = ""
 
     @property
+    def card_count(self):
+        """
+        Return the number of card held by this view
+
+        :returns: Number of cards, as an integer
+        """
+        return self._grid_layout.count() - 1 # We have a stretcher
+
+    @property
     def info_message(self):
         """
         Returns the info message
+
         :returns: A string
         """
         return self._info_message
@@ -50,7 +61,8 @@ class EntitiesView(QtCore.QObject):
     @property
     def sg_entity_type(self):
         """
-        Return the SG entity type this view is for, as a string
+        Return the SG Entity type this view is for, as a string
+
         :returns: A string
         """
         return self._sg_entity_type
@@ -58,8 +70,9 @@ class EntitiesView(QtCore.QObject):
     @property
     def selected_sg_entity(self):
         """
-        Return the selected entity, if any
-        :returns: A SG entity dictionary or None
+        Return the selected Entity, if any
+
+        :returns: A SG Entity dictionary or None
         """
         if self._selected_entity_card:
             return self._selected_entity_card.sg_entity
@@ -70,13 +83,14 @@ class EntitiesView(QtCore.QObject):
         """
         Called when a new Entity card widget needs to be added to the list
         of retrieved Entities
+
         :param sg_entity: A SG Entity dictionary
         """
         if sg_entity["type"] != self._sg_entity_type:
             # Not for this view which only display another type of Entities
             return
 
-        i = self._grid_layout.count() - 1  # We have a stretcher
+        i = self.card_count
 
         # Remove it
         spacer = self._grid_layout.takeAt(i)
@@ -102,8 +116,9 @@ class EntitiesView(QtCore.QObject):
     @QtCore.Slot(QtGui.QWidget)
     def entity_selected(self, card):
         """
-        Called when an entity card is selected, ensure only one is selected at
+        Called when an Entity card is selected, ensure only one is selected at
         a time
+
         :param card: An Entity card
         """
         if self._selected_entity_card:
@@ -123,7 +138,7 @@ class EntitiesView(QtCore.QObject):
         :param text: A string to match
         """
         self._logger.debug("Searching for %s" % text)
-        count = self._grid_layout.count() - 1  # We have stretcher
+        count = self.card_count
         if not count:
             # Avoid 0 Entities message to be emitted if we don't have
             # anything ... yet
@@ -155,8 +170,7 @@ class EntitiesView(QtCore.QObject):
         """
         Called when Entities need to be sorted again
         """
-        method = 0
-        count = self._grid_layout.count() - 1  # We have stretcher
+        count = self.card_count
         if count < 2:  # Not a lot of things that we can do ...
             return
         # Remove the stretcher
@@ -166,7 +180,6 @@ class EntitiesView(QtCore.QObject):
         for i in range(count-1, -1, -1):
             witem = self._grid_layout.takeAt(i)
             widgets.append(witem.widget())
-        field = "code"
         widgets.sort(
             key=lambda x: (
                 x.isHidden(),
@@ -197,7 +210,7 @@ class EntitiesView(QtCore.QObject):
         Reset the page displaying available Entities
         """
         self._selected_entity_card = None
-        count = self._grid_layout.count() - 1  # We have stretcher
+        count = self.card_count
         for i in range(count-1, -1, -1):
             witem = self._grid_layout.takeAt(i)
             widget = witem.widget()
