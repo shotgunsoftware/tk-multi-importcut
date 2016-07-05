@@ -215,11 +215,11 @@ class CutDiff(QtCore.QObject):
         - Similar timecode cut in
         - Similar timecode cut out
 
-        :returns: An integer, the higher the
+        :returns: A score as an integer, the higher the better
         """
         # A CutDiff always has either a CutItem or an edit event, so if one is
-        # available, the other will be. Edit events contain new values, so we
-        # use them if available and fall back on CutItem values
+        # not available, the other will be. Edit events contain new values, so we
+        # use them if available and fall back on CutItem values.
         if self._edit:
             cut_order = self._edit.id
             cut_in = self._edit.source_in

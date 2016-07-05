@@ -1103,7 +1103,7 @@ class AppDialog(QtGui.QWidget):
         # Here we are taking a shortcut and accessing values directly from some
         # data owned by another thread. But, we are only reading pre-computed
         # int values, so it should be alright. If not, those values should be
-        # emitted in the signal, so real data access is not needed
+        # emitted in the signal, so real data access would not be needed
         summary = self._processor.summary
         self.ui.new_select_button.setText("New : %d" % summary.count_for_type(_DIFF_TYPES.NEW))
         self.ui.cut_change_select_button.setText(
