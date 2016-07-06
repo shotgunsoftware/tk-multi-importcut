@@ -668,12 +668,16 @@ class CutSummary(QtCore.QObject):
         if new_type is not None:  # None is used when some cut diff are deleted
             self._counts[new_type] += 1
 
-        if(old_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
+        # Maintain our total count, excluding OMITTED entries.
+        # If the entry was OMITTED, and is not OMITTED anymore, count it in our
+        # total
+        if (old_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
             new_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
             self._total_count += 1
-        elif(old_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
-            new_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
-            self._total_count += 1
+        # If the entry was not OMITTED, and is now OMITTED, remove it from our total
+        elif (old_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
+              new_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
+            self._total_count -= 1
         self.totals_changed.emit()
 
     @property
