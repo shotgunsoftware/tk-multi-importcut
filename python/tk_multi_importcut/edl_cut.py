@@ -490,7 +490,7 @@ class EdlCut(QtCore.QObject):
             # todo: do we want to filter for active projects?
             sg_projects = self._sg.find(
                 "Project",
-                [["is_template", "is", False], ["archived", "is_not", True]],
+                [["is_template", "is", False], ["archived", "is", False]],
                 fields,
                 order=order
             )
