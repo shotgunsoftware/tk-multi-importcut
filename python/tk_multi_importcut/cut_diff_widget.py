@@ -70,8 +70,6 @@ class CutDiffCard(QtGui.QFrame):
         self.ui = Ui_CutDiffCard()
         self.ui.setupUi(self)
 
-        app = sgtk.platform.current_bundle()
-        self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
         self._thumbnail_requested = False
         cut_diff.type_changed.connect(self.diff_type_changed)
         cut_diff.repeated_changed.connect(self.repeated_changed)

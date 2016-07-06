@@ -908,11 +908,14 @@ class AppDialog(QtGui.QWidget):
             self.ui.submit_button.show()
             self.display_info_message(self._cut_diffs_view.info_message)
             if self._processor.sg_cut:
+                revision_number_str = ""
+                if self._processor.sg_cut["revision_number"] is not None:
+                    revision_number_str = "_%03d" % self._processor.sg_cut["revision_number"]
                 self.ui.cut_summary_title_label.setText(
                     "Comparing %s and <b>%s</b> for %s <b>%s</b>" % (
                         os.path.basename(self._processor.edl_file_path),
-                        "%s_%03d" % (self._processor.sg_cut["code"],
-                                     self._processor.sg_cut["revision_number"]),
+                        "%s%s" % (self._processor.sg_cut["code"],
+                                     revision_number_str),
                         self._processor.entity_type_name,
                         self._processor.entity_name,
                     )
@@ -1097,6 +1100,10 @@ class AppDialog(QtGui.QWidget):
         Set labels on top views selectors in Cut summary view, from the current
         Cut summary
         """
+        # Here we are taking a shortcut and accessing values directly from some
+        # data owned by another thread. But, we are only reading pre-computed
+        # int values, so it should be alright. If not, those values should be
+        # emitted in the signal, so real data access would not be needed
         summary = self._processor.summary
         self.ui.new_select_button.setText("New : %d" % summary.count_for_type(_DIFF_TYPES.NEW))
         self.ui.cut_change_select_button.setText(
@@ -1106,7 +1113,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reinstated_select_button.setText(
             "Reinstated : %d" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
         self.ui.rescan_select_button.setText("Rescan Needed : %d" % summary.rescans_count)
-        self.ui.total_button.setText("Total : %d" % len(summary))
+        self.ui.total_button.setText("Total : %d" % summary.total_count)
 
     def clear_entities_view(self):
         """
@@ -1311,6 +1318,10 @@ class AppDialog(QtGui.QWidget):
         else:
             raise NotImplementedError("Unknown platform: %s" % sys.platform)
 
+        # Create log directory if it doesn't already exist.
+        log_dir = os.path.dirname(fname)
+        if not os.path.isdir(log_dir):
+            os.makedirs(log_dir)
         handler = logging.handlers.RotatingFileHandler(fname, maxBytes=1024*1024, backupCount=5)
         handler.addFilter(ShortNameFilter())
         handler.setFormatter(logging.Formatter(

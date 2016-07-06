@@ -191,10 +191,19 @@ class Processor(QtCore.QThread):
         sg_new_cut = self.sg_new_cut
         if not sg_new_cut:
             return None
-        return "%s/detail/%s/%s" % (
+        # The value in this tree_path variable is passed along to the tree_path
+        # url variable. Also we use the encodedPath method of QUrl to get the /
+        # characters properly passed through to the GMA. This is a little touchy
+        # so we don't encode the entire url.
+        tree_path = "/cuts_tree/Project/%d/Cut/%d/%d" % (
+            sg_new_cut["project"]["id"],
+            sg_new_cut["entity"]["id"],
+            sg_new_cut["id"])
+        return "%s/page/media_center?type=Cut&id=%d&project_id=%d&tree_path=%s&global=true&project_sel=all" % (
             self._edl_cut._app.shotgun.base_url,
-            sg_new_cut["type"],
             sg_new_cut["id"],
+            sg_new_cut["project"]["id"],
+            QtCore.QUrl.encodedPath(QtCore.QUrl(tree_path))
         )
 
     @property

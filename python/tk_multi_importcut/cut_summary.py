@@ -132,9 +132,14 @@ class ShotCutDiffList(list):
 
         :returns: A CutDiff instance, or None
         """
-        if self._earliest_entry:
-            return self._earliest_entry
-        return self._new_earliest_entry
+
+        # We might have a mix of omitted edits (no new value) and non omitted edits
+        # (with new values) in our list. If we have at least one entry which is
+        # not omitted (has new value) we consider entries with new values, so we
+        # will consider omitted edits only if all edits are omitted
+        if self._new_earliest_entry:
+            return self._new_earliest_entry
+        return self._earliest_entry
 
     @property
     def last(self):
@@ -143,9 +148,14 @@ class ShotCutDiffList(list):
 
         :returns: A CutDiff instance, or None
         """
-        if self._last_entry:
-            return self._last_entry
-        return self._new_last_entry
+
+        # We might have a mix of omitted edits (no new value) and non omitted edits
+        # (with new values) in our list. If we have at least one entry which is
+        # not omitted (has new value) we consider entries with new values, so we
+        # will consider omitted edits only if all edits are omitted
+        if self._new_last_entry:
+            return self._new_last_entry
+        return self._last_entry
 
     @property
     def min_tc_cut_in(self):
@@ -154,9 +164,9 @@ class ShotCutDiffList(list):
 
         :returns: A Timecode
         """
-        if self._min_tc_cut_in is not None:
-            return self._min_tc_cut_in
-        return self._new_min_tc_cut_in
+        if self._new_min_tc_cut_in is not None:
+            return self._new_min_tc_cut_in
+        return self._min_tc_cut_in
 
     @property
     def min_cut_in(self):
@@ -165,9 +175,9 @@ class ShotCutDiffList(list):
 
         :returns: A frame number as an integer
         """
-        if self._earliest_entry:
-            return self._earliest_entry.cut_in
-        return self._new_earliest_entry.new_cut_in
+        if self._new_earliest_entry:
+            return self._new_earliest_entry.new_cut_in
+        return self._earliest_entry.cut_in
 
     @property
     def max_tc_cut_out(self):
@@ -176,9 +186,9 @@ class ShotCutDiffList(list):
 
         :returns: A Timecode
         """
-        if self._max_tc_cut_out is not None:
-            return self._max_tc_cut_out
-        return self._new_max_tc_cut_out
+        if self._new_max_tc_cut_out is not None:
+            return self._new_max_tc_cut_out
+        return self._max_tc_cut_out
 
     @property
     def max_cut_out(self):
@@ -187,9 +197,9 @@ class ShotCutDiffList(list):
 
         :returns: A frame number as an integer
         """
-        if self._last_entry:
-            return self._last_entry.cut_out
-        return self._new_last_entry.new_cut_out
+        if self._new_last_entry:
+            return self._new_last_entry.new_cut_out
+        return self._last_entry.cut_out
 
     def get_shot_values(self):
         """
@@ -369,11 +379,10 @@ class CutSummary(QtCore.QObject):
         """
         super(CutSummary, self).__init__()
         self._cut_diffs = {}
+        self._total_count = 0
         # Use a defaultdict so we don't have to worry about key existence
         self._counts = defaultdict(int)
-        self._rescans_count = 0
         self._logger = get_logger()
-
         self._app = sgtk.platform.current_bundle()
         user_settings = self._app.user_settings
 
@@ -459,7 +468,7 @@ class CutSummary(QtCore.QObject):
         # lowercase.
         # We might not have a valid Shot name if we have an edit without any
         # Shot name or Version name. To avoid considering all these entries
-        # as repeated shots we forge a key based on the cut order.
+        # as repeated Shots we forge a key based on the cut order.
         shot_key = shot_name.lower() if shot_name else "_no_shot_name_%s" % cut_diff.new_cut_order
         if shot_key in self._cut_diffs:
             self._cut_diffs[shot_key].append(cut_diff)
@@ -469,14 +478,9 @@ class CutSummary(QtCore.QObject):
         else:
             self._cut_diffs[shot_key] = ShotCutDiffList(cut_diff)
             cut_diff.set_repeated(False)
+
         diff_type = cut_diff.diff_type
-        # Some counts are per Shot, some others per edits, so only update some
-        # of them if the new entry is not repeated
-        if diff_type not in _PER_SHOT_TYPE_COUNTS or not cut_diff.repeated:
-            self._counts[diff_type] += 1
-
         self._recompute_counts()
-
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
 
@@ -492,12 +496,25 @@ class CutSummary(QtCore.QObject):
         We need to unlink it as well from the Shot associated with the previous name, 
         leading to similar changes for entries associated with this Shot, if any.
 
+        Whether or not the name can be edited is controlled by CutDiff.is_name_editable.
+        At the very least, the CutDiff should have a valid Edit: we don't rename
+        entries from a previous import.
+
         :param cut_diff: A CutDiff instance
         :param old_name: A string, the CutDiff previous name
         :param new_name: A string, the CutDiff new name
         """
+
+        # Only CutDiff with a valid edit should be allowed to be renamed.
+        # This is checked in CutDiff.is_name_editable, however, re-iterate
+        # the check here, so coders know what to expect
+        if not cut_diff.edit:
+            raise RuntimeError(
+                "%s does not have a a valid edit and can't be renamed" % cut_diff.name
+            )
+
         # We might have empty names here. To avoid considering all entries
-        # with no name as repeated shots we forge a key based on the cut order.
+        # with no name as repeated Shots we forge a key based on the cut order.
         new_shot_key = new_name.lower() if new_name else "_no_shot_name_%s" % cut_diff.new_cut_order
         old_shot_key = old_name.lower() if old_name else "_no_shot_name_%s" % cut_diff.new_cut_order
         if new_shot_key == old_shot_key:
@@ -507,24 +524,23 @@ class CutSummary(QtCore.QObject):
         if old_shot_key not in self._cut_diffs:
             raise RuntimeError("Can't retrieve Shot %s in internal list" % old_shot_key)
         self._cut_diffs[old_shot_key].remove(cut_diff)
+        # If we have a SG Shot, and a CutItem, it is now an omitted one
+        if cut_diff.sg_cut_item and cut_diff.sg_shot:
+            self._logger.debug("Adding omitted entry for old shot key %s" % old_shot_key)
+            sg_shot = cut_diff.sg_shot
+            sg_cut_item = cut_diff.sg_cut_item
+            self.add_cut_diff(
+                sg_shot["code"],
+                sg_shot=sg_shot,
+                edit=None,
+                sg_cut_item=sg_cut_item,
+            )
         count = len(self._cut_diffs[old_shot_key])
         if count == 0:
-            self._logger.debug("No more entries for old Shot key %s" % old_shot_key)
-            # If we have a SG shot, it is now an omitted one
-            if cut_diff.sg_shot:
-                self._logger.debug("Adding omitted entry for old Shot key %s" % old_shot_key)
-                sg_shot = cut_diff.sg_shot
-                sg_cut_item = cut_diff.sg_cut_item
-                self.add_cut_diff(
-                    sg_shot["code"],
-                    sg_shot=sg_shot,
-                    edit=None,
-                    sg_cut_item=sg_cut_item,
-                )
-            else:
-                self._logger.debug("Discarding list for old Shot key %s" % old_shot_key)
-                # We can discard the list for this Shot
-                del self._cut_diffs[old_shot_key]
+            self._logger.debug("No more entries for old shot key %s" % old_shot_key)
+            self._logger.debug("Discarding list for old shot key %s" % old_shot_key)
+            # We can discard the list for this shot
+            del self._cut_diffs[old_shot_key]
         elif count == 1:
             self._logger.debug("Single entry for old Shot key %s" % old_shot_key)
             # This guy is alone now, so not repeated
@@ -543,46 +559,62 @@ class CutSummary(QtCore.QObject):
             for cdiff in self._cut_diffs[new_shot_key]:
                 self._logger.debug("%s %s %s %s" % cdiff.summary())
             count = len(self._cut_diffs[new_shot_key])
-            self._logger.debug("%d Entrie(s) for new Shot key %s" % (count, new_shot_key))
-            if count == 1 and not self._cut_diffs[new_shot_key][0].edit:
-                self._logger.debug("Single omitted entry for new Shot key %s" % new_shot_key)
-                # If only one entry, that could be an omitted Shot (no edit)
-                # in that case the Shot is not omitted anymore
-                cdiff = self._cut_diffs[new_shot_key].pop()
-                self.delete_cut_diff.emit(cdiff)
-                # Recompute totals with the removed Cut diff
-                self.cut_diff_type_changed(cdiff, cdiff.diff_type, None)
-                cut_diff.set_sg_shot(cdiff.sg_shot)
-                cut_diff.set_sg_cut_item(cdiff.sg_cut_item)
+            self._logger.debug("%d Entrie(s) for new shot key %s" % (count, new_shot_key))
+            # Check if there is some omitted entries (no edit) which we should
+            # replace, and choose the best one to replace
+            matching_omit_entries = [
+                x for x in self._cut_diffs[new_shot_key] if not x.edit
+            ]
+            self._logger.debug("Potential matches: %s" % matching_omit_entries)
+            if matching_omit_entries:
+                # Loop over candidates and choose the best one
+                best_cdiff = None
+                best_score = -1
+                for cdiff in matching_omit_entries:
+                    score = cut_diff.get_matching_score(cdiff)
+                    if best_cdiff is None or score > best_score:
+                        best_cdiff = cdiff
+                        best_score = score
+                self._logger.debug(
+                    "Found omitted entry for new shot key %s: %s" % (
+                        new_shot_key, str(best_cdiff)
+                ))
+                # Remove the chosen CutDiff
+                self._cut_diffs[new_shot_key].remove(best_cdiff)
+                self.delete_cut_diff.emit(best_cdiff)
+                # Recompute totals with the removed cut diff
+                self.cut_diff_type_changed(best_cdiff, best_cdiff.diff_type, None)
+                # And add the edited CutDiff, reusing some data of the CutDiff
+                # we are replacing
+                cut_diff.set_sg_shot(best_cdiff.sg_shot)
+                cut_diff.set_sg_cut_item(best_cdiff.sg_cut_item)
                 if cut_diff.edit:
-                    cut_diff.set_sg_version(cdiff.sg_version)
+                    cut_diff.set_sg_version(best_cdiff.sg_version)
                 self._cut_diffs[new_shot_key].append(cut_diff)
+                if count > 1:
+                    # If the Shot is repeated, flag the edited CutDiff as repeated
+                    try:
+                        cut_diff.set_repeated(True)
+                    except TypeError, e:
+                        # Adding some extra debug information here, because a lot
+                        # of edge cases exist when editing shot names for repeated
+                        # shots
+                        self._logger.debug("%s".join(cut_diff.summary()))
+                        self._logger.debug(str(self._cut_diffs[new_shot_key]))
+                        raise
             else:
                 self._logger.debug("Adding new entry for new Shot key %s" % new_shot_key)
-                # SG Shot and CutItem are shared by all entries in this list
+                # SG Shot is shared by all entries in this list
                 cdiff = self._cut_diffs[new_shot_key][0]
                 cut_diff.set_sg_shot(cdiff.sg_shot)
-                cut_diff.set_sg_cut_item(cdiff.sg_cut_item)
-                if cut_diff.edit:
-                    cut_diff.set_sg_version(cdiff.sg_version)
+                cut_diff.set_sg_version(cdiff.sg_version)
                 # Append and flag everything as repeated
                 self._cut_diffs[new_shot_key].append(cut_diff)
                 for cdiff in self._cut_diffs[new_shot_key]:
                     cdiff.set_repeated(True)
         else:
-            # new_shot_key not already in self._cut_diffs
-            fields = [
-                "code",
-                "sg_status_list",
-                "sg_cut_order",
-                "sg_cut_in",
-                "sg_cut_out",
-                "sg_head_in",
-                "sg_tail_out"
-            ]
             existing_linked_shot = self._app.shotgun.find_one(
-                "Shot",
-                [
+                "Shot", [
                     ["project", "is", self._sg_project],
                     [self._sg_shot_link_field_name, "is", self._sg_entity],
                     ["code", "is", new_name]
@@ -595,8 +627,9 @@ class CutSummary(QtCore.QObject):
             else:
                 # Link to the first Shot found whose name matches new_name
                 existing_unlinked_shot = self._app.shotgun.find_one(
-                    "Shot",
-                    [["project", "is", self._sg_project], ["code", "is", new_name]],
+                    "Shot", [
+                        ["project", "is", self._sg_project], ["code", "is", new_name]
+                    ],
                     _SHOT_FIELDS
                 )
                 if existing_unlinked_shot:
@@ -631,9 +664,30 @@ class CutSummary(QtCore.QObject):
             self._counts[old_type] -= 1
             if self._counts[old_type] == 0:
                 del self._counts[old_type]
-        if new_type is not None:  # None is used when some Cut diff are deleted
+
+        if new_type is not None:  # None is used when some cut diff are deleted
             self._counts[new_type] += 1
+
+        # Maintain our total count, excluding OMITTED entries.
+        # If the entry was OMITTED, and is not OMITTED anymore, count it in our
+        # total
+        if (old_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
+            new_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
+            self._total_count += 1
+        # If the entry was not OMITTED, and is now OMITTED, remove it from our total
+        elif (old_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
+              new_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
+            self._total_count -= 1
         self.totals_changed.emit()
+
+    @property
+    def total_count(self):
+        """
+        Return the total number of entries
+
+        :returns: An integer
+        """
+        return self._total_count
 
     @property
     def rescans_count(self):
@@ -642,7 +696,7 @@ class CutSummary(QtCore.QObject):
 
         :returns: An integer
         """
-        return self._rescans_count
+        return self._counts.get(_DIFF_TYPES.RESCAN, 0)
 
     @property
     def repeated_count(self):
@@ -700,23 +754,27 @@ class CutSummary(QtCore.QObject):
         """
         # Use a defaultdict so we don't have to worry about key existence
         self._counts = defaultdict(int)
-        for k, v in self._cut_diffs.iteritems():
-            _, _, _, _, _, _, shot_diff_type = v.get_shot_values()
+        self._total_count = 0
+        for shot, diff_list in self._cut_diffs.iteritems():
+            _, _, _, _, _, _, shot_diff_type = diff_list.get_shot_values()
             if shot_diff_type in _PER_SHOT_TYPE_COUNTS:
                 # We count these per shots
                 self._counts[shot_diff_type] += 1
+                # We don't want to include omitted entries in our total
+                if shot_diff_type != _DIFF_TYPES.OMITTED:
+                    self._total_count += 1
             else:
                 # We count others per entries
-                for cut_diff in v:
+                for cut_diff in diff_list:
                     # We don't use cut_diff.interpreted_type here, as it will
                     # loop over all siblings, repeated shots cases are handled
                     # with the shot_diff_type
                     diff_type = self._interpreted_diff_type(cut_diff.diff_type)
                     self._counts[diff_type] += 1
-        # Legacy thing: rescan count was once not handled with a diff type
-        # so keep updating it until all references to it are removed from the
-        # code
-        self._rescans_count = self._counts.get(_DIFF_TYPES.RESCAN, 0)
+                    # We don't want to include omitted entries in our total
+                    if cut_diff.diff_type not in [
+                        _DIFF_TYPES.OMITTED_IN_CUT, _DIFF_TYPES.OMITTED]:
+                        self._total_count += 1
         self._logger.debug(str(self._counts))
         self.totals_changed.emit()
 
