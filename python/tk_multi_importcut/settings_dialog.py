@@ -453,7 +453,7 @@ class SettingsDialog(QtGui.QDialog):
         # while processing the EDL, etc. As a stop-gap, we warn the user and give them
         # the opportunity to restart the app if one of the known "non-refreshable"
         # settings has been changed (#36605).
-        if self._user_settings.restart_needed(new_values):
+        if self._user_settings.reset_needed(new_values, self._step):
             msg_box = QtGui.QMessageBox(
                 parent=self,
                 icon=QtGui.QMessageBox.Critical

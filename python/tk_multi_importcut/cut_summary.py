@@ -384,9 +384,6 @@ class CutSummary(QtCore.QObject):
         self._counts = defaultdict(int)
         self._logger = get_logger()
         self._app = sgtk.platform.current_bundle()
-        user_settings = self._app.user_settings
-
-        self._omit_statuses = [user_settings.retrieve("omit_status")]
 
         self._tc_start = tc_edit_in
         self._tc_end = tc_edit_out

@@ -136,10 +136,7 @@ class EdlCut(QtCore.QObject):
             self._frame_rate = frame_rate
         else:
             self._frame_rate = float(self._user_settings.retrieve("default_frame_rate"))
-        self._update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
-        self._omit_status = self._user_settings.retrieve("omit_status")
-        self._reinstate_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is")
 
     @property
     def entity_name(self):
@@ -1161,6 +1158,10 @@ class EdlCut(QtCore.QObject):
             self._logger.info("Updating Shots ...")
         else:
             self._logger.info("Creating new Shots ...")
+
+        omit_status = self._user_settings.retrieve("omit_status")
+        update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
+
         sg_batch_data = []
         post_create = {}
         # Loop over all Shots that we need to create
@@ -1232,10 +1233,11 @@ class EdlCut(QtCore.QObject):
                         "request_type": "update",
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
-                        "data": {"code": sg_shot["code"],
-                                 "sg_status_list": self._omit_status if self._update_shot_statuses
-                                        else sg_shot["sg_status_list"]
-                                 }
+                        "data": {
+                            "code": sg_shot["code"],
+                            "sg_status_list": omit_status if update_shot_statuses
+                                              else sg_shot["sg_status_list"]
+                        }
                     })
                 elif shot_diff_type == _DIFF_TYPES.REINSTATED:
                     reinstate_status = self._user_settings.retrieve("reinstate_status")
@@ -1257,7 +1259,7 @@ class EdlCut(QtCore.QObject):
                     # Add code in the update so it will be returned with batch results.
                     data = {"code": sg_shot["code"],
                             "sg_cut_order": min_cut_order,
-                            "sg_status_list": reinstate_status if self._update_shot_statuses
+                            "sg_status_list": reinstate_status if update_shot_statuses
                             else sg_shot["sg_status_list"]
                             }
                     data.update(

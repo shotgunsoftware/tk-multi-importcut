@@ -145,7 +145,8 @@ class CutDiff(QtCore.QObject):
         self._cut_changes_reasons = []
         # The values coming back from retrieve here have been validated
         # by settings_dialog.py on their way in, so we should be good
-        self._timecode_to_frame_mapping = self._user_settings.retrieve("timecode_to_frame_mapping")
+        self._timecode_to_frame_mapping_mode = self._user_settings.retrieve(
+            "timecode_to_frame_mapping")
         self._default_head_in = int(self._user_settings.retrieve("default_head_in"))
         self._default_head_in_duration = int(self._user_settings.retrieve("default_head_duration"))
         self._default_tail_out_duration = int(self._user_settings.retrieve("default_tail_duration"))
@@ -191,19 +192,19 @@ class CutDiff(QtCore.QObject):
         imports.
         """
         user_settings = sgtk.platform.current_bundle().user_settings
-        timecode_to_frame_mapping = user_settings.retrieve("timecode_to_frame_mapping")
+        timecode_to_frame_mapping_mode = user_settings.retrieve("timecode_to_frame_mapping")
         default_frame_rate = float(user_settings.retrieve("default_frame_rate"))
-        if timecode_to_frame_mapping == _ABSOLUTE_MODE:
+        if timecode_to_frame_mapping_mode == _ABSOLUTE_MODE:
             # if we're in absolute mode, we need to reset our tc/frame values to 0
             cls.__default_timecode_frame_mapping = (
                 edl.Timecode("00:00:00:00", fps=default_frame_rate), 0)
-        elif timecode_to_frame_mapping == _RELATIVE_MODE:
+        elif timecode_to_frame_mapping_mode == _RELATIVE_MODE:
             # the values from users settings are only used in relative mode
             timecode_mapping = user_settings.retrieve("timecode_mapping")
             frame_mapping = int(user_settings.retrieve("frame_mapping"))
             cls.__default_timecode_frame_mapping = (
                 edl.Timecode(timecode_mapping, fps=default_frame_rate), frame_mapping)
-        elif timecode_to_frame_mapping == _AUTOMATIC_MODE:
+        elif timecode_to_frame_mapping_mode == _AUTOMATIC_MODE:
             default_head_in = int(user_settings.retrieve("default_head_in"))
             cls.__default_timecode_frame_mapping = (None, default_head_in)
 
@@ -449,7 +450,7 @@ class CutDiff(QtCore.QObject):
         # Default case: retrieve the value from the Shot or fall back to the default
         nh = self.shot_head_in
         if nh is None:
-            if self._timecode_to_frame_mapping != _AUTOMATIC_MODE:  # Explicit timecode
+            if self._timecode_to_frame_mapping_mode != _AUTOMATIC_MODE:  # Explicit timecode
                 base_tc = self._timecode_frame_map[0]
                 base_frame = self._timecode_frame_map[1]
                 cut_in = self.new_tc_cut_in.to_frame() - base_tc.to_frame() + base_frame
@@ -951,8 +952,8 @@ class CutDiff(QtCore.QObject):
                 self._diff_type = _DIFF_TYPES.OMITTED_IN_CUT
             return
         # We have both a Shot and an edit.
-        omit_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is") or []
-        if self._sg_shot["sg_status_list"] in omit_statuses:
+        omitted_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is") or []
+        if self._sg_shot["sg_status_list"] in omitted_statuses:
             self._diff_type = _DIFF_TYPES.REINSTATED
             return
 
