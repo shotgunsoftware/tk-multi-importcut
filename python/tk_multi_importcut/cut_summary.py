@@ -137,7 +137,6 @@ class ShotCutDiffList(list):
         # (with new values) in our list. If we have at least one entry which is
         # not omitted (has new value) we consider entries with new values, so we
         # will consider omitted edits only if all edits are omitted
-
         if self._new_earliest_entry:
             return self._new_earliest_entry
         return self._earliest_entry
@@ -154,7 +153,6 @@ class ShotCutDiffList(list):
         # (with new values) in our list. If we have at least one entry which is
         # not omitted (has new value) we consider entries with new values, so we
         # will consider omitted edits only if all edits are omitted
-
         if self._new_last_entry:
             return self._new_last_entry
         return self._last_entry
@@ -470,7 +468,7 @@ class CutSummary(QtCore.QObject):
         # lowercase.
         # We might not have a valid Shot name if we have an edit without any
         # Shot name or Version name. To avoid considering all these entries
-        # as repeated shots we forge a key based on the cut order.
+        # as repeated Shots we forge a key based on the cut order.
         shot_key = shot_name.lower() if shot_name else "_no_shot_name_%s" % cut_diff.new_cut_order
         if shot_key in self._cut_diffs:
             self._cut_diffs[shot_key].append(cut_diff)
@@ -516,7 +514,7 @@ class CutSummary(QtCore.QObject):
             )
 
         # We might have empty names here. To avoid considering all entries
-        # with no name as repeated shots we forge a key based on the cut order.
+        # with no name as repeated Shots we forge a key based on the cut order.
         new_shot_key = new_name.lower() if new_name else "_no_shot_name_%s" % cut_diff.new_cut_order
         old_shot_key = old_name.lower() if old_name else "_no_shot_name_%s" % cut_diff.new_cut_order
         if new_shot_key == old_shot_key:
@@ -526,7 +524,7 @@ class CutSummary(QtCore.QObject):
         if old_shot_key not in self._cut_diffs:
             raise RuntimeError("Can't retrieve Shot %s in internal list" % old_shot_key)
         self._cut_diffs[old_shot_key].remove(cut_diff)
-        # If we have a SG shot, and a CutItem, it is now an omitted one
+        # If we have a SG Shot, and a CutItem, it is now an omitted one
         if cut_diff.sg_cut_item and cut_diff.sg_shot:
             self._logger.debug("Adding omitted entry for old shot key %s" % old_shot_key)
             sg_shot = cut_diff.sg_shot
@@ -563,7 +561,7 @@ class CutSummary(QtCore.QObject):
             count = len(self._cut_diffs[new_shot_key])
             self._logger.debug("%d Entrie(s) for new shot key %s" % (count, new_shot_key))
             # Check if there is some omitted entries (no edit) which we should
-            # replace, and choose to best one to replace
+            # replace, and choose the best one to replace
             matching_omit_entries = [
                 x for x in self._cut_diffs[new_shot_key] if not x.edit
             ]
@@ -670,12 +668,16 @@ class CutSummary(QtCore.QObject):
         if new_type is not None:  # None is used when some cut diff are deleted
             self._counts[new_type] += 1
 
-        if(old_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
+        # Maintain our total count, excluding OMITTED entries.
+        # If the entry was OMITTED, and is not OMITTED anymore, count it in our
+        # total
+        if (old_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
             new_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
             self._total_count += 1
-        elif(old_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
-            new_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
-            self._total_count += 1
+        # If the entry was not OMITTED, and is now OMITTED, remove it from our total
+        elif (old_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
+              new_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
+            self._total_count -= 1
         self.totals_changed.emit()
 
     @property

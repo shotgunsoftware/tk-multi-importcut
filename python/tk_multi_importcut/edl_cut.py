@@ -490,7 +490,7 @@ class EdlCut(QtCore.QObject):
             # todo: do we want to filter for active projects?
             sg_projects = self._sg.find(
                 "Project",
-                [["is_template", "is", False], ["archived", "is_not", True]],
+                [["is_template", "is", False], ["archived", "is", False]],
                 fields,
                 order=order
             )
@@ -537,7 +537,7 @@ class EdlCut(QtCore.QObject):
                 ],
                 order=[{"field_name": "id", "direction": "desc"}]
             )
-            # If no cut, go directly to next step
+            # If no Cut, go directly to next step
             if not sg_cuts:
                 self.show_cut_diff({})
                 self._no_cut_for_entity = True
@@ -1126,18 +1126,9 @@ class EdlCut(QtCore.QObject):
         :param tail_out: Shot tail out value to set
         :returns: A SG data dictionary suitable for an update
         """
-        # Note: smart_head_duration shouldn't have to be set (it should be
-        # calculated automatically by Shotgun). When the bug in Shotgun is fixed
-        # that prevents this from happening, we should stop setting this field.
-        # Also note that setting smart_head_duration triggers the calculation
-        # of smart_working_duration. So there is potentially a problem with
-        # multiple fields, although it's likely these two problems are related.
-        # Additionally you may notice we are NOT adding a +1 to the
-        # smart_head_duration. This is to get the smart fields to act the same
-        # as the normal CutItem fields. When this bug with smart fields is
-        # worked out, we'll likely need to add the +1 to the smart_head_duration
-        # calculation (if it's needed at all at that point). Also note that
-        # smart_tail_duration does not need to be set here.
+        # Note: smart fields require a two pre-update pass to get the right value
+        # because of the way they propagate changes from one field to others. This
+        # pre-pass is not handled here.
         if self._use_smart_fields:
             return {
                 "smart_head_in": head_in,
