@@ -18,6 +18,7 @@ class Ui_EntityCard(object):
         sizePolicy.setHeightForWidth(EntityCard.sizePolicy().hasHeightForWidth())
         EntityCard.setSizePolicy(sizePolicy)
         EntityCard.setMinimumSize(QtCore.QSize(310, 70))
+        EntityCard.setMaximumSize(QtCore.QSize(470, 16777215))
         EntityCard.setBaseSize(QtCore.QSize(358, 70))
         EntityCard.setFocusPolicy(QtCore.Qt.StrongFocus)
         EntityCard.setStyleSheet("")
@@ -53,7 +54,7 @@ class Ui_EntityCard(object):
         self.status_label = QtGui.QLabel(EntityCard)
         self.status_label.setObjectName("status_label")
         self.verticalLayout_2.addWidget(self.status_label)
-        self.details_label = QtGui.QLabel(EntityCard)
+        self.details_label = ElidedLabel(EntityCard)
         self.details_label.setObjectName("details_label")
         self.verticalLayout_2.addWidget(self.details_label)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
@@ -85,4 +86,5 @@ class Ui_EntityCard(object):
         self.status_label.setText(QtGui.QApplication.translate("EntityCard", "Status", None, QtGui.QApplication.UnicodeUTF8))
         self.details_label.setText(QtGui.QApplication.translate("EntityCard", "<small>details</small>", None, QtGui.QApplication.UnicodeUTF8))
 
+from ..dialog import ElidedLabel
 from . import resources_rc

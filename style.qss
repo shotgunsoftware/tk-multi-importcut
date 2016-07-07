@@ -17,6 +17,7 @@ Will have the "Do it" button on the far right
 QDialogButtonBox {
     button-layout: 3;
 }
+
 CutDiffCard #version_name_label {
     padding: 1px; /* Give a bit of margin so the lineedit and label can be aligned */
     margin: 0px;
@@ -204,10 +205,13 @@ enabled */
 
 /* darkening the bg for selection widgets */
 #settings_dialog QComboBox,
-#settings_dialog QCheckBox,
 #settings_dialog QLineEdit
 {
     background-color: #2a2a2a;
+}
+
+#settings_dialog QCheckBox {
+    background-color: transparent;
 }
 
 /* fading out widgets that aren't enabled */
@@ -570,3 +574,4 @@ CutDiffCard[diff_type="no_link"]  #status_label ,
     color: #2C93E2;
     border: 1px none #555555;
 }
+

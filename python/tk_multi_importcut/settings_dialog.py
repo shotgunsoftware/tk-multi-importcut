@@ -122,7 +122,6 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.update_shot_statuses_checkbox.setChecked(
                 self._user_settings.get("update_shot_statuses"))
             self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
-
             self.ui.use_smart_fields_checkbox.setChecked(
                 self._user_settings.get("use_smart_fields"))
             self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(
