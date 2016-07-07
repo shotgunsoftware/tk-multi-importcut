@@ -9,9 +9,11 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 # Metadata defining the behaviour and requirements for this engine
-# Please not that settings for this app are handled in the UI itself
-# and saved per user.
 
+#
+# Please note that settings for this app are handled in the UI itself
+# and saved per user.
+#
 # expected fields in the configuration file for this engine
 configuration:
 

@@ -56,7 +56,7 @@ from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STE
 from .constants import _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 # Supported movie file extensions
-from .constants import _VIDEO_EXTS
+from .constants import _VIDEO_EXTS, _EDL_EXT
 
 settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
@@ -157,7 +157,7 @@ class AppDialog(QtGui.QWidget):
 
         :param edl_file_path: Full path to an EDL file
         :param sg_entity: An SG Entity dictionary
-        :param frame_rate: Use a specific frame rate for the import
+        :param frame_rate: A float, use a specific frame rate for the import
         """
         # first, call the base class and let it do its thing.
         QtGui.QWidget.__init__(self)
@@ -234,7 +234,7 @@ class AppDialog(QtGui.QWidget):
 
         # Let's do something when something is dropped
         self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
-        self.ui.drop_area_frame.set_restrict_to_ext(_VIDEO_EXTS + [".edl"])
+        self.ui.drop_area_frame.set_restrict_to_ext(_VIDEO_EXTS + [_EDL_EXT])
 
         # Build views and connect them to the data manager
 
@@ -626,7 +626,7 @@ class AppDialog(QtGui.QWidget):
         :param ext: The file extension, as extracted with splitext, e.g. '.edl'
         :returns: True if the file is valid, False otherwise
         """
-        if ext.lower() == ".edl":
+        if ext.lower() == _EDL_EXT:
             # Reset things if an EDL was previously dropped
             self.ui.edl_added_icon.hide()
             self.ui.next_button.setEnabled(False)
@@ -636,8 +636,9 @@ class AppDialog(QtGui.QWidget):
             self.new_movie.emit(path)
         else:
             self._logger.error(
-                "'%s' is not a supported file type. Supported types are .edl and movie types: %s." % (
+                "'%s' is not a supported file type. Supported types are %s and movie types: %s." % (
                     os.path.basename(path),
+                    _EDL_EXT,
                     str(_VIDEO_EXTS)
                 ))
             return False

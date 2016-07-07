@@ -8,7 +8,7 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-# Different steps in the wizar process
+# Different steps in the wizard process
 _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, \
     _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP = range(8)
 
@@ -24,6 +24,9 @@ _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE = range(3)
 
 # List of supported extensions for movies
 _VIDEO_EXTS = [".avi", ".m4v", ".mov", ".mp4", ".qt", ".webm"]
+
+# EDL file extension
+_EDL_EXT = ".edl"
 
 # Some colors used in various places
 _COLORS = {
