@@ -48,7 +48,7 @@ _BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
 Please check your Shotgun site."
 
 _CHANGED_SETTINGS_MSG = "Applying these Settings updates will require an app \
-restart. All Import Cut progress will be lost."
+reset. All Import Cut progress will be lost."
 
 _CORRUPT_SETTINGS_MSG = "Corrupt user settings have been reset to default, \
 restart Import Cut: %s"
@@ -90,6 +90,8 @@ class SettingsDialog(QtGui.QDialog):
     widget. Gives users access to app settings via a gui interface, stores those
     settings locally per user.
     """
+    reset_needed = QtCore.Signal(int)
+
     def __init__(self, parent=None, step=None):
         """
         Instantiate a new dialog with the given parent for the current step
@@ -451,7 +453,7 @@ class SettingsDialog(QtGui.QDialog):
 
         # At the moment certain settings require a refresh to be properly accounted for
         # while processing the EDL, etc. As a stop-gap, we warn the user and give them
-        # the opportunity to restart the app if one of the known "non-refreshable"
+        # the opportunity to reset the app if one of the known "non-refreshable"
         # settings has been changed (#36605).
         if self._user_settings.reset_needed(new_values, self._step):
             msg_box = QtGui.QMessageBox(
@@ -460,13 +462,19 @@ class SettingsDialog(QtGui.QDialog):
             )
             msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
             msg_box.setText("%s\n\n%s" % ("Settings", _CHANGED_SETTINGS_MSG))
-            cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.YesRole)
-            apply_button = msg_box.addButton("Apply and Quit", QtGui.QMessageBox.NoRole)
-            apply_button.clicked.connect(lambda: self._save_settings_and_close(new_values))
+            msg_box.setStandardButtons(QtGui.QMessageBox.Apply | QtGui.QMessageBox.Cancel)
+            apply_button = msg_box.button(QtGui.QMessageBox.Apply)
+            apply_button.setText("Apply and Reset")
+#            cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.RejectRole)
+#            apply_button = msg_box.addButton("Apply and Reset", QtGui.QMessageBox.AcceptRole)
+            #apply_button.clicked.connect(lambda: self._save_settings_and_close(new_values))
             msg_box.show()
             msg_box.raise_()
             msg_box.activateWindow()
-            return
+            ret = msg_box.exec_()
+            if ret != QtGui.QMessageBox.Apply:
+                return False
+            self.reset_needed.emit(self._step)
         self._save_settings(new_values)
         return True
 

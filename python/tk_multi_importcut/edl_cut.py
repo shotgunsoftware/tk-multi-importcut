@@ -237,7 +237,7 @@ class EdlCut(QtCore.QObject):
                 elif match:
                     edit._shot_name = match
 
-    @QtCore.Slot(str)
+    @QtCore.Slot()
     def reset(self):
         """
         Clear this worker, discarding all data

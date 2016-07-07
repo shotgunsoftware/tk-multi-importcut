@@ -1174,9 +1174,14 @@ class AppDialog(QtGui.QWidget):
         """
         self._logger.debug("Settings at step %d" % step)
         show_settings_dialog = SettingsDialog(parent=self, step=step)
+        show_settings_dialog.reset_needed.connect(self.reset_up_to_step)
         show_settings_dialog.show()
         show_settings_dialog.raise_()
         show_settings_dialog.activateWindow()
+
+    @QtCore.Slot(int)
+    def reset_up_to_step(self, step):
+        self.goto_step(_DROP_STEP)
 
     def create_entity(self, entity_type, fields):
         """
