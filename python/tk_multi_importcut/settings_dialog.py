@@ -16,6 +16,7 @@ from .cut_diff import CutDiff
 from .user_settings import UserSettings
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
+from .constants import _DROP_STEP
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
@@ -47,8 +48,8 @@ must match the pattern hh:mm:ss:ff and contain valid timecode."
 _BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
 Please check your Shotgun site."
 
-_CHANGED_SETTINGS_MSG = "Applying these Settings updates will require an app \
-reset. All Import Cut progress will be lost."
+_CHANGED_SETTINGS_MSG = ("Applying these Settings updates will require reloading "
+"data. Import Cut progress might be lost.")
 
 _CORRUPT_SETTINGS_MSG = "Corrupt user settings have been reset to default, \
 restart Import Cut: %s"
@@ -90,7 +91,7 @@ class SettingsDialog(QtGui.QDialog):
     widget. Gives users access to app settings via a gui interface, stores those
     settings locally per user.
     """
-    reset_needed = QtCore.Signal(int)
+    reset_needed = QtCore.Signal(list)
 
     def __init__(self, parent=None, step=None):
         """
@@ -363,7 +364,8 @@ class SettingsDialog(QtGui.QDialog):
         """
         Validate user settings from current UI values.
 
-        :returns: True if all settings can be safely saved, and None otherwise.
+        :returns: True if all settings can be safely saved, False otherwise.
+        :raises: SettingError if bad settings values are found.
         """
 
         # General tab
@@ -450,12 +452,12 @@ class SettingsDialog(QtGui.QDialog):
             raise SettingsError("Default Tail Duration must be set")
         new_values["default_tail_duration"] = self.ui.default_tail_duration_line_edit.text()
 
-
-        # At the moment certain settings require a refresh to be properly accounted for
-        # while processing the EDL, etc. As a stop-gap, we warn the user and give them
-        # the opportunity to reset the app if one of the known "non-refreshable"
-        # settings has been changed (#36605).
-        if self._user_settings.reset_needed(new_values, self._step):
+        # Retrieve a list of potentially affected steps by these changes
+        affected = self._user_settings.reset_needed(new_values, self._step)
+        # Ask the user confirmation to apply changes and to reload data, as it
+        # might fail, or the user might lose some changes he made, e.g. if he edited
+        # Shot names in the summary view.
+        if affected:
             msg_box = QtGui.QMessageBox(
                 parent=self,
                 icon=QtGui.QMessageBox.Critical
@@ -464,26 +466,19 @@ class SettingsDialog(QtGui.QDialog):
             msg_box.setText("%s\n\n%s" % ("Settings", _CHANGED_SETTINGS_MSG))
             msg_box.setStandardButtons(QtGui.QMessageBox.Apply | QtGui.QMessageBox.Cancel)
             apply_button = msg_box.button(QtGui.QMessageBox.Apply)
-            apply_button.setText("Apply and Reset")
-#            cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.RejectRole)
-#            apply_button = msg_box.addButton("Apply and Reset", QtGui.QMessageBox.AcceptRole)
-            #apply_button.clicked.connect(lambda: self._save_settings_and_close(new_values))
+            apply_button.setText("Apply and Reload")
             msg_box.show()
             msg_box.raise_()
             msg_box.activateWindow()
             ret = msg_box.exec_()
             if ret != QtGui.QMessageBox.Apply:
                 return False
-            self.reset_needed.emit(self._step)
         self._save_settings(new_values)
+        if affected:
+            # Notify listeners that some steps must be reloaded
+            self._logger.debug("Resetting %s" % affected)
+            self.reset_needed.emit(affected)
         return True
-
-    def _save_settings_and_close(self, new_values):
-        """
-        Stores settings and closes the parent dialog since the App needs to be restarted.
-        """
-        self._save_settings(new_values)
-        self.parent().close()
 
     def _save_settings(self, new_values):
         """
