@@ -452,7 +452,7 @@ class SettingsDialog(QtGui.QDialog):
             raise SettingsError("Default Tail Duration must be set")
         new_values["default_tail_duration"] = self.ui.default_tail_duration_line_edit.text()
 
-        # Retrieve a list of potentially affected steps by these changes
+        # Retrieve a list of steps potentially affected by these changes
         affected = self._user_settings.reset_needed(new_values, self._step)
         # Ask the user confirmation to apply changes and to reload data, as it
         # might fail, or the user might lose some changes he made, e.g. if he edited
@@ -487,7 +487,4 @@ class SettingsDialog(QtGui.QDialog):
         """
         self._logger.debug("New values %s" % new_values)
         self._user_settings.save(new_values)
-        # An attempt to refresh some of the values, but it doesn't entirely work.
-        CutDiff.retrieve_default_timecode_frame_mapping()
-        self.close_dialog()
         self._logger.info("User settings saved.")

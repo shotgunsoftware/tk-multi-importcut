@@ -113,8 +113,6 @@ class CutDiff(QtCore.QObject):
     # Emitted when this CutDiff instance is discarded
     discarded = QtCore.Signal(QtCore.QObject)
 
-    __default_timecode_frame_mapping = None
-
     def __init__(self, name, sg_shot=None, edit=None, sg_cut_item=None):
         """
         Instantiate a new Cut difference
@@ -143,20 +141,10 @@ class CutDiff(QtCore.QObject):
         self._repeated = False
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
-        # The values coming back from retrieve here have been validated
-        # by settings_dialog.py on their way in, so we should be good
-        self._timecode_to_frame_mapping_mode = self._user_settings.retrieve(
-            "timecode_to_frame_mapping")
-        self._default_head_in = int(self._user_settings.retrieve("default_head_in"))
-        self._default_head_in_duration = int(self._user_settings.retrieve("default_head_duration"))
-        self._default_tail_out_duration = int(self._user_settings.retrieve("default_tail_duration"))
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
-
+        self._retrieve_default_timecode_frame_mapping()
         # List of other entries for the same Shot
         self._siblings = None
-        # Later we might want to allow users to edit the mapping, so
-        # so let's make a copy of defaults in this instance
-        self._timecode_frame_map = self.__default_timecode_frame_mapping
         # Retrieve the Cut diff type from the given params
         self._check_and_set_changes()
 
@@ -169,11 +157,9 @@ class CutDiff(QtCore.QObject):
         """
         return _DIFF_LABELS[diff_type]
 
-    @classmethod
-    def retrieve_default_timecode_frame_mapping(cls):
+    def _retrieve_default_timecode_frame_mapping(self):
         """
-        Read timecode to frame mapping user settings and store them at the class
-        level.
+        Read timecode to frame mapping user settings and store them on this instance.
         
         Three mapping modes are available, which are only relevant for first 
         imports:
@@ -192,21 +178,28 @@ class CutDiff(QtCore.QObject):
         imports.
         """
         user_settings = sgtk.platform.current_bundle().user_settings
-        timecode_to_frame_mapping_mode = user_settings.retrieve("timecode_to_frame_mapping")
+        # The values coming back from retrieve here have been validated
+        # by settings_dialog.py on their way in, so we should be good
+        self._timecode_to_frame_mapping_mode = user_settings.retrieve("timecode_to_frame_mapping")
+        self._default_head_in = int(user_settings.retrieve("default_head_in"))
+        self._default_head_in_duration = int(user_settings.retrieve("default_head_duration"))
+        self._default_tail_out_duration = int(user_settings.retrieve("default_tail_duration"))
+
         default_frame_rate = float(user_settings.retrieve("default_frame_rate"))
-        if timecode_to_frame_mapping_mode == _ABSOLUTE_MODE:
+        if self._timecode_to_frame_mapping_mode == _ABSOLUTE_MODE:
             # if we're in absolute mode, we need to reset our tc/frame values to 0
-            cls.__default_timecode_frame_mapping = (
+            self._timecode_frame_map = (
                 edl.Timecode("00:00:00:00", fps=default_frame_rate), 0)
-        elif timecode_to_frame_mapping_mode == _RELATIVE_MODE:
+        elif self._timecode_to_frame_mapping_mode == _RELATIVE_MODE:
             # the values from users settings are only used in relative mode
             timecode_mapping = user_settings.retrieve("timecode_mapping")
             frame_mapping = int(user_settings.retrieve("frame_mapping"))
-            cls.__default_timecode_frame_mapping = (
+            self._timecode_frame_map = (
                 edl.Timecode(timecode_mapping, fps=default_frame_rate), frame_mapping)
-        elif timecode_to_frame_mapping_mode == _AUTOMATIC_MODE:
-            default_head_in = int(user_settings.retrieve("default_head_in"))
-            cls.__default_timecode_frame_mapping = (None, default_head_in)
+        elif self._timecode_to_frame_mapping_mode == _AUTOMATIC_MODE:
+            self._timecode_frame_map = (None, self._default_head_in)
+        else:
+            raise ValueError("Unknown frame mapping mode %s" % self._timecode_to_frame_mapping_mode)
 
     def get_matching_score(self, other):
         """

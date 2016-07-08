@@ -201,8 +201,6 @@ class AppDialog(QtGui.QWidget):
         self._preload_entity_type = self._user_settings.get("preload_entity_type")
         self._logger.debug("Preferred Entity type %s" % self._preload_entity_type)
 
-        CutDiff.retrieve_default_timecode_frame_mapping()
-
         # Keep this thread for UI stuff
         # Handle data and processing in a separate thread
         self._processor = Processor(frame_rate)

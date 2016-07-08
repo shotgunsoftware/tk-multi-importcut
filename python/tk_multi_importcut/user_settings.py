@@ -36,7 +36,7 @@ class UserSettings(object):
     """
     Class for retrieving and managing User Settings.
     """
-    # Our settings definition, with their default value and the step they affect,
+    # Our settings definition, with their default value and the steps they affect,
     # if any
     __settings_def = {
         "update_shot_statuses"          : UserSetting(True),
@@ -97,7 +97,7 @@ class UserSettings(object):
         Determines if resets are needed for some steps, given a dictionary of
         settings values.
 
-        Compare the values stored in the given dictionary to the current one. If
+        Compare the values stored in the given dictionary to the current ones. If
         they changed, check which step they affect, if any.
 
         :param settings: A dictionary of settings to check against current values.
