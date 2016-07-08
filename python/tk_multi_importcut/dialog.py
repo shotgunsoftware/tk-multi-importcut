@@ -56,7 +56,7 @@ from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STE
 from .constants import _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 
 # Supported movie file extensions
-from .constants import _VIDEO_EXTS
+from .constants import _VIDEO_EXTS, _EDL_EXT
 
 settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
@@ -92,7 +92,8 @@ def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
     :param edl_file_path: Full path to an EDL file
     :param sg_entity: A SG Entity dictionary as a string, e.g.
                       '{"code" : "001", "id" : 19, "type" : "Sequence"}'
-    :param frame_rate: The frame rate for the EDL file
+    :param frame_rate: The frame rate for the EDL file, as a float.
+                       For example 24.0, 29.997 or 60.0
     """
     sg_entity_dict = None
     # Convert the string representation to a regular dict
@@ -107,7 +108,7 @@ def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
         AppDialog,
         edl_file_path=edl_file_path,
         sg_entity=sg_entity_dict,
-        frame_rate=int(frame_rate),
+        frame_rate=frame_rate,
     )
 
 
@@ -157,7 +158,9 @@ class AppDialog(QtGui.QWidget):
 
         :param edl_file_path: Full path to an EDL file
         :param sg_entity: An SG Entity dictionary
-        :param frame_rate: Use a specific frame rate for the import
+        :param frame_rate: Optional float, use a specific frame rate for the import,
+                           e.g. 24.0, 29.997 or 60.0, potentially different from
+                           the frame rate stored in user settings
         """
         # first, call the base class and let it do its thing.
         QtGui.QWidget.__init__(self)
@@ -234,7 +237,7 @@ class AppDialog(QtGui.QWidget):
 
         # Let's do something when something is dropped
         self.ui.drop_area_frame.something_dropped.connect(self.process_drop)
-        self.ui.drop_area_frame.set_restrict_to_ext(_VIDEO_EXTS + [".edl"])
+        self.ui.drop_area_frame.set_restrict_to_ext(_VIDEO_EXTS + [_EDL_EXT])
 
         # Build views and connect them to the data manager
 
@@ -626,7 +629,7 @@ class AppDialog(QtGui.QWidget):
         :param ext: The file extension, as extracted with splitext, e.g. '.edl'
         :returns: True if the file is valid, False otherwise
         """
-        if ext.lower() == ".edl":
+        if ext.lower() == _EDL_EXT:
             # Reset things if an EDL was previously dropped
             self.ui.edl_added_icon.hide()
             self.ui.next_button.setEnabled(False)
@@ -636,8 +639,9 @@ class AppDialog(QtGui.QWidget):
             self.new_movie.emit(path)
         else:
             self._logger.error(
-                "'%s' is not a supported file type. Supported types are .edl and movie types: %s." % (
+                "'%s' is not a supported file type. Supported types are %s and movie types: %s." % (
                     os.path.basename(path),
+                    _EDL_EXT,
                     str(_VIDEO_EXTS)
                 ))
             return False
@@ -1239,6 +1243,7 @@ class AppDialog(QtGui.QWidget):
             self._processor.sg_entity["id"],
         )]
         subject, body = self._processor.summary.get_report(self._processor.title, links)
+        # Qt will encode the url for us
         mail_url = QtCore.QUrl("mailto:?subject=%s&body=%s" % (subject, body))
         self._logger.debug("Opening up %s" % mail_url)
         QtGui.QDesktopServices.openUrl(mail_url)
