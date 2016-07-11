@@ -1192,7 +1192,7 @@ class AppDialog(QtGui.QWidget):
         :param wizard_step: One of our wizard steps
         """
         self._logger.debug("Settings at step %d" % wizard_step)
-        show_settings_dialog = SettingsDialog(parent=self, step=wizard_step)
+        show_settings_dialog = SettingsDialog(parent=self, wizard_step=wizard_step)
         show_settings_dialog.reset_needed.connect(self.reload_steps)
         show_settings_dialog.show()
         show_settings_dialog.raise_()

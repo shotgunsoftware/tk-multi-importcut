@@ -36,7 +36,7 @@ class UserSettings(object):
     """
     Class for retrieving and managing User Settings.
     """
-    # Our settings definition, with their default value and the steps they affect,
+    # Our settings definition, with their default value and the wizard steps they affect,
     # if any
     __settings_def = {
         "update_shot_statuses"          : UserSetting(True),
@@ -92,7 +92,7 @@ class UserSettings(object):
         """
         return self._settings[setting]
 
-    def reset_needed(self, settings, step):
+    def reset_needed(self, settings, wizard_step):
         """
         Determines if resets are needed for some wizard steps, given a dictionary of
         settings values.
@@ -101,15 +101,15 @@ class UserSettings(object):
         they changed, check which wizard step they affect, if any.
 
         :param settings: A dictionary of settings to check against current values.
-        :param step: The current wizard step.
-        :returns: A possibly empty sorted list of steps for which a reset is needed.
+        :param wizard_step: The current wizard step.
+        :returns: A possibly empty sorted list of wizard steps for which a reset is needed.
         """
         # Use a set to ensure uniqueness
         affected = set()
         for setting in settings:
             if settings[setting] != self._settings[setting]:
                 for affected_step in self.__settings_def[setting]._affects:
-                    if step >= affected_step:
+                    if wizard_step >= affected_step:
                         affected.add(affected_step)
         # Return a sorted list
         return sorted(list(affected))

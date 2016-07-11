@@ -93,7 +93,7 @@ class SettingsDialog(QtGui.QDialog):
     """
     reset_needed = QtCore.Signal(list)
 
-    def __init__(self, parent, step):
+    def __init__(self, parent, wizard_step):
         """
         Instantiate a new dialog with the given parent for the current wizard step
 
@@ -101,13 +101,13 @@ class SettingsDialog(QtGui.QDialog):
         data to be reloaded or not, if the current step is affected by these changes.
 
         :param parent: A parent QWidget
-        :param step: Current wizard step we are at
+        :param wizard_step: Current wizard step we are at
         """
         super(SettingsDialog, self).__init__(parent)
         self.setModal(True)
         # This is not used yet, but later we will be able to check if changes
-        # made require a restart, based on the step we are at
-        self._step = step
+        # made require a restart, based on the wizard step we are at
+        self._wizard_step = wizard_step
         self._logger = get_logger()
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)
@@ -453,7 +453,7 @@ class SettingsDialog(QtGui.QDialog):
         new_values["default_tail_duration"] = self.ui.default_tail_duration_line_edit.text()
 
         # Retrieve a list of wizard steps potentially affected by these changes
-        affected = self._user_settings.reset_needed(new_values, self._step)
+        affected = self._user_settings.reset_needed(new_values, self._wizard_step)
         # Ask the user confirmation to apply changes and to reload data, as it
         # might fail, or the user might lose some changes he made, e.g. if he edited
         # Shot names in the summary view.
@@ -475,7 +475,7 @@ class SettingsDialog(QtGui.QDialog):
                 return False
         self._save_settings(new_values)
         if affected:
-            # Notify listeners that some steps must be reloaded
+            # Notify listeners that some wizard steps must be reloaded
             self._logger.debug("Resetting %s" % affected)
             self.reset_needed.emit(affected)
         return True
