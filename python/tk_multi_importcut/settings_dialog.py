@@ -16,6 +16,7 @@ from .cut_diff import CutDiff
 from .user_settings import UserSettings
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
+from .constants import _DROP_STEP
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
@@ -47,8 +48,8 @@ must match the pattern hh:mm:ss:ff and contain valid timecode."
 _BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
 Please check your Shotgun site."
 
-_CHANGED_SETTINGS_MSG = "Applying these Settings updates will require an app \
-restart. All Import Cut progress will be lost."
+_CHANGED_SETTINGS_MSG = ("Applying these Settings updates will require reloading "
+"data. Import Cut progress might be lost.")
 
 _CORRUPT_SETTINGS_MSG = "Corrupt user settings have been reset to default, \
 restart Import Cut: %s"
@@ -90,21 +91,23 @@ class SettingsDialog(QtGui.QDialog):
     widget. Gives users access to app settings via a gui interface, stores those
     settings locally per user.
     """
-    def __init__(self, parent=None, step=None):
+    reset_needed = QtCore.Signal(list)
+
+    def __init__(self, parent, wizard_step):
         """
-        Instantiate a new dialog with the given parent for the current step
+        Instantiate a new dialog with the given parent for the current wizard step
 
-        The current step is not used yet, but could be later to refine our
-        'restart needed' decision on some value changes
+        The current wizard step is used to decide if settings changes require current
+        data to be reloaded or not, if the current step is affected by these changes.
 
-        :param parent: (optional) QWidget
-        :param step: (optional) current app step we are at
+        :param parent: A parent QWidget
+        :param wizard_step: Current wizard step we are at
         """
         super(SettingsDialog, self).__init__(parent)
         self.setModal(True)
         # This is not used yet, but later we will be able to check if changes
-        # made require a restart, based on the step we are at
-        self._step = step
+        # made require a restart, based on the wizard step we are at
+        self._wizard_step = wizard_step
         self._logger = get_logger()
         self.ui = Ui_settings_dialog()
         self.ui.setupUi(self)
@@ -361,7 +364,8 @@ class SettingsDialog(QtGui.QDialog):
         """
         Validate user settings from current UI values.
 
-        :returns: True if all settings can be safely saved, and None otherwise.
+        :returns: True if all settings can be safely saved, False otherwise.
+        :raises: SettingError if bad settings values are found.
         """
 
         # General tab
@@ -448,34 +452,33 @@ class SettingsDialog(QtGui.QDialog):
             raise SettingsError("Default Tail Duration must be set")
         new_values["default_tail_duration"] = self.ui.default_tail_duration_line_edit.text()
 
-
-        # At the moment certain settings require a refresh to be properly accounted for
-        # while processing the EDL, etc. As a stop-gap, we warn the user and give them
-        # the opportunity to restart the app if one of the known "non-refreshable"
-        # settings has been changed (#36605).
-        if self._user_settings.restart_needed(new_values):
+        # Retrieve a list of wizard steps potentially affected by these changes
+        affected = self._user_settings.reset_needed(new_values, self._wizard_step)
+        # Ask the user confirmation to apply changes and to reload data, as it
+        # might fail, or the user might lose some changes he made, e.g. if he edited
+        # Shot names in the summary view.
+        if affected:
             msg_box = QtGui.QMessageBox(
                 parent=self,
                 icon=QtGui.QMessageBox.Critical
             )
             msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
             msg_box.setText("%s\n\n%s" % ("Settings", _CHANGED_SETTINGS_MSG))
-            cancel_button = msg_box.addButton("Cancel", QtGui.QMessageBox.YesRole)
-            apply_button = msg_box.addButton("Apply and Quit", QtGui.QMessageBox.NoRole)
-            apply_button.clicked.connect(lambda: self._save_settings_and_close(new_values))
+            msg_box.setStandardButtons(QtGui.QMessageBox.Apply | QtGui.QMessageBox.Cancel)
+            apply_button = msg_box.button(QtGui.QMessageBox.Apply)
+            apply_button.setText("Apply and Reload")
             msg_box.show()
             msg_box.raise_()
             msg_box.activateWindow()
-            return
+            ret = msg_box.exec_()
+            if ret != QtGui.QMessageBox.Apply:
+                return False
         self._save_settings(new_values)
+        if affected:
+            # Notify listeners that some wizard steps must be reloaded
+            self._logger.debug("Resetting %s" % affected)
+            self.reset_needed.emit(affected)
         return True
-
-    def _save_settings_and_close(self, new_values):
-        """
-        Stores settings and closes the parent dialog since the App needs to be restarted.
-        """
-        self._save_settings(new_values)
-        self.parent().close()
 
     def _save_settings(self, new_values):
         """
@@ -484,7 +487,4 @@ class SettingsDialog(QtGui.QDialog):
         """
         self._logger.debug("New values %s" % new_values)
         self._user_settings.save(new_values)
-        # An attempt to refresh some of the values, but it doesn't entirely work.
-        CutDiff.retrieve_default_timecode_frame_mapping()
-        self.close_dialog()
         self._logger.info("User settings saved.")

@@ -96,8 +96,9 @@ class EdlCut(QtCore.QObject):
     # Emitted when some Cut Differences should be discarded, which can happen
     # when Shot names are edited in the summary view
     delete_cut_diff      = QtCore.Signal(CutDiff)
-    # Emitted when an EDL was successfully loaded and is considered valid
-    valid_edl            = QtCore.Signal(str)
+    # Emitted after having tried to load an EDL, with the short file name of the EDL
+    # file and with a boolean set to True if the EDL is valid, False otherwise
+    valid_edl            = QtCore.Signal(str, bool)
     # Emitted to acknowledge we have a valid movie
     valid_movie          = QtCore.Signal(str)
 
@@ -117,6 +118,7 @@ class EdlCut(QtCore.QObject):
         self._sg_shot_link_field_name = None
         self._sg_entity = None
         self._summary = None
+        self._frame_rate = frame_rate
         self._logger = get_logger()
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
@@ -130,17 +132,7 @@ class EdlCut(QtCore.QObject):
         self._no_cut_for_entity = False
         # Retrieve some settings
         self._user_settings = self._app.user_settings
-        # todo: this will need to be rethought if we're able to extract fps
-        # from an EDL. Basically this is redundant now b/c the frame_rate coming
-        # in is almost definitely set by user settings default_frame_rate
-        if frame_rate is not None:
-            self._frame_rate = frame_rate
-        else:
-            self._frame_rate = float(self._user_settings.retrieve("default_frame_rate"))
-        self._update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
-        self._omit_status = self._user_settings.retrieve("omit_status")
-        self._reinstate_statuses = self._user_settings.retrieve("reinstate_shot_if_status_is")
 
     @property
     def entity_name(self):
@@ -241,7 +233,7 @@ class EdlCut(QtCore.QObject):
                 elif match:
                     edit._shot_name = match
 
-    @QtCore.Slot(str)
+    @QtCore.Slot()
     def reset(self):
         """
         Clear this worker, discarding all data
@@ -257,6 +249,40 @@ class EdlCut(QtCore.QObject):
         self._sg_new_cut = None
         if had_something:
             self._logger.info("Session discarded...")
+
+    @QtCore.Slot(int)
+    def reload_step(self, step):
+        """
+        Reload the given wizard step
+
+        Called when user settings are changed and affect some of the steps
+
+        :param step: A step to reload
+        """
+        if step == _DROP_STEP:
+            # Reload the EDL file, if any
+            if self._edl_file_path:
+                edl_file_path = self._edl_file_path
+                # Exceptions are caught in load_edl, so we don't have to worry
+                # about them here.
+                self.load_edl(edl_file_path)
+                if not self.has_valid_edl:
+                    # We only have to care about failure here, if the same EDL
+                    # was successfully reloaded, then nothing needs to happen.
+                    # In case of failure, we reset everything, as everything is
+                    # invalidated.
+                    self.reset()
+                    self._logger.info("Failed to reload %s, session discarded..." %
+                        os.path.basename(edl_file_path)
+                    )
+        elif step == _SUMMARY_STEP:
+            # Rebuild the Cut summary if we can
+            if self.has_valid_edl:
+                self.show_cut_diff(self._sg_cut)
+        else:
+            # Settings changes only affect the two steps above, so do not bother
+            # implementing reload for other steps for the time being
+            self._logger.error("Unsupported step %d for reload" % step)
 
     @QtCore.Slot(str, str)
     def process_edl_and_mov(self, edl_file_path, mov_file_path):
@@ -301,11 +327,13 @@ class EdlCut(QtCore.QObject):
                     fps=self._frame_rate,
                 )
             else:
-                self._logger.info("Using default frame rate ...")
-                # Use default frame rate, whatever it is
+                # Use default frame rate, retrieved from user settings
+                frame_rate = float(self._user_settings.retrieve("default_frame_rate"))
+                self._logger.info("Using default frame rate %f ..." % frame_rate)
                 self._edl = edl.EditList(
                     file_path=edl_file_path,
                     visitor=self.process_edit,
+                    fps=frame_rate,
                 )
             self._logger.info(
                 "%s loaded, %s edits" % (
@@ -314,12 +342,14 @@ class EdlCut(QtCore.QObject):
             )
             if not self._edl.edits:
                 self._logger.warning("Couldn't find any entry in %s" % edl_file_path)
+                self.valid_edl.emit(os.path.basename(self._edl_file_path), False)
                 return
             # Can go to next step
-            self.valid_edl.emit(os.path.basename(self._edl_file_path))
+            self.valid_edl.emit(os.path.basename(self._edl_file_path), True)
             if self.has_valid_movie:
                 self.step_done.emit(_DROP_STEP)
         except Exception, e:
+            self.valid_edl.emit(os.path.basename(self._edl_file_path), False)
             self._edl = None
             self._edl_file_path = None
             self._logger.exception("Couldn't load %s: \n\n%s" % (edl_file_path, str(e)))
@@ -1162,6 +1192,10 @@ class EdlCut(QtCore.QObject):
             self._logger.info("Updating Shots ...")
         else:
             self._logger.info("Creating new Shots ...")
+
+        omit_status = self._user_settings.retrieve("omit_status")
+        update_shot_statuses = self._user_settings.retrieve("update_shot_statuses")
+
         sg_batch_data = []
         post_create = {}
         # Loop over all Shots that we need to create
@@ -1233,10 +1267,11 @@ class EdlCut(QtCore.QObject):
                         "request_type": "update",
                         "entity_type": "Shot",
                         "entity_id": sg_shot["id"],
-                        "data": {"code": sg_shot["code"],
-                                 "sg_status_list": self._omit_status if self._update_shot_statuses
-                                        else sg_shot["sg_status_list"]
-                                 }
+                        "data": {
+                            "code": sg_shot["code"],
+                            "sg_status_list": omit_status if update_shot_statuses
+                                              else sg_shot["sg_status_list"]
+                        }
                     })
                 elif shot_diff_type == _DIFF_TYPES.REINSTATED:
                     reinstate_status = self._user_settings.retrieve("reinstate_status")
@@ -1258,7 +1293,7 @@ class EdlCut(QtCore.QObject):
                     # Add code in the update so it will be returned with batch results.
                     data = {"code": sg_shot["code"],
                             "sg_cut_order": min_cut_order,
-                            "sg_status_list": reinstate_status if self._update_shot_statuses
+                            "sg_status_list": reinstate_status if update_shot_statuses
                             else sg_shot["sg_status_list"]
                             }
                     data.update(

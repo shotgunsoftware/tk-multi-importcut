@@ -63,8 +63,9 @@ class Processor(QtCore.QThread):
     totals_changed          = QtCore.Signal()
     delete_cut_diff         = QtCore.Signal(CutDiff)
     ready                   = QtCore.Signal()
-    valid_edl               = QtCore.Signal(str)
+    valid_edl               = QtCore.Signal(str, bool)
     valid_movie             = QtCore.Signal(str)
+    reload_step             = QtCore.Signal(int)
 
     def __init__(self, frame_rate=None):
         """
@@ -256,6 +257,7 @@ class Processor(QtCore.QThread):
         self.retrieve_cuts.connect(self._edl_cut.retrieve_cuts)
         self.show_cut_diff.connect(self._edl_cut.show_cut_diff)
         self.import_cut.connect(self._edl_cut.do_cut_import)
+        self.reload_step.connect(self._edl_cut.reload_step)
         # Results / orders we send
         self._edl_cut.step_done.connect(self.step_done)
         self._edl_cut.step_failed.connect(self.step_failed)
