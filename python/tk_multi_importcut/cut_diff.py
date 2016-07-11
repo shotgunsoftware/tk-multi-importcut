@@ -142,7 +142,18 @@ class CutDiff(QtCore.QObject):
         self._diff_type = _DIFF_TYPES.NO_CHANGE
         self._cut_changes_reasons = []
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
+
+        # Define empty timecode to frame mapping members and retrieve actual values
+        # in _retrieve_default_timecode_frame_mapping
+        # Please note that all CutDiff should have the same settings, so this should
+        # handled by in the CutSummary, instead of being retrieved per CutDiff here.
+        self._timecode_to_frame_mapping_mode = None
+        self._default_head_in = None
+        self._default_head_in_duration = None
+        self._default_tail_out_duration = None
+        self._timecode_frame_map = None
         self._retrieve_default_timecode_frame_mapping()
+
         # List of other entries for the same Shot
         self._siblings = None
         # Retrieve the Cut diff type from the given params

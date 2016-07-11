@@ -96,8 +96,8 @@ class EdlCut(QtCore.QObject):
     # Emitted when some Cut Differences should be discarded, which can happen
     # when Shot names are edited in the summary view
     delete_cut_diff      = QtCore.Signal(CutDiff)
-    # Emitted after having tried to load an EDL, with a boolean set to True if the
-    # EDL is valid, False otherwise
+    # Emitted after having tried to load an EDL, with the short file name of the EDL
+    # file and with a boolean set to True if the EDL is valid, False otherwise
     valid_edl            = QtCore.Signal(str, bool)
     # Emitted to acknowledge we have a valid movie
     valid_movie          = QtCore.Signal(str)
@@ -263,8 +263,14 @@ class EdlCut(QtCore.QObject):
             # Reload the EDL file, if any
             if self._edl_file_path:
                 edl_file_path = self._edl_file_path
+                # Exceptions are caught in load_edl, so we don't have to worry
+                # about them here.
                 self.load_edl(edl_file_path)
                 if not self.has_valid_edl:
+                    # We only have to care about failure here, if the same EDL
+                    # was successfully reloaded, then nothing needs to happen.
+                    # In case of failure, we reset everything, as everything is
+                    # invalidated.
                     self.reset()
                     self._logger.info("Failed to reload %s, session discarded..." %
                         os.path.basename(edl_file_path)

@@ -150,7 +150,8 @@ class AppDialog(QtGui.QWidget):
     # Emitted to ask the data manager to retrieve SG CutItems for a given SG Cut
     # and CutDiffs with edit entries / Cut items
     get_cut_diff = QtCore.Signal(dict)
-
+    # Emitted when data for a particular step should be reloaded/rebuilt by the
+    # data manager
     reload_step = QtCore.Signal(int)
 
     def __init__(self, edl_file_path=None, sg_entity=None, frame_rate=None):
@@ -213,7 +214,7 @@ class AppDialog(QtGui.QWidget):
         self.reload_step.connect(self._processor.reload_step)
         # Validating the EDL / movie is left to the data manager so we need to
         # know if it considered them valid
-        self._processor.valid_edl.connect(self.valid_edl)
+        self._processor.valid_edl.connect(self.set_edl_validity)
         self._processor.valid_movie.connect(self.valid_movie)
 
         # Let the data manager know that we need it to retrieve data from SG
@@ -649,9 +650,13 @@ class AppDialog(QtGui.QWidget):
         return True
 
     @QtCore.Slot(str, bool)
-    def valid_edl(self, file_name, is_valid):
+    def set_edl_validity(self, file_name, is_valid):
         """
-        Called when an EDL file has been validated or invalidated
+        Called when an EDL file has been validated or invalidated by the data
+        manager.
+
+        Set the UI to reflect the fact that we now have, or don't have anymore a
+        valid EDL.
 
         :param file_name: Short EDL file name
         :param is_valid: A boolean, True if the EDL file can be used
@@ -670,6 +675,8 @@ class AppDialog(QtGui.QWidget):
             self.ui.importing_edl_label_2.setText("")
             self.ui.next_button.setEnabled(False)
             self.goto_step(_DROP_STEP)
+
+        self._logger.debug("%s EDL is now %s" % (file_name, ["invalid","valid"][is_valid]))
 
     @QtCore.Slot(str)
     def valid_movie(self, file_name):
@@ -1177,15 +1184,15 @@ class AppDialog(QtGui.QWidget):
         dialog.activateWindow()
 
     @QtCore.Slot(int)
-    def show_settings_dialog(self, step):
+    def show_settings_dialog(self, wizard_step):
         """
         Called when the settings dialog needs to be presented to the user. This can
         happen on almost every page of the animated stacked widget.
 
-        :param step: One of our known steps
+        :param wizard_step: One of our wizard steps
         """
-        self._logger.debug("Settings at step %d" % step)
-        show_settings_dialog = SettingsDialog(parent=self, step=step)
+        self._logger.debug("Settings at step %d" % wizard_step)
+        show_settings_dialog = SettingsDialog(parent=self, step=wizard_step)
         show_settings_dialog.reset_needed.connect(self.reload_steps)
         show_settings_dialog.show()
         show_settings_dialog.raise_()
@@ -1197,9 +1204,10 @@ class AppDialog(QtGui.QWidget):
         Reload the given list of steps
 
         Called when user settings are changed and some steps are invalidated by
-        these changes.
+        these changes. Ask the data manager to reload the data for these steps,
+        reset views if needed.
 
-        :param steps: A list of wizard steps to reload
+        :param steps: A list of wizard steps to reload, e.g. [_DROP_STEP, _SUMMARY_STEP]
         """
         # With current user settings, only two steps can be potentially affected
         # so for the time being, only support them and raise an error for others

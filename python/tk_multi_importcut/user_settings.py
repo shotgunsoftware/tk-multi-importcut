@@ -15,18 +15,18 @@ from .constants import _DROP_STEP, _SUMMARY_STEP, _LAST_STEP
 
 class UserSetting(object):
     """
-    A User setting, with a default value and the step it affects.
+    A User setting, with a default value and the wizard steps it affects.
 
     If the value for the setting is changed and the current step is bigger or
-    equal to the affected step, a reset will be needed.
+    equal to one of the affected steps, a reset will be needed.
     """
     def __init__(self, default, affects=None):
         """
         Instantiate a new UserSetting with the given default value, and affecting
-        the given step.
+        the given wizard step.
 
         :param default: Arbitrary default value for this setting
-        :param affects: (optional) list of wizard step being affected by changes
+        :param affects: (optional) list of wizard steps being affected by changes
         """
         super(UserSetting, self).__init__()
         self._default = default
@@ -94,11 +94,11 @@ class UserSettings(object):
 
     def reset_needed(self, settings, step):
         """
-        Determines if resets are needed for some steps, given a dictionary of
+        Determines if resets are needed for some wizard steps, given a dictionary of
         settings values.
 
         Compare the values stored in the given dictionary to the current ones. If
-        they changed, check which step they affect, if any.
+        they changed, check which wizard step they affect, if any.
 
         :param settings: A dictionary of settings to check against current values.
         :param step: The current wizard step.

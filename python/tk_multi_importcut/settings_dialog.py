@@ -93,15 +93,15 @@ class SettingsDialog(QtGui.QDialog):
     """
     reset_needed = QtCore.Signal(list)
 
-    def __init__(self, parent=None, step=None):
+    def __init__(self, parent, step):
         """
-        Instantiate a new dialog with the given parent for the current step
+        Instantiate a new dialog with the given parent for the current wizard step
 
-        The current step is not used yet, but could be later to refine our
-        'restart needed' decision on some value changes
+        The current wizard step is used to decide if settings changes require current
+        data to be reloaded or not, if the current step is affected by these changes.
 
-        :param parent: (optional) QWidget
-        :param step: (optional) current app step we are at
+        :param parent: A parent QWidget
+        :param step: Current wizard step we are at
         """
         super(SettingsDialog, self).__init__(parent)
         self.setModal(True)
@@ -452,7 +452,7 @@ class SettingsDialog(QtGui.QDialog):
             raise SettingsError("Default Tail Duration must be set")
         new_values["default_tail_duration"] = self.ui.default_tail_duration_line_edit.text()
 
-        # Retrieve a list of steps potentially affected by these changes
+        # Retrieve a list of wizard steps potentially affected by these changes
         affected = self._user_settings.reset_needed(new_values, self._step)
         # Ask the user confirmation to apply changes and to reload data, as it
         # might fail, or the user might lose some changes he made, e.g. if he edited
