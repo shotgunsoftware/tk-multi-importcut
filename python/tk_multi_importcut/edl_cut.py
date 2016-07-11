@@ -51,6 +51,7 @@ def get_sg_entity_name(sg_entity):
             sg_entity.get("title", "")
         )
     )
+    return entity_name
 
 
 class EdlCut(QtCore.QObject):
