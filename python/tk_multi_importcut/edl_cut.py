@@ -1400,10 +1400,10 @@ class EdlCut(QtCore.QObject):
                         cut_diff.sg_shot.update(sg_shot)
                     else:
                         cut_diff._sg_shot = sg_shot
-        if sg_batch_data_update:
-            # Do the deffered update of Shots for smart fields workaround.
-            res = self._sg.batch(sg_batch_data_update)
-            self._logger.info("Updated smart fields on %d shot(s)." % len(res))
+            if sg_batch_data_update:
+                # Do the deffered update of Shots for smart fields workaround.
+                res = self._sg.batch(sg_batch_data_update)
+                self._logger.info("Updated smart fields on %d shot(s)." % len(res))
 
     def _create_missing_sg_versions(self):
         """
