@@ -33,6 +33,8 @@ requires_shotgun_version: v7.0.0
 requires_core_version: "v0.16.18"
 requires_engine_version:
 
+documentation_url: "https://support.shotgunsoftware.com/hc/en-us/articles/219041758-Import-Cut"
+
 # the frameworks required to run this app
 frameworks:
     - {"name": "tk-framework-shotgunutils", "version": "v4.x.x"}
