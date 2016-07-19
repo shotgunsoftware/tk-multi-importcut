@@ -341,6 +341,8 @@ class AppDialog(QtGui.QWidget):
 
         # A button to see the import result in Shotgun
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
+        # A button that opens user-facing documentation in a browser.
+        self.ui.help_button.clicked.connect(self.show_help)
         # Report import progress
         self._processor.progress_changed.connect(self.ui.progress_bar.setValue)
 
@@ -1290,6 +1292,16 @@ class AppDialog(QtGui.QWidget):
         sg_url = QtCore.QUrl(self._processor.sg_new_cut_url)
         QtGui.QDesktopServices.openUrl(sg_url)
         self.close()
+
+    @QtCore.Slot()
+    def show_help(self):
+        """
+        Called at the start of the import if user clicks on the "?"
+        button: shows the documentation in the default web browser.
+        """
+        help_url = QtCore.QUrl(
+            "https://support.shotgunsoftware.com/hc/en-us/articles/219041758-Import-Cut")
+        QtGui.QDesktopServices.openUrl(help_url)
 
     @QtCore.Slot(str, list)
     def display_exception(self, msg, exec_info):

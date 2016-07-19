@@ -131,6 +131,7 @@ enabled */
 #project_page_settings_button,
 #entities_page_settings_button,
 #cut_list_page_settings_button,
+#help_button,
 #cut_summary_page_settings_button {
     border: 0px solid black;
 }

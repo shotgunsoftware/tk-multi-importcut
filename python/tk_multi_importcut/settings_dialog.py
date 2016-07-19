@@ -467,7 +467,7 @@ class SettingsDialog(QtGui.QDialog):
             msg_box.setStandardButtons(QtGui.QMessageBox.Apply | QtGui.QMessageBox.Cancel)
             apply_button = msg_box.button(QtGui.QMessageBox.Apply)
             # The extra spaces here prevent the text from getting crowded on the
-            # button. This happens because the text is styled (made bold/bigger
+            # button. This happens because the text is styled (made bold/bigger)
             # after the button size has been set.
             apply_button.setText("  Apply and Reprocess  ")
             msg_box.setDefaultButton(QtGui.QMessageBox.Apply)
