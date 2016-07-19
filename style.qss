@@ -263,13 +263,13 @@ enabled */
 #settings_dialog #apply_button:enabled,
 #submit_dialog #import_cut_button,
 #next_button:enabled,
+QMessageBox QPushButton:default,
 #select_button:enabled,
 #submit_button:enabled {
     background-color: #12bbff;
     font-weight: bold;
     color: white;
 }
-
 
 /*
 Highlight the drop area when something is dragged over

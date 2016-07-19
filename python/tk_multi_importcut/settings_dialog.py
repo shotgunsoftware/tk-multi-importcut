@@ -48,8 +48,8 @@ must match the pattern hh:mm:ss:ff and contain valid timecode."
 _BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
 Please check your Shotgun site."
 
-_CHANGED_SETTINGS_MSG = ("Applying these Settings updates will require reloading "
-"data. Import Cut progress might be lost.")
+_CHANGED_SETTINGS_MSG = ("Applying these Settings will require the EDL to be \
+reprocessed. Some Import Cut information may need to be re-entered.")
 
 _CORRUPT_SETTINGS_MSG = "Corrupt user settings have been reset to default, \
 restart Import Cut: %s"
@@ -463,10 +463,14 @@ class SettingsDialog(QtGui.QDialog):
                 icon=QtGui.QMessageBox.Critical
             )
             msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
-            msg_box.setText("%s\n\n%s" % ("Settings", _CHANGED_SETTINGS_MSG))
+            msg_box.setText(_CHANGED_SETTINGS_MSG)
             msg_box.setStandardButtons(QtGui.QMessageBox.Apply | QtGui.QMessageBox.Cancel)
             apply_button = msg_box.button(QtGui.QMessageBox.Apply)
-            apply_button.setText("Apply and Reload")
+            # The extra spaces here prevent the text from getting crowded on the
+            # button. This happens because the text is styled (made bold/bigger
+            # after the button size has been set.
+            apply_button.setText("  Apply and Reprocess  ")
+            msg_box.setDefaultButton(QtGui.QMessageBox.Apply)
             msg_box.show()
             msg_box.raise_()
             msg_box.activateWindow()
