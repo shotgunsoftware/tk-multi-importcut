@@ -22,8 +22,11 @@ _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, \
 #             number specified through settings.
 _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE = range(3)
 
-# List of supported extensions for movies
+# List of supported extensions for movies.
 _VIDEO_EXTS = [".avi", ".m4v", ".mov", ".mp4", ".qt", ".webm"]
+
+# List of supported extensions for versions.
+_VERSION_EXTS = _VIDEO_EXTS + [".jpg", ".jpeg", ".mxf", ".omf", ".png", ".psd", ".tif", ".tiff"]
 
 # EDL file extension
 _EDL_EXT = ".edl"

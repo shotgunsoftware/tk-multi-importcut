@@ -23,6 +23,7 @@ from .entity_line_widget import EntityLineWidget
 from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP
 from .constants import _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP
 from .constants import _SHOT_FIELDS
+from .constants import _VERSION_EXTS
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
@@ -205,7 +206,13 @@ class EdlCut(QtCore.QObject):
         # where the Version name is set with locators and clip name is used
         # for the source clip ...
         if edit._clip_name:
-            edit.get_version_name = lambda: edit._clip_name.split(".")[0]  # Strip extension, if any
+            # Strip off the extension if it's in our list of supported version
+            # extentions, otherwise use the full clip_name as the version name.
+            clip_name_split = os.path.splitext(edit._clip_name)
+            if clip_name_split[1].lower() in _VERSION_EXTS:
+                edit.get_version_name = lambda: clip_name_split[0]
+            else:
+                edit.get_version_name = lambda: edit._clip_name
         else:
             edit.get_version_name = lambda: None
         if not edit._shot_name:
