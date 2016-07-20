@@ -315,7 +315,7 @@ class Ui_settings_dialog(object):
         self.general_timecode_frames_tab.addTab(self.tab_2, "")
         self.verticalLayout_2.addWidget(self.general_timecode_frames_tab)
         self.horizontalLayout_9 = QtGui.QHBoxLayout()
-        self.horizontalLayout_9.setSpacing(6)
+        self.horizontalLayout_9.setSpacing(15)
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
         spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_9.addItem(spacerItem6)

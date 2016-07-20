@@ -29,7 +29,7 @@
    <item>
     <widget class="AnimatedStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="drop_page">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -52,6 +52,22 @@
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>100</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_18">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
            <property name="sizeHint" stdset="0">
             <size>
              <width>40</width>
@@ -65,8 +81,11 @@
            <property name="maximumSize">
             <size>
              <width>22</width>
-             <height>20</height>
+             <height>22</height>
             </size>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::RightToLeft</enum>
            </property>
            <property name="text">
             <string/>
@@ -94,9 +113,6 @@
              <height>22</height>
             </size>
            </property>
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
            <property name="text">
             <string/>
            </property>
@@ -106,8 +122,8 @@
            </property>
            <property name="iconSize">
             <size>
-             <width>44</width>
-             <height>20</height>
+             <width>22</width>
+             <height>22</height>
             </size>
            </property>
            <property name="flat">
@@ -431,6 +447,9 @@
              <height>30</height>
             </size>
            </property>
+           <property name="layoutDirection">
+            <enum>Qt::RightToLeft</enum>
+           </property>
            <property name="text">
             <string/>
            </property>
@@ -642,6 +661,9 @@ This screen is kept so we have a direct match between internal steps and screens
              <width>0</width>
              <height>0</height>
             </size>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::RightToLeft</enum>
            </property>
            <property name="placeholderText">
             <string>Search Sequences</string>
@@ -1000,6 +1022,9 @@ This screen is kept so we have a direct match between internal steps and screens
              <height>30</height>
             </size>
            </property>
+           <property name="layoutDirection">
+            <enum>Qt::RightToLeft</enum>
+           </property>
            <property name="placeholderText">
             <string>Search Cut</string>
            </property>
@@ -1327,7 +1352,7 @@ This screen is kept so we have a direct match between internal steps and screens
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>40</width>
+              <width>0</width>
               <height>20</height>
              </size>
             </property>
@@ -1403,8 +1428,8 @@ This screen is kept so we have a direct match between internal steps and screens
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>98</width>
-              <height>28</height>
+              <width>964</width>
+              <height>397</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">
@@ -1732,7 +1757,7 @@ This screen is kept so we have a direct match between internal steps and screens
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0,0,0,0,0,0,0">
      <property name="spacing">
-      <number>6</number>
+      <number>15</number>
      </property>
      <property name="leftMargin">
       <number>12</number>
