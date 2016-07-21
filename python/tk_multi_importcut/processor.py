@@ -64,6 +64,7 @@ class Processor(QtCore.QThread):
     delete_cut_diff         = QtCore.Signal(CutDiff)
     ready                   = QtCore.Signal()
     valid_edl               = QtCore.Signal(str, bool)
+    has_transitions         = QtCore.Signal()
     valid_movie             = QtCore.Signal(str)
     reload_step             = QtCore.Signal(int)
 
@@ -271,6 +272,7 @@ class Processor(QtCore.QThread):
         self._edl_cut.progress_changed.connect(self.progress_changed)
         self._edl_cut.totals_changed.connect(self.totals_changed)
         self._edl_cut.valid_edl.connect(self.valid_edl)
+        self._edl_cut.has_transitions.connect(self.has_transitions)
         self._edl_cut.valid_movie.connect(self.valid_movie)
         # Tell the outside world we are ready to process things
         self.ready.emit()

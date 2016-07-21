@@ -33,6 +33,7 @@ _ERROR_BAD_CUT = (
     "Please select another Cut or update the timecode data in %s to proceed."
 )
 
+
 def get_sg_entity_name(sg_entity):
     """
     Return the name of the given SG Entity
@@ -58,7 +59,7 @@ def get_sg_entity_name(sg_entity):
 class EdlCut(QtCore.QObject):
     """
     Worker which handles all data, our main data manager.
-    
+
     After reading and validating an EDL file, the data manager will typically
     retrieve all SG Entities of a certain type linked to a chosen Project.
     Then, it will build a summary of cut differences against a SG Cut linked to one
@@ -100,6 +101,7 @@ class EdlCut(QtCore.QObject):
     # Emitted after having tried to load an EDL, with the short file name of the EDL
     # file and with a boolean set to True if the EDL is valid, False otherwise
     valid_edl            = QtCore.Signal(str, bool)
+    has_transitions      = QtCore.Signal()
     # Emitted to acknowledge we have a valid movie
     valid_movie          = QtCore.Signal(str)
 
@@ -347,6 +349,8 @@ class EdlCut(QtCore.QObject):
                     self._edl.title, len(self._edl.edits)
                 )
             )
+            if self._edl.has_transitions:
+                self.has_transitions.emit()
             if not self._edl.edits:
                 self._logger.warning("Couldn't find any entry in %s" % edl_file_path)
                 self.valid_edl.emit(os.path.basename(self._edl_file_path), False)

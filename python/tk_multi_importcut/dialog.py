@@ -64,6 +64,12 @@ _BAD_PERMISSIONS_MSG = "The following error was reported:\n\nIt's possible you \
 do not have permission to create new %ss. Please select another %s or ask your \
 Shotgun Admin to adjust your permissions in Shotgun."
 
+_TRANSITIONS_PRESENT_MSG = "This EDL contains a transition.\n\nShotgun does \
+not support transitions when viewing the Cut, but the EDL can still be \
+imported. The transition frames will be included in the Cut Duration for the \
+Shots, in addition to the frame range before and/or after the transition. \
+Frame handles will be calculated outside of the transition."
+
 
 def show_dialog(app_instance):
     """
@@ -215,6 +221,7 @@ class AppDialog(QtGui.QWidget):
         # Validating the EDL / movie is left to the data manager so we need to
         # know if it considered them valid
         self._processor.valid_edl.connect(self.set_edl_validity)
+        self._processor.has_transitions.connect(self.has_transitions)
         self._processor.valid_movie.connect(self.valid_movie)
 
         # Let the data manager know that we need it to retrieve data from SG
@@ -650,6 +657,23 @@ class AppDialog(QtGui.QWidget):
                 ))
             return False
         return True
+
+    @QtCore.Slot()
+    def has_transitions(self):
+        """
+        Called when an EDL is dropped and contains transitions. Pop up message
+        informing the user of current Cuts feature compatibility with Shotgun.
+        """
+        msg_box = QtGui.QMessageBox(
+                parent=self,
+                icon=QtGui.QMessageBox.Critical
+            )
+        msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
+        msg_box.setText(_TRANSITIONS_PRESENT_MSG)
+        msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+        msg_box.show()
+        msg_box.raise_()
+        msg_box.activateWindow()
 
     @QtCore.Slot(str, bool)
     def set_edl_validity(self, file_name, is_valid):
