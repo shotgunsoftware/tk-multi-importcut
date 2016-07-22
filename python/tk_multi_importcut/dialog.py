@@ -58,9 +58,6 @@ from .constants import _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 # Supported movie file extensions
 from .constants import _VIDEO_EXTS, _EDL_EXT
 
-# Documentation url
-from .constants import _DOCUMENTATION_URL
-
 settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 _BAD_PERMISSIONS_MSG = "The following error was reported:\n\nIt's possible you \
@@ -1326,13 +1323,13 @@ class AppDialog(QtGui.QWidget):
         Called at the start of the import if user clicks on the "?"
         button: shows the documentation in the default web browser.
         """
-        help_url = QtCore.QUrl(_DOCUMENTATION_URL)
+        help_url = QtCore.QUrl(self._app.documentation_url)
         QtGui.QDesktopServices.openUrl(help_url)
 
     @QtCore.Slot(str, list)
     def display_exception(self, msg, exec_info):
         """
-        Display a popup window with the error message and the exec_info 
+        Display a popup window with the error message and the exec_info
         in the "details"
 
         :param msg: A string
