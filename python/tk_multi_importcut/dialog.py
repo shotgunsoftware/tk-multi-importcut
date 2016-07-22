@@ -58,6 +58,9 @@ from .constants import _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP
 # Supported movie file extensions
 from .constants import _VIDEO_EXTS, _EDL_EXT
 
+# Documentation url
+from .constants import _DOCUMENTATION_URL
+
 settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
 _BAD_PERMISSIONS_MSG = "The following error was reported:\n\nIt's possible you \
@@ -668,7 +671,7 @@ class AppDialog(QtGui.QWidget):
                 parent=self,
                 icon=QtGui.QMessageBox.Critical
             )
-        msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
+        msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/clapboard.png"))
         msg_box.setText(_TRANSITIONS_PRESENT_MSG)
         msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
         msg_box.show()
@@ -1323,8 +1326,7 @@ class AppDialog(QtGui.QWidget):
         Called at the start of the import if user clicks on the "?"
         button: shows the documentation in the default web browser.
         """
-        help_url = QtCore.QUrl(
-            "https://support.shotgunsoftware.com/hc/en-us/articles/219041758-Import-Cut")
+        help_url = QtCore.QUrl(_DOCUMENTATION_URL)
         QtGui.QDesktopServices.openUrl(help_url)
 
     @QtCore.Slot(str, list)
