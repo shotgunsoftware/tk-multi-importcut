@@ -363,7 +363,7 @@ class EdlCut(QtCore.QObject):
             self.valid_edl.emit(os.path.basename(self._edl_file_path), False)
             self._edl = None
             self._edl_file_path = None
-            self._logger.exception("Couldn't load %s: \n\n%s" % (edl_file_path, str(e)))
+            self._logger.exception(e)
 
     def _bind_versions(self):
         """
