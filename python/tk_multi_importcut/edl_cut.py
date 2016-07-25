@@ -208,8 +208,8 @@ class EdlCut(QtCore.QObject):
         # where the Version name is set with locators and clip name is used
         # for the source clip ...
         if edit._clip_name:
-            # Strip off the extension if it's in our list of supported version
-            # extentions, otherwise use the full clip_name as the version name.
+            # Strip off the extension if it's in our list of supported Version
+            # extentions, otherwise use the full clip_name as the Version name.
             clip_name, ext = os.path.splitext(edit._clip_name)
             if ext.lower() in _VERSION_EXTS:
                 edit.get_version_name = lambda: clip_name

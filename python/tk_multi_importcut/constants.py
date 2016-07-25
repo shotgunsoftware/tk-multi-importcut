@@ -25,7 +25,7 @@ _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE = range(3)
 # List of supported extensions for movies.
 _VIDEO_EXTS = [".avi", ".m4v", ".mov", ".mp4", ".qt", ".webm"]
 
-# List of supported extensions for versions.
+# List of supported extensions for Versions.
 _VERSION_EXTS = _VIDEO_EXTS + [".jpg", ".jpeg", ".mxf", ".omf", ".png", ".psd", ".tif", ".tiff"]
 
 # EDL file extension
