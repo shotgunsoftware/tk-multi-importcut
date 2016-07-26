@@ -31,6 +31,9 @@ _VERSION_EXTS = _VIDEO_EXTS + [".jpg", ".jpeg", ".mxf", ".omf", ".png", ".psd", 
 # EDL file extension
 _EDL_EXT = ".edl"
 
+# Url that links to Import Cut documentation.
+_DOCUMENTATION_URL = "https://support.shotgunsoftware.com/hc/en-us/articles/219041758-Import-Cut"
+
 # Some colors used in various places
 _COLORS = {
     "sg_blue" : "#2C93E2",
