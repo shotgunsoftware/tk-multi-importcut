@@ -70,8 +70,7 @@ Shotgun Admin to adjust your permissions in Shotgun."
 _TRANSITIONS_PRESENT_MSG = "This EDL contains a transition.\n\nShotgun does \
 not support transitions when viewing the Cut, but the EDL can still be \
 imported. The transition frames will be included in the Cut Duration for the \
-Shots, in addition to the frame range before and/or after the transition. \
-Frame handles will be calculated outside of the transition."
+Shots, and frame handles will be calculated outside of the transition."
 
 
 def show_dialog(app_instance):
