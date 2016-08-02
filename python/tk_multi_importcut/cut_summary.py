@@ -862,7 +862,7 @@ class CutSummary(QtCore.QObject):
 
         cut_changes_details = [
             "%s - %s" % (
-                edit.name, ", ".join(edit.reasons)
+                edit.name.decode("utf-8"), ", ".join(edit.reasons)
             ) for edit in sorted(
                 self.edits_for_type(_DIFF_TYPES.CUT_CHANGE),
                 key=lambda x: x.new_cut_order
@@ -877,7 +877,7 @@ class CutSummary(QtCore.QObject):
             )
         ]
         no_link_details = [
-            edit.version_name or str(edit.new_cut_order) for edit in sorted(
+            edit.version_name.decode("utf-8") or str(edit.new_cut_order) for edit in sorted(
                 self.edits_for_type(_DIFF_TYPES.NO_LINK),
                 key=lambda x: x.new_cut_order
             )

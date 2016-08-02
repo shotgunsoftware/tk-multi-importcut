@@ -53,7 +53,7 @@ def get_sg_entity_name(sg_entity):
             sg_entity.get("title", "")
         )
     )
-    return entity_name
+    return entity_name.decode("utf-8")
 
 
 class EdlCut(QtCore.QObject):
@@ -592,6 +592,7 @@ class EdlCut(QtCore.QObject):
                     sg_cut["_display_status"] = status_dict[sg_cut["sg_status_list"]]
                 else:
                     sg_cut["_display_status"] = sg_cut["sg_status_list"]
+                sg_cut["code"] = sg_cut["code"].decode("utf-8")
                 self.new_sg_cut.emit(sg_cut)
             self._logger.info("Retrieved %d Cuts." % len(sg_cuts))
             self.step_done.emit(_ENTITY_STEP)

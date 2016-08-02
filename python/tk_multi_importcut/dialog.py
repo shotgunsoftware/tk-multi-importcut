@@ -1303,7 +1303,7 @@ class AppDialog(QtGui.QWidget):
             self._processor.sg_entity["type"],
             self._processor.sg_entity["id"],
         )]
-        subject, body = self._processor.summary.get_report(self._processor.title, links)
+        subject, body = self._processor.summary.get_report(self._processor.title.decode("utf-8"), links)
         # Qt will encode the url for us
         mail_url = QtCore.QUrl("mailto:?subject=%s&body=%s" % (subject, body))
         self._logger.debug("Opening up %s" % mail_url)
