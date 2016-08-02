@@ -229,7 +229,7 @@ class EdlCut(QtCore.QObject):
                 # * shot-name_001
                 # Most recent patterns are cached by Python so we don't need
                 # to worry about compiling it ourselves for performances consideration
-                m = re.match(r"\*(\s*COMMENT\s*:)?\s*([a-z0-9A-Z_-]+)$", comment)
+                m = re.match(r"\*(\s*COMMENT\s*:)?\s*(.+)$", comment)
                 if m:
                     if m.group(1):
                         # Priority is given to matches from line beginning with
@@ -1401,11 +1401,6 @@ class EdlCut(QtCore.QObject):
                             "smart_tail_out": post_create[shot_code]["smart_tail_out"]
                         }
                     })
-                shot_name = shot_code.lower()
-                if shot_name not in self._summary:
-                    raise RuntimeError(
-                        "Created/Updated Shot %s, but couldn't retrieve it in our list" %
-                        shot_name)
                 for cut_diff in self._summary[shot_name]:
                     if cut_diff.sg_shot:
                         # Update with new values
