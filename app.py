@@ -9,6 +9,12 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 from sgtk.platform import Application
+import sys
+#def ensure_utf8_encoding():
+#    # Make sure we don't use default "ascii" encoding
+#    import sys
+#    reload(sys)  # Reload to get back access to setdefaultencoding
+#    sys.setdefaultencoding("UTF8")
 
 
 class ImportCutApp(Application):
@@ -21,6 +27,8 @@ class ImportCutApp(Application):
         """
         Called as the application is being initialized
         """
+        print "Default encoding is %s" % sys.getdefaultencoding()
+
         # first, we use the special import_module command to access the app module
         # that resides inside the python folder in the app. This is where the actual UI
         # and business logic of the app is kept. By using the import_module command,

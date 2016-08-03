@@ -642,6 +642,7 @@ class AppDialog(QtGui.QWidget):
         :param ext: The file extension, as extracted with splitext, e.g. '.edl'
         :returns: True if the file is valid, False otherwise
         """
+        self._logger.info("Dropped type %s" % type(path))
         if ext.lower() == _EDL_EXT:
             # Reset things if an EDL was previously dropped
             self.ui.edl_added_icon.hide()
@@ -971,6 +972,11 @@ class AppDialog(QtGui.QWidget):
                     )
                 )
             else:
+                self._logger.info("%s %s %s" % (
+                    type(self._processor.edl_file_path),
+                    type(self._processor.entity_type_name),
+                    type(self._processor.entity_name),
+                ))
                 self.ui.cut_summary_title_label.setText(
                     "Comparing %s to Shotgun Shot Data for %s <b>%s</b>" % (
                         os.path.basename(self._processor.edl_file_path),

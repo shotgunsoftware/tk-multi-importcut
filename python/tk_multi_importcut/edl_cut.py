@@ -325,9 +325,9 @@ class EdlCut(QtCore.QObject):
 
         :param edl_file_path: A string, full path to the EDL file.
         """
-        self._logger.info("Loading %s ..." % edl_file_path)
+        self._logger.info("Loading %s %s..." % (edl_file_path, type(edl_file_path)))
         try:
-            self._edl_file_path = edl_file_path
+            self._edl_file_path = edl_file_path.encode("utf-8")
             if self._frame_rate is not None:
                 self._logger.info("Using explicit frame rate %f ..." % self._frame_rate)
                 self._edl = edl.EditList(
@@ -1016,6 +1016,9 @@ class EdlCut(QtCore.QObject):
             self.create_sg_cut_items(self._sg_new_cut)
             self.progress_changed.emit(3)
             self._logger.info("Creating note ...")
+            self._logger.info("%s %s %s %s %s" % (
+                type(title), type(sender), type(to), type(description), type(self._sg_new_cut)
+            ))
             self.create_note(title, sender, to, description, sg_links=[self._sg_new_cut])
             self.progress_changed.emit(4)
         except Exception, e:
