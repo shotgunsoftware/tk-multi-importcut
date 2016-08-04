@@ -141,7 +141,7 @@ class CardWidget(QtGui.QFrame):
         Called when a new thumbnail is available for this card, replace the
         current thumbnail with the new one.
 
-        :param upath: Full path to a thumbnail file, as unicode
+        :param upath: Full path to a thumbnail file, as a unicode string
         """
         path = upath.encode("utf-8")
         self._logger.debug("Loading thumbnail %s for %s." % (path, self.entity_name))

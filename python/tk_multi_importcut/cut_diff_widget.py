@@ -203,7 +203,7 @@ class CutDiffCard(QtGui.QFrame):
         """
         Called when a new thumbnail is available for this card
 
-        :param path: Full path to an image to use as thumbnail, as unicode
+        :param path: Full path to an image to use as thumbnail, as a unicode string
         """
         self.set_thumbnail(path.encode("utf-8"))
 
@@ -247,7 +247,7 @@ class CutDiffCard(QtGui.QFrame):
         """
         Called when the shot name was edited
 
-        :param uvalue: The value from the widget
+        :param uvalue: The value from the widget, as a unicode string
         """
         value = uvalue.encode("utf-8")
         if value != self._cut_diff.name:

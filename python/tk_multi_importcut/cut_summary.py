@@ -498,8 +498,8 @@ class CutSummary(QtCore.QObject):
         entries from a previous import.
 
         :param cut_diff: A CutDiff instance
-        :param uold_name: A string, the CutDiff previous name, as unicode
-        :param unew_name: A string, the CutDiff new name, as unicode
+        :param uold_name: A string, the CutDiff previous name, as a unicode string
+        :param unew_name: A string, the CutDiff new name, as a unicode string
         """
 
         # Only CutDiff with a valid edit should be allowed to be renamed.

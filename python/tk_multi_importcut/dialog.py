@@ -476,7 +476,7 @@ class AppDialog(QtGui.QWidget):
         Called when an Entity Type button is clicked, activate the Entity type
         in the Entities view
 
-        :param uentity_type: A SG Entity type
+        :param uentity_type: A SG Entity type, as a unicode string
         """
         entity_type = uentity_type.encode("utf-8")
         # Show the view for the Entity type
