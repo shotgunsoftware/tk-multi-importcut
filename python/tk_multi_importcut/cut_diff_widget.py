@@ -198,14 +198,14 @@ class CutDiffCard(QtGui.QFrame):
 
         self.set_thumbnail(":/tk_multi_importcut/sg_shot_thumbnail.png")
 
-    @QtCore.Slot(str)
+    @QtCore.Slot(unicode)
     def new_thumbnail(self, path):
         """
         Called when a new thumbnail is available for this card
 
-        :param path: Full path to an image to use as thumbnail
+        :param path: Full path to an image to use as thumbnail, as unicode
         """
-        self.set_thumbnail(path)
+        self.set_thumbnail(path.encode("utf-8"))
 
     @QtCore.Slot(CutDiff, int, int)
     def diff_type_changed(self, cut_diff, old_type, new_type):
@@ -242,13 +242,14 @@ class CutDiffCard(QtGui.QFrame):
         """
         self._set_ui_values()
 
-    @QtCore.Slot(str)
-    def shot_name_edited(self, value):
+    @QtCore.Slot(unicode)
+    def shot_name_edited(self, uvalue):
         """
         Called when the shot name was edited
 
-        :param value: The value from the widget
+        :param uvalue: The value from the widget
         """
+        value = uvalue.encode("utf-8")
         if value != self._cut_diff.name:
             self._cut_diff.set_name(value)
         if not self._cut_diff.name:

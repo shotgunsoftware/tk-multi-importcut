@@ -17,7 +17,7 @@ from sgtk.platform.qt import QtCore, QtGui
 
 from .ui.submit_dialog import Ui_submit_dialog
 from .cut_diff import _DIFF_TYPES
-
+from logger import get_logger
 
 class SubmitDialog(QtGui.QDialog):
     """
@@ -37,6 +37,7 @@ class SubmitDialog(QtGui.QDialog):
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()
         self._sg = self._app.shotgun
+        self._logger = get_logger()
         # Create a settings manager where we can pull and push prefs later
         self._user_settings = self._app.user_settings
         # Retrieve user settings and set UI values
@@ -73,9 +74,9 @@ class SubmitDialog(QtGui.QDialog):
         self._save_settings()
         update_shot_fields = self.ui.update_shot_fields_checkbox.isChecked()
         title = self.ui.title_text.text().encode("utf-8")
-        # Break the to_text string into a list of Shotgun Group names
-        to_text_list = re.sub(',\s+', ',', self.ui.to_text.text().encode("utf-8"))
-        email_groups = to_text_list.split(",")
+        # Break the to_text unicode string into a list of Shotgun Group names
+        to_text_list = re.sub(",\s+", ",", self.ui.to_text.text(), flags=re.UNICODE)
+        email_groups = to_text_list.encode("utf-8").split(",")
         # If there are no groups specified, remove the empty string from email_groups.
         if email_groups == [""]:
             email_groups = []
@@ -84,6 +85,9 @@ class SubmitDialog(QtGui.QDialog):
         for email_group in email_groups:
             found = False
             for existing_email_group in existing_email_groups:
+                self._logger.debug("Comparing \"%s\" (%s) to \"%s\"" % (
+                    email_group, type(email_group), existing_email_group["code"]
+                ))
                 if email_group == existing_email_group["code"]:
                     found = True
                     email_group_entities.append(existing_email_group)
@@ -106,9 +110,6 @@ class SubmitDialog(QtGui.QDialog):
         self._user_settings.store("email_groups", email_groups)
         description = self.ui.description_text.toPlainText().encode("utf-8")
         user = self._app.context.user or {}
-        print("%s %s %s %s %s" % (
-            type(title), type(user), type(email_group_entities), type(description), type(update_shot_fields)
-        ))
         self.submit.emit(title, user, email_group_entities, description, update_shot_fields)
         self.close_dialog()
 

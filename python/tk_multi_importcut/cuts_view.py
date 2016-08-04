@@ -94,8 +94,9 @@ class CutsView(QtCore.QObject):
 
         Display all of them if text is empty.
 
-        :param text: A string to match
+        :param text: A unicode string to match
         """
+        text = text.encode("utf-8")
         self._logger.debug("Searching for %s" % text)
         count = self.card_count
         match_count = 0

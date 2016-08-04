@@ -51,7 +51,7 @@ class EntityLineWidget(QtGui.QLineEdit):
         completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.setCompleter(completer)
         # Only allow alpha numeric characters, _ and -
-        rx = QtCore.QRegExp("[a-zA-Z0-9_-]*")
+        rx = QtCore.QRegExp("[\w-]*")
         self.setValidator(QtGui.QRegExpValidator(rx, self))
         self.set_property("valid", True)
         # Just a way to be warned when the value was edited
