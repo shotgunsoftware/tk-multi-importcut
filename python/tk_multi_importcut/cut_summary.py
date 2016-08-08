@@ -481,8 +481,8 @@ class CutSummary(QtCore.QObject):
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
 
-    @QtCore.Slot(CutDiff, str, str)
-    def cut_diff_name_changed(self, cut_diff, old_name, new_name):
+    @QtCore.Slot(CutDiff, unicode, unicode)
+    def cut_diff_name_changed(self, cut_diff, u_old_name, u_new_name):
         """
         Handle Cut diff (Shot) name changes
 
@@ -498,8 +498,8 @@ class CutSummary(QtCore.QObject):
         entries from a previous import.
 
         :param cut_diff: A CutDiff instance
-        :param old_name: A string, the CutDiff previous name
-        :param new_name: A string, the CutDiff new name
+        :param u_old_name: A string, the CutDiff previous name, as a unicode string
+        :param u_new_name: A string, the CutDiff new name, as a unicode string
         """
 
         # Only CutDiff with a valid edit should be allowed to be renamed.
@@ -510,6 +510,8 @@ class CutSummary(QtCore.QObject):
                 "%s does not have a a valid edit and can't be renamed" % cut_diff.name
             )
 
+        new_name = u_new_name.encode("utf-8")
+        old_name = u_old_name.encode("utf-8")
         # We might have empty names here. To avoid considering all entries
         # with no name as repeated Shots we forge a key based on the cut order.
         new_shot_key = new_name.lower() if new_name else "_no_shot_name_%s" % cut_diff.new_cut_order

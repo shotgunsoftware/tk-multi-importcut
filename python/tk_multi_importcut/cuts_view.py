@@ -88,14 +88,15 @@ class CutsView(QtCore.QObject):
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(unicode)
-    def search(self, text):
+    def search(self, u_text):
         """
         Display only Cuts whose name matches the given text.
 
         Display all of them if text is empty.
 
-        :param text: A string to match
+        :param u_text: A unicode string to match
         """
+        text = u_text.encode("utf-8")
         self._logger.debug("Searching for %s" % text)
         count = self.card_count
         match_count = 0

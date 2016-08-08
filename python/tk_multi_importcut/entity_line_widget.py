@@ -51,7 +51,7 @@ class EntityLineWidget(QtGui.QLineEdit):
         completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.setCompleter(completer)
         # Only allow alpha numeric characters, _ and -
-        rx = QtCore.QRegExp("[a-zA-Z0-9_-]*")
+        rx = QtCore.QRegExp("[\w-]*")
         self.setValidator(QtGui.QRegExpValidator(rx, self))
         self.set_property("valid", True)
         # Just a way to be warned when the value was edited
@@ -97,6 +97,7 @@ class EntityLineWidget(QtGui.QLineEdit):
         Clear the focus for this widget and emit a signal with
         the current value.
         """
+        # No need to convert the input text to utf-8 str here, as we just emit it
         value = self.text()
         self.clearFocus()
         self.value_changed.emit(value)

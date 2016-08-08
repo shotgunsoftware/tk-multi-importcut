@@ -350,8 +350,8 @@ class SettingsDialog(QtGui.QDialog):
         if not self.ui.default_frame_rate_line_edit.hasAcceptableInput():
             raise SettingsError("Default Frame Rate must be set")
 
-        timecode_mapping = self.ui.timecode_mapping_line_edit.text()
-        fps = float(self.ui.default_frame_rate_line_edit.text())
+        timecode_mapping = self.ui.timecode_mapping_line_edit.text().encode("utf-8")
+        fps = float(self.ui.default_frame_rate_line_edit.text().encode("utf-8"))
         try:
             # Using the timecode module to validate the timecode_mapping value with
             # the given fps, our input mask can't check for hh mm ss ff validity,
@@ -375,11 +375,14 @@ class SettingsDialog(QtGui.QDialog):
         if use_smart_fields and not self._shot_schema.get("smart_cut_duration"):
             raise SettingsError(_BAD_SMART_FIELDS_MSG)
 
-        # Break the to_text string into a list of Shotgun Group names
+        # Break the to_text unicode string into a list of Shotgun Group names
         # Remove spaces after a ","
-        to_text_list = re.sub(",\s+", ",", self.ui.email_groups_line_edit.text())
+        to_text_list = re.sub(
+            ",\s+", ",", self.ui.email_groups_line_edit.text(), flags=re.UNICODE
+        )
         # And then split with ","
-        email_groups = to_text_list.split(",")
+        email_groups = to_text_list.encode("utf-8").split(",")
+
         # If there is no text, reset email_group to be an empty list
         if email_groups == [""]:
             email_groups = []
@@ -391,15 +394,15 @@ class SettingsDialog(QtGui.QDialog):
             if email_group not in existing_email_groups_list:
                 raise SettingsError(_BAD_GROUP_MSG % (email_group, email_group))
 
-        omit_status = self.ui.omit_status_combo_box.currentText()
+        omit_status = self.ui.omit_status_combo_box.currentText().encode("utf-8")
         if not omit_status and update_shot_statuses:
             raise SettingsError("Please select an Omit Status.")
 
-        reinstate_status = self.ui.reinstate_status_combo_box.currentText()
+        reinstate_status = self.ui.reinstate_status_combo_box.currentText().encode("utf-8")
         if not reinstate_status and update_shot_statuses:
             raise SettingsError("Please select a Reinstate Status")
 
-        statuses = self.ui.reinstate_shot_if_status_is_line_edit.text().replace(
+        statuses = self.ui.reinstate_shot_if_status_is_line_edit.text().encode("utf-8").replace(
             ", ", ",").split(",")
         existing_statuses = self._shot_schema[
             "sg_status_list"]["properties"]["valid_values"]["value"]
@@ -427,7 +430,7 @@ class SettingsDialog(QtGui.QDialog):
         if not self.ui.default_frame_rate_line_edit.hasAcceptableInput():
             raise SettingsError("Default Frame Rate must be set")
 
-        default_frame_rate = self.ui.default_frame_rate_line_edit.text()
+        default_frame_rate = self.ui.default_frame_rate_line_edit.text().encode("utf-8")
         new_values["default_frame_rate"] = default_frame_rate
 
         timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
@@ -437,20 +440,20 @@ class SettingsDialog(QtGui.QDialog):
         # are not visible otherwise, so only save them if this mode is on
         if timecode_to_frame_mapping == _RELATIVE_MODE:
             self._validate_timecode_mapping_input()
-            new_values["timecode_mapping"] = self.ui.timecode_mapping_line_edit.text()
-            new_values["frame_mapping"] = self.ui.frame_mapping_line_edit.text()
+            new_values["timecode_mapping"] = self.ui.timecode_mapping_line_edit.text().encode("utf-8")
+            new_values["frame_mapping"] = self.ui.frame_mapping_line_edit.text().encode("utf-8")
 
         if not self.ui.default_head_in_line_edit.hasAcceptableInput():
             raise SettingsError("Default Head In must be set")
-        new_values["default_head_in"] = self.ui.default_head_in_line_edit.text()
+        new_values["default_head_in"] = self.ui.default_head_in_line_edit.text().encode("utf-8")
 
         if not self.ui.default_head_duration_line_edit.hasAcceptableInput():
             raise SettingsError("Default Head Duration must be set")
-        new_values["default_head_duration"] = self.ui.default_head_duration_line_edit.text()
+        new_values["default_head_duration"] = self.ui.default_head_duration_line_edit.text().encode("utf-8")
 
         if not self.ui.default_tail_duration_line_edit.hasAcceptableInput():
             raise SettingsError("Default Tail Duration must be set")
-        new_values["default_tail_duration"] = self.ui.default_tail_duration_line_edit.text()
+        new_values["default_tail_duration"] = self.ui.default_tail_duration_line_edit.text().encode("utf-8")
 
         # Retrieve a list of wizard steps potentially affected by these changes
         affected = self._user_settings.reset_needed(new_values, self._wizard_step)
