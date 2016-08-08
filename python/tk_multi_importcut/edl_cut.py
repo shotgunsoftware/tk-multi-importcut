@@ -229,7 +229,7 @@ class EdlCut(QtCore.QObject):
                 # * shot-name_001
                 # Most recent patterns are cached by Python so we don't need
                 # to worry about compiling it ourselves for performances consideration
-                m = re.match(r"\*(\s*COMMENT\s*:)?\s*([a-z0-9A-Z_-]+)$", comment)
+                m = re.match(r"\*?(\s*COMMENT\s*:)?\s*([a-z0-9A-Z_-]+)$", comment)
                 if m:
                     if m.group(1):
                         # Priority is given to matches from line beginning with
