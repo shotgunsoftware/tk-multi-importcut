@@ -66,8 +66,8 @@ class CreateEntityDialog(QtGui.QDialog):
         """
         Send out request to create entity, then close the dialog.
         """
-        entity_name = self.ui.entity_name_line_edit.text()
-        entity_description = self.ui.description_line_edit.text()
+        entity_name = self.ui.entity_name_line_edit.text().encode("utf-8")
+        entity_description = self.ui.description_line_edit.text().encode("utf-8")
         status_index = self.ui.status_combo_box.currentIndex()
         field_data = {
             "project": self._project,

@@ -301,10 +301,8 @@ class EdlCut(QtCore.QObject):
         :param edl_file_path: Unicode string, full path to EDL file.
         :param mov_file_path: Unicode string, full path to MOV file.
         """
-        edl_file_path = edl_file_path.encode("utf-8")
-        mov_file_path = mov_file_path.encode("utf-8")
-        self.register_movie_path(mov_file_path)
-        self.load_edl(edl_file_path)
+        self.register_movie_path(mov_file_path.encode("utf-8"))
+        self.load_edl(edl_file_path.encode("utf-8"))
 
     @QtCore.Slot(unicode)
     def register_movie_path(self, movie_file_path):
@@ -321,13 +319,13 @@ class EdlCut(QtCore.QObject):
             self.step_done.emit(_DROP_STEP)
 
     @QtCore.Slot(unicode)
-    def load_edl(self, edl_file_path):
+    def load_edl(self, u_edl_file_path):
         """
         Load an EDL file.
 
-        :param edl_file_path: A unicode string, full path to the EDL file.
+        :param u_edl_file_path: A unicode string, full path to the EDL file.
         """
-        edl_file_path = edl_file_path.encode("utf-8")
+        edl_file_path = u_edl_file_path.encode("utf-8")
         self._logger.info("Loading %s..." % (edl_file_path))
         try:
             self._edl_file_path = edl_file_path
@@ -445,13 +443,13 @@ class EdlCut(QtCore.QObject):
         return status_dict
 
     @QtCore.Slot(unicode)
-    def retrieve_entities(self, entity_type):
+    def retrieve_entities(self, u_entity_type):
         """
         Retrieve all Entities with the given type for the current Project
 
-        :param entity_type: A Shotgun Entity type name, as a unicode string, e.g. u"Sequence"
+        :param u_entity_type: A Shotgun Entity type name, as a unicode string, e.g. u"Sequence"
         """
-        entity_type = entity_type.encode("utf-8")
+        entity_type = u_entity_type.encode("utf-8")
         self._sg_entity_type = entity_type
         self._sg_shot_link_field_name = None
         # Retrieve display names and colors for statuses
@@ -987,7 +985,7 @@ class EdlCut(QtCore.QObject):
         return score
 
     @QtCore.Slot(unicode, dict, dict, unicode, bool)
-    def do_cut_import(self, title, sender, to, description, update_shots):
+    def do_cut_import(self, u_title, sender, to, u_description, update_shots):
         """
         Import the Cut changes in Shotgun
         - Create a new SG Cut
@@ -996,16 +994,16 @@ class EdlCut(QtCore.QObject):
         - Update existing SG Shots if update_shots is True
         - Create a Note in SG with a summary of changes
 
-        :param title: A unicode string, the new SG Cut name and a title for the Note
+        :param u_title: A unicode string, the new SG Cut name and a title for the Note
                       that will be created
         :param sender: A SG user dictionary, the Note sender
         :param to: A SG Group dictionary, the recipient for the Note
-        :param description: Comments as a unicode string, used in the Note's body
+        :param u_description: Comments as a unicode string, used in the Note's body
         :param update_shots: A boolean, whether or not existing Shots data will
                              be updated
         """
-        title = title.encode("utf-8")
-        description = description.encode("utf-8")
+        title = u_title.encode("utf-8")
+        description = u_description.encode("utf-8")
         self._logger.info("Importing Cut %s" % title)
         self.got_busy.emit(4)
         self.step_done.emit(_SUMMARY_STEP)
@@ -1154,13 +1152,18 @@ class EdlCut(QtCore.QObject):
             "Cut",
             cut_payload,
             ["id", "code"])
-        # Upload edl file to the new Cut record.
-        self._sg.upload(
-            sg_cut["type"],
-            sg_cut["id"],
-            self._edl_file_path,
-            "attachments"
-        )
+        # Upload edl file to the new Cut record and keep going if it fails.
+        try:
+            self._sg.upload(
+                sg_cut["type"],
+                sg_cut["id"],
+                self._edl_file_path,
+                "attachments"
+            )
+        except Exception, e:
+            self._logger.warning("Couldn't upload %s into Shotgun: %s" % (
+                self._edl_file_path, e
+            ))
         return sg_cut
 
     def _get_shot_in_out_sg_data(self, head_in, cut_in, cut_out, tail_out):

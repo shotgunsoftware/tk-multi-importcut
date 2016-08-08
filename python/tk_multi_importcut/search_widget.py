@@ -127,6 +127,5 @@ class SearchWidget(QtGui.QLineEdit):
     def _safe_get_text(self):
         """
         """
-        text = self.text()
-        # TODO - handle unicode
+        text = self.text().encode("utf-8")
         return text

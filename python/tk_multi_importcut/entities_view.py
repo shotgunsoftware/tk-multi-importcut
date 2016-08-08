@@ -130,14 +130,14 @@ class EntitiesView(QtCore.QObject):
         self._logger.debug("Selected %s" % self._selected_entity_card)
 
     @QtCore.Slot(unicode)
-    def search(self, text):
+    def search(self, u_text):
         """
         Display only Entities whose name matches the given text,
         display all of them if text is empty
 
-        :param text: A unicode string to match
+        :param u_text: A unicode string to match
         """
-        text = text.encode("utf-8")
+        text = u_text.encode("utf-8")
         self._logger.debug("Searching for %s" % text)
         count = self.card_count
         if not count:

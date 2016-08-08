@@ -471,14 +471,14 @@ class AppDialog(QtGui.QWidget):
         return entity_link_button
 
     @QtCore.Slot(unicode)
-    def activate_entity_type_view(self, uentity_type):
+    def activate_entity_type_view(self, u_entity_type):
         """
         Called when an Entity Type button is clicked, activate the Entity type
         in the Entities view
 
-        :param uentity_type: A SG Entity type, as a unicode string
+        :param u_entity_type: A SG Entity type, as a unicode string
         """
-        entity_type = uentity_type.encode("utf-8")
+        entity_type = u_entity_type.encode("utf-8")
         # Show the view for the Entity type
         self.show_entities(entity_type)
         # The UI can change based on the entity_type, so call a refresh.
@@ -679,7 +679,7 @@ class AppDialog(QtGui.QWidget):
         msg_box.activateWindow()
 
     @QtCore.Slot(unicode, bool)
-    def set_edl_validity(self, ufile_name, is_valid):
+    def set_edl_validity(self, u_file_name, is_valid):
         """
         Called when an EDL file has been validated or invalidated by the data
         manager.
@@ -687,10 +687,10 @@ class AppDialog(QtGui.QWidget):
         Set the UI to reflect the fact that we now have, or don't have anymore a
         valid EDL.
 
-        :param ufile_name: Unicode short EDL file name
+        :param u_file_name: Unicode short EDL file name
         :param is_valid: A boolean, True if the EDL file can be used
         """
-        file_name = ufile_name.encode("utf-8")
+        file_name = u_file_name.encode("utf-8")
         if is_valid:
             self.ui.edl_added_icon.show()
             self.ui.file_added_label.setText(file_name)
@@ -709,26 +709,26 @@ class AppDialog(QtGui.QWidget):
         self._logger.debug("%s EDL is now %s" % (file_name, ["invalid","valid"][is_valid]))
 
     @QtCore.Slot(unicode)
-    def valid_movie(self, ufile_name):
+    def valid_movie(self, u_file_name):
         """
         Called when a movie file has been validated and can be used
 
-        :param file_name: Unicode short movie file name
+        :param u_file_name: Unicode short movie file name
         """
-        file_name = ufile_name.encode("utf-8")
+        file_name = u_file_name.encode("utf-8")
         self.ui.mov_added_icon.show()
         self.ui.file_added_label.setText(file_name)
 
     @QtCore.Slot(int, unicode)
-    def new_message(self, levelno, umessage):
+    def new_message(self, levelno, u_message):
         """
         Display a message in the feedback widget
 
         :param levelno: A standard logging level
-        :param umessage: A unicode string
+        :param u_message: A unicode string
         """
 
-        message = umessage.encode("utf-8")
+        message = u_message.encode("utf-8")
         if levelno == logging.ERROR or levelno == logging.CRITICAL:
             self.ui.feedback_label.setProperty("level", "error")
             self.ui.progress_bar_label.setProperty("level", "error")
@@ -744,13 +744,13 @@ class AppDialog(QtGui.QWidget):
         self.ui.progress_bar_label.setText(message)
 
     @QtCore.Slot(unicode)
-    def display_info_message(self, umessage):
+    def display_info_message(self, u_message):
         """
         Display an information message in the feedback widget
 
-        :param umessage: A unicode string
+        :param u_message: A unicode string
         """
-        message = umessage.encode("utf-8")
+        message = u_message.encode("utf-8")
         self.ui.feedback_label.setProperty("level", "info")
         self.style().unpolish(self.ui.feedback_label)
         self.style().polish(self.ui.feedback_label)
@@ -1053,7 +1053,7 @@ class AppDialog(QtGui.QWidget):
             raise RuntimeError("Invalid step %d for selection callback" % self._step)
 
     @QtCore.Slot(unicode)
-    def show_entities(self, sg_entity_type):
+    def show_entities(self, u_sg_entity_type):
         """
         Called when Entities needs to be shown for a particular Entity type.
 
@@ -1061,9 +1061,9 @@ class AppDialog(QtGui.QWidget):
         If needed, ask the data manager to retrieve a list of entities for this
         Entity type.
 
-        :param sg_entity_type: A SG Entity type, as a unicode string, e.g. u'Sequence'
+        :param u_sg_entity_type: A SG Entity type, as a unicode string, e.g. u'Sequence'
         """
-        sg_entity_type = sg_entity_type.encode("utf-8")
+        sg_entity_type = u_sg_entity_type.encode("utf-8")
         self._preload_entity_type = sg_entity_type
         # Save the value in user settings so it will persist across
         # sessions
@@ -1335,15 +1335,15 @@ class AppDialog(QtGui.QWidget):
         QtGui.QDesktopServices.openUrl(help_url)
 
     @QtCore.Slot(unicode, list)
-    def display_exception(self, umsg, exec_info):
+    def display_exception(self, u_msg, exec_info):
         """
         Display a popup window with the error message and the exec_info
         in the "details"
 
-        :param umsg: A unicode string
+        :param u_msg: A unicode string
         :param exec_info: A list of strings
         """
-        msg = umsg.encode("utf-8")
+        msg = u_msg.encode("utf-8")
         msg_box = QtGui.QMessageBox(
             parent=self,
             icon=QtGui.QMessageBox.Critical
@@ -1474,14 +1474,14 @@ class AppDialog(QtGui.QWidget):
                 self._app.log_warning("Unable to read style sheet %s" % css_file)
 
     @QtCore.Slot(unicode)
-    def reload_css(self, upath):
+    def reload_css(self, u_path):
         """
         Reload the given style sheet file onto the UI
         Re-position the style sheet file watcher if needed
 
-        :param upath: Full path a to a css file, as a unicode string
+        :param u_path: Full path a to a css file, as a unicode string
         """
-        path = upath.encode("utf-8")
+        path = u_path.encode("utf-8")
         self._logger.info("Reloading %s" % path)
         self._load_css(path)
         # Some code editors rename files on save, so the watcher will

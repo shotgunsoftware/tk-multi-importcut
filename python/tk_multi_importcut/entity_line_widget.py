@@ -97,6 +97,7 @@ class EntityLineWidget(QtGui.QLineEdit):
         Clear the focus for this widget and emit a signal with
         the current value.
         """
+        # No need to convert the input text to utf-8 str here, as we just emit it
         value = self.text()
         self.clearFocus()
         self.value_changed.emit(value)

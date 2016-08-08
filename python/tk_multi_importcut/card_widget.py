@@ -136,14 +136,14 @@ class CardWidget(QtGui.QFrame):
         self.select_button.setVisible(False)
 
     @QtCore.Slot(unicode)
-    def new_thumbnail(self, upath):
+    def new_thumbnail(self, u_path):
         """
         Called when a new thumbnail is available for this card, replace the
         current thumbnail with the new one.
 
-        :param upath: Full path to a thumbnail file, as a unicode string
+        :param u_path: Full path to a thumbnail file, as a unicode string
         """
-        path = upath.encode("utf-8")
+        path = u_path.encode("utf-8")
         self._logger.debug("Loading thumbnail %s for %s." % (path, self.entity_name))
         self.set_thumbnail(path)
 

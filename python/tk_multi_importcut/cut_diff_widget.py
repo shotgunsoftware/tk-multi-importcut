@@ -243,13 +243,13 @@ class CutDiffCard(QtGui.QFrame):
         self._set_ui_values()
 
     @QtCore.Slot(unicode)
-    def shot_name_edited(self, uvalue):
+    def shot_name_edited(self, u_value):
         """
         Called when the shot name was edited
 
-        :param uvalue: The value from the widget, as a unicode string
+        :param u_value: The value from the widget, as a unicode string
         """
-        value = uvalue.encode("utf-8")
+        value = u_value.encode("utf-8")
         if value != self._cut_diff.name:
             self._cut_diff.set_name(value)
         if not self._cut_diff.name:
