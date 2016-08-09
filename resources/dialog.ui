@@ -456,6 +456,9 @@
            <property name="cursorPosition">
             <number>0</number>
            </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
            <property name="placeholderText">
             <string>Search Projects</string>
            </property>
@@ -664,6 +667,9 @@ This screen is kept so we have a direct match between internal steps and screens
            </property>
            <property name="layoutDirection">
             <enum>Qt::RightToLeft</enum>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
            </property>
            <property name="placeholderText">
             <string>Search Sequences</string>
@@ -1024,6 +1030,9 @@ This screen is kept so we have a direct match between internal steps and screens
            </property>
            <property name="layoutDirection">
             <enum>Qt::RightToLeft</enum>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
            </property>
            <property name="placeholderText">
             <string>Search Cut</string>
