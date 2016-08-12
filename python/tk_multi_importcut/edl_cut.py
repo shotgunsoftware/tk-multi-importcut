@@ -33,6 +33,17 @@ _ERROR_BAD_CUT = (
     "Please select another Cut or update the timecode data in %s to proceed."
 )
 
+_ERROR_FRAME_RATE = "You can modify the frame rate used by Import Cut  by \
+clicking on the Settings button and going to the Timecode/Frames tab."
+
+_ERROR_BL = "This edl has a black slug (BL) event. Currently, the Import Cut app \
+will not accept EDLs with these events. Support for black slug (BL) events \
+will be added in a future release."
+
+_ERROR_DROP_FRAME = "This edl uses drop frame timecode. Currently, the Import Cut \
+app only accepts EDLs with non-drop frame timecode. Support for drop timecode \
+will be added in a future release."
+
 
 def get_sg_entity_name(sg_entity):
     """
@@ -360,6 +371,21 @@ class EdlCut(QtCore.QObject):
             self.valid_edl.emit(os.path.basename(self._edl_file_path), True)
             if self.has_valid_movie:
                 self.step_done.emit(_DROP_STEP)
+        except edl.BadFrameRateError, e:
+            self.valid_edl.emit(os.path.basename(self._edl_file_path), False)
+            self._edl = None
+            self._edl_file_path = None
+            self._logger.exception("%s %s" % (str(e), _ERROR_FRAME_RATE))
+        except edl.BadBLError, e:
+            self.valid_edl.emit(os.path.basename(self._edl_file_path), False)
+            self._edl = None
+            self._edl_file_path = None
+            self._logger.exception(_ERROR_BL)
+        except edl.BadDropFrameError, e:
+            self.valid_edl.emit(os.path.basename(self._edl_file_path), False)
+            self._edl = None
+            self._edl_file_path = None
+            self._logger.exception(_ERROR_DROP_FRAME)
         except Exception, e:
             self.valid_edl.emit(os.path.basename(self._edl_file_path), False)
             self._edl = None
