@@ -33,16 +33,17 @@ _ERROR_BAD_CUT = (
     "Please select another Cut or update the timecode data in %s to proceed."
 )
 
-_ERROR_FRAME_RATE = "You can modify the frame rate used by Import Cut  by \
-clicking on the Settings button and going to the Timecode/Frames tab."
+# A string we add at the end of the standard editorial fw error message
+_ERROR_FRAME_RATE_ADD_ON = ( "You can modify the frame rate used by Import Cut  by "
+"clicking on the Settings button and going to the Timecode/Frames tab." )
 
-_ERROR_BL = "This edl has a black slug (BL) event. Currently, the Import Cut app \
-will not accept EDLs with these events. Support for black slug (BL) events \
-will be added in a future release."
+_ERROR_BL = ( "This edl has a black slug (BL) event. Currently, the Import Cut app "
+"will not accept EDLs with these events. Support for black slug (BL) events "
+"will be added in a future release." )
 
-_ERROR_DROP_FRAME = "This edl uses drop frame timecode. Currently, the Import Cut \
-app only accepts EDLs with non-drop frame timecode. Support for drop timecode \
-will be added in a future release."
+_ERROR_DROP_FRAME = ( "This edl uses drop frame timecode. Currently, the Import Cut "
+"app only accepts EDLs with non-drop frame timecode. Support for drop timecode "
+"will be added in a future release." )
 
 
 def get_sg_entity_name(sg_entity):
@@ -372,22 +373,29 @@ class EdlCut(QtCore.QObject):
             if self.has_valid_movie:
                 self.step_done.emit(_DROP_STEP)
         except edl.BadFrameRateError, e:
-            self._invalid_edl("%s %s" % (str(e), _ERROR_FRAME_RATE))
+            self._report_invalid_edl("%s\n\n%s" % (str(e), _ERROR_FRAME_RATE_ADD_ON))
         except edl.BadBLError:
-            self._invalid_edl(_ERROR_BL)
+            self._report_invalid_edl(_ERROR_BL)
         except edl.BadDropFrameError:
-            self._invalid_edl(_ERROR_DROP_FRAME)
+            self._report_invalid_edl(_ERROR_DROP_FRAME)
         except Exception, e:
-            self._invalid_edl(e)
+            self._report_invalid_edl(e)
 
-    def _invalid_edl(self, error):
+    def _report_invalid_edl(self, error):
         """
         Helper function for setting invalid EDL status.
+
+        This method must be called in an 'except' block, as it calls logging.exception.
+
+        :param error: The exception which has been raised
         """
-        self.valid_edl.emit(os.path.basename(self._edl_file_path), False)
+        edl_file = os.path.basename(self._edl_file_path)
+        self.valid_edl.emit(edl_file, False)
         self._edl = None
         self._edl_file_path = None
         self._logger.exception(error)
+        # Report a small error message which can be displayed in the UI
+        self._logger.error("Unable to read %s" % edl_file)
 
     def _bind_versions(self):
         """
