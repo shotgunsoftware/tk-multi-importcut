@@ -221,7 +221,7 @@ class EdlCut(QtCore.QObject):
         # for the source clip ...
         if edit._clip_name:
             # Strip off the extension if it's in our list of supported Version
-            # extentions, otherwise use the full clip_name as the Version name.
+            # extensions, otherwise use the full clip_name as the Version name.
             clip_name, ext = os.path.splitext(edit._clip_name)
             if ext.lower() in _VERSION_EXTS:
                 edit.get_version_name = lambda: clip_name
@@ -640,7 +640,7 @@ class EdlCut(QtCore.QObject):
         Shotgun Cut (which could be empty).
 
         If a Cut is given, all CutItems linked to this Cut will be retrieved from
-        Shotgun and reconciled againts the edit list previously loaded.
+        Shotgun and reconciled against the edit list previously loaded.
 
         Versions and Shots are primarily used to match CutItems against edits.
         However, the same Shot can appear more than once in a given Cut. In this
@@ -1116,8 +1116,8 @@ class EdlCut(QtCore.QObject):
         """
         # Create a new Cut
         self._logger.info("Creating Cut %s ..." % title)
-        # If start and end timecodes are not defined, we keep them as is,
-        # so no value will be set when creating the Cut, avoiding to get a 'None'
+        # If start and end timecodes are not defined, we keep them as-is,
+        # so no value will be set when creating the Cut, avoiding getting a 'None'
         # string from str(None).
         # We convert them to string otherwise.
         tc_start = self._summary.timecode_start
@@ -1452,7 +1452,7 @@ class EdlCut(QtCore.QObject):
                     else:
                         cut_diff._sg_shot = sg_shot
             if sg_batch_data_update:
-                # Do the deffered update of Shots for smart fields workaround.
+                # Do the deferred update of Shots for smart fields workaround.
                 res = self._sg.batch(sg_batch_data_update)
                 self._logger.info("Updated smart fields on %d shot(s)." % len(res))
 
