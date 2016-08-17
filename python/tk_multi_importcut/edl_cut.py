@@ -34,7 +34,7 @@ _ERROR_BAD_CUT = (
 )
 
 # A string we add at the end of the standard editorial fw error message
-_ERROR_FRAME_RATE_ADD_ON = ( "You can modify the frame rate used by Import Cut  by "
+_ERROR_FRAME_RATE_ADD_ON = ( "You can modify the frame rate used by Import Cut by "
 "clicking on the Settings button and going to the Timecode/Frames tab." )
 
 _ERROR_BL = ( "This edl has a black slug (BL) event. Currently, the Import Cut app "
