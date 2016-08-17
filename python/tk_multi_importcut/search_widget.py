@@ -16,34 +16,6 @@ from sgtk.platform.qt import QtCore, QtGui
 # This is why styling is kept inline, as it is likely to go away when the switch
 # happens
 
-# Style sheet for the QLineEdit
-_LINE_EDIT_STYLE = """
-QLineEdit {
-    background-image: url(:/tk_multi_importcut/search.png);
-    background-repeat: no-repeat;
-    background-position: center left;
-    border-radius: 5px;
-    padding-left:20px;
-    padding-right:20px;
-    margin-left: 12px;
-    margin-right 12px;
-}
-"""
-
-# Style sheet for the search button
-_BUTTON_STYLE = """
-QPushButton {
-border: 0px solid;
-background-image: "";
-image: url(:/tk_multi_importcut/clear_search.png);
-width: 16;
-height: 16;
-}
-QPushButton::hover {
-    image: url(:/tk_multi_importcut/clear_search_hover.png);
-}
-"""
-
 
 class SearchWidget(QtGui.QLineEdit):
     """
@@ -63,15 +35,13 @@ class SearchWidget(QtGui.QLineEdit):
         :param parent: Parent QWidget for this widget
         """
         super(SearchWidget, self).__init__(parent)
-        self.setStyleSheet(_LINE_EDIT_STYLE)
-
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
         # dynamically create the clear button so that we can place it over the
         # edit widget.
         self._clear_btn = QtGui.QPushButton(self)
         self._clear_btn.setFocusPolicy(QtCore.Qt.StrongFocus)
         self._clear_btn.setFlat(True)
         self._clear_btn.setCursor(QtCore.Qt.ArrowCursor)
-        self._clear_btn.setStyleSheet(_BUTTON_STYLE)
         self._clear_btn.hide()
 
         h_layout = QtGui.QHBoxLayout(self)

@@ -33,6 +33,18 @@ _ERROR_BAD_CUT = (
     "Please select another Cut or update the timecode data in %s to proceed."
 )
 
+# A string we add at the end of the standard editorial fw error message
+_ERROR_FRAME_RATE_ADD_ON = ( "You can modify the frame rate used by Import Cut by "
+"clicking on the Settings button and going to the Timecode/Frames tab." )
+
+_ERROR_BL = ( "This edl has a black slug (BL) event. Currently, the Import Cut app "
+"will not accept EDLs with these events. Support for black slug (BL) events "
+"will be added in a future release." )
+
+_ERROR_DROP_FRAME = ( "This edl uses drop frame timecode. Currently, the Import Cut "
+"app only accepts EDLs with non-drop frame timecode. Support for drop timecode "
+"will be added in a future release." )
+
 
 def get_sg_entity_name(sg_entity):
     """
@@ -209,7 +221,7 @@ class EdlCut(QtCore.QObject):
         # for the source clip ...
         if edit._clip_name:
             # Strip off the extension if it's in our list of supported Version
-            # extentions, otherwise use the full clip_name as the Version name.
+            # extensions, otherwise use the full clip_name as the Version name.
             clip_name, ext = os.path.splitext(edit._clip_name)
             if ext.lower() in _VERSION_EXTS:
                 edit.get_version_name = lambda: clip_name
@@ -229,7 +241,7 @@ class EdlCut(QtCore.QObject):
                 # * shot-name_001
                 # Most recent patterns are cached by Python so we don't need
                 # to worry about compiling it ourselves for performances consideration
-                m = re.match(r"\*(\s*COMMENT\s*:)?\s*([a-z0-9A-Z_-]+)$", comment)
+                m = re.match(r"\*?(\s*COMMENT\s*:)?\s*([a-z0-9A-Z_-]+)$", comment)
                 if m:
                     if m.group(1):
                         # Priority is given to matches from line beginning with
@@ -360,11 +372,30 @@ class EdlCut(QtCore.QObject):
             self.valid_edl.emit(os.path.basename(self._edl_file_path), True)
             if self.has_valid_movie:
                 self.step_done.emit(_DROP_STEP)
+        except edl.BadFrameRateError, e:
+            self._report_invalid_edl("%s\n\n%s" % (str(e), _ERROR_FRAME_RATE_ADD_ON))
+        except edl.BadBLError:
+            self._report_invalid_edl(_ERROR_BL)
+        except edl.BadDropFrameError:
+            self._report_invalid_edl(_ERROR_DROP_FRAME)
         except Exception, e:
-            self.valid_edl.emit(os.path.basename(self._edl_file_path), False)
-            self._edl = None
-            self._edl_file_path = None
-            self._logger.exception(e)
+            self._report_invalid_edl(e)
+
+    def _report_invalid_edl(self, error):
+        """
+        Helper function for setting invalid EDL status.
+
+        This method must be called in an 'except' block, as it calls logging.exception.
+
+        :param error: The exception which has been raised
+        """
+        edl_file = os.path.basename(self._edl_file_path)
+        self.valid_edl.emit(edl_file, False)
+        self._edl = None
+        self._edl_file_path = None
+        self._logger.exception(error)
+        # Report a small error message which can be displayed in the UI
+        self._logger.error("Unable to read %s" % edl_file)
 
     def _bind_versions(self):
         """
@@ -609,7 +640,7 @@ class EdlCut(QtCore.QObject):
         Shotgun Cut (which could be empty).
 
         If a Cut is given, all CutItems linked to this Cut will be retrieved from
-        Shotgun and reconciled againts the edit list previously loaded.
+        Shotgun and reconciled against the edit list previously loaded.
 
         Versions and Shots are primarily used to match CutItems against edits.
         However, the same Shot can appear more than once in a given Cut. In this
@@ -1085,8 +1116,8 @@ class EdlCut(QtCore.QObject):
         """
         # Create a new Cut
         self._logger.info("Creating Cut %s ..." % title)
-        # If start and end timecodes are not defined, we keep them as is,
-        # so no value will be set when creating the Cut, avoiding to get a 'None'
+        # If start and end timecodes are not defined, we keep them as-is,
+        # so no value will be set when creating the Cut, avoiding getting a 'None'
         # string from str(None).
         # We convert them to string otherwise.
         tc_start = self._summary.timecode_start
@@ -1421,7 +1452,7 @@ class EdlCut(QtCore.QObject):
                     else:
                         cut_diff._sg_shot = sg_shot
             if sg_batch_data_update:
-                # Do the deffered update of Shots for smart fields workaround.
+                # Do the deferred update of Shots for smart fields workaround.
                 res = self._sg.batch(sg_batch_data_update)
                 self._logger.info("Updated smart fields on %d shot(s)." % len(res))
 

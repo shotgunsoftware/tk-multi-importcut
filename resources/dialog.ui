@@ -14,16 +14,7 @@
    <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="main_layout" stretch="0,0,0,0">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
@@ -145,16 +136,7 @@
           <property name="spacing">
            <number>0</number>
           </property>
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <item>
@@ -436,7 +418,7 @@
          <item>
           <widget class="SearchWidget" name="projects_search_line_edit">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -455,6 +437,9 @@
            </property>
            <property name="cursorPosition">
             <number>0</number>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
            </property>
            <property name="placeholderText">
             <string>Search Projects</string>
@@ -500,20 +485,11 @@
             <x>0</x>
             <y>0</y>
             <width>964</width>
-            <height>459</height>
+            <height>462</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="project_grid" rowstretch="0">
-           <property name="leftMargin">
-            <number>2</number>
-           </property>
-           <property name="topMargin">
-            <number>2</number>
-           </property>
-           <property name="rightMargin">
-            <number>2</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -665,6 +641,9 @@ This screen is kept so we have a direct match between internal steps and screens
            <property name="layoutDirection">
             <enum>Qt::RightToLeft</enum>
            </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
            <property name="placeholderText">
             <string>Search Sequences</string>
            </property>
@@ -708,24 +687,15 @@ This screen is kept so we have a direct match between internal steps and screens
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>964</width>
-            <height>459</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <property name="styleSheet">
            <string notr="true"/>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -735,16 +705,7 @@ This screen is kept so we have a direct match between internal steps and screens
              </property>
              <widget class="QWidget" name="page_1">
               <layout class="QGridLayout" name="gridLayout">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -767,16 +728,7 @@ This screen is kept so we have a direct match between internal steps and screens
              </widget>
              <widget class="QWidget" name="page_2">
               <layout class="QGridLayout" name="gridLayout_3">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -799,16 +751,7 @@ This screen is kept so we have a direct match between internal steps and screens
              </widget>
              <widget class="QWidget" name="page_3">
               <layout class="QGridLayout" name="gridLayout_4">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -831,16 +774,7 @@ This screen is kept so we have a direct match between internal steps and screens
              </widget>
              <widget class="QWidget" name="page_4">
               <layout class="QGridLayout" name="gridLayout_5">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -863,16 +797,7 @@ This screen is kept so we have a direct match between internal steps and screens
              </widget>
              <widget class="QWidget" name="page_5">
               <layout class="QGridLayout" name="gridLayout_6">
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>2</number>
                </property>
                <property name="spacing">
@@ -1025,6 +950,9 @@ This screen is kept so we have a direct match between internal steps and screens
            <property name="layoutDirection">
             <enum>Qt::RightToLeft</enum>
            </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
            <property name="placeholderText">
             <string>Search Cut</string>
            </property>
@@ -1068,21 +996,12 @@ This screen is kept so we have a direct match between internal steps and screens
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>964</width>
-            <height>457</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="cuts_grid">
-           <property name="leftMargin">
-            <number>2</number>
-           </property>
-           <property name="topMargin">
-            <number>2</number>
-           </property>
-           <property name="rightMargin">
-            <number>2</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -1115,16 +1034,7 @@ This screen is kept so we have a direct match between internal steps and screens
        <property name="spacing">
         <number>0</number>
        </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>0</number>
        </property>
        <item>
@@ -1429,23 +1339,14 @@ This screen is kept so we have a direct match between internal steps and screens
               <x>0</x>
               <y>0</y>
               <width>964</width>
-              <height>397</height>
+              <height>400</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="cutsummary_list" stretch="0">
              <property name="spacing">
               <number>2</number>
              </property>
-             <property name="leftMargin">
-              <number>2</number>
-             </property>
-             <property name="topMargin">
-              <number>2</number>
-             </property>
-             <property name="rightMargin">
-              <number>2</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>2</number>
              </property>
              <item>

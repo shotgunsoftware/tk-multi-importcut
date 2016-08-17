@@ -18,7 +18,6 @@ from operator import itemgetter
 
 elided_label = sgtk.platform.import_framework("tk-framework-qtwidgets", "elided_label")
 ElidedLabel = elided_label.ElidedLabel
-
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
