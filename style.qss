@@ -17,6 +17,32 @@ Will have the "Do it" button on the far right
 QDialogButtonBox {
     button-layout: 3;
 }
+/*
+Styling for the search widget: add a search icon and offset
+the text so it does not overlap on the search and the clear icons
+*/
+SearchWidget {
+    background-image: url(:/tk_multi_importcut/search.png);
+    background-repeat: no-repeat;
+    background-position: center left;
+    border-radius: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+SearchWidget QPushButton {
+    border: 0px solid;
+    background-image: "";
+    image: url(:/tk_multi_importcut/clear_search.png);
+    width: 16;
+    height: 16;
+}
+
+SearchWidget QPushButton::hover {
+    image: url(:/tk_multi_importcut/clear_search_hover.png);
+}
 
 CutDiffCard #version_name_label {
     padding: 1px; /* Give a bit of margin so the lineedit and label can be aligned */
@@ -575,4 +601,3 @@ CutDiffCard[diff_type="no_link"]  #status_label ,
     color: #2C93E2;
     border: 1px none #555555;
 }
-
