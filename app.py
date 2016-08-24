@@ -68,4 +68,4 @@ class ImportCutApp(Application):
         :param frame_rate: The frame rate for the EDL file
         """
         app_payload = self.import_module("tk_multi_importcut")
-        app_payload.dialog.load_edl_for_entity(self, edl_file_path, sg_entity, frame_rate)
+        app_payload.dialog.load_edl_for_entity(self, edl_file_path, sg_entity, float(frame_rate))

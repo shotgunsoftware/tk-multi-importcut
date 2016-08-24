@@ -28,9 +28,10 @@ from .search_widget import SearchWidget
 from .entity_line_widget import EntityLineWidget
 from .extended_thumbnail import ExtendedThumbnail
 
+
 class SelectorButton(QtGui.QPushButton):
     """
-    Thin wrapping class for our selector buttons so styling can be done in the 
+    Thin wrapping class for our selector buttons so styling can be done in the
     style sheet for all of them, using the class name
     """
     pass
@@ -108,6 +109,9 @@ def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
         sg_entity_dict = ast.literal_eval(sg_entity)
         if not isinstance(sg_entity_dict, dict):
             raise ValueError("Invalid SG Entity %s" % sg_entity)
+
+    # Create a settings manager where we can pull and push prefs later.
+    app_instance.user_settings = settings.UserSettings(sgtk.platform.current_bundle())
 
     app_instance.engine.show_dialog(
         "Import Cut",
@@ -387,11 +391,10 @@ class AppDialog(QtGui.QWidget):
         # preferences.
         # Project is systematically added so is always valid
         if(self._preload_entity_type is not None and
-            self._preload_entity_type != "Project" and
-            self._preload_entity_type not in schema_entity_types):
+           self._preload_entity_type != "Project" and
+           self._preload_entity_type not in schema_entity_types):
                 self._logger.warning("Resetting invalid Entity type preference %s" %
-                    self._preload_entity_type
-                )
+                                     self._preload_entity_type)
                 self._preload_entity_type = None
 
         # Build a list of Entity type / Entity type name tuple
@@ -969,7 +972,7 @@ class AppDialog(QtGui.QWidget):
                     "Comparing %s and <b>%s</b> for %s <b>%s</b>" % (
                         os.path.basename(self._processor.edl_file_path),
                         "%s%s" % (self._processor.sg_cut["code"],
-                                     revision_number_str),
+                                  revision_number_str),
                         self._processor.entity_type_name,
                         self._processor.entity_name,
                     )

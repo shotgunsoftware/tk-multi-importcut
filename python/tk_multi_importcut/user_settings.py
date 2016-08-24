@@ -32,6 +32,7 @@ class UserSetting(object):
         self._default = default
         self._affects = affects or []
 
+
 class UserSettings(object):
     """
     Class for retrieving and managing User Settings.
