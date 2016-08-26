@@ -400,13 +400,10 @@ class AppDialog(QtGui.QWidget):
         # Build a list of Entity type / Entity type name tuple
         entity_types = []
         for entity_type in schema_entity_types:
-            try:
-                entity_types.append((
-                    entity_type,
-                    self._app.shotgun.schema_entity_read(entity_type)[entity_type]["name"]["value"]
-                ))
-            except:
-                self._logger.info("Entity type %s is not in use, skipping." % entity_type)
+            entity_types.append((
+                entity_type,
+                self._app.shotgun.schema_entity_read(entity_type)[entity_type]["name"]["value"]
+            ))
         # Sort by the display name
         entity_types.sort(key=itemgetter(1))
         count = len(entity_types)
@@ -505,6 +502,13 @@ class AppDialog(QtGui.QWidget):
         # There is no command line support yet for passing in a base layer
         # media file, so we set mov_file_path to None
         self.new_edl.emit(edl_file_path)
+
+        # Note: this was useful at one point. We could launch Import Cut from
+        # the command-line directly into the Cut Diff selection step if the link
+        # entity was known. This broke at some point, but there is no current
+        # need for this functionality. Leaving this here for reference since it
+        # probably isn't too difficult to get this working again, if someone
+        # requests it down the line.
         # if sg_entity:
         #     self._selected_sg_entity[_PROJECT_STEP] = self._ctx.project
         #     self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
