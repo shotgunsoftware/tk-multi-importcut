@@ -34,16 +34,16 @@ _ERROR_BAD_CUT = (
 )
 
 # A string we add at the end of the standard editorial fw error message
-_ERROR_FRAME_RATE_ADD_ON = ( "You can modify the frame rate used by Import Cut by "
-"clicking on the Settings button and going to the Timecode/Frames tab." )
+_ERROR_FRAME_RATE_ADD_ON = ("You can modify the frame rate used by Import Cut by "
+"clicking on the Settings button and going to the Timecode/Frames tab.")
 
-_ERROR_BL = ( "This edl has a black slug (BL) event. Currently, the Import Cut app "
+_ERROR_BL = ("This edl has a black slug (BL) event. Currently, the Import Cut app "
 "will not accept EDLs with these events. Support for black slug (BL) events "
-"will be added in a future release." )
+"will be added in a future release.")
 
-_ERROR_DROP_FRAME = ( "This edl uses drop frame timecode. Currently, the Import Cut "
+_ERROR_DROP_FRAME = ("This edl uses drop frame timecode. Currently, the Import Cut "
 "app only accepts EDLs with non-drop frame timecode. Support for drop timecode "
-"will be added in a future release." )
+"will be added in a future release.")
 
 
 def get_sg_entity_name(sg_entity):
@@ -215,6 +215,10 @@ class EdlCut(QtCore.QObject):
         edit.get_shot_name = lambda: edit._shot_name
         edit.get_clip_name = lambda: edit._clip_name
         edit.get_sg_version = lambda: edit._sg_version
+        edit.get_transition_in = lambda: edit._transition_in
+
+        # self._logger.info(edit._transition_in)
+
         # In this app, the convention is that clip names hold Version names
         # which is not the case for other apps like tk-multi-importscan
         # where the Version name is set with locators and clip name is used
@@ -1540,6 +1544,8 @@ class EdlCut(QtCore.QObject):
                             "cut_item_out": cut_diff.new_cut_out,
                             "edit_in": edit_in,
                             "edit_out": edit_out,
+                            # "edit_in_no_transition": 1,
+                            # "edit_out_no_transition": 2,
                             "cut_item_duration": cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
                             "shot": cut_diff.sg_shot,
                             "version": cut_diff.sg_version,

@@ -400,10 +400,13 @@ class AppDialog(QtGui.QWidget):
         # Build a list of Entity type / Entity type name tuple
         entity_types = []
         for entity_type in schema_entity_types:
-            entity_types.append((
-                entity_type,
-                self._app.shotgun.schema_entity_read(entity_type)[entity_type]["name"]["value"]
-            ))
+            try:
+                entity_types.append((
+                    entity_type,
+                    self._app.shotgun.schema_entity_read(entity_type)[entity_type]["name"]["value"]
+                ))
+            except:
+                self._logger.info("Entity type %s is not in use, skipping." % entity_type)
         # Sort by the display name
         entity_types.sort(key=itemgetter(1))
         count = len(entity_types)
@@ -502,13 +505,13 @@ class AppDialog(QtGui.QWidget):
         # There is no command line support yet for passing in a base layer
         # media file, so we set mov_file_path to None
         self.new_edl.emit(edl_file_path)
-        if sg_entity:
-            self._selected_sg_entity[_PROJECT_STEP] = self._ctx.project
-            self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
-            self.show_entities(sg_entity["type"])
-            self._selected_sg_entity[_ENTITY_STEP] = sg_entity
-            self.show_cuts(sg_entity)
-            self.goto_step(_CUT_STEP)
+        # if sg_entity:
+        #     self._selected_sg_entity[_PROJECT_STEP] = self._ctx.project
+        #     self._selected_sg_entity[_ENTITY_TYPE_STEP] = sg_entity["type"]
+        #     self.show_entities(sg_entity["type"])
+        #     self._selected_sg_entity[_ENTITY_STEP] = sg_entity
+        #     self.show_cuts(sg_entity)
+        #     self.goto_step(_CUT_STEP)
 
     @property
     def no_cut_for_entity(self):
