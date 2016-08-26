@@ -148,6 +148,7 @@ class EdlCut(QtCore.QObject):
         # Retrieve some settings
         self._user_settings = self._app.user_settings
         self._use_smart_fields = self._user_settings.retrieve("use_smart_fields")
+        self._jaunt_fields = {}
 
     @property
     def entity_name(self):
@@ -215,9 +216,8 @@ class EdlCut(QtCore.QObject):
         edit.get_shot_name = lambda: edit._shot_name
         edit.get_clip_name = lambda: edit._clip_name
         edit.get_sg_version = lambda: edit._sg_version
-        edit.get_transition_in = lambda: edit._transition_in
-
-        # self._logger.info(edit._transition_in)
+        edit.get_jaunt_in = lambda: edit._jaunt_in
+        edit.get_jaunt_out = lambda: edit._jaunt_out
 
         # In this app, the convention is that clip names hold Version names
         # which is not the case for other apps like tk-multi-importscan
@@ -1044,6 +1044,7 @@ class EdlCut(QtCore.QObject):
         self.step_done.emit(_SUMMARY_STEP)
         try:
             self._sg_new_cut = self.create_sg_cut(title, description)
+            self.get_jaunt_fields()
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
             # When testing this app it is time consuming to create
@@ -1292,6 +1293,8 @@ class EdlCut(QtCore.QObject):
                     "code": cut_diff.name,
                     "updated_by": self._ctx.user,
                     "sg_cut_order": min_cut_order,
+                    "sg_jaunt_in": self._jaunt_fields[shot_name]["sg_jaunt_in"],
+                    "sg_jaunt_out": self._jaunt_fields[shot_name]["sg_jaunt_out"]
                 }
                 if self._sg_shot_link_field_name:
                     data[self._sg_shot_link_field_name] = self._sg_entity
@@ -1348,6 +1351,8 @@ class EdlCut(QtCore.QObject):
                     # Add code in the update so it will be returned with batch results.
                     data = {"code": sg_shot["code"],
                             "sg_cut_order": min_cut_order,
+                            "sg_jaunt_in": self._jaunt_fields[shot_name]["sg_jaunt_in"],
+                            "sg_jaunt_out": self._jaunt_fields[shot_name]["sg_jaunt_out"],
                             "sg_status_list": reinstate_status if update_shot_statuses
                             else sg_shot["sg_status_list"]
                             }
@@ -1381,7 +1386,9 @@ class EdlCut(QtCore.QObject):
                     data = {
                         "code": sg_shot["code"],
                         "sg_status_list": sg_shot["sg_status_list"],
-                        "sg_cut_order": min_cut_order
+                        "sg_cut_order": min_cut_order,
+                        "sg_jaunt_in": self._jaunt_fields[shot_name]["sg_jaunt_in"],
+                        "sg_jaunt_out": self._jaunt_fields[shot_name]["sg_jaunt_out"]
                         }
                     data.update(
                         self._get_shot_in_out_sg_data(
@@ -1510,6 +1517,28 @@ class EdlCut(QtCore.QObject):
                             sg_versions[sg_version["code"].lower()] = sg_version
                         cut_diff.set_sg_version(sg_versions[version_name])
 
+    def get_jaunt_fields(self):
+        """
+        Creates a dict of extra field values for Jaunt with the Shot name as the
+        key and the value as a dict of field name / value pairs.
+        """
+        for shot_name, items in self._summary.iteritems():
+            for cut_diff in items:
+                edit = cut_diff.edit
+                if edit:
+                    if edit.get_jaunt_in():
+                        self._jaunt_fields[edit.reel_name] = {
+                            "sg_jaunt_in": edit.get_jaunt_in()}
+                    else:
+                        self._jaunt_fields[edit.reel_name] = {
+                            "sg_jaunt_in": cut_diff.new_cut_in}
+                    if edit.get_jaunt_out():
+                        self._jaunt_fields[edit.reel_name].update({
+                            "sg_jaunt_out": edit.get_jaunt_out()})
+                    else:
+                        self._jaunt_fields[edit.reel_name].update({
+                            "sg_jaunt_out": cut_diff.new_cut_out})
+
     def create_sg_cut_items(self, sg_cut):
         """
         Create the CutItems in Shotgun, linked to the given Cut
@@ -1544,8 +1573,8 @@ class EdlCut(QtCore.QObject):
                             "cut_item_out": cut_diff.new_cut_out,
                             "edit_in": edit_in,
                             "edit_out": edit_out,
-                            # "edit_in_no_transition": 1,
-                            # "edit_out_no_transition": 2,
+                            "sg_jaunt_in": self._jaunt_fields[edit.reel_name]["sg_jaunt_in"],
+                            "sg_jaunt_out": self._jaunt_fields[edit.reel_name]["sg_jaunt_out"],
                             "cut_item_duration": cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
                             "shot": cut_diff.sg_shot,
                             "version": cut_diff.sg_version,
