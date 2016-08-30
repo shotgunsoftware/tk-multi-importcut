@@ -1044,7 +1044,7 @@ class EdlCut(QtCore.QObject):
         self.step_done.emit(_SUMMARY_STEP)
         try:
             self._sg_new_cut = self.create_sg_cut(title, description)
-            self.get_jaunt_fields()
+            self.get_jaunt_in_out()
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
             # When testing this app it is time consuming to create
@@ -1233,6 +1233,25 @@ class EdlCut(QtCore.QObject):
                 "sg_working_duration": tail_out - head_in + 1
             }
 
+    def _get_jaunt_fields(self, data, fps):
+        """
+        Provide data for additional fields requested by JauntVR.
+
+        :param data: A dict containing editorial field values.
+        :param fps: A float frames per second value.
+        :returns: A dict of field / value pairs.
+        """
+        return {"sg_head_duration": data["sg_cut_in"] - data["sg_head_in"],
+                "sg_tail_duration": data["sg_tail_out"] - data["sg_cut_out"],
+                "sg_head_in_tc": edl.timecode_from_frame(data["sg_head_in"], fps),
+                "sg_transition_in_tc": edl.timecode_from_frame(data["sg_cut_in"], fps),
+                "sg_cut_in_tc": edl.timecode_from_frame(data["sg_jaunt_in"], fps),
+                "sg_cut_out_tc": edl.timecode_from_frame(data["sg_jaunt_out"], fps),
+                "sg_transition_out_tc": edl.timecode_from_frame(data["sg_cut_out"], fps),
+                "sg_tail_out_tc": edl.timecode_from_frame(data["sg_tail_out"], fps),
+                "sg_cut_duration_tc": edl.timecode_from_frame(data["sg_cut_duration"], fps),
+                "sg_working_duration_tc": edl.timecode_from_frame(data["sg_working_duration"], fps)}
+
     def update_sg_shots(self, update_shots):
         """
         Update Shots in Shotgun
@@ -1306,6 +1325,7 @@ class EdlCut(QtCore.QObject):
                         max_tail_out,
                     )
                 )
+                data.update(self._get_jaunt_fields(data, float(self._edl.fps)))
                 # Smart fields do not behave as expected, so in preparation for
                 # an update to a Shot not yet created, we store the Shot's data
                 # in a dict that will later be used to update smart field values
@@ -1364,6 +1384,7 @@ class EdlCut(QtCore.QObject):
                             max_tail_out,
                         )
                     )
+                    data.update(self._get_jaunt_fields(data, float(self._edl.fps)))
                     # Smart fields do not behave as expected, this value must be
                     # set before other cut values to get the right effect.
                     if self._use_smart_fields:
@@ -1398,6 +1419,7 @@ class EdlCut(QtCore.QObject):
                             max_tail_out,
                         )
                     )
+                    data.update(self._get_jaunt_fields(data, float(self._edl.fps)))
                     # Smart fields do not behave as expected, this value must be
                     # set before other cut values to get the right effect.
                     if self._use_smart_fields:
@@ -1517,7 +1539,7 @@ class EdlCut(QtCore.QObject):
                             sg_versions[sg_version["code"].lower()] = sg_version
                         cut_diff.set_sg_version(sg_versions[version_name])
 
-    def get_jaunt_fields(self):
+    def get_jaunt_in_out(self):
         """
         Creates a dict of extra field values for Jaunt with the Shot name as the
         key and the value as a dict of field name / value pairs.
@@ -1556,6 +1578,8 @@ class EdlCut(QtCore.QObject):
                     # inclusive, we have to make it exclusive when going to frames
                     edit_in = edit.record_in.to_frame() - self._summary.edit_offset + 1
                     edit_out = edit.record_out.to_frame() - self._summary.edit_offset
+                    jaunt_in = self._jaunt_fields[edit.reel_name]["sg_jaunt_in"]
+                    jaunt_out = self._jaunt_fields[edit.reel_name]["sg_jaunt_out"]
                     sg_batch_data.append({
                         "request_type": "create",
                         "entity_type": "CutItem",
@@ -1569,12 +1593,16 @@ class EdlCut(QtCore.QObject):
                             "timecode_cut_item_out_text": str(edit.source_out),
                             "timecode_edit_in_text": str(edit.record_in),
                             "timecode_edit_out_text": str(edit.record_out),
+                            "sg_timecode_jaunt_in_text": edl.timecode_from_frame(
+                                jaunt_in, float(self._edl.fps)),
+                            "sg_timecode_jaunt_out_text": edl.timecode_from_frame(
+                                jaunt_out, float(self._edl.fps)),
                             "cut_item_in": cut_diff.new_cut_in,
                             "cut_item_out": cut_diff.new_cut_out,
                             "edit_in": edit_in,
                             "edit_out": edit_out,
-                            "sg_jaunt_in": self._jaunt_fields[edit.reel_name]["sg_jaunt_in"],
-                            "sg_jaunt_out": self._jaunt_fields[edit.reel_name]["sg_jaunt_out"],
+                            "sg_jaunt_in": jaunt_in,
+                            "sg_jaunt_out": jaunt_out,
                             "cut_item_duration": cut_diff.new_cut_out - cut_diff.new_cut_in + 1,
                             "shot": cut_diff.sg_shot,
                             "version": cut_diff.sg_version,
