@@ -197,6 +197,25 @@ class EdlCut(QtCore.QObject):
         """
         return bool(self._mov_file_path)
 
+    def jaunt_process_edit(self, edit, logger):
+        """
+        Custom code that extends an edit for JauntVR.
+
+        :param edit: Current EditEvent being parsed.
+        :param logger: Editorial framework logger, not used.
+        """
+        edit._jaunt_in = None
+        edit._jaunt_out = None
+        for comment in edit.comments:
+            m = re.search("JAUNT_IN:\s+(.*)$", comment)
+            if m:
+                edit._jaunt_in = edl.Timecode(m.group(1), fps=edit.fps).to_frame()
+            m = re.search("JAUNT_OUT:\s+(.*)$", comment)
+            if m:
+                edit._jaunt_out = edl.Timecode(m.group(1), fps=edit.fps).to_frame()
+
+        self.process_edit(edit, logger)
+
     def process_edit(self, edit, logger):
         """
         Visitor used when parsing an EDL file
@@ -209,6 +228,7 @@ class EdlCut(QtCore.QObject):
         """
         # Use our own logger rather than the framework one
         edl.process_edit(edit, self._logger)
+
         # Check things are right
         # Add empty properties
         edit._sg_version = None
@@ -349,7 +369,7 @@ class EdlCut(QtCore.QObject):
                 self._logger.info("Using explicit frame rate %f ..." % self._frame_rate)
                 self._edl = edl.EditList(
                     file_path=edl_file_path,
-                    visitor=self.process_edit,
+                    visitor=self.jaunt_process_edit,
                     fps=self._frame_rate,
                 )
             else:
@@ -358,7 +378,7 @@ class EdlCut(QtCore.QObject):
                 self._logger.info("Using default frame rate %f ..." % frame_rate)
                 self._edl = edl.EditList(
                     file_path=edl_file_path,
-                    visitor=self.process_edit,
+                    visitor=self.jaunt_process_edit,
                     fps=frame_rate,
                 )
             self._logger.info(
@@ -1235,10 +1255,10 @@ class EdlCut(QtCore.QObject):
 
     def _get_jaunt_fields(self, data, fps):
         """
-        Provide data for additional fields requested by JauntVR.
+        Provides data for additional fields requested by JauntVR.
 
         :param data: A dict containing editorial field values.
-        :param fps: A float frames per second value.
+        :param fps: A float frames-per-second value.
         :returns: A dict of field / value pairs.
         """
         return {"sg_head_duration": data["sg_cut_in"] - data["sg_head_in"],
