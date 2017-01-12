@@ -197,16 +197,30 @@ class CutDiff(QtCore.QObject):
         self._default_tail_out_duration = int(user_settings.retrieve("default_tail_duration"))
 
         default_frame_rate = float(user_settings.retrieve("default_frame_rate"))
+
+        # If we have an edit, ensure our mapping timecodes match the drop frame setting.
+        # Note that these settings are retrieved for each new import in order to ensure
+        # that we respect the drop frame settings for every new EDL.
+        edit_drop_frame = False
+        if self.edit:
+            edit_drop_frame = self.edit.drop_frame
+
         if self._timecode_to_frame_mapping_mode == _ABSOLUTE_MODE:
-            # if we're in absolute mode, we need to reset our tc/frame values to 0
+            # If we're in absolute mode, we need to reset our tc/frame values to 0.
             self._timecode_frame_map = (
-                edl.Timecode("00:00:00:00", fps=default_frame_rate), 0)
+                edl.Timecode(
+                        "00:00:00:00", fps=default_frame_rate, drop_frame=edit_drop_frame
+                ), 0
+            )
         elif self._timecode_to_frame_mapping_mode == _RELATIVE_MODE:
-            # the values from users settings are only used in relative mode
+            # The values from users settings are only used in relative mode.
             timecode_mapping = user_settings.retrieve("timecode_mapping")
             frame_mapping = int(user_settings.retrieve("frame_mapping"))
             self._timecode_frame_map = (
-                edl.Timecode(timecode_mapping, fps=default_frame_rate), frame_mapping)
+                edl.Timecode(
+                        timecode_mapping, fps=default_frame_rate, drop_frame=edit_drop_frame
+                ), frame_mapping
+            )
         elif self._timecode_to_frame_mapping_mode == _AUTOMATIC_MODE:
             self._timecode_frame_map = (None, self._default_head_in)
         else:
