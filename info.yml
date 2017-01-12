@@ -39,4 +39,4 @@ documentation_url: "https://support.shotgunsoftware.com/hc/en-us/articles/219041
 frameworks:
     - {"name": "tk-framework-shotgunutils", "version": "v4.x.x"}
     - {"name": "tk-framework-qtwidgets", "version": "v2.x.x"}
-    - {"name": "tk-framework-editorial", "version": "v1.x.x"}
+    - {"name": "tk-framework-editorial", "version": "v2.x.x"}
