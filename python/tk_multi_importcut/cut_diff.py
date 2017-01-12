@@ -199,6 +199,8 @@ class CutDiff(QtCore.QObject):
         default_frame_rate = float(user_settings.retrieve("default_frame_rate"))
 
         # If we have an edit, ensure our mapping timecodes match the drop frame setting.
+        # Note that these settings are retrieved for each new import in order to ensure
+        # that we respect the drop frame settings for every new EDL.
         edit_drop_frame = False
         if self.edit:
             edit_drop_frame = self.edit.drop_frame
