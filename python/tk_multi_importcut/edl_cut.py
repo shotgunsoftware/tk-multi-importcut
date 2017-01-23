@@ -1000,13 +1000,13 @@ class EdlCut(QtCore.QObject):
         diff = edit.id - sg_cut_item["cut_order"]
         if diff == 0:
             score += 1
-        diff = edit.source_in - edl.Timecode(
+        diff = edit.source_in.to_frame() - edl.Timecode(
                                     sg_cut_item["timecode_cut_item_in_text"],
                                     sg_cut_item["cut.Cut.fps"]
                                 ).to_frame()
         if diff == 0:
             score += 1
-        diff = edit.source_out - edl.Timecode(
+        diff = edit.source_out.to_frame() - edl.Timecode(
                                     sg_cut_item["timecode_cut_item_out_text"],
                                     sg_cut_item["cut.Cut.fps"]
                                 ).to_frame()
