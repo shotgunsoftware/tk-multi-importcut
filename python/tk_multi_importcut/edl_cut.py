@@ -1046,7 +1046,8 @@ class EdlCut(QtCore.QObject):
             # all required Versions in SG. Uncomment the following line to
             # create missing Versions automatically for you, which can be
             # handy for testing.
-            # self._create_missing_sg_versions()
+            # 10/2/2017: uncommented for Harwood 3D workflow per chius
+            self._create_missing_sg_versions()
             self.progress_changed.emit(2)
             self.create_sg_cut_items(self._sg_new_cut)
             self.progress_changed.emit(3)
