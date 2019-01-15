@@ -505,7 +505,8 @@ class EdlCut(QtCore.QObject):
                 # General lookup
                 for field_name, field in shot_schema.iteritems():
                     if field["data_type"]["value"] == "entity":
-                        if self._sg_entity_type in field["properties"]["valid_types"]["value"]:
+                        if (self._sg_entity_type in field["properties"]["valid_types"]["value"] and
+                                field["editable"]["value"] is True):
                             self._sg_shot_link_field_name = field_name
                             break
             if not self._sg_shot_link_field_name:
