@@ -372,13 +372,13 @@ class EdlCut(QtCore.QObject):
             self.valid_edl.emit(os.path.basename(self._edl_file_path), True)
             if self.has_valid_movie:
                 self.step_done.emit(_DROP_STEP)
-        except edl.BadFrameRateError, e:
+        except edl.BadFrameRateError as e:
             self._report_invalid_edl("%s\n\n%s" % (str(e), _ERROR_FRAME_RATE_ADD_ON))
         except edl.BadBLError:
             self._report_invalid_edl(_ERROR_BL)
         except edl.BadDropFrameError:
             self._report_invalid_edl(_ERROR_DROP_FRAME)
-        except Exception, e:
+        except Exception as e:
             self._report_invalid_edl(e)
 
     def _report_invalid_edl(self, error):
@@ -549,7 +549,7 @@ class EdlCut(QtCore.QObject):
                 self.new_sg_entity.emit(sg_entity)
             self._logger.info("Retrieved %d %s." % (len(sg_entities), entity_type))
             self.step_done.emit(_ENTITY_TYPE_STEP)
-        except Exception, e:
+        except Exception as e:
             self._logger.exception(str(e))
         finally:
             self.got_idle.emit()
@@ -578,7 +578,7 @@ class EdlCut(QtCore.QObject):
                         "name": status.title(),
                 }
                 self.new_sg_project.emit(sg_project)
-        except Exception, e:
+        except Exception as e:
             self._logger.exception(str(e))
         finally:
             self.got_idle.emit()
@@ -629,7 +629,7 @@ class EdlCut(QtCore.QObject):
                 self.new_sg_cut.emit(sg_cut)
             self._logger.info("Retrieved %d Cuts." % len(sg_cuts))
             self.step_done.emit(_ENTITY_STEP)
-        except Exception, e:
+        except Exception as e:
             self._logger.exception(str(e))
         finally:
             self.got_idle.emit()
@@ -897,7 +897,7 @@ class EdlCut(QtCore.QObject):
 
             self._logger.info("Retrieved %d Cut differences." % len(self._summary))
             self.step_done.emit(_CUT_STEP)
-        except Exception, e:
+        except Exception as e:
             self._logger.exception(str(e))
         finally:
             self.got_idle.emit()
@@ -1054,7 +1054,7 @@ class EdlCut(QtCore.QObject):
             self._logger.info("Creating note ...")
             self.create_note(title, sender, to, description, sg_links=[self._sg_new_cut])
             self.progress_changed.emit(4)
-        except Exception, e:
+        except Exception as e:
             self._logger.exception(str(e))
             # Go back to summary screen
             self.step_failed.emit(_PROGRESS_STEP)
@@ -1192,7 +1192,7 @@ class EdlCut(QtCore.QObject):
                 self._edl_file_path,
                 "attachments"
             )
-        except Exception, e:
+        except Exception as e:
             self._logger.warning("Couldn't upload %s into Shotgun: %s" % (
                 self._edl_file_path, e
             ))

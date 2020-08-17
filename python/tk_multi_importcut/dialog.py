@@ -1265,7 +1265,7 @@ class AppDialog(QtGui.QWidget):
         try:
             new_entity = self._app.shotgun.create(entity_type, fields)
             self.get_cuts_for_entity.emit(new_entity)
-        except Exception, e:
+        except Exception as e:
             msg_box = QtGui.QMessageBox(
                 parent=self,
                 icon=QtGui.QMessageBox.Critical

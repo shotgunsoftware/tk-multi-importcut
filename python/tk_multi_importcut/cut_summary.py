@@ -594,7 +594,7 @@ class CutSummary(QtCore.QObject):
                     # If the Shot is repeated, flag the edited CutDiff as repeated
                     try:
                         cut_diff.set_repeated(True)
-                    except TypeError, e:
+                    except TypeError as e:
                         # Adding some extra debug information here, because a lot
                         # of edge cases exist when editing shot names for repeated
                         # shots

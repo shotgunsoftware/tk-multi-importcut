@@ -229,7 +229,7 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.cancel_button.clicked.connect(self.discard_settings)
             self.ui.apply_button.clicked.connect(self.save_settings)
 
-        except Exception, e:
+        except Exception as e:
             # Reset user settings if they are corrupt. This can happen if users using an older
             # version of import cut have settings saved that don't match the variable type of
             # the current settings. For example, if they have the old email_groups setting
@@ -247,10 +247,10 @@ class SettingsDialog(QtGui.QDialog):
         try:
             if self._validate_and_save_settings():
                 self.close_dialog()
-        except SettingsError, se:
+        except SettingsError as se:
             # Pop up specialised error dialog.
             self._pop_error("User Input", str(se), se.details)
-        except Exception, e:
+        except Exception as e:
             # General case.
             self._logger.exception(e)
 
@@ -357,7 +357,7 @@ class SettingsDialog(QtGui.QDialog):
             # the given fps, our input mask can't check for hh mm ss ff validity,
             # e.g. check that ff is not bigger than the fps
             edl.Timecode(timecode_mapping, fps=fps)
-        except Exception, e:
+        except Exception as e:
             raise SettingsError(_BAD_TIMECODE_MSG % timecode_mapping, details=e)
 
     def _validate_and_save_settings(self):
