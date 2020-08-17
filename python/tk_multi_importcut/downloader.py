@@ -19,6 +19,7 @@ class DownloadThreadPool(QtCore.QThreadPool):
     """
     Thin wrapper around QThreadPool allowing to shut it down
     """
+
     abort = QtCore.Signal()
 
     def shutdown(self):
@@ -36,6 +37,7 @@ class DownloadThreadPool(QtCore.QThreadPool):
         self.abort.connect(runner.abort)
         self.start(runner)
 
+
 # We use a single download thread pool for all downloads
 _download_thread_pool = DownloadThreadPool()
 
@@ -44,11 +46,13 @@ class DownloadRunner(QtCore.QRunnable):
     """
     A runner to download things from Shotgun
     """
+
     class _Notifier(QtCore.QObject):
         """
         QRunnable does not derive from QObject, so we need to have a small
         class to be able to emit signals
         """
+
         file_downloaded = QtCore.Signal(str)
 
         def __init__(self, *args, **kwargs):
@@ -88,7 +92,7 @@ class DownloadRunner(QtCore.QRunnable):
         :returns: A QThreadPool
         """
         return _download_thread_pool
-    
+
     @property
     def file_downloaded(self):
         """
@@ -126,8 +130,8 @@ class DownloadRunner(QtCore.QRunnable):
                 sgtk.util.download_url(sg, self._sg_attachment, self._path)
             else:
                 attachment = sg.download_attachment(
-                    attachment=self._sg_attachment,
-                    file_path=self._path)
+                    attachment=self._sg_attachment, file_path=self._path
+                )
             self._notifier.file_downloaded.emit(self._path)
         except Exception:
             raise

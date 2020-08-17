@@ -17,6 +17,7 @@ class EntityCard(CardWidget):
     """
     A Card Widget displaying a general Shotgun Entity
     """
+
     def __init__(self, parent, sg_entity):
         """
         Instantiate a new EntityCard for the given Shotgun Entity
@@ -29,7 +30,8 @@ class EntityCard(CardWidget):
         self.ui.title_label.setText("%s" % self.entity_name)
         if self._sg_entity["_display_status"]:
             self.ui.status_label.setText(
-                "<font color=%s>%s</font>" % (
+                "<font color=%s>%s</font>"
+                % (
                     _STATUS_COLORS.get(self.entity_status, _COLORS["lgrey"]),
                     self._sg_entity["_display_status"]["name"].upper(),
                 )
@@ -47,10 +49,7 @@ class EntityCard(CardWidget):
         """
         # Some entity types (like Project) have a non-standard status
         # field name
-        return self._sg_entity.get(
-            "sg_status_list",
-            self._sg_entity.get("sg_status")
-        )
+        return self._sg_entity.get("sg_status_list", self._sg_entity.get("sg_status"))
 
     @property
     def entity_description(self):
@@ -61,8 +60,4 @@ class EntityCard(CardWidget):
         """
         # Some entity types (like Project) have a non-standard description
         # field name
-        return self._sg_entity.get(
-            "description",
-            self._sg_entity.get("sg_description")
-        )
-
+        return self._sg_entity.get("description", self._sg_entity.get("sg_description"))

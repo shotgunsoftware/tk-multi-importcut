@@ -28,12 +28,15 @@ from .search_widget import SearchWidget
 from .entity_line_widget import EntityLineWidget
 from .extended_thumbnail import ExtendedThumbnail
 
+
 class SelectorButton(QtGui.QPushButton):
     """
-    Thin wrapping class for our selector buttons so styling can be done in the 
+    Thin wrapping class for our selector buttons so styling can be done in the
     style sheet for all of them, using the class name
     """
+
     pass
+
 
 # Custom widgets must be imported or defined before importing the UI
 from .ui.dialog import Ui_Dialog
@@ -142,6 +145,7 @@ class AppDialog(QtGui.QWidget):
     user selects one of them, we ask the data manager to retrieve data linked to
     this Entity, and move forward to next step when the data is retrieved.
     """
+
     # Emitted when a new EDL file should be loaded
     new_edl = QtCore.Signal(str)
     # Emitted when a new movie file should be considered
@@ -198,7 +202,7 @@ class AppDialog(QtGui.QWidget):
         # but we create entries for all the steps which allows us to index the list
         # with the current step and blindly disable the select button on the
         # value for each step
-        self._selected_sg_entity = [None]*(_LAST_STEP+1)
+        self._selected_sg_entity = [None] * (_LAST_STEP + 1)
 
         # Load styling and build our main logger
         self.set_custom_style()
@@ -262,8 +266,12 @@ class AppDialog(QtGui.QWidget):
         # When SG Projects are retrieved by the data manager, let the view know
         # that new cards should be build for them
         self._processor.new_sg_project.connect(self._projects_view.new_sg_project)
-        self.ui.projects_search_line_edit.search_edited.connect(self._projects_view.search)
-        self.ui.projects_search_line_edit.search_changed.connect(self._projects_view.search)
+        self.ui.projects_search_line_edit.search_edited.connect(
+            self._projects_view.search
+        )
+        self.ui.projects_search_line_edit.search_changed.connect(
+            self._projects_view.search
+        )
 
         # Instantiate an empty entities views handler. This will be populated later
         # and we will have one view per Entity type
@@ -300,18 +308,32 @@ class AppDialog(QtGui.QWidget):
         # Cut summary view selectors, displaying totals per type and allowing to
         # show only a particular type of Cut differences
         self.ui.new_select_button.toggled.connect(
-            lambda x: self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.NEW))
+            lambda x: self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.NEW)
+        )
         self.ui.cut_change_select_button.toggled.connect(
-            lambda x: self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.CUT_CHANGE))
+            lambda x: self._cut_diffs_view.set_display_summary_mode(
+                x, _DIFF_TYPES.CUT_CHANGE
+            )
+        )
         self.ui.omitted_select_button.toggled.connect(
-            lambda x: self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.OMITTED))
+            lambda x: self._cut_diffs_view.set_display_summary_mode(
+                x, _DIFF_TYPES.OMITTED
+            )
+        )
         self.ui.reinstated_select_button.toggled.connect(
-            lambda x: self._cut_diffs_view.set_display_summary_mode(x, _DIFF_TYPES.REINSTATED))
+            lambda x: self._cut_diffs_view.set_display_summary_mode(
+                x, _DIFF_TYPES.REINSTATED
+            )
+        )
         self.ui.rescan_select_button.toggled.connect(
-            lambda x: self._cut_diffs_view.set_display_summary_mode(x, 100))
+            lambda x: self._cut_diffs_view.set_display_summary_mode(x, 100)
+        )
         self.ui.total_button.toggled.connect(
-            lambda x: self._cut_diffs_view.set_display_summary_mode(x, -1))
-        self.ui.only_vfx_check_box.toggled.connect(self._cut_diffs_view.display_vfx_cuts)
+            lambda x: self._cut_diffs_view.set_display_summary_mode(x, -1)
+        )
+        self.ui.only_vfx_check_box.toggled.connect(
+            self._cut_diffs_view.display_vfx_cuts
+        )
 
         # Ensure we land on the startup screen
         self.ui.stackedWidget.set_current_index(_DROP_STEP)
@@ -357,9 +379,9 @@ class AppDialog(QtGui.QWidget):
         # If we had some preselected input, wait for the processor to be ready
         # before doing anything
         if edl_file_path:
-            self._processor.ready.connect(lambda: self._preselected_input(
-                edl_file_path, sg_entity
-            ))
+            self._processor.ready.connect(
+                lambda: self._preselected_input(edl_file_path, sg_entity)
+            )
         # Start the data manager thread
         self._processor.start()
 
@@ -386,21 +408,28 @@ class AppDialog(QtGui.QWidget):
         # Validate and potentially reset current value retrieved from user
         # preferences.
         # Project is systematically added so is always valid
-        if(self._preload_entity_type is not None and
-            self._preload_entity_type != "Project" and
-            self._preload_entity_type not in schema_entity_types):
-                self._logger.warning("Resetting invalid Entity type preference %s" %
-                    self._preload_entity_type
-                )
-                self._preload_entity_type = None
+        if (
+            self._preload_entity_type is not None
+            and self._preload_entity_type != "Project"
+            and self._preload_entity_type not in schema_entity_types
+        ):
+            self._logger.warning(
+                "Resetting invalid Entity type preference %s"
+                % self._preload_entity_type
+            )
+            self._preload_entity_type = None
 
         # Build a list of Entity type / Entity type name tuple
         entity_types = []
         for entity_type in schema_entity_types:
-            entity_types.append((
-                entity_type,
-                self._app.shotgun.schema_entity_read(entity_type)[entity_type]["name"]["value"]
-            ))
+            entity_types.append(
+                (
+                    entity_type,
+                    self._app.shotgun.schema_entity_read(entity_type)[entity_type][
+                        "name"
+                    ]["value"],
+                )
+            )
         # Sort by the display name
         entity_types.sort(key=itemgetter(1))
         count = len(entity_types)
@@ -408,11 +437,11 @@ class AppDialog(QtGui.QWidget):
         # possible to display more like eight types, depending on the char length of each type.
         # We always add Project to the list of Entity types, so we reserve one slot
         # for it
-        if count > max_count-1:
+        if count > max_count - 1:
             self._logger.warning(
                 "Sorry, we can only display %d link Entity Types at a time." % max_count
             )
-            entity_types = entity_types[:max_count-1]
+            entity_types = entity_types[: max_count - 1]
         # We always want to be able to import against the Project. We want Project
         # to always be the last button, so we append it after sorting is done, and
         # after trimming is done.
@@ -420,7 +449,9 @@ class AppDialog(QtGui.QWidget):
         # Preselect 1st entry, we will always have at the very least one Project entry
         if self._preload_entity_type is None:
             self._preload_entity_type = entity_types[0][0]
-            self._logger.debug("Preselecting %s Entity type" % self._preload_entity_type)
+            self._logger.debug(
+                "Preselecting %s Entity type" % self._preload_entity_type
+            )
 
         for entity_type in entity_types:
             button = self._create_entity_type_button(entity_type[0], entity_type[1])
@@ -445,13 +476,17 @@ class AppDialog(QtGui.QWidget):
         # When SG Entities are retrieved by the data manager, let the view know
         # that new cards should be build for them
         self._processor.new_sg_entity.connect(self._entities_views[-1].new_sg_entity)
-        self.ui.entities_search_line_edit.search_edited.connect(self._entities_views[-1].search)
-        self.ui.entities_search_line_edit.search_changed.connect(self._entities_views[-1].search)
+        self.ui.entities_search_line_edit.search_edited.connect(
+            self._entities_views[-1].search
+        )
+        self.ui.entities_search_line_edit.search_changed.connect(
+            self._entities_views[-1].search
+        )
 
     def _create_entity_type_button(self, entity_type, entity_type_name):
         """
         Create a button allowing to select an Entity Type
-        
+
         :param entity_type: A SG Entity type
         :param entity_type_name: A nice name for this Entity type
         :returns: A QPushButton
@@ -462,7 +497,9 @@ class AppDialog(QtGui.QWidget):
         entity_link_button.setAutoExclusive(True)
         entity_link_button.setCheckable(True)
         entity_link_button.setFont(QtGui.QFont("SansSerif", 20))
-        width = entity_link_button.fontMetrics().boundingRect(entity_type_name).width() + 7
+        width = (
+            entity_link_button.fontMetrics().boundingRect(entity_type_name).width() + 7
+        )
         entity_link_button.setMaximumWidth(width)
         entity_link_button.clicked.connect(
             lambda: self.activate_entity_type_view(entity_type)
@@ -552,9 +589,7 @@ class AppDialog(QtGui.QWidget):
         :param which: One of our wizard style steps
         """
         if which == _PROGRESS_STEP:
-            self.ui.progress_screen_title_label.setText(
-                "Import failed",
-            )
+            self.ui.progress_screen_title_label.setText("Import failed",)
             self.ui.back_button.show()
 
     @QtCore.Slot(int)
@@ -585,7 +620,9 @@ class AppDialog(QtGui.QWidget):
             else:
                 self.show_projects()
         if next_step == _ENTITY_TYPE_STEP:
-            self._logger.debug("Activating Entity type step for %s" % self._preload_entity_type)
+            self._logger.debug(
+                "Activating Entity type step for %s" % self._preload_entity_type
+            )
             self.show_entities(self._preload_entity_type)
             # This is a "virtual" step, no UI is shown for it, so we skip it
             next_step = _ENTITY_STEP
@@ -626,11 +663,13 @@ class AppDialog(QtGui.QWidget):
             _, ext_2 = os.path.splitext(path)
             if ext_2.lower() == ext.lower():
                 self._logger.error(
-                    "An EDL file and a movie should be dropped, not two %s files." % (
+                    "An EDL file and a movie should be dropped, not two %s files."
+                    % (
                         # Strip leading ".", we can assume it is not empty, otherwise
                         # it would have been caught in 1st path handling
                         ext[1:],
-                    ))
+                    )
+                )
                 return
             self._process_dropped_file(path, ext_2)
 
@@ -652,11 +691,9 @@ class AppDialog(QtGui.QWidget):
             self.new_movie.emit(path)
         else:
             self._logger.error(
-                "'%s' is not a supported file type. Supported types are %s and movie types: %s." % (
-                    os.path.basename(path),
-                    _EDL_EXT,
-                    str(_VIDEO_EXTS)
-                ))
+                "'%s' is not a supported file type. Supported types are %s and movie types: %s."
+                % (os.path.basename(path), _EDL_EXT, str(_VIDEO_EXTS))
+            )
             return False
         return True
 
@@ -666,10 +703,7 @@ class AppDialog(QtGui.QWidget):
         Called when an EDL is dropped and contains transitions. Pop up message
         informing the user of current Cuts feature compatibility with Shotgun.
         """
-        msg_box = QtGui.QMessageBox(
-                parent=self,
-                icon=QtGui.QMessageBox.Critical
-            )
+        msg_box = QtGui.QMessageBox(parent=self, icon=QtGui.QMessageBox.Critical)
         msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/clapboard.png"))
         msg_box.setText(_TRANSITIONS_PRESENT_MSG)
         msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
@@ -705,7 +739,9 @@ class AppDialog(QtGui.QWidget):
             self.ui.next_button.setEnabled(False)
             self.goto_step(_DROP_STEP)
 
-        self._logger.debug("%s EDL is now %s" % (file_name, ["invalid","valid"][is_valid]))
+        self._logger.debug(
+            "%s EDL is now %s" % (file_name, ["invalid", "valid"][is_valid])
+        )
 
     @QtCore.Slot(unicode)
     def valid_movie(self, u_file_name):
@@ -804,9 +840,7 @@ class AppDialog(QtGui.QWidget):
         self.ui.reset_button.setEnabled(True)
         self.ui.email_button.setEnabled(True)
         self.ui.submit_button.setEnabled(True)
-        self.ui.select_button.setEnabled(
-            self.has_valid_selection_for_step(self._step)
-        )
+        self.ui.select_button.setEnabled(self.has_valid_selection_for_step(self._step))
         self.ui.progress_bar.hide()
 
     def goto_step(self, which):
@@ -941,7 +975,9 @@ class AppDialog(QtGui.QWidget):
                 self.ui.create_entity_button.show()
                 self.ui.create_entity_button.setText("New %s" % sg_entity_type_name)
             self._logger.info("Showing %s(s)" % sg_entity_type_name)
-            self.ui.entities_search_line_edit.setPlaceholderText("Search %s" % sg_entity_type_name)
+            self.ui.entities_search_line_edit.setPlaceholderText(
+                "Search %s" % sg_entity_type_name
+            )
             entity_type_stacked_widget = self.ui.entities_type_stacked_widget
             active_view = None
             # Retrieve the Entity type view we should activate
@@ -951,7 +987,9 @@ class AppDialog(QtGui.QWidget):
                     entity_type_stacked_widget.setCurrentIndex(i)
                     break
             else:
-                raise RuntimeError("Don't have an Entity type view for %s" % sg_entity_type)
+                raise RuntimeError(
+                    "Don't have an Entity type view for %s" % sg_entity_type
+                )
             # Change the selection to the one held by the active view
             self._selected_sg_entity[_ENTITY_STEP] = active_view.selected_sg_entity
             self.display_info_message(active_view.info_message)
@@ -964,19 +1002,22 @@ class AppDialog(QtGui.QWidget):
             if self._processor.sg_cut:
                 revision_number_str = ""
                 if self._processor.sg_cut["revision_number"] is not None:
-                    revision_number_str = "_%03d" % self._processor.sg_cut["revision_number"]
+                    revision_number_str = (
+                        "_%03d" % self._processor.sg_cut["revision_number"]
+                    )
                 self.ui.cut_summary_title_label.setText(
-                    "Comparing %s and <b>%s</b> for %s <b>%s</b>" % (
+                    "Comparing %s and <b>%s</b> for %s <b>%s</b>"
+                    % (
                         os.path.basename(self._processor.edl_file_path),
-                        "%s%s" % (self._processor.sg_cut["code"],
-                                     revision_number_str),
+                        "%s%s" % (self._processor.sg_cut["code"], revision_number_str),
                         self._processor.entity_type_name,
                         self._processor.entity_name,
                     )
                 )
             else:
                 self.ui.cut_summary_title_label.setText(
-                    "Comparing %s to Shotgun Shot Data for %s <b>%s</b>" % (
+                    "Comparing %s to Shotgun Shot Data for %s <b>%s</b>"
+                    % (
                         os.path.basename(self._processor.edl_file_path),
                         self._processor.entity_type_name,
                         self._processor.entity_name,
@@ -1006,7 +1047,10 @@ class AppDialog(QtGui.QWidget):
         if not self._selected_sg_entity[step]:
             # Nothing selected
             return False
-        if step == _ENTITY_STEP and self._selected_sg_entity[step]["type"] != self._preload_entity_type:
+        if (
+            step == _ENTITY_STEP
+            and self._selected_sg_entity[step]["type"] != self._preload_entity_type
+        ):
             # Selection does not correspond to selected Entity type
             return False
         return True
@@ -1117,21 +1161,15 @@ class AppDialog(QtGui.QWidget):
 
         :param sg_entity: A SG Entity dictionary
         """
-        name = sg_entity.get("code",
-                             sg_entity.get("name",
-                                           sg_entity.get("title", "????")
-                                           )
-                             )
+        name = sg_entity.get(
+            "code", sg_entity.get("name", sg_entity.get("title", "????"))
+        )
         type_name = sgtk.util.get_entity_type_display_name(
-            sgtk.platform.current_bundle().sgtk,
-            sg_entity["type"],
+            sgtk.platform.current_bundle().sgtk, sg_entity["type"],
         )
         self._logger.info("Retrieving Cuts for %s %s" % (type_name, name))
         self.ui.selected_entity_label.setText(
-            "%s: <big><b>%s</big></b>" % (
-                type_name,
-                name,
-            )
+            "%s: <big><b>%s</big></b>" % (type_name, name,)
         )
         self.get_cuts_for_entity.emit(sg_entity)
 
@@ -1160,14 +1198,21 @@ class AppDialog(QtGui.QWidget):
         # int values, so it should be alright. If not, those values should be
         # emitted in the signal, so real data access would not be needed
         summary = self._processor.summary
-        self.ui.new_select_button.setText("New : %d" % summary.count_for_type(_DIFF_TYPES.NEW))
+        self.ui.new_select_button.setText(
+            "New : %d" % summary.count_for_type(_DIFF_TYPES.NEW)
+        )
         self.ui.cut_change_select_button.setText(
-            "Cut Changes : %d" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
+            "Cut Changes : %d" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE)
+        )
         self.ui.omitted_select_button.setText(
-            "Omitted : %d" % summary.count_for_type(_DIFF_TYPES.OMITTED))
+            "Omitted : %d" % summary.count_for_type(_DIFF_TYPES.OMITTED)
+        )
         self.ui.reinstated_select_button.setText(
-            "Reinstated : %d" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
-        self.ui.rescan_select_button.setText("Rescan Needed : %d" % summary.rescans_count)
+            "Reinstated : %d" % summary.count_for_type(_DIFF_TYPES.REINSTATED)
+        )
+        self.ui.rescan_select_button.setText(
+            "Rescan Needed : %d" % summary.rescans_count
+        )
         self.ui.total_button.setText("Total : %d" % summary.total_count)
 
     def clear_entities_view(self):
@@ -1208,9 +1253,8 @@ class AppDialog(QtGui.QWidget):
         user can review changes before importing the cut.
         """
         dialog = SubmitDialog(
-            parent=self,
-            title=self._processor.title,
-            summary=self._processor.summary)
+            parent=self, title=self._processor.title, summary=self._processor.summary
+        )
         dialog.submit.connect(self._processor.import_cut)
         dialog.show()
         dialog.raise_()
@@ -1266,10 +1310,7 @@ class AppDialog(QtGui.QWidget):
             new_entity = self._app.shotgun.create(entity_type, fields)
             self.get_cuts_for_entity.emit(new_entity)
         except Exception as e:
-            msg_box = QtGui.QMessageBox(
-                parent=self,
-                icon=QtGui.QMessageBox.Critical
-            )
+            msg_box = QtGui.QMessageBox(parent=self, icon=QtGui.QMessageBox.Critical)
             msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
             msg_box.setText(_BAD_PERMISSIONS_MSG % (entity_type, entity_type))
             msg_box.setDetailedText("%s" % e)
@@ -1285,9 +1326,7 @@ class AppDialog(QtGui.QWidget):
         where s/he can choose to create a new Entity of the selected type.
         """
         show_create_entity_dialog = CreateEntityDialog(
-            self._preload_entity_type,
-            self._processor.sg_project,
-            parent=self
+            self._preload_entity_type, self._processor.sg_project, parent=self
         )
         show_create_entity_dialog.create_entity.connect(self.create_entity)
         show_create_entity_dialog.show()
@@ -1303,11 +1342,14 @@ class AppDialog(QtGui.QWidget):
         if not self._processor.sg_entity:
             self._logger.warning("No selected Entity ...")
             return
-        links = ["%s/detail/%s/%s" % (
-            self._app.shotgun.base_url,
-            self._processor.sg_entity["type"],
-            self._processor.sg_entity["id"],
-        )]
+        links = [
+            "%s/detail/%s/%s"
+            % (
+                self._app.shotgun.base_url,
+                self._processor.sg_entity["type"],
+                self._processor.sg_entity["id"],
+            )
+        ]
         subject, body = self._processor.summary.get_report(self._processor.title, links)
         # Qt will encode the url for us
         mail_url = QtCore.QUrl("mailto:?subject=%s&body=%s" % (subject, body))
@@ -1343,10 +1385,7 @@ class AppDialog(QtGui.QWidget):
         :param exec_info: A list of strings
         """
         msg = u_msg.encode("utf-8")
-        msg_box = QtGui.QMessageBox(
-            parent=self,
-            icon=QtGui.QMessageBox.Critical
-            )
+        msg_box = QtGui.QMessageBox(parent=self, icon=QtGui.QMessageBox.Critical)
         msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
         msg_box.setText(msg)
         msg_box.setDetailedText("\n".join(exec_info))
@@ -1367,7 +1406,8 @@ class AppDialog(QtGui.QWidget):
                 self,
                 "Quit anyway ?",
                 "Busy, quit anyway ?",
-                QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
+                QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok,
+            )
             if answer != QtGui.QMessageBox.Ok:
                 # Ignore close event to stop it from being processed
                 event.ignore()
@@ -1397,13 +1437,22 @@ class AppDialog(QtGui.QWidget):
         # Copied over from tk-desktop and tk-multi-ingestdelivery
         if sys.platform == "darwin":
             fname = os.path.join(
-                os.path.expanduser("~"), "Library", "Logs", "Shotgun", "%s.log" % self._app.name)
+                os.path.expanduser("~"),
+                "Library",
+                "Logs",
+                "Shotgun",
+                "%s.log" % self._app.name,
+            )
         elif sys.platform == "win32":
             fname = os.path.join(
-                os.environ.get("APPDATA", "APPDATA_NOT_SET"), "Shotgun", "%s.log" % self._app.name)
+                os.environ.get("APPDATA", "APPDATA_NOT_SET"),
+                "Shotgun",
+                "%s.log" % self._app.name,
+            )
         elif sys.platform.startswith("linux"):
             fname = os.path.join(
-                os.path.expanduser("~"), ".shotgun", "logs", "%s.log" % self._app.name)
+                os.path.expanduser("~"), ".shotgun", "logs", "%s.log" % self._app.name
+            )
         else:
             raise NotImplementedError("Unknown platform: %s" % sys.platform)
 
@@ -1411,11 +1460,13 @@ class AppDialog(QtGui.QWidget):
         log_dir = os.path.dirname(fname)
         if not os.path.isdir(log_dir):
             os.makedirs(log_dir)
-        handler = logging.handlers.RotatingFileHandler(fname, maxBytes=1024*1024, backupCount=5)
+        handler = logging.handlers.RotatingFileHandler(
+            fname, maxBytes=1024 * 1024, backupCount=5
+        )
         handler.addFilter(ShortNameFilter())
-        handler.setFormatter(logging.Formatter(
-            "%(asctime)s %(levelname)s %(short_name)s %(message)s"
-        ))
+        handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s %(short_name)s %(message)s")
+        )
         self._logger.addHandler(handler)
 
         self._logger.setLevel(level)
@@ -1428,7 +1479,9 @@ class AppDialog(QtGui.QWidget):
         reload the app style sheet file on changes
         """
         self._css_watcher = None
-        this_folder = self._app.disk_location  # os.path.abspath(os.path.dirname(__file__))
+        this_folder = (
+            self._app.disk_location
+        )  # os.path.abspath(os.path.dirname(__file__))
         css_file = os.path.join(this_folder, "style.qss")
         if os.path.exists(css_file):
             self._load_css(css_file)
@@ -1454,13 +1507,17 @@ class AppDialog(QtGui.QWidget):
                 font_path = os.path.join(font_path, "resources", "fonts")
                 # load custom font
                 QtGui.QFontDatabase.addApplicationFont(
-                    os.path.join(font_path, "OpenSans-Bold.ttf"))
+                    os.path.join(font_path, "OpenSans-Bold.ttf")
+                )
                 QtGui.QFontDatabase.addApplicationFont(
-                    os.path.join(font_path, "OpenSans-Regular.ttf"))
+                    os.path.join(font_path, "OpenSans-Regular.ttf")
+                )
                 QtGui.QFontDatabase.addApplicationFont(
-                    os.path.join(font_path, "OpenSans-CondLight.ttf"))
+                    os.path.join(font_path, "OpenSans-CondLight.ttf")
+                )
                 QtGui.QFontDatabase.addApplicationFont(
-                    os.path.join(font_path, "OpenSans-Light.ttf"))
+                    os.path.join(font_path, "OpenSans-Light.ttf")
+                )
                 # Read css file
                 f = open(css_file)
                 css_data = f.read()

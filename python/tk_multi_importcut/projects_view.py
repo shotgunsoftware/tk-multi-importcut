@@ -18,6 +18,7 @@ class ProjectsView(QtCore.QObject):
     """
     Projects view page handler, display Project cards in a grid layout
     """
+
     # Emitted when a Project is chosen for next step
     project_chosen = QtCore.Signal(dict)
     # Emitted when a different Project is selected
@@ -73,14 +74,19 @@ class ProjectsView(QtCore.QObject):
         widget = ProjectCard(parent=None, sg_project=sg_project)
         widget.highlight_selected.connect(self.project_selected)
         widget.chosen.connect(self.project_chosen)
-        self._grid_layout.addWidget(widget, row, column, )
+        self._grid_layout.addWidget(
+            widget, row, column,
+        )
         self._grid_layout.setRowStretch(row, 0)
         # Put the stretcher back
-        self._grid_layout.addItem(spacer, row+1, 0, colSpan=2)
-        self._grid_layout.setRowStretch(row+1, 1)
+        self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
+        self._grid_layout.setRowStretch(row + 1, 1)
         count = i + 1
-        self._info_message = ("%d %ss" % (count, sg_project["type"])) if count > 1 else (
-            "%d %s" % (count, sg_project["type"]))
+        self._info_message = (
+            ("%d %ss" % (count, sg_project["type"]))
+            if count > 1
+            else ("%d %s" % (count, sg_project["type"]))
+        )
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(QtGui.QWidget)
@@ -116,13 +122,13 @@ class ProjectsView(QtCore.QObject):
             return
         match_count = 0
         if not text:  # Show everything
-            for i in range(count-1, -1, -1):
+            for i in range(count - 1, -1, -1):
                 witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
                 widget.setVisible(True)
             match_count = count
         else:
-            for i in range(count-1, -1, -1):
+            for i in range(count - 1, -1, -1):
                 witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
                 if text.lower() in widget.project_name.lower():
@@ -133,8 +139,9 @@ class ProjectsView(QtCore.QObject):
         # Sort widgets so visible ones will be first, with rows
         # distribution re-arranged
         self.sort_changed()
-        self._info_message = ("%d Projects" % match_count) if match_count > 1 else (
-            "%d Project" % count)
+        self._info_message = (
+            ("%d Projects" % match_count) if match_count > 1 else ("%d Project" % count)
+        )
         self.new_info_message.emit(self._info_message)
 
     def sort_changed(self):
@@ -148,14 +155,11 @@ class ProjectsView(QtCore.QObject):
         spacer = self._grid_layout.takeAt(count)
         # Retrieve all cut cards
         widgets = []
-        for i in range(count-1, -1, -1):
+        for i in range(count - 1, -1, -1):
             witem = self._grid_layout.takeAt(i)
             widgets.append(witem.widget())
         widgets.sort(
-            key=lambda x: (
-                x.isHidden(),
-                x.project_name.lower(),
-            ), reverse=False
+            key=lambda x: (x.isHidden(), x.project_name.lower(),), reverse=False
         )
         row_count = len(widgets) / 2
         # Put them back into the grid layout
@@ -163,18 +167,20 @@ class ProjectsView(QtCore.QObject):
             row = i / 2
             column = i % 2
             widget = widgets[i]
-            self._grid_layout.addWidget(widget, row, column, )
+            self._grid_layout.addWidget(
+                widget, row, column,
+            )
             self._grid_layout.setRowStretch(row, 0)
 
         # Put back the stretcher
-        self._grid_layout.addItem(spacer, row+1, 0, colSpan=2)
-        self._grid_layout.setRowStretch(row+1, 1)
+        self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
+        self._grid_layout.setRowStretch(row + 1, 1)
         # Avoid flashes and jittering by resizing the grid widget to a size
         # suitable to hold all cards
         wsize = widgets[0].size()
         self._grid_layout.parentWidget().resize(
-            self._grid_layout.parentWidget().size().width(),
-            wsize.height() * row_count)
+            self._grid_layout.parentWidget().size().width(), wsize.height() * row_count
+        )
 
     def clear(self):
         """
@@ -182,7 +188,7 @@ class ProjectsView(QtCore.QObject):
         """
         self._selected_project_card = None
         count = self.card_count
-        for i in range(count-1, -1, -1):
+        for i in range(count - 1, -1, -1):
             witem = self._grid_layout.takeAt(i)
             widget = witem.widget()
             widget.close()

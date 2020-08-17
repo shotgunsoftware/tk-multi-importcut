@@ -34,6 +34,7 @@ class Processor(QtCore.QThread):
     Similarly, some properties are exposed, so the caller does not need to access
     the EdlCut instance directly.
     """
+
     # Pass through signals which will be redirected to
     # the worker instance created in the running thread, so signals
     # will be processed in the running thread.
@@ -41,32 +42,32 @@ class Processor(QtCore.QThread):
     # | UI | <-> | Processor | <-> | EdlCut | <-> | CutSummary |
     #
     #
-    new_edl                 = QtCore.Signal(str)
-    new_movie               = QtCore.Signal(str)
-    reset                   = QtCore.Signal()
-    set_busy                = QtCore.Signal(bool)
-    step_done               = QtCore.Signal(int)
-    step_failed             = QtCore.Signal(int)
-    set_sg_project          = QtCore.Signal(dict)
-    new_sg_project          = QtCore.Signal(dict)
-    new_sg_entity           = QtCore.Signal(dict)
-    new_sg_cut              = QtCore.Signal(dict)
-    retrieve_projects       = QtCore.Signal()
-    retrieve_entities       = QtCore.Signal(str)
-    retrieve_cuts           = QtCore.Signal(dict)
-    show_cut_diff           = QtCore.Signal(dict)
-    new_cut_diff            = QtCore.Signal(CutDiff)
-    got_busy                = QtCore.Signal(int)
-    got_idle                = QtCore.Signal()
-    progress_changed        = QtCore.Signal(int)
-    import_cut              = QtCore.Signal(str, dict, dict, str, bool)
-    totals_changed          = QtCore.Signal()
-    delete_cut_diff         = QtCore.Signal(CutDiff)
-    ready                   = QtCore.Signal()
-    valid_edl               = QtCore.Signal(str, bool)
-    has_transitions         = QtCore.Signal()
-    valid_movie             = QtCore.Signal(str)
-    reload_step             = QtCore.Signal(int)
+    new_edl = QtCore.Signal(str)
+    new_movie = QtCore.Signal(str)
+    reset = QtCore.Signal()
+    set_busy = QtCore.Signal(bool)
+    step_done = QtCore.Signal(int)
+    step_failed = QtCore.Signal(int)
+    set_sg_project = QtCore.Signal(dict)
+    new_sg_project = QtCore.Signal(dict)
+    new_sg_entity = QtCore.Signal(dict)
+    new_sg_cut = QtCore.Signal(dict)
+    retrieve_projects = QtCore.Signal()
+    retrieve_entities = QtCore.Signal(str)
+    retrieve_cuts = QtCore.Signal(dict)
+    show_cut_diff = QtCore.Signal(dict)
+    new_cut_diff = QtCore.Signal(CutDiff)
+    got_busy = QtCore.Signal(int)
+    got_idle = QtCore.Signal()
+    progress_changed = QtCore.Signal(int)
+    import_cut = QtCore.Signal(str, dict, dict, str, bool)
+    totals_changed = QtCore.Signal()
+    delete_cut_diff = QtCore.Signal(CutDiff)
+    ready = QtCore.Signal()
+    valid_edl = QtCore.Signal(str, bool)
+    has_transitions = QtCore.Signal()
+    valid_movie = QtCore.Signal(str)
+    reload_step = QtCore.Signal(int)
 
     def __init__(self, frame_rate=None):
         """
@@ -200,12 +201,16 @@ class Processor(QtCore.QThread):
         tree_path = "/cuts_tree/Project/%d/Cut/%d/%d" % (
             sg_new_cut["project"]["id"],
             sg_new_cut["entity"]["id"],
-            sg_new_cut["id"])
-        return "%s/page/media_center?type=Cut&id=%d&project_id=%d&tree_path=%s&global=true&project_sel=all" % (
-            self._edl_cut._app.shotgun.base_url,
             sg_new_cut["id"],
-            sg_new_cut["project"]["id"],
-            QtCore.QUrl.toEncoded(QtCore.QUrl(tree_path))
+        )
+        return (
+            "%s/page/media_center?type=Cut&id=%d&project_id=%d&tree_path=%s&global=true&project_sel=all"
+            % (
+                self._edl_cut._app.shotgun.base_url,
+                sg_new_cut["id"],
+                sg_new_cut["project"]["id"],
+                QtCore.QUrl.toEncoded(QtCore.QUrl(tree_path)),
+            )
         )
 
     @property

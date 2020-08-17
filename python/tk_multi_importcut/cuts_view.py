@@ -20,6 +20,7 @@ class CutsView(QtCore.QObject):
     """
     A view which shows CutCards arranged in a gird layout
     """
+
     # Emitted when the cut summary for a cut should be shown
     cut_chosen = QtCore.Signal(dict)
 
@@ -79,12 +80,15 @@ class CutsView(QtCore.QObject):
         widget = CutCard(None, sg_entity)
         widget.highlight_selected.connect(self.cut_selected)
         widget.chosen.connect(self.show_cut)
-        self._grid_layout.addWidget(widget, row, column, )
+        self._grid_layout.addWidget(
+            widget, row, column,
+        )
         self._grid_layout.setRowStretch(row, 0)
-        self._grid_layout.addItem(spacer, row+1, 0, colSpan=2)
-        self._grid_layout.setRowStretch(row+1, 1)
-        self._info_message = ("%d Cuts" % (i + 1)) if (i + 1) > 1 else (
-            "%d Cut" % (i + 1))
+        self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
+        self._grid_layout.setRowStretch(row + 1, 1)
+        self._info_message = (
+            ("%d Cuts" % (i + 1)) if (i + 1) > 1 else ("%d Cut" % (i + 1))
+        )
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(unicode)
@@ -104,13 +108,13 @@ class CutsView(QtCore.QObject):
             return
         if not text:
             # Show everything
-            for i in range(count-1, -1, -1):
+            for i in range(count - 1, -1, -1):
                 witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
                 widget.setVisible(True)
             match_count = count
         else:
-            for i in range(count-1, -1, -1):
+            for i in range(count - 1, -1, -1):
                 witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
                 # Case insensitive match
@@ -122,8 +126,9 @@ class CutsView(QtCore.QObject):
         # Sort widgets so visible ones will be first, with rows
         # distribution re-arranged
         self.sort_changed(self._action_group.checkedAction())
-        self._info_message = ("%d Cuts" % match_count) if match_count > 1 else (
-            "%d Cut" % count)
+        self._info_message = (
+            ("%d Cuts" % match_count) if match_count > 1 else ("%d Cut" % count)
+        )
         self.new_info_message.emit(self._info_message)
 
     @QtCore.Slot(QtGui.QWidget)
@@ -168,7 +173,7 @@ class CutsView(QtCore.QObject):
         spacer = self._grid_layout.takeAt(count)
         # Retrieve all cut cards
         widgets = []
-        for i in range(count-1, -1, -1):
+        for i in range(count - 1, -1, -1):
             witem = self._grid_layout.takeAt(i)
             widgets.append(witem.widget())
         # Sort them by prepending a primary field to our usual sort
@@ -181,19 +186,22 @@ class CutsView(QtCore.QObject):
                 x.sg_cut["created_at"],
                 x.sg_cut["code"],
                 x.sg_cut["sg_status_list"],
-            ), reverse=True
+            ),
+            reverse=True,
         )
         # Put them back into the grid layout
         for i in range(len(widgets)):
             row = i / 2
             column = i % 2
             widget = widgets[i]
-            self._grid_layout.addWidget(widget, row, column, )
+            self._grid_layout.addWidget(
+                widget, row, column,
+            )
             self._grid_layout.setRowStretch(row, 0)
 
         # Put back the stretcher
-        self._grid_layout.addItem(spacer, row+1, 0, colSpan=2)
-        self._grid_layout.setRowStretch(row+1, 1)
+        self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
+        self._grid_layout.setRowStretch(row + 1, 1)
         # And update the menu label
         self._sort_menu_button.setText(action.text())
 
@@ -207,10 +215,7 @@ class CutsView(QtCore.QObject):
         self._action_group = QtGui.QActionGroup(self)
         self._action_group.triggered.connect(self.sort_changed)
         for smeth in _SORT_METHODS:
-            sort_action = QtGui.QAction(
-                smeth,
-                self._action_group,
-            )
+            sort_action = QtGui.QAction(smeth, self._action_group,)
             sort_action.setCheckable(True)
             sort_action.setData(_SORT_METHODS.index(smeth))
             self._cuts_sort_menu.addAction(sort_action)
@@ -224,7 +229,7 @@ class CutsView(QtCore.QObject):
         """
         self._selected_card_cut = None
         count = self.card_count
-        for i in range(count-1, -1, -1):
+        for i in range(count - 1, -1, -1):
             witem = self._grid_layout.takeAt(i)
             widget = witem.widget()
             widget.close()

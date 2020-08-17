@@ -30,6 +30,7 @@ class EntityLineWidget(QtGui.QLineEdit):
     }
 
     """
+
     # A list of possible values for completion
     __known_list = []
 

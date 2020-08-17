@@ -9,8 +9,16 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 # Different steps in the wizard process
-_DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP, _ENTITY_STEP, _CUT_STEP, \
-    _SUMMARY_STEP, _PROGRESS_STEP, _LAST_STEP = range(8)
+(
+    _DROP_STEP,
+    _PROJECT_STEP,
+    _ENTITY_TYPE_STEP,
+    _ENTITY_STEP,
+    _CUT_STEP,
+    _SUMMARY_STEP,
+    _PROGRESS_STEP,
+    _LAST_STEP,
+) = range(8)
 
 # Different timecode mapping mode
 # Three mapping modes are available, which are only relevant for first
@@ -26,24 +34,35 @@ _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE = range(3)
 _VIDEO_EXTS = [".avi", ".m4v", ".mov", ".mp4", ".qt", ".webm"]
 
 # List of supported extensions for Versions.
-_VERSION_EXTS = _VIDEO_EXTS + [".jpg", ".jpeg", ".mxf", ".omf", ".png", ".psd", ".tif", ".tiff"]
+_VERSION_EXTS = _VIDEO_EXTS + [
+    ".jpg",
+    ".jpeg",
+    ".mxf",
+    ".omf",
+    ".png",
+    ".psd",
+    ".tif",
+    ".tiff",
+]
 
 # EDL file extension
 _EDL_EXT = ".edl"
 
 # Url that links to Import Cut documentation.
-_DOCUMENTATION_URL = "https://support.shotgunsoftware.com/hc/en-us/articles/219041758-Import-Cut"
+_DOCUMENTATION_URL = (
+    "https://support.shotgunsoftware.com/hc/en-us/articles/219041758-Import-Cut"
+)
 
 # Some colors used in various places
 _COLORS = {
-    "sg_blue" : "#2C93E2",
-    "sg_red"  : "#FC6246",
+    "sg_blue": "#2C93E2",
+    "sg_red": "#FC6246",
     "mid_blue": "#1B82D1",
-    "green"   : "#57B510",
-    "yellow"  : "#A1A51A",
-    "lgrey"   : "#A5A5A5",
-    "dgrey"   : "#666666",
-    "dgreen"  : "#377500",
+    "green": "#57B510",
+    "yellow": "#A1A51A",
+    "lgrey": "#A5A5A5",
+    "dgrey": "#666666",
+    "dgreen": "#377500",
 }
 # Colors associated with some SG statuses
 _STATUS_COLORS = {
@@ -65,5 +84,5 @@ _SHOT_FIELDS = [
     "smart_cut_in",
     "smart_cut_out",
     "sg_cut_order",
-    "image"
+    "image",
 ]

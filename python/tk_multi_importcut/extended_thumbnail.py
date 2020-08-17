@@ -17,6 +17,7 @@ class ExtendedThumbnail(QtGui.QLabel):
     """
     A custom widget allowing to draw some text on top of a thumbnail
     """
+
     def __init__(self, text, *args, **kwargs):
         """
         Instantiate a new ExtendedThumbnail
@@ -77,14 +78,15 @@ class ExtendedThumbnail(QtGui.QLabel):
                 painter.pen().color().red() * 0.1,
                 painter.pen().color().green() * 0.1,
                 painter.pen().color().blue() * 0.1,
-                128),
-            QtCore.Qt.SolidPattern
+                128,
+            ),
+            QtCore.Qt.SolidPattern,
         )
         painter.setBrush(brush)
-#        if self._strike_through:
-#            painter.fillRect(self.rect(), QtGui.QBrush(self._color, QtCore.Qt.BDiagPattern))
-#            painter.drawLine(0.0, 0.0, self.rect().width(), self.rect().height() )
-#            painter.drawLine(self.rect().width(), 0.0, 0.0, self.rect().height())
+        #        if self._strike_through:
+        #            painter.fillRect(self.rect(), QtGui.QBrush(self._color, QtCore.Qt.BDiagPattern))
+        #            painter.drawLine(0.0, 0.0, self.rect().width(), self.rect().height() )
+        #            painter.drawLine(self.rect().width(), 0.0, 0.0, self.rect().height())
         half_size = self.fontInfo().pixelSize()
         size = 2.0 * half_size
         offset = 4.0

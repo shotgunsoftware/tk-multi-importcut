@@ -8,11 +8,14 @@
 
 from tank.platform.qt import QtCore, QtGui
 
+
 class Ui_CutCard(object):
     def setupUi(self, CutCard):
         CutCard.setObjectName("CutCard")
         CutCard.resize(433, 74)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(CutCard.sizePolicy().hasHeightForWidth())
@@ -54,7 +57,9 @@ class Ui_CutCard(object):
         self.date_label.setObjectName("date_label")
         self.verticalLayout_2.addWidget(self.date_label)
         self.status_label = QtGui.QLabel(CutCard)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.status_label.sizePolicy().hasHeightForWidth())
@@ -67,16 +72,24 @@ class Ui_CutCard(object):
         self.verticalLayout_2.addWidget(self.details_label)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
         self.select_button = QtGui.QPushButton(CutCard)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Maximum)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Maximum
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.select_button.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.select_button.sizePolicy().hasHeightForWidth()
+        )
         self.select_button.setSizePolicy(sizePolicy)
         self.select_button.setMaximumSize(QtCore.QSize(30, 30))
         self.select_button.setToolTip("")
         self.select_button.setText("")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/tk_multi_importcut/right_arrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(
+            QtGui.QPixmap(":/tk_multi_importcut/right_arrow.png"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.select_button.setIcon(icon)
         self.select_button.setIconSize(QtCore.QSize(30, 30))
         self.select_button.setCheckable(False)
@@ -89,10 +102,37 @@ class Ui_CutCard(object):
         QtCore.QMetaObject.connectSlotsByName(CutCard)
 
     def retranslateUi(self, CutCard):
-        CutCard.setWindowTitle(QtGui.QApplication.translate("CutCard", "Frame", None, QtGui.QApplication.UnicodeUTF8))
-        self.title_label.setText(QtGui.QApplication.translate("CutCard", "<big><b>Name</b></big>", None, QtGui.QApplication.UnicodeUTF8))
-        self.date_label.setText(QtGui.QApplication.translate("CutCard", "12/23/14 02:38 PM", None, QtGui.QApplication.UnicodeUTF8))
-        self.status_label.setText(QtGui.QApplication.translate("CutCard", "Status", None, QtGui.QApplication.UnicodeUTF8))
-        self.details_label.setText(QtGui.QApplication.translate("CutCard", "<small>details</small>", None, QtGui.QApplication.UnicodeUTF8))
+        CutCard.setWindowTitle(
+            QtGui.QApplication.translate(
+                "CutCard", "Frame", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.title_label.setText(
+            QtGui.QApplication.translate(
+                "CutCard",
+                "<big><b>Name</b></big>",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.date_label.setText(
+            QtGui.QApplication.translate(
+                "CutCard", "12/23/14 02:38 PM", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.status_label.setText(
+            QtGui.QApplication.translate(
+                "CutCard", "Status", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.details_label.setText(
+            QtGui.QApplication.translate(
+                "CutCard",
+                "<small>details</small>",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+
 
 from . import resources_rc

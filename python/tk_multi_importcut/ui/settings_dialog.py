@@ -8,6 +8,7 @@
 
 from tank.platform.qt import QtCore, QtGui
 
+
 class Ui_settings_dialog(object):
     def setupUi(self, settings_dialog):
         settings_dialog.setObjectName("settings_dialog")
@@ -19,10 +20,14 @@ class Ui_settings_dialog(object):
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.settings_label = QtGui.QLabel(settings_dialog)
         self.settings_label.setEnabled(True)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.settings_label.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.settings_label.sizePolicy().hasHeightForWidth()
+        )
         self.settings_label.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("Helvetica Neue")
@@ -34,7 +39,9 @@ class Ui_settings_dialog(object):
         self.verticalLayout_7.addWidget(self.settings_label)
         self.verticalLayout_2.addLayout(self.verticalLayout_7)
         self.general_timecode_frames_tab = QtGui.QTabWidget(settings_dialog)
-        self.general_timecode_frames_tab.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
+        self.general_timecode_frames_tab.setContextMenuPolicy(
+            QtCore.Qt.PreventContextMenu
+        )
         self.general_timecode_frames_tab.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.general_timecode_frames_tab.setTabPosition(QtGui.QTabWidget.North)
         self.general_timecode_frames_tab.setTabShape(QtGui.QTabWidget.Rounded)
@@ -64,12 +71,16 @@ class Ui_settings_dialog(object):
         self.send_cut_summary_note_to_label.setScaledContents(False)
         self.send_cut_summary_note_to_label.setMargin(0)
         self.send_cut_summary_note_to_label.setIndent(14)
-        self.send_cut_summary_note_to_label.setObjectName("send_cut_summary_note_to_label")
+        self.send_cut_summary_note_to_label.setObjectName(
+            "send_cut_summary_note_to_label"
+        )
         self.cut_summary_layout.addWidget(self.send_cut_summary_note_to_label)
         self.email_groups_line_edit = QtGui.QLineEdit(self.general_tab)
         self.email_groups_line_edit.setObjectName("email_groups_line_edit")
         self.cut_summary_layout.addWidget(self.email_groups_line_edit)
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.cut_summary_layout.addItem(spacerItem)
         self.verticalLayout.addLayout(self.cut_summary_layout)
         self.statuses_label = QtGui.QLabel(self.general_tab)
@@ -94,8 +105,10 @@ class Ui_settings_dialog(object):
         self.formLayout = QtGui.QFormLayout()
         self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.FieldsStayAtSizeHint)
         self.formLayout.setRowWrapPolicy(QtGui.QFormLayout.DontWrapRows)
-        self.formLayout.setLabelAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.formLayout.setFormAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignHCenter)
+        self.formLayout.setLabelAlignment(
+            QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter
+        )
+        self.formLayout.setFormAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
         self.formLayout.setContentsMargins(14, -1, -1, -1)
         self.formLayout.setObjectName("formLayout")
         self.omit_status_label = QtGui.QLabel(self.general_tab)
@@ -103,39 +116,57 @@ class Ui_settings_dialog(object):
         self.omit_status_label.setFrameShadow(QtGui.QFrame.Plain)
         self.omit_status_label.setMargin(0)
         self.omit_status_label.setObjectName("omit_status_label")
-        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.omit_status_label)
+        self.formLayout.setWidget(
+            2, QtGui.QFormLayout.LabelRole, self.omit_status_label
+        )
         self.omit_status_combo_box = QtGui.QComboBox(self.general_tab)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.omit_status_combo_box.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.omit_status_combo_box.sizePolicy().hasHeightForWidth()
+        )
         self.omit_status_combo_box.setSizePolicy(sizePolicy)
         self.omit_status_combo_box.setWhatsThis("")
         self.omit_status_combo_box.setAccessibleName("")
         self.omit_status_combo_box.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.omit_status_combo_box.setObjectName("omit_status_combo_box")
-        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.omit_status_combo_box)
+        self.formLayout.setWidget(
+            2, QtGui.QFormLayout.FieldRole, self.omit_status_combo_box
+        )
         self.reinstate_shot_if_status_is_label = QtGui.QLabel(self.general_tab)
         self.reinstate_shot_if_status_is_label.setEnabled(True)
         self.reinstate_shot_if_status_is_label.setMargin(0)
         self.reinstate_shot_if_status_is_label.setIndent(0)
-        self.reinstate_shot_if_status_is_label.setObjectName("reinstate_shot_if_status_is_label")
-        self.formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self.reinstate_shot_if_status_is_label)
+        self.reinstate_shot_if_status_is_label.setObjectName(
+            "reinstate_shot_if_status_is_label"
+        )
+        self.formLayout.setWidget(
+            3, QtGui.QFormLayout.LabelRole, self.reinstate_shot_if_status_is_label
+        )
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.horizontalLayout_4.setSpacing(10)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.reinstate_shot_if_status_is_line_edit = QtGui.QLineEdit(self.general_tab)
-        self.reinstate_shot_if_status_is_line_edit.setObjectName("reinstate_shot_if_status_is_line_edit")
+        self.reinstate_shot_if_status_is_line_edit.setObjectName(
+            "reinstate_shot_if_status_is_line_edit"
+        )
         self.horizontalLayout_4.addWidget(self.reinstate_shot_if_status_is_line_edit)
         self.reinstate_status_label = QtGui.QLabel(self.general_tab)
         self.reinstate_status_label.setEnabled(True)
         self.reinstate_status_label.setObjectName("reinstate_status_label")
         self.horizontalLayout_4.addWidget(self.reinstate_status_label)
         self.reinstate_status_combo_box = QtGui.QComboBox(self.general_tab)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.reinstate_status_combo_box.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.reinstate_status_combo_box.sizePolicy().hasHeightForWidth()
+        )
         self.reinstate_status_combo_box.setSizePolicy(sizePolicy)
         self.reinstate_status_combo_box.setMinimumSize(QtCore.QSize(115, 0))
         self.reinstate_status_combo_box.setWhatsThis("")
@@ -143,20 +174,32 @@ class Ui_settings_dialog(object):
         self.reinstate_status_combo_box.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.reinstate_status_combo_box.setObjectName("reinstate_status_combo_box")
         self.horizontalLayout_4.addWidget(self.reinstate_status_combo_box)
-        self.formLayout.setLayout(3, QtGui.QFormLayout.FieldRole, self.horizontalLayout_4)
+        self.formLayout.setLayout(
+            3, QtGui.QFormLayout.FieldRole, self.horizontalLayout_4
+        )
         self.update_shot_statuses_checkbox = QtGui.QCheckBox(self.general_tab)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.update_shot_statuses_checkbox.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.update_shot_statuses_checkbox.sizePolicy().hasHeightForWidth()
+        )
         self.update_shot_statuses_checkbox.setSizePolicy(sizePolicy)
-        self.update_shot_statuses_checkbox.setObjectName("update_shot_statuses_checkbox")
-        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.update_shot_statuses_checkbox)
+        self.update_shot_statuses_checkbox.setObjectName(
+            "update_shot_statuses_checkbox"
+        )
+        self.formLayout.setWidget(
+            1, QtGui.QFormLayout.FieldRole, self.update_shot_statuses_checkbox
+        )
         self.update_shot_statuses_label = QtGui.QLabel(self.general_tab)
         self.update_shot_statuses_label.setMargin(0)
         self.update_shot_statuses_label.setIndent(0)
         self.update_shot_statuses_label.setObjectName("update_shot_statuses_label")
-        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.update_shot_statuses_label)
+        self.formLayout.setWidget(
+            1, QtGui.QFormLayout.LabelRole, self.update_shot_statuses_label
+        )
         self.horizontalLayout_2.addLayout(self.formLayout)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.cut_fields_on_shot_label = QtGui.QLabel(self.general_tab)
@@ -174,10 +217,14 @@ class Ui_settings_dialog(object):
         self.use_smart_fields_checkbox.setText("")
         self.use_smart_fields_checkbox.setObjectName("use_smart_fields_checkbox")
         self.horizontalLayout_5.addWidget(self.use_smart_fields_checkbox)
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem1 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_5.addItem(spacerItem1)
         self.verticalLayout.addLayout(self.horizontalLayout_5)
-        spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem2 = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.verticalLayout.addItem(spacerItem2)
         self.general_timecode_frames_tab.addTab(self.general_tab, "")
         self.tab_2 = QtGui.QWidget()
@@ -189,27 +236,45 @@ class Ui_settings_dialog(object):
         self.timecode_label.setObjectName("timecode_label")
         self.verticalLayout_4.addWidget(self.timecode_label)
         self.formLayout_2 = QtGui.QFormLayout()
-        self.formLayout_2.setLabelAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.formLayout_2.setLabelAlignment(
+            QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter
+        )
         self.formLayout_2.setObjectName("formLayout_2")
         self.default_frame_rate_label = QtGui.QLabel(self.tab_2)
         self.default_frame_rate_label.setObjectName("default_frame_rate_label")
-        self.formLayout_2.setWidget(0, QtGui.QFormLayout.LabelRole, self.default_frame_rate_label)
+        self.formLayout_2.setWidget(
+            0, QtGui.QFormLayout.LabelRole, self.default_frame_rate_label
+        )
         self.default_frame_rate_line_edit = QtGui.QLineEdit(self.tab_2)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.default_frame_rate_line_edit.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.default_frame_rate_line_edit.sizePolicy().hasHeightForWidth()
+        )
         self.default_frame_rate_line_edit.setSizePolicy(sizePolicy)
         self.default_frame_rate_line_edit.setMaximumSize(QtCore.QSize(50, 16777215))
         self.default_frame_rate_line_edit.setObjectName("default_frame_rate_line_edit")
-        self.formLayout_2.setWidget(0, QtGui.QFormLayout.FieldRole, self.default_frame_rate_line_edit)
+        self.formLayout_2.setWidget(
+            0, QtGui.QFormLayout.FieldRole, self.default_frame_rate_line_edit
+        )
         self.timecode_to_frame_mapping_label = QtGui.QLabel(self.tab_2)
         self.timecode_to_frame_mapping_label.setIndent(20)
-        self.timecode_to_frame_mapping_label.setObjectName("timecode_to_frame_mapping_label")
-        self.formLayout_2.setWidget(1, QtGui.QFormLayout.LabelRole, self.timecode_to_frame_mapping_label)
+        self.timecode_to_frame_mapping_label.setObjectName(
+            "timecode_to_frame_mapping_label"
+        )
+        self.formLayout_2.setWidget(
+            1, QtGui.QFormLayout.LabelRole, self.timecode_to_frame_mapping_label
+        )
         self.timecode_to_frame_mapping_combo_box = QtGui.QComboBox(self.tab_2)
-        self.timecode_to_frame_mapping_combo_box.setObjectName("timecode_to_frame_mapping_combo_box")
-        self.formLayout_2.setWidget(1, QtGui.QFormLayout.FieldRole, self.timecode_to_frame_mapping_combo_box)
+        self.timecode_to_frame_mapping_combo_box.setObjectName(
+            "timecode_to_frame_mapping_combo_box"
+        )
+        self.formLayout_2.setWidget(
+            1, QtGui.QFormLayout.FieldRole, self.timecode_to_frame_mapping_combo_box
+        )
         self.verticalLayout_4.addLayout(self.formLayout_2)
         self.verticalLayout_5 = QtGui.QVBoxLayout()
         self.verticalLayout_5.setSpacing(0)
@@ -219,8 +284,12 @@ class Ui_settings_dialog(object):
         self.timecode_to_frame_mapping_instructions_label.setText("")
         self.timecode_to_frame_mapping_instructions_label.setWordWrap(True)
         self.timecode_to_frame_mapping_instructions_label.setIndent(14)
-        self.timecode_to_frame_mapping_instructions_label.setObjectName("timecode_to_frame_mapping_instructions_label")
-        self.verticalLayout_5.addWidget(self.timecode_to_frame_mapping_instructions_label)
+        self.timecode_to_frame_mapping_instructions_label.setObjectName(
+            "timecode_to_frame_mapping_instructions_label"
+        )
+        self.verticalLayout_5.addWidget(
+            self.timecode_to_frame_mapping_instructions_label
+        )
         self.horizontalLayout_8 = QtGui.QHBoxLayout()
         self.horizontalLayout_8.setSpacing(5)
         self.horizontalLayout_8.setContentsMargins(-1, 5, -1, -1)
@@ -231,10 +300,14 @@ class Ui_settings_dialog(object):
         self.timecode_mapping_label.setObjectName("timecode_mapping_label")
         self.horizontalLayout_8.addWidget(self.timecode_mapping_label)
         self.timecode_mapping_line_edit = QtGui.QLineEdit(self.tab_2)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.timecode_mapping_line_edit.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.timecode_mapping_line_edit.sizePolicy().hasHeightForWidth()
+        )
         self.timecode_mapping_line_edit.setSizePolicy(sizePolicy)
         self.timecode_mapping_line_edit.setMaximumSize(QtCore.QSize(80, 16777215))
         self.timecode_mapping_line_edit.setText("")
@@ -245,15 +318,21 @@ class Ui_settings_dialog(object):
         self.frame_mapping_label.setObjectName("frame_mapping_label")
         self.horizontalLayout_8.addWidget(self.frame_mapping_label)
         self.frame_mapping_line_edit = QtGui.QLineEdit(self.tab_2)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.frame_mapping_line_edit.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.frame_mapping_line_edit.sizePolicy().hasHeightForWidth()
+        )
         self.frame_mapping_line_edit.setSizePolicy(sizePolicy)
         self.frame_mapping_line_edit.setMaximumSize(QtCore.QSize(80, 16777215))
         self.frame_mapping_line_edit.setObjectName("frame_mapping_line_edit")
         self.horizontalLayout_8.addWidget(self.frame_mapping_line_edit)
-        spacerItem3 = QtGui.QSpacerItem(40, 0, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem3 = QtGui.QSpacerItem(
+            40, 0, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_8.addItem(spacerItem3)
         self.verticalLayout_5.addLayout(self.horizontalLayout_8)
         self.verticalLayout_4.addLayout(self.verticalLayout_5)
@@ -275,49 +354,73 @@ class Ui_settings_dialog(object):
         self.verticalLayout_6.addWidget(self.description_2_label)
         self.verticalLayout_4.addLayout(self.verticalLayout_6)
         self.formLayout_3 = QtGui.QFormLayout()
-        self.formLayout_3.setLabelAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.formLayout_3.setLabelAlignment(
+            QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter
+        )
         self.formLayout_3.setObjectName("formLayout_3")
         self.default_head_in_label = QtGui.QLabel(self.tab_2)
         self.default_head_in_label.setObjectName("default_head_in_label")
-        self.formLayout_3.setWidget(0, QtGui.QFormLayout.LabelRole, self.default_head_in_label)
+        self.formLayout_3.setWidget(
+            0, QtGui.QFormLayout.LabelRole, self.default_head_in_label
+        )
         self.default_head_in_line_edit = QtGui.QLineEdit(self.tab_2)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.default_head_in_line_edit.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.default_head_in_line_edit.sizePolicy().hasHeightForWidth()
+        )
         self.default_head_in_line_edit.setSizePolicy(sizePolicy)
         self.default_head_in_line_edit.setMaximumSize(QtCore.QSize(50, 16777215))
         self.default_head_in_line_edit.setObjectName("default_head_in_line_edit")
-        self.formLayout_3.setWidget(0, QtGui.QFormLayout.FieldRole, self.default_head_in_line_edit)
+        self.formLayout_3.setWidget(
+            0, QtGui.QFormLayout.FieldRole, self.default_head_in_line_edit
+        )
         self.default_head_duration_label = QtGui.QLabel(self.tab_2)
         self.default_head_duration_label.setIndent(20)
         self.default_head_duration_label.setObjectName("default_head_duration_label")
-        self.formLayout_3.setWidget(1, QtGui.QFormLayout.LabelRole, self.default_head_duration_label)
+        self.formLayout_3.setWidget(
+            1, QtGui.QFormLayout.LabelRole, self.default_head_duration_label
+        )
         self.horizontalLayout_6 = QtGui.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.default_head_duration_line_edit = QtGui.QLineEdit(self.tab_2)
         self.default_head_duration_line_edit.setMaximumSize(QtCore.QSize(50, 16777215))
-        self.default_head_duration_line_edit.setObjectName("default_head_duration_line_edit")
+        self.default_head_duration_line_edit.setObjectName(
+            "default_head_duration_line_edit"
+        )
         self.horizontalLayout_6.addWidget(self.default_head_duration_line_edit)
         self.default_tail_duration_label = QtGui.QLabel(self.tab_2)
         self.default_tail_duration_label.setObjectName("default_tail_duration_label")
         self.horizontalLayout_6.addWidget(self.default_tail_duration_label)
         self.default_tail_duration_line_edit = QtGui.QLineEdit(self.tab_2)
         self.default_tail_duration_line_edit.setMaximumSize(QtCore.QSize(50, 16777215))
-        self.default_tail_duration_line_edit.setObjectName("default_tail_duration_line_edit")
+        self.default_tail_duration_line_edit.setObjectName(
+            "default_tail_duration_line_edit"
+        )
         self.horizontalLayout_6.addWidget(self.default_tail_duration_line_edit)
-        spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem4 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_6.addItem(spacerItem4)
-        self.formLayout_3.setLayout(1, QtGui.QFormLayout.FieldRole, self.horizontalLayout_6)
+        self.formLayout_3.setLayout(
+            1, QtGui.QFormLayout.FieldRole, self.horizontalLayout_6
+        )
         self.verticalLayout_4.addLayout(self.formLayout_3)
-        spacerItem5 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem5 = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.verticalLayout_4.addItem(spacerItem5)
         self.general_timecode_frames_tab.addTab(self.tab_2, "")
         self.verticalLayout_2.addWidget(self.general_timecode_frames_tab)
         self.horizontalLayout_9 = QtGui.QHBoxLayout()
         self.horizontalLayout_9.setSpacing(15)
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
-        spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem6 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_9.addItem(spacerItem6)
         self.cancel_button = QtGui.QPushButton(settings_dialog)
         self.cancel_button.setObjectName("cancel_button")
@@ -332,35 +435,212 @@ class Ui_settings_dialog(object):
         QtCore.QMetaObject.connectSlotsByName(settings_dialog)
 
     def retranslateUi(self, settings_dialog):
-        settings_dialog.setWindowTitle(QtGui.QApplication.translate("settings_dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
-        self.settings_label.setText(QtGui.QApplication.translate("settings_dialog", "Settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.note_addressing_label.setText(QtGui.QApplication.translate("settings_dialog", "Note Addressing", None, QtGui.QApplication.UnicodeUTF8))
-        self.send_cut_summary_note_to_label.setText(QtGui.QApplication.translate("settings_dialog", "Send Cut Summary Note To:", None, QtGui.QApplication.UnicodeUTF8))
-        self.email_groups_line_edit.setPlaceholderText(QtGui.QApplication.translate("settings_dialog", "Group", None, QtGui.QApplication.UnicodeUTF8))
-        self.statuses_label.setText(QtGui.QApplication.translate("settings_dialog", "Statuses", None, QtGui.QApplication.UnicodeUTF8))
-        self.description_1_label.setText(QtGui.QApplication.translate("settings_dialog", "When a new Cut omits a Shot or reinstates a previously-omitted Shot, the app can automatically update the status in Shotgun.", None, QtGui.QApplication.UnicodeUTF8))
-        self.omit_status_label.setText(QtGui.QApplication.translate("settings_dialog", "Omit Status:", None, QtGui.QApplication.UnicodeUTF8))
-        self.reinstate_shot_if_status_is_label.setText(QtGui.QApplication.translate("settings_dialog", "Reinstate Shot if Status is:", None, QtGui.QApplication.UnicodeUTF8))
-        self.reinstate_status_label.setText(QtGui.QApplication.translate("settings_dialog", "Reinstate Status:", None, QtGui.QApplication.UnicodeUTF8))
-        self.update_shot_statuses_label.setText(QtGui.QApplication.translate("settings_dialog", "Update Shot Statuses", None, QtGui.QApplication.UnicodeUTF8))
-        self.cut_fields_on_shot_label.setText(QtGui.QApplication.translate("settings_dialog", "Cut Fields on Shot", None, QtGui.QApplication.UnicodeUTF8))
-        self.use_smart_fields_label.setText(QtGui.QApplication.translate("settings_dialog", "Use \"Smart\" Fields", None, QtGui.QApplication.UnicodeUTF8))
-        self.general_timecode_frames_tab.setTabText(self.general_timecode_frames_tab.indexOf(self.general_tab), QtGui.QApplication.translate("settings_dialog", "       General", None, QtGui.QApplication.UnicodeUTF8))
-        self.timecode_label.setText(QtGui.QApplication.translate("settings_dialog", "Timecode", None, QtGui.QApplication.UnicodeUTF8))
-        self.default_frame_rate_label.setText(QtGui.QApplication.translate("settings_dialog", "Default Frame Rate", None, QtGui.QApplication.UnicodeUTF8))
-        self.timecode_to_frame_mapping_label.setText(QtGui.QApplication.translate("settings_dialog", "Timecode to Frame Mapping", None, QtGui.QApplication.UnicodeUTF8))
-        self.timecode_mapping_label.setText(QtGui.QApplication.translate("settings_dialog", "Timecode Mapping:", None, QtGui.QApplication.UnicodeUTF8))
-        self.timecode_mapping_line_edit.setPlaceholderText(QtGui.QApplication.translate("settings_dialog", "##:##:##:##", None, QtGui.QApplication.UnicodeUTF8))
-        self.frame_mapping_label.setText(QtGui.QApplication.translate("settings_dialog", "Frame Mapping:", None, QtGui.QApplication.UnicodeUTF8))
-        self.new_shots_label.setText(QtGui.QApplication.translate("settings_dialog", "New Shots", None, QtGui.QApplication.UnicodeUTF8))
-        self.description_2_label.setText(QtGui.QApplication.translate("settings_dialog", "When creating new Shots in Shotgun, the app will use the following numbers for start frame and handles.", None, QtGui.QApplication.UnicodeUTF8))
-        self.default_head_in_label.setText(QtGui.QApplication.translate("settings_dialog", "Default Head In:", None, QtGui.QApplication.UnicodeUTF8))
-        self.default_head_duration_label.setText(QtGui.QApplication.translate("settings_dialog", "Default Head Duration:", None, QtGui.QApplication.UnicodeUTF8))
-        self.default_tail_duration_label.setText(QtGui.QApplication.translate("settings_dialog", "Default Tail Duration:", None, QtGui.QApplication.UnicodeUTF8))
-        self.general_timecode_frames_tab.setTabText(self.general_timecode_frames_tab.indexOf(self.tab_2), QtGui.QApplication.translate("settings_dialog", "Timecode/Frames", None, QtGui.QApplication.UnicodeUTF8))
-        self.cancel_button.setText(QtGui.QApplication.translate("settings_dialog", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
-        self.cancel_button.setShortcut(QtGui.QApplication.translate("settings_dialog", "Esc", None, QtGui.QApplication.UnicodeUTF8))
-        self.apply_button.setText(QtGui.QApplication.translate("settings_dialog", "Apply", None, QtGui.QApplication.UnicodeUTF8))
-        self.apply_button.setShortcut(QtGui.QApplication.translate("settings_dialog", "Return", None, QtGui.QApplication.UnicodeUTF8))
+        settings_dialog.setWindowTitle(
+            QtGui.QApplication.translate(
+                "settings_dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.settings_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog", "Settings", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.note_addressing_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Note Addressing",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.send_cut_summary_note_to_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Send Cut Summary Note To:",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.email_groups_line_edit.setPlaceholderText(
+            QtGui.QApplication.translate(
+                "settings_dialog", "Group", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.statuses_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog", "Statuses", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.description_1_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "When a new Cut omits a Shot or reinstates a previously-omitted Shot, the app can automatically update the status in Shotgun.",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.omit_status_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog", "Omit Status:", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.reinstate_shot_if_status_is_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Reinstate Shot if Status is:",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.reinstate_status_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Reinstate Status:",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.update_shot_statuses_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Update Shot Statuses",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.cut_fields_on_shot_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Cut Fields on Shot",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.use_smart_fields_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                'Use "Smart" Fields',
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.general_timecode_frames_tab.setTabText(
+            self.general_timecode_frames_tab.indexOf(self.general_tab),
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "       General",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            ),
+        )
+        self.timecode_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog", "Timecode", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.default_frame_rate_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Default Frame Rate",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.timecode_to_frame_mapping_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Timecode to Frame Mapping",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.timecode_mapping_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Timecode Mapping:",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.timecode_mapping_line_edit.setPlaceholderText(
+            QtGui.QApplication.translate(
+                "settings_dialog", "##:##:##:##", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.frame_mapping_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Frame Mapping:",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.new_shots_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog", "New Shots", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.description_2_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "When creating new Shots in Shotgun, the app will use the following numbers for start frame and handles.",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.default_head_in_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Default Head In:",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.default_head_duration_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Default Head Duration:",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.default_tail_duration_label.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Default Tail Duration:",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.general_timecode_frames_tab.setTabText(
+            self.general_timecode_frames_tab.indexOf(self.tab_2),
+            QtGui.QApplication.translate(
+                "settings_dialog",
+                "Timecode/Frames",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            ),
+        )
+        self.cancel_button.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog", "Cancel", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.cancel_button.setShortcut(
+            QtGui.QApplication.translate(
+                "settings_dialog", "Esc", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.apply_button.setText(
+            QtGui.QApplication.translate(
+                "settings_dialog", "Apply", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.apply_button.setShortcut(
+            QtGui.QApplication.translate(
+                "settings_dialog", "Return", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+
 
 from . import resources_rc

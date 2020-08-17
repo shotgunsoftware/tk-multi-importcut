@@ -17,6 +17,7 @@ class CutCard(CardWidget):
     """
     Widget displaying a Shotgun Cut
     """
+
     def __init__(self, parent, sg_cut):
         """
         Instantiate a new CutCard for the given Shotgun Cut
@@ -28,14 +29,17 @@ class CutCard(CardWidget):
 
         revision_number = self.sg_cut["revision_number"]
         if revision_number:
-            self.ui.title_label.setText("<big><b>%s_%03d</b></big>" % (
-                self.sg_cut["code"], revision_number))
+            self.ui.title_label.setText(
+                "<big><b>%s_%03d</b></big>" % (self.sg_cut["code"], revision_number)
+            )
         else:
-            self.ui.title_label.setText("<big><b>%s</b></big> (No Revision Number)" % (
-                self.sg_cut["code"]))
+            self.ui.title_label.setText(
+                "<big><b>%s</b></big> (No Revision Number)" % (self.sg_cut["code"])
+            )
         if self.sg_cut["_display_status"]:
             self.ui.status_label.setText(
-                "<b><font color=%s>%s</font></b>" % (
+                "<b><font color=%s>%s</font></b>"
+                % (
                     _STATUS_COLORS.get(self.sg_cut["sg_status_list"], _COLORS["lgrey"]),
                     self.sg_cut["_display_status"]["name"].upper(),
                 )
@@ -43,7 +47,9 @@ class CutCard(CardWidget):
         else:
             self.ui.status_label.setText(self.sg_cut["sg_status_list"])
 
-        self.ui.date_label.setText(self.sg_cut["created_at"].strftime("%m/%d/%y %I:%M %p"))
+        self.ui.date_label.setText(
+            self.sg_cut["created_at"].strftime("%m/%d/%y %I:%M %p")
+        )
         if self.sg_cut["description"]:
             self.setToolTip(self.sg_cut["description"])
         self.ui.details_label.setVisible(False)

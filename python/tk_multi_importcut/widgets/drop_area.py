@@ -19,10 +19,12 @@ def drop_area(cls):
     A class decorator which adds needed overrides to any QWidget
     so it can behave like a drop area and emit something_dropped signals
     """
+
     class WrappedClass(cls):
         """
         Wrapping class
         """
+
         # Emitted when something is dropped on the widget
         something_dropped = QtCore.Signal(list)
 
@@ -43,7 +45,7 @@ def drop_area(cls):
             Optionally set a list of extensions to restrict the drop area to accept.
 
             :param ext_list: list of extensions to restrict drop area to accept, these
-                              should be included WITH a dot so, for example, 
+                              should be included WITH a dot so, for example,
                               [".edl", ".mov"]
             """
             self._restrict_to_ext = ext_list
@@ -66,7 +68,10 @@ def drop_area(cls):
                 for url in event.mimeData().urls():
                     _, ext = os.path.splitext(url.path())
                     # Accept anything if no extensions are specified.
-                    if not self._restrict_to_ext or ext.lower() in self._restrict_to_ext:
+                    if (
+                        not self._restrict_to_ext
+                        or ext.lower() in self._restrict_to_ext
+                    ):
                         # We don't activate the dragging state unless ext is valid.
                         self._set_property("dragging", True)
                         # Accept if there is at least one local file
@@ -109,11 +114,14 @@ def drop_area(cls):
                         # urls as they are, assuming the problem should be fixed
                         # in custom Python / PyQt / PySide
                         import Foundation
+
                         fixed_urls = []
                         for url in urls:
                             # It is fine to pass a regular file url to this method
                             # e.g. file:///foo/bar/blah.ext
-                            fu = Foundation.NSURL.URLWithString_(url.toString()).filePathURL()
+                            fu = Foundation.NSURL.URLWithString_(
+                                url.toString()
+                            ).filePathURL()
                             fixed_urls.append(QtCore.QUrl(str(fu)))
                         urls = fixed_urls
                     except:
@@ -150,6 +158,7 @@ class DropAreaLabel(QtGui.QLabel):
     """
     Custom label widget so we can override drop callback and add a somethingDropped signal
     """
+
     pass
 
 
@@ -158,6 +167,7 @@ class DropAreaFrame(QtGui.QFrame):
     """
     Custom frame widget so we can override drop callback and add a somethingDropped signal
     """
+
     pass
 
 
@@ -166,6 +176,7 @@ class DropAreaTableView(QtGui.QTableView):
     """
     Custom table view so we can override drop callback and add a somethingDropped signal
     """
+
     pass
 
 
@@ -174,4 +185,5 @@ class DropAreaScrollArea(QtGui.QScrollArea):
     """
     Custom scroll area widget so we can override drop callback and add a somethingDropped signal
     """
+
     pass

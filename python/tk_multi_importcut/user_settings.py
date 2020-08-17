@@ -20,6 +20,7 @@ class UserSetting(object):
     If the value for the setting is changed and the current step is bigger or
     equal to one of the affected steps, a reset will be needed.
     """
+
     def __init__(self, default, affects=None):
         """
         Instantiate a new UserSetting with the given default value, and affecting
@@ -32,27 +33,29 @@ class UserSetting(object):
         self._default = default
         self._affects = affects or []
 
+
 class UserSettings(object):
     """
     Class for retrieving and managing User Settings.
     """
+
     # Our settings definition, with their default value and the wizard steps they affect,
     # if any
     __settings_def = {
-        "update_shot_statuses"          : UserSetting(True),
-        "use_smart_fields"              : UserSetting(False,            [_SUMMARY_STEP]),
-        "email_groups"                  : UserSetting([]),
-        "omit_status"                   : UserSetting("omt"),
-        "reinstate_status"              : UserSetting("Previous Status"),
-        "reinstate_shot_if_status_is"   : UserSetting(["omt", "hld"],   [_SUMMARY_STEP]),
-        "default_frame_rate"            : UserSetting("24",             [_DROP_STEP, _SUMMARY_STEP]),
-        "timecode_to_frame_mapping"     : UserSetting(_ABSOLUTE_MODE,   [_SUMMARY_STEP]),
-        "timecode_mapping"              : UserSetting("00:00:00:00",    [_SUMMARY_STEP]),
-        "frame_mapping"                 : UserSetting("1000",           [_SUMMARY_STEP]),
-        "default_head_in"               : UserSetting("1001",           [_SUMMARY_STEP]),
-        "default_head_duration"         : UserSetting("8",              [_SUMMARY_STEP]),
-        "default_tail_duration"         : UserSetting("8",              [_SUMMARY_STEP]),
-        "preload_entity_type"           : UserSetting(None)
+        "update_shot_statuses": UserSetting(True),
+        "use_smart_fields": UserSetting(False, [_SUMMARY_STEP]),
+        "email_groups": UserSetting([]),
+        "omit_status": UserSetting("omt"),
+        "reinstate_status": UserSetting("Previous Status"),
+        "reinstate_shot_if_status_is": UserSetting(["omt", "hld"], [_SUMMARY_STEP]),
+        "default_frame_rate": UserSetting("24", [_DROP_STEP, _SUMMARY_STEP]),
+        "timecode_to_frame_mapping": UserSetting(_ABSOLUTE_MODE, [_SUMMARY_STEP]),
+        "timecode_mapping": UserSetting("00:00:00:00", [_SUMMARY_STEP]),
+        "frame_mapping": UserSetting("1000", [_SUMMARY_STEP]),
+        "default_head_in": UserSetting("1001", [_SUMMARY_STEP]),
+        "default_head_duration": UserSetting("8", [_SUMMARY_STEP]),
+        "default_tail_duration": UserSetting("8", [_SUMMARY_STEP]),
+        "preload_entity_type": UserSetting(None),
     }
 
     def __init__(self):

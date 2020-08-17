@@ -38,24 +38,19 @@ class ImportCutApp(Application):
         # now register the command with the engine
         display_name = self.get_setting("display_name") or "Import Cut"
         short_name = display_name.lower().replace(" ", "_")
-        settings = {
-            "icon": self.icon_256,
-            "short_name": short_name}
+        settings = {"icon": self.icon_256, "short_name": short_name}
 
-        self.engine.register_command(
-            display_name,
-            menu_callback,
-            settings)
+        self.engine.register_command(display_name, menu_callback, settings)
 
         if self.engine.name == "tk-shell":
             settings = {
                 "icon": self.icon_256,
-                "short_name": "%s_with_args" % short_name}
+                "short_name": "%s_with_args" % short_name,
+            }
 
             self.engine.register_command(
-                "%s_with_args" % display_name,
-                self.load_edl_for_entity,
-                settings)
+                "%s_with_args" % display_name, self.load_edl_for_entity, settings
+            )
 
     def load_edl_for_entity(self, edl_file_path, sg_entity, frame_rate):
         """
@@ -68,4 +63,6 @@ class ImportCutApp(Application):
         :param frame_rate: The frame rate for the EDL file
         """
         app_payload = self.import_module("tk_multi_importcut")
-        app_payload.dialog.load_edl_for_entity(self, edl_file_path, sg_entity, frame_rate)
+        app_payload.dialog.load_edl_for_entity(
+            self, edl_file_path, sg_entity, frame_rate
+        )
