@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import sgtk
+from tank_vendor import six
 import tempfile
 import os
 
@@ -205,14 +206,14 @@ class CutDiffCard(QtGui.QFrame):
 
         self.set_thumbnail(":/tk_multi_importcut/sg_shot_thumbnail.png")
 
-    @QtCore.Slot(unicode)
+    @QtCore.Slot(six.text_type)
     def new_thumbnail(self, path):
         """
         Called when a new thumbnail is available for this card
 
         :param path: Full path to an image to use as thumbnail, as a unicode string
         """
-        self.set_thumbnail(path.encode("utf-8"))
+        self.set_thumbnail(six.ensure_str(path))
 
     @QtCore.Slot(CutDiff, int, int)
     def diff_type_changed(self, cut_diff, old_type, new_type):
@@ -249,14 +250,14 @@ class CutDiffCard(QtGui.QFrame):
         """
         self._set_ui_values()
 
-    @QtCore.Slot(unicode)
+    @QtCore.Slot(six.text_type)
     def shot_name_edited(self, u_value):
         """
         Called when the shot name was edited
 
         :param u_value: The value from the widget, as a unicode string
         """
-        value = u_value.encode("utf-8")
+        value = six.ensure_str(u_value)
         if value != self._cut_diff.name:
             self._cut_diff.set_name(value)
         if not self._cut_diff.name:

@@ -10,8 +10,8 @@
 
 # Styles the code properly
 
-# Exclude the resources directory
-exclude: "resources/*"
+# Exclude the resources directory and the ui files
+exclude: "resources/*|ui\/.*py"
 
 # List of super useful formatters.
 repos:

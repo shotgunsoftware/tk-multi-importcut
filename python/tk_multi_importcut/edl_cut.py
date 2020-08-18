@@ -14,6 +14,7 @@ from collections import defaultdict
 
 import sgtk
 from sgtk.platform.qt import QtCore
+from tank_vendor import six
 from .logger import get_logger
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
@@ -308,7 +309,7 @@ class EdlCut(QtCore.QObject):
             # implementing reload for other steps for the time being
             self._logger.error("Unsupported step %d for reload" % step)
 
-    @QtCore.Slot(unicode, unicode)
+    @QtCore.Slot(six.text_type, six.text_type)
     def process_edl_and_mov(self, edl_file_path, mov_file_path):
         """
         Process the given EDL and movie files
@@ -316,31 +317,31 @@ class EdlCut(QtCore.QObject):
         :param edl_file_path: Unicode string, full path to EDL file.
         :param mov_file_path: Unicode string, full path to MOV file.
         """
-        self.register_movie_path(mov_file_path.encode("utf-8"))
-        self.load_edl(edl_file_path.encode("utf-8"))
+        self.register_movie_path(six.ensure_str(mov_file_path))
+        self.load_edl(six.ensure_str(edl_file_path))
 
-    @QtCore.Slot(unicode)
+    @QtCore.Slot(six.text_type)
     def register_movie_path(self, movie_file_path):
         """
         Register the given movie path
 
         :param movie_file_path: Unicode string, full path to MOV file.
         """
-        self._mov_file_path = movie_file_path.encode("utf-8")
+        self._mov_file_path = six.ensure_str(movie_file_path)
         self._logger.info("Registered %s" % self._mov_file_path)
         self.valid_movie.emit(os.path.basename(self._mov_file_path))
         # If we have a valid EDL, we can move to next step
         if self.has_valid_edl:
             self.step_done.emit(_DROP_STEP)
 
-    @QtCore.Slot(unicode)
+    @QtCore.Slot(six.text_type)
     def load_edl(self, u_edl_file_path):
         """
         Load an EDL file.
 
         :param u_edl_file_path: A unicode string, full path to the EDL file.
         """
-        edl_file_path = u_edl_file_path.encode("utf-8")
+        edl_file_path = six.ensure_str(u_edl_file_path)
         self._logger.info("Loading %s..." % (edl_file_path))
         try:
             self._edl_file_path = edl_file_path
@@ -426,7 +427,7 @@ class EdlCut(QtCore.QObject):
                 "Version",
                 [
                     ["project", "is", self._project],
-                    ["code", "in", versions_names.keys()],
+                    ["code", "in", list(versions_names.keys())],
                 ],
                 ["code", "entity", "entity.Shot.code", "image"],
             )
@@ -473,14 +474,14 @@ class EdlCut(QtCore.QObject):
             status_dict[sg_status["code"]] = sg_status
         return status_dict
 
-    @QtCore.Slot(unicode)
+    @QtCore.Slot(six.text_type)
     def retrieve_entities(self, u_entity_type):
         """
         Retrieve all Entities with the given type for the current Project
 
         :param u_entity_type: A Shotgun Entity type name, as a unicode string, e.g. u"Sequence"
         """
-        entity_type = u_entity_type.encode("utf-8")
+        entity_type = six.ensure_str(u_entity_type)
         self._sg_entity_type = entity_type
         self._sg_shot_link_field_name = None
         # Retrieve display names and colors for statuses
@@ -507,7 +508,7 @@ class EdlCut(QtCore.QObject):
                 self._sg_shot_link_field_name = field_name
             else:
                 # General lookup
-                for field_name, field in shot_schema.iteritems():
+                for field_name, field in shot_schema.items():
                     if field["data_type"]["value"] == "entity":
                         if (
                             self._sg_entity_type
@@ -813,11 +814,11 @@ class EdlCut(QtCore.QObject):
             # Duplicate the list of shots, allowing us to know easily which ones are not part
             # of this edit by removing entries when we use them. We only need a shallow copy
             # here
-            leftover_shots = [x for x in sg_shots_dict.itervalues()]
+            leftover_shots = [x for x in sg_shots_dict.values()]
             # Record the list of Shots for completion purpose, we don't use the keys as
             # they are lower cased, but the original Shot names
             EntityLineWidget.set_known_list(
-                x["code"] for x in sg_shots_dict.itervalues() if x["code"]
+                x["code"] for x in sg_shots_dict.values() if x["code"]
             )
 
             # Building a little dictionary for use in naming reels /
@@ -911,7 +912,7 @@ class EdlCut(QtCore.QObject):
                 ):
                     shot_name = "No Link"
                     matching_shot = None
-                    for sg_shot in sg_shots_dict.itervalues():
+                    for sg_shot in sg_shots_dict.values():
                         if sg_shot["id"] == sg_cut_item["shot"]["id"]:
                             # We found a matching Shot
                             self._logger.debug(
@@ -1061,7 +1062,7 @@ class EdlCut(QtCore.QObject):
 
         return score
 
-    @QtCore.Slot(unicode, dict, dict, unicode, bool)
+    @QtCore.Slot(six.text_type, dict, dict, six.text_type, bool)
     def do_cut_import(self, u_title, sender, to, u_description, update_shots):
         """
         Import the Cut changes in Shotgun
@@ -1079,8 +1080,8 @@ class EdlCut(QtCore.QObject):
         :param update_shots: A boolean, whether or not existing Shots data will
                              be updated
         """
-        title = u_title.encode("utf-8")
-        description = u_description.encode("utf-8")
+        title = six.ensure_str(u_title)
+        description = six.ensure_str(u_description)
         self._logger.info("Importing Cut %s" % title)
         self.got_busy.emit(4)
         self.step_done.emit(_SUMMARY_STEP)
@@ -1295,7 +1296,7 @@ class EdlCut(QtCore.QObject):
         sg_batch_data = []
         post_create = {}
         # Loop over all Shots that we need to create
-        for shot_name, items in self._summary.iteritems():
+        for shot_name, items in self._summary.items():
             # Retrieve values for the shot, and the Shot itself
             (
                 sg_shot,
@@ -1544,7 +1545,7 @@ class EdlCut(QtCore.QObject):
         # This is not part of production specs, but very handy for developers
         self._logger.info("Updating versions ...")
         sg_batch_data = []
-        for shot_name, items in self._summary.iteritems():
+        for shot_name, items in self._summary.items():
             requested_names = []
             for cut_diff in items:
                 edit = cut_diff.edit
@@ -1569,7 +1570,7 @@ class EdlCut(QtCore.QObject):
         if sg_batch_data:
             res = self._sg.batch(sg_batch_data)
             self._logger.info("Created %d new versions." % len(res))
-            for shot_name, items in self._summary.iteritems():
+            for shot_name, items in self._summary.items():
                 # Versions with same names are shared for repeated Shots
                 sg_versions = {}
                 for cut_diff in items:
@@ -1596,7 +1597,7 @@ class EdlCut(QtCore.QObject):
         # Loop through all edits and create CutItems for them
         self._logger.info("Creating Cut Items...")
         sg_batch_data = []
-        for shot_name, items in self._summary.iteritems():
+        for shot_name, items in self._summary.items():
             for cut_diff in items:
                 edit = cut_diff.edit
                 if edit:

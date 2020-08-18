@@ -10,6 +10,7 @@
 
 import re
 import sgtk
+from tank_vendor import six
 
 from .ui.create_entity_dialog import Ui_create_entity_dialog
 
@@ -69,8 +70,8 @@ class CreateEntityDialog(QtGui.QDialog):
         """
         Send out request to create entity, then close the dialog.
         """
-        entity_name = self.ui.entity_name_line_edit.text().encode("utf-8")
-        entity_description = self.ui.description_line_edit.text().encode("utf-8")
+        entity_name = six.ensure_str(self.ui.entity_name_line_edit.text())
+        entity_description = six.ensure_str(self.ui.description_line_edit.text())
         status_index = self.ui.status_combo_box.currentIndex()
         field_data = {
             "project": self._project,
