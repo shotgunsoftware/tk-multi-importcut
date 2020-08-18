@@ -8,7 +8,6 @@
 
 from tank.platform.qt import QtCore, QtGui
 
-
 class Ui_submit_dialog(object):
     def setupUi(self, submit_dialog):
         submit_dialog.setObjectName("submit_dialog")
@@ -79,9 +78,7 @@ class Ui_submit_dialog(object):
         self.gridLayout.addWidget(self.label_8, 4, 2, 1, 1)
         self.label_6 = QtGui.QLabel(submit_dialog)
         self.label_6.setFrameShape(QtGui.QFrame.NoFrame)
-        self.label_6.setAlignment(
-            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-        )
+        self.label_6.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.label_6.setMargin(0)
         self.label_6.setObjectName("label_6")
         self.gridLayout.addWidget(self.label_6, 0, 0, 1, 4)
@@ -183,27 +180,19 @@ class Ui_submit_dialog(object):
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
         self.line.setObjectName("line")
         self.gridLayout_2.addWidget(self.line, 2, 0, 1, 3)
-        spacerItem = QtGui.QSpacerItem(
-            0, 0, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
-        )
+        spacerItem = QtGui.QSpacerItem(0, 0, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.gridLayout_2.addItem(spacerItem, 0, 2, 1, 1)
-        spacerItem1 = QtGui.QSpacerItem(
-            20, 34, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
-        )
+        spacerItem1 = QtGui.QSpacerItem(20, 34, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.gridLayout_2.addItem(spacerItem1, 1, 1, 1, 1)
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem2 = QtGui.QSpacerItem(
-            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
-        )
+        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem2)
         self.cancel_button = QtGui.QPushButton(submit_dialog)
         self.cancel_button.setObjectName("cancel_button")
         self.horizontalLayout.addWidget(self.cancel_button)
-        spacerItem3 = QtGui.QSpacerItem(
-            10, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum
-        )
+        spacerItem3 = QtGui.QSpacerItem(10, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem3)
         self.import_cut_button = QtGui.QPushButton(submit_dialog)
         self.import_cut_button.setObjectName("import_cut_button")
@@ -217,114 +206,25 @@ class Ui_submit_dialog(object):
         QtCore.QMetaObject.connectSlotsByName(submit_dialog)
 
     def retranslateUi(self, submit_dialog):
-        submit_dialog.setWindowTitle(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Import Cut", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Title", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_2.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "From", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.from_label.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "me", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_4.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "To", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_5.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Description", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_9.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Omitted", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_3.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "New", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_7.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Total Shots", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_8.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Rescan Needed", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_6.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Summary", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_11.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Reinstated", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_12.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Cut Changes", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.no_link_title_label.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "No Link", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.label_10.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Repeated", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.update_shot_fields_checkbox.setToolTip(
-            QtGui.QApplication.translate(
-                "submit_dialog",
-                "If off, Shot fields will not be updated, but, if needed, new Shots will be created",
-                None,
-                QtGui.QApplication.UnicodeUTF8,
-            )
-        )
-        self.update_shot_fields_checkbox.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog",
-                "Update Cut Fields on Shots",
-                None,
-                QtGui.QApplication.UnicodeUTF8,
-            )
-        )
-        self.cancel_button.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Cancel", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.cancel_button.setShortcut(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Esc", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.import_cut_button.setText(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Import Cut", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.import_cut_button.setShortcut(
-            QtGui.QApplication.translate(
-                "submit_dialog", "Return", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
+        submit_dialog.setWindowTitle(QtGui.QApplication.translate("submit_dialog", "Import Cut", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("submit_dialog", "Title", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("submit_dialog", "From", None, QtGui.QApplication.UnicodeUTF8))
+        self.from_label.setText(QtGui.QApplication.translate("submit_dialog", "me", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setText(QtGui.QApplication.translate("submit_dialog", "To", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_5.setText(QtGui.QApplication.translate("submit_dialog", "Description", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_9.setText(QtGui.QApplication.translate("submit_dialog", "Omitted", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("submit_dialog", "New", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_7.setText(QtGui.QApplication.translate("submit_dialog", "Total Shots", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_8.setText(QtGui.QApplication.translate("submit_dialog", "Rescan Needed", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setText(QtGui.QApplication.translate("submit_dialog", "Summary", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_11.setText(QtGui.QApplication.translate("submit_dialog", "Reinstated", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_12.setText(QtGui.QApplication.translate("submit_dialog", "Cut Changes", None, QtGui.QApplication.UnicodeUTF8))
+        self.no_link_title_label.setText(QtGui.QApplication.translate("submit_dialog", "No Link", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_10.setText(QtGui.QApplication.translate("submit_dialog", "Repeated", None, QtGui.QApplication.UnicodeUTF8))
+        self.update_shot_fields_checkbox.setToolTip(QtGui.QApplication.translate("submit_dialog", "If off, Shot fields will not be updated, but, if needed, new Shots will be created", None, QtGui.QApplication.UnicodeUTF8))
+        self.update_shot_fields_checkbox.setText(QtGui.QApplication.translate("submit_dialog", "Update Cut Fields on Shots", None, QtGui.QApplication.UnicodeUTF8))
+        self.cancel_button.setText(QtGui.QApplication.translate("submit_dialog", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
+        self.cancel_button.setShortcut(QtGui.QApplication.translate("submit_dialog", "Esc", None, QtGui.QApplication.UnicodeUTF8))
+        self.import_cut_button.setText(QtGui.QApplication.translate("submit_dialog", "Import Cut", None, QtGui.QApplication.UnicodeUTF8))
+        self.import_cut_button.setShortcut(QtGui.QApplication.translate("submit_dialog", "Return", None, QtGui.QApplication.UnicodeUTF8))
+

@@ -8,7 +8,6 @@
 
 from tank.platform.qt import QtCore, QtGui
 
-
 class Ui_create_entity_dialog(object):
     def setupUi(self, create_entity_dialog):
         create_entity_dialog.setObjectName("create_entity_dialog")
@@ -19,14 +18,10 @@ class Ui_create_entity_dialog(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.create_new_entity_label = QtGui.QLabel(create_entity_dialog)
         self.create_new_entity_label.setEnabled(True)
-        sizePolicy = QtGui.QSizePolicy(
-            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed
-        )
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.create_new_entity_label.sizePolicy().hasHeightForWidth()
-        )
+        sizePolicy.setHeightForWidth(self.create_new_entity_label.sizePolicy().hasHeightForWidth())
         self.create_new_entity_label.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("Helvetica Neue")
@@ -51,27 +46,19 @@ class Ui_create_entity_dialog(object):
         self.formLayout.setObjectName("formLayout")
         self.entity_name_label = QtGui.QLabel(create_entity_dialog)
         self.entity_name_label.setObjectName("entity_name_label")
-        self.formLayout.setWidget(
-            0, QtGui.QFormLayout.LabelRole, self.entity_name_label
-        )
+        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.entity_name_label)
         self.entity_name_line_edit = QtGui.QLineEdit(create_entity_dialog)
         self.entity_name_line_edit.setMinimumSize(QtCore.QSize(320, 25))
         self.entity_name_line_edit.setFrame(True)
         self.entity_name_line_edit.setObjectName("entity_name_line_edit")
-        self.formLayout.setWidget(
-            0, QtGui.QFormLayout.FieldRole, self.entity_name_line_edit
-        )
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.entity_name_line_edit)
         self.description_label = QtGui.QLabel(create_entity_dialog)
         self.description_label.setObjectName("description_label")
-        self.formLayout.setWidget(
-            2, QtGui.QFormLayout.LabelRole, self.description_label
-        )
+        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.description_label)
         self.description_line_edit = QtGui.QLineEdit(create_entity_dialog)
         self.description_line_edit.setMinimumSize(QtCore.QSize(320, 25))
         self.description_line_edit.setObjectName("description_line_edit")
-        self.formLayout.setWidget(
-            2, QtGui.QFormLayout.FieldRole, self.description_line_edit
-        )
+        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.description_line_edit)
         self.status_combo_box = QtGui.QComboBox(create_entity_dialog)
         self.status_combo_box.setObjectName("status_combo_box")
         self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.status_combo_box)
@@ -83,9 +70,7 @@ class Ui_create_entity_dialog(object):
         self.formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self.project_label)
         self.project_name_label = QtGui.QLabel(create_entity_dialog)
         self.project_name_label.setObjectName("project_name_label")
-        self.formLayout.setWidget(
-            3, QtGui.QFormLayout.FieldRole, self.project_name_label
-        )
+        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.project_name_label)
         self.verticalLayout.addLayout(self.formLayout)
         self.create_entity_line_2 = QtGui.QFrame(create_entity_dialog)
         self.create_entity_line_2.setLineWidth(0)
@@ -98,9 +83,7 @@ class Ui_create_entity_dialog(object):
         self.horizontalLayout.setSpacing(10)
         self.horizontalLayout.setContentsMargins(-1, 9, 7, 8)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem = QtGui.QSpacerItem(
-            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
-        )
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.cancel_button = QtGui.QPushButton(create_entity_dialog)
         self.cancel_button.setAutoDefault(False)
@@ -116,63 +99,13 @@ class Ui_create_entity_dialog(object):
         QtCore.QMetaObject.connectSlotsByName(create_entity_dialog)
 
     def retranslateUi(self, create_entity_dialog):
-        create_entity_dialog.setWindowTitle(
-            QtGui.QApplication.translate(
-                "create_entity_dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.create_new_entity_label.setText(
-            QtGui.QApplication.translate(
-                "create_entity_dialog",
-                "Create a new Entity",
-                None,
-                QtGui.QApplication.UnicodeUTF8,
-            )
-        )
-        self.entity_name_label.setText(
-            QtGui.QApplication.translate(
-                "create_entity_dialog",
-                "Sequence Name:",
-                None,
-                QtGui.QApplication.UnicodeUTF8,
-            )
-        )
-        self.description_label.setText(
-            QtGui.QApplication.translate(
-                "create_entity_dialog",
-                "Description:",
-                None,
-                QtGui.QApplication.UnicodeUTF8,
-            )
-        )
-        self.status_label.setText(
-            QtGui.QApplication.translate(
-                "create_entity_dialog", "Status:", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.project_label.setText(
-            QtGui.QApplication.translate(
-                "create_entity_dialog", "Project:", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.project_name_label.setText(
-            QtGui.QApplication.translate(
-                "create_entity_dialog",
-                "Some project",
-                None,
-                QtGui.QApplication.UnicodeUTF8,
-            )
-        )
-        self.cancel_button.setText(
-            QtGui.QApplication.translate(
-                "create_entity_dialog", "Cancel", None, QtGui.QApplication.UnicodeUTF8
-            )
-        )
-        self.create_entity_button.setText(
-            QtGui.QApplication.translate(
-                "create_entity_dialog",
-                "Create Entity",
-                None,
-                QtGui.QApplication.UnicodeUTF8,
-            )
-        )
+        create_entity_dialog.setWindowTitle(QtGui.QApplication.translate("create_entity_dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.create_new_entity_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Create a new Entity", None, QtGui.QApplication.UnicodeUTF8))
+        self.entity_name_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Sequence Name:", None, QtGui.QApplication.UnicodeUTF8))
+        self.description_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Description:", None, QtGui.QApplication.UnicodeUTF8))
+        self.status_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Status:", None, QtGui.QApplication.UnicodeUTF8))
+        self.project_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Project:", None, QtGui.QApplication.UnicodeUTF8))
+        self.project_name_label.setText(QtGui.QApplication.translate("create_entity_dialog", "Some project", None, QtGui.QApplication.UnicodeUTF8))
+        self.cancel_button.setText(QtGui.QApplication.translate("create_entity_dialog", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
+        self.create_entity_button.setText(QtGui.QApplication.translate("create_entity_dialog", "Create Entity", None, QtGui.QApplication.UnicodeUTF8))
+
