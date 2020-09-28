@@ -373,12 +373,12 @@ QScrollArea {
 }
 /*
 Not sure why, but we need to define a background color for these
-widgets so the QScrollArea backgroun-color is used, making it yellow
-so it's obvious it is a "dummy" color. Not setting it or setting it
-to anything else than a real color doesn't work ...
+widgets so the QScrollArea background-color is used.
+Not setting it or setting it to anything else than a real
+color doesn't work ...
 */
 #project_area, #entity_area, #cuts_area, #cut_summary_widgets {
-    background-color: yellow;
+    background-color: rgb(43, 43, 43);
 }
 
 /* 
