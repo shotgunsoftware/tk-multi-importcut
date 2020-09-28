@@ -14,6 +14,7 @@ from collections import defaultdict
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore
+from tank_vendor import six
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .logger import get_logger
 from .constants import _SHOT_FIELDS
@@ -500,7 +501,7 @@ class CutSummary(QtCore.QObject):
         self.new_cut_diff.emit(cut_diff)
         return cut_diff
 
-    @QtCore.Slot(CutDiff, unicode, unicode)
+    @QtCore.Slot(CutDiff, six.text_type, six.text_type)
     def cut_diff_name_changed(self, cut_diff, u_old_name, u_new_name):
         """
         Handle Cut diff (Shot) name changes
@@ -529,8 +530,8 @@ class CutSummary(QtCore.QObject):
                 "%s does not have a a valid edit and can't be renamed" % cut_diff.name
             )
 
-        new_name = u_new_name.encode("utf-8")
-        old_name = u_old_name.encode("utf-8")
+        new_name = six.ensure_str(u_new_name)
+        old_name = six.ensure_str(u_old_name)
         # We might have empty names here. To avoid considering all entries
         # with no name as repeated Shots we forge a key based on the cut order.
         new_shot_key = (
@@ -765,7 +766,7 @@ class CutSummary(QtCore.QObject):
                               returned or just the earliest(s)
         :yields: CutDiff instances
         """
-        for name, items in self._cut_diffs.iteritems():
+        for name, items in self._cut_diffs.items():
             for item in items:
                 if item.interpreted_diff_type == diff_type and (
                     not just_earliest or item.is_earliest()
@@ -797,7 +798,7 @@ class CutSummary(QtCore.QObject):
         # Use a defaultdict so we don't have to worry about key existence
         self._counts = defaultdict(int)
         self._total_count = 0
-        for shot, diff_list in self._cut_diffs.iteritems():
+        for shot, diff_list in self._cut_diffs.items():
             _, _, _, _, _, _, shot_diff_type = diff_list.get_shot_values()
             if shot_diff_type in _PER_SHOT_TYPE_COUNTS:
                 # We count these per shots
@@ -858,14 +859,14 @@ class CutSummary(QtCore.QObject):
         """
         return self._cut_diffs.get(key.lower())
 
-    def iteritems(self):
+    def items(self):
         """
         Iterate over Shot names for this summary, yielding (name, CutDiffs list)
         tuple
 
         :yields: (name, CutDiffs list) tuples
         """
-        for name, items in self._cut_diffs.iteritems():
+        for name, items in self._cut_diffs.items():
             yield (name, items)
 
     def get_report(self, title, sg_links):

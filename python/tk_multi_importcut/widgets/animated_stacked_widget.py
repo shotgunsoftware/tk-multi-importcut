@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 from tank.platform.qt import QtCore, QtGui
+from tank_vendor import six
 
 
 class AnimatedStackedWidget(QtGui.QStackedWidget):
@@ -113,7 +114,7 @@ class AnimatedStackedWidget(QtGui.QStackedWidget):
 
         # Keep them around for garbage collection purposes
         # Might not be needed, but who knows ...
-        self.__anims[0] = QtCore.QPropertyAnimation(this_page, "pos")
+        self.__anims[0] = QtCore.QPropertyAnimation(this_page, six.ensure_binary("pos"))
         self.__anims[0].setDuration(self._animation_duration)
         self.__anims[0].setStartValue(QtCore.QPoint(this_page.x(), this_page.y()))
         self.__anims[0].setEndValue(
@@ -121,7 +122,7 @@ class AnimatedStackedWidget(QtGui.QStackedWidget):
         )
         self.__anims[0].setEasingCurve(QtCore.QEasingCurve.OutCubic)
 
-        self.__anims[1] = QtCore.QPropertyAnimation(next_page, "pos")
+        self.__anims[1] = QtCore.QPropertyAnimation(next_page, six.ensure_binary("pos"))
         self.__anims[1].setDuration(self._animation_duration)
         self.__anims[1].setStartValue(
             QtCore.QPoint(next_page.x() + rest_pos, next_page.y())

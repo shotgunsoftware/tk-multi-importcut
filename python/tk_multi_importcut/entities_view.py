@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 from sgtk.platform.qt import QtCore, QtGui
+from tank_vendor import six
 from .logger import get_logger
 from .entity_widget import EntityCard
 
@@ -133,7 +134,7 @@ class EntitiesView(QtCore.QObject):
         self.selection_changed.emit(card.sg_entity)
         self._logger.debug("Selected %s" % self._selected_entity_card)
 
-    @QtCore.Slot(unicode)
+    @QtCore.Slot(six.text_type)
     def search(self, u_text):
         """
         Display only Entities whose name matches the given text,
@@ -141,7 +142,7 @@ class EntitiesView(QtCore.QObject):
 
         :param u_text: A unicode string to match
         """
-        text = u_text.encode("utf-8")
+        text = six.ensure_str(u_text)
         self._logger.debug("Searching for %s" % text)
         count = self.card_count
         if not count:
