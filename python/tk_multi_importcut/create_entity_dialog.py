@@ -12,6 +12,7 @@ import re
 import sgtk
 
 from .ui.create_entity_dialog import Ui_create_entity_dialog
+
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
@@ -24,6 +25,7 @@ class CreateEntityDialog(QtGui.QDialog):
     entities page. A user can enter an entity name with a description. On submit
     the entity is created and the stacked widget moves to the next page.
     """
+
     create_entity = QtCore.Signal(str, dict)
 
     def __init__(self, entity_type, sg_project, parent=None):
@@ -55,7 +57,8 @@ class CreateEntityDialog(QtGui.QDialog):
         self.ui.create_entity_button.clicked.connect(self.emit_create_entity)
 
         self.entity_statuses = self._app.shotgun.schema_field_read(entity_type)[
-                "sg_status_list"]["properties"]["valid_values"]["value"]
+            "sg_status_list"
+        ]["properties"]["valid_values"]["value"]
         self.ui.status_combo_box.addItem("")
         for status in self.entity_statuses:
             self.ui.status_combo_box.addItem(status)
@@ -72,7 +75,7 @@ class CreateEntityDialog(QtGui.QDialog):
         field_data = {
             "project": self._project,
             "code": entity_name,
-            "description": entity_description
+            "description": entity_description,
         }
         # if the status_index is 0, create the entity without specifying the
         # sg_status_list, and so use whatever the default status in Shogun is,
@@ -80,10 +83,7 @@ class CreateEntityDialog(QtGui.QDialog):
         if status_index:
             # -1 here to account for the empty item added to the status_combo_box.
             field_data["sg_status_list"] = self.entity_statuses[status_index - 1]
-        self.create_entity.emit(
-            self._entity_type,
-            field_data
-        )
+        self.create_entity.emit(self._entity_type, field_data)
         self.close_dialog()
 
     @QtCore.Slot()

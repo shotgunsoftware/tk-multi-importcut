@@ -18,6 +18,7 @@ class CutDiffsView(QtCore.QObject):
     """
     Handle the CutDiffCards view
     """
+
     # Emitted when totals per diff type should be recomputed
     totals_changed = QtCore.Signal()
 
@@ -64,11 +65,12 @@ class CutDiffsView(QtCore.QObject):
         count = self._list_layout.count()
         insert_index = self._get_insert_index(widget)
         self._list_layout.insertWidget(insert_index, widget)
-        self._list_layout.setStretch(self._list_layout.count()-1, 1)
+        self._list_layout.setStretch(self._list_layout.count() - 1, 1)
         # Redisplay widgets
         self._display_for_summary_mode()
-        self._info_message = ("%d Cut Items" % count) if count > 1 else (
-            "%d Cut Item" % count)
+        self._info_message = (
+            ("%d Cut Items" % count) if count > 1 else ("%d Cut Item" % count)
+        )
         self.new_info_message.emit(self._info_message)
 
     def _get_insert_index(self, widget):
@@ -83,22 +85,22 @@ class CutDiffsView(QtCore.QObject):
         # Shortcut: instead of looping over all entries, check if we can simply
         # insert it at the end
         if count > 1:  # A widget + the stretcher
-            witem = self._list_layout.itemAt(count-2)
+            witem = self._list_layout.itemAt(count - 2)
             if cut_order > witem.widget().cut_order:
-                return (count-1)
+                return count - 1
         # Retrieve where we should insert it
         # Last widget is a stretcher, so we stop at self._list_layout.count()-2
-        for i in range(0, count-1):
+        for i in range(0, count - 1):
             witem = self._list_layout.itemAt(i)
             if witem.widget().cut_order == cut_order:
                 if widget.cut_diff.diff_type == _DIFF_TYPES.OMITTED:
                     return i
                 else:
-                    return i+1
+                    return i + 1
             elif witem.widget().cut_order > cut_order:  # Insert before next widget
                 return i
         # Insert at the end
-        return count-1
+        return count - 1
 
     @QtCore.Slot(CutDiff)
     def delete_cut_diff(self, cut_diff):
@@ -110,7 +112,7 @@ class CutDiffsView(QtCore.QObject):
         # Retrieve the widget we can delete
         count = self._list_layout.count()
         # Last widget is a stretcher, so we stop at self._list_layout.count()-2
-        for i in range(0, count-1):
+        for i in range(0, count - 1):
             witem = self._list_layout.itemAt(i)
             widget = witem.widget()
             if widget.cut_diff == cut_diff:  # Found it
@@ -201,11 +203,14 @@ class CutDiffsView(QtCore.QObject):
             # suitable to hold all cards
             wsize = self._list_layout.itemAt(0).widget().size()
             self._list_layout.parentWidget().resize(
-                self._list_layout.parentWidget().size().width(),
-                wsize.height() * count)
+                self._list_layout.parentWidget().size().width(), wsize.height() * count
+            )
 
-        self._info_message = ("%d Cut Items" % match_count) if match_count > 1 else (
-            "%d Cut Item" % count)
+        self._info_message = (
+            ("%d Cut Items" % match_count)
+            if match_count > 1
+            else ("%d Cut Item" % count)
+        )
         self.new_info_message.emit(self._info_message)
 
     def clear(self):
@@ -213,7 +218,7 @@ class CutDiffsView(QtCore.QObject):
         Reset the cut summary view page
         """
         count = self._list_layout.count() - 1  # We have stretcher
-        for i in range(count-1, -1, -1):
+        for i in range(count - 1, -1, -1):
             witem = self._list_layout.takeAt(i)
             widget = witem.widget()
             widget.close()

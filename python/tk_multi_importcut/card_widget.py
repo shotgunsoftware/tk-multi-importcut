@@ -10,6 +10,7 @@
 
 import tempfile
 import os
+
 # by importing QT from sgtk we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
@@ -23,6 +24,7 @@ class CardWidget(QtGui.QFrame):
 
     Card widgets display a thumbnail and are used to select SG Entities.
     """
+
     # Emitted when this card is selected and something should be done
     # with the attached Entity
     chosen = QtCore.Signal(dict)
@@ -51,9 +53,10 @@ class CardWidget(QtGui.QFrame):
         self.ui.setupUi(self)
         self.select_button.setVisible(False)
         self.select_button.clicked.connect(self.choose_me)
-        self.set_thumbnail(":/tk_multi_importcut/sg_%s_thumbnail.png" % (
-            self._sg_entity["type"].lower()
-        ))
+        self.set_thumbnail(
+            ":/tk_multi_importcut/sg_%s_thumbnail.png"
+            % (self._sg_entity["type"].lower())
+        )
 
     @property
     def entity_name(self):
@@ -64,13 +67,7 @@ class CardWidget(QtGui.QFrame):
         """
         # Deal with name field not being consistent in SG
         return self._sg_entity.get(
-            "code",
-            self._sg_entity.get(
-                "name",
-                self._sg_entity.get(
-                    "title", ""
-                )
-            )
+            "code", self._sg_entity.get("name", self._sg_entity.get("title", ""))
         )
 
     @property
@@ -191,14 +188,12 @@ class CardWidget(QtGui.QFrame):
             return
         self._thumbnail_requested = True
         if self.thumbnail_url:
-            self._logger.debug("Requesting %s for %s" %
-                               (self.thumbnail_url, self.entity_name))
+            self._logger.debug(
+                "Requesting %s for %s" % (self.thumbnail_url, self.entity_name)
+            )
             f, path = tempfile.mkstemp()
             os.close(f)
-            downloader = DownloadRunner(
-                sg_attachment=self.thumbnail_url,
-                path=path,
-            )
+            downloader = DownloadRunner(sg_attachment=self.thumbnail_url, path=path,)
             downloader.file_downloaded.connect(self.new_thumbnail)
             self.discard_download.connect(downloader.abort)
             downloader.queue()
@@ -225,10 +220,15 @@ class CardWidget(QtGui.QFrame):
         ratio = size.width() / float(size.height())
         pixmap = QtGui.QPixmap(thumb_path)
         if pixmap.isNull():
-            self._logger.debug("Null pixmap %s %d %d for %s" % (
-                thumb_path,
-                pixmap.size().width(), pixmap.size().height(),
-                self.entity_name))
+            self._logger.debug(
+                "Null pixmap %s %d %d for %s"
+                % (
+                    thumb_path,
+                    pixmap.size().width(),
+                    pixmap.size().height(),
+                    self.entity_name,
+                )
+            )
             return
         psize = pixmap.size()
         pratio = psize.width() / float(psize.height())
@@ -238,5 +238,7 @@ class CardWidget(QtGui.QFrame):
             )
         else:
             self.ui.icon_label.setPixmap(
-                pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
+                pixmap.scaledToHeight(
+                    size.height(), mode=QtCore.Qt.SmoothTransformation
+                )
             )

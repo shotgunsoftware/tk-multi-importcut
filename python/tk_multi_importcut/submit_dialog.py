@@ -19,10 +19,12 @@ from .ui.submit_dialog import Ui_submit_dialog
 from .cut_diff import _DIFF_TYPES
 from logger import get_logger
 
+
 class SubmitDialog(QtGui.QDialog):
     """
     Submit dialog, offering a summary and a couple of options to the user
     """
+
     submit = QtCore.Signal(str, dict, dict, str, bool)
 
     def __init__(self, parent=None, title=None, summary=None):
@@ -47,15 +49,23 @@ class SubmitDialog(QtGui.QDialog):
         if not summary:
             # Just in case ...
             raise ValueError("Can't import a cut without a summary")
-        self.ui.from_label.setText(self._app.context.user["name"] if self._app.context.user else "")
+        self.ui.from_label.setText(
+            self._app.context.user["name"] if self._app.context.user else ""
+        )
         email_groups = ", ".join(self._user_settings.retrieve("email_groups"))
         self.ui.to_text.setText(email_groups)
         self.ui.total_shots_label.setText("%s" % summary.total_count)
-        self.ui.cut_changes_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE))
+        self.ui.cut_changes_label.setText(
+            "%s" % summary.count_for_type(_DIFF_TYPES.CUT_CHANGE)
+        )
         self.ui.new_shots_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.NEW))
         self.ui.rescans_label.setText("%s" % summary.rescans_count)
-        self.ui.omitted_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.OMITTED))
-        self.ui.reinstated_label.setText("%s" % summary.count_for_type(_DIFF_TYPES.REINSTATED))
+        self.ui.omitted_label.setText(
+            "%s" % summary.count_for_type(_DIFF_TYPES.OMITTED)
+        )
+        self.ui.reinstated_label.setText(
+            "%s" % summary.count_for_type(_DIFF_TYPES.REINSTATED)
+        )
         self.ui.repeated_label.setText("%s" % summary.repeated_count)
         no_link_count = summary.count_for_type(_DIFF_TYPES.NO_LINK)
         if no_link_count:
@@ -85,21 +95,23 @@ class SubmitDialog(QtGui.QDialog):
         for email_group in email_groups:
             found = False
             for existing_email_group in existing_email_groups:
-                self._logger.debug("Comparing \"%s\" (%s) to \"%s\"" % (
-                    email_group, type(email_group), existing_email_group["code"]
-                ))
+                self._logger.debug(
+                    'Comparing "%s" (%s) to "%s"'
+                    % (email_group, type(email_group), existing_email_group["code"])
+                )
                 if email_group == existing_email_group["code"]:
                     found = True
                     email_group_entities.append(existing_email_group)
             if not found:
                 msg_box = QtGui.QMessageBox(
-                    parent=self,
-                    icon=QtGui.QMessageBox.Critical
+                    parent=self, icon=QtGui.QMessageBox.Critical
                 )
-                msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
+                msg_box.setIconPixmap(
+                    QtGui.QPixmap(":/tk_multi_importcut/error_64px.png")
+                )
                 msg_box.setText("Unknown Shotgun Group")
                 msg_box.setInformativeText(
-                    "Couldn't retrieve a group named \"%s\" in Shotgun." % email_group
+                    'Couldn\'t retrieve a group named "%s" in Shotgun.' % email_group
                 )
                 msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
                 msg_box.show()
@@ -110,7 +122,9 @@ class SubmitDialog(QtGui.QDialog):
         self._user_settings.store("email_groups", email_groups)
         description = self.ui.description_text.toPlainText().encode("utf-8")
         user = self._app.context.user or {}
-        self.submit.emit(title, user, email_group_entities, description, update_shot_fields)
+        self.submit.emit(
+            title, user, email_group_entities, description, update_shot_fields
+        )
         self.close_dialog()
 
     @QtCore.Slot()

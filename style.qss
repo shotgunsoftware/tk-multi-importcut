@@ -1,8 +1,8 @@
 /*
  Copyright (c) 2016 Shotgun Software Inc.
- 
+
  CONFIDENTIAL AND PROPRIETARY
- 
+
  This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
  Source Code License included in this distribution package. See LICENSE.
  By accessing, using, copying or modifying this work you indicate your
@@ -49,7 +49,7 @@ CutDiffCard #version_name_label {
     margin: 0px;
 }
 /*
-Make the line edit look like a QLabel 
+Make the line edit look like a QLabel
 when not in edit mode
 */
 EntityLineWidget {
@@ -360,7 +360,7 @@ QLabel#select_project_label {
 QLabel#cut_summary_title_label {
     font-size: 12px;
 }
-/* 
+/*
 No dashed outline when clicking on the sort button in cuts view
 */
 #cuts_sort_button {
@@ -381,7 +381,7 @@ color doesn't work ...
     background-color: rgb(43, 43, 43);
 }
 
-/* 
+/*
 Couldn't find a way to have a nice bottom
 border for this widget : added a line just under it
 and removing any border here

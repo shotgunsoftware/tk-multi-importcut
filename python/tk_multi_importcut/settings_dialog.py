@@ -14,9 +14,11 @@ import sgtk
 from .ui.settings_dialog import Ui_settings_dialog
 from .cut_diff import CutDiff
 from .user_settings import UserSettings
+
 # Different frame mapping modes
 from .constants import _ABSOLUTE_MODE, _AUTOMATIC_MODE, _RELATIVE_MODE
 from .constants import _DROP_STEP
+
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
@@ -36,20 +38,20 @@ field is empty, the Default Head In value set below for New Shots will be used."
 _RELATIVE_INSTRUCTIONS = "In Relative mode, the app will map the timecode \
 values from the EDL to frames based on a specific timecode/frame relationship."
 
-_BAD_GROUP_MSG = "\"%s\" does not match a valid Group in Shotgun. Please enter \
-another Group or create \"%s\" in Shotgun to proceed."
+_BAD_GROUP_MSG = '"%s" does not match a valid Group in Shotgun. Please enter \
+another Group or create "%s" in Shotgun to proceed.'
 
 _BAD_STATUS_MSG = "The following statuses for reinstating Shots do not match \
 valid statuses in Shotgun:\n\n%s\n\nPlease enter another status to proceed."
 
-_BAD_TIMECODE_MSG = "\"%s\" is not a valid timecode value. The Timecode Mapping \
-must match the pattern hh:mm:ss:ff and contain valid timecode."
+_BAD_TIMECODE_MSG = '"%s" is not a valid timecode value. The Timecode Mapping \
+must match the pattern hh:mm:ss:ff and contain valid timecode.'
 
 _BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
 Please check your Shotgun site."
 
-_CHANGED_SETTINGS_MSG = ("Applying these Settings will require the EDL to be \
-reprocessed. Some Import Cut information may need to be re-entered.")
+_CHANGED_SETTINGS_MSG = "Applying these Settings will require the EDL to be \
+reprocessed. Some Import Cut information may need to be re-entered."
 
 _CORRUPT_SETTINGS_MSG = "Corrupt user settings have been reset to default, \
 restart Import Cut: %s"
@@ -59,6 +61,7 @@ class SettingsError(ValueError):
     """
     Helper class for raising Settings exceptions.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Instantiate a new SettingsError.
@@ -91,6 +94,7 @@ class SettingsDialog(QtGui.QDialog):
     widget. Gives users access to app settings via a gui interface, stores those
     settings locally per user.
     """
+
     reset_needed = QtCore.Signal(list)
 
     def __init__(self, parent, wizard_step):
@@ -120,15 +124,19 @@ class SettingsDialog(QtGui.QDialog):
         try:
             # Determine whether the Shot status fields are enabled
             # and update the setting if the user turns them on/off w/the checkbox.
-            self._set_enabled(
-                self._user_settings.get("update_shot_statuses"))
+            self._set_enabled(self._user_settings.get("update_shot_statuses"))
             self.ui.update_shot_statuses_checkbox.setChecked(
-                self._user_settings.get("update_shot_statuses"))
-            self.ui.update_shot_statuses_checkbox.stateChanged.connect(self._set_enabled)
+                self._user_settings.get("update_shot_statuses")
+            )
+            self.ui.update_shot_statuses_checkbox.stateChanged.connect(
+                self._set_enabled
+            )
             self.ui.use_smart_fields_checkbox.setChecked(
-                self._user_settings.get("use_smart_fields"))
+                self._user_settings.get("use_smart_fields")
+            )
             self.ui.timecode_to_frame_mapping_combo_box.currentIndexChanged.connect(
-                self._tc_mapping_mode_changed)
+                self._tc_mapping_mode_changed
+            )
 
             # Turning the email_groups list into user editable csv text
             email_groups = ", ".join(self._user_settings.get("email_groups"))
@@ -143,8 +151,9 @@ class SettingsDialog(QtGui.QDialog):
             # SG that this app references, it obviously can't be used anymore, so
             # we arbitrarily choose whatever status is at 0.
             self._shot_schema = self._app.shotgun.schema_field_read("Shot")
-            shot_statuses = self._shot_schema[
-                "sg_status_list"]["properties"]["valid_values"]["value"]
+            shot_statuses = self._shot_schema["sg_status_list"]["properties"][
+                "valid_values"
+            ]["value"]
             self.ui.omit_status_combo_box.addItem("")
             self.ui.reinstate_status_combo_box.addItem("")
             # starting with index of 1 because we already have an empty string
@@ -170,7 +179,9 @@ class SettingsDialog(QtGui.QDialog):
                 self.ui.reinstate_status_combo_box.setCurrentIndex(reinstate_index)
             elif self._user_settings.get("reinstate_status") == "Previous Status":
                 # +1 to account for empty item at the head of the combo box list.
-                self.ui.reinstate_status_combo_box.setCurrentIndex(len(shot_statuses) + 1)
+                self.ui.reinstate_status_combo_box.setCurrentIndex(
+                    len(shot_statuses) + 1
+                )
             else:
                 self.ui.reinstate_status_combo_box.setCurrentIndex(0)
 
@@ -180,46 +191,52 @@ class SettingsDialog(QtGui.QDialog):
 
             # Timecode/Frames tab
             self.ui.default_frame_rate_line_edit.setText(
-                self._user_settings.get("default_frame_rate"))
+                self._user_settings.get("default_frame_rate")
+            )
             # Add a validator to ensure only positive float values are entered
-            float_validator = QtGui.QDoubleValidator(bottom=0.0, decimals=6, parent=self)
+            float_validator = QtGui.QDoubleValidator(
+                bottom=0.0, decimals=6, parent=self
+            )
             float_validator.setNotation(QtGui.QDoubleValidator.StandardNotation)
             self.ui.default_frame_rate_line_edit.setValidator(float_validator)
 
             self.ui.timecode_mapping_line_edit.setText(
-                self._user_settings.get("timecode_mapping"))
+                self._user_settings.get("timecode_mapping")
+            )
             # Set a timecode input mask to drive user typing
             self.ui.timecode_mapping_line_edit.setInputMask("99:99:99:99")
 
             self.ui.frame_mapping_line_edit.setText(
-                self._user_settings.get("frame_mapping"))
-            # Ensure we only get int values
-            self.ui.frame_mapping_line_edit.setValidator(
-                QtGui.QIntValidator(self)
+                self._user_settings.get("frame_mapping")
             )
+            # Ensure we only get int values
+            self.ui.frame_mapping_line_edit.setValidator(QtGui.QIntValidator(self))
             # Do this only after we set timecode and frame mapping values
             # otherwise an error will be raised
             self.ui.timecode_to_frame_mapping_combo_box.addItems(
-                ["Absolute", "Automatic", "Relative"])
+                ["Absolute", "Automatic", "Relative"]
+            )
             self.ui.timecode_to_frame_mapping_combo_box.setCurrentIndex(
-                self._user_settings.get("timecode_to_frame_mapping"))
-
-            self.ui.default_head_in_line_edit.setText(
-                self._user_settings.get("default_head_in"))
-            # Ensure we only get int values
-            self.ui.default_head_in_line_edit.setValidator(
-                QtGui.QIntValidator(self)
+                self._user_settings.get("timecode_to_frame_mapping")
             )
 
+            self.ui.default_head_in_line_edit.setText(
+                self._user_settings.get("default_head_in")
+            )
+            # Ensure we only get int values
+            self.ui.default_head_in_line_edit.setValidator(QtGui.QIntValidator(self))
+
             self.ui.default_head_duration_line_edit.setText(
-                self._user_settings.get("default_head_duration"))
+                self._user_settings.get("default_head_duration")
+            )
             # Ensure we only get int values >= 0
             self.ui.default_head_duration_line_edit.setValidator(
                 QtGui.QIntValidator(bottom=0, parent=self)
             )
 
             self.ui.default_tail_duration_line_edit.setText(
-                self._user_settings.get("default_tail_duration"))
+                self._user_settings.get("default_tail_duration")
+            )
             # Ensure we only get int values >= 0
             self.ui.default_tail_duration_line_edit.setValidator(
                 QtGui.QIntValidator(bottom=0, parent=self)
@@ -229,7 +246,7 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.cancel_button.clicked.connect(self.discard_settings)
             self.ui.apply_button.clicked.connect(self.save_settings)
 
-        except Exception, e:
+        except Exception as e:
             # Reset user settings if they are corrupt. This can happen if users using an older
             # version of import cut have settings saved that don't match the variable type of
             # the current settings. For example, if they have the old email_groups setting
@@ -247,10 +264,10 @@ class SettingsDialog(QtGui.QDialog):
         try:
             if self._validate_and_save_settings():
                 self.close_dialog()
-        except SettingsError, se:
+        except SettingsError as se:
             # Pop up specialised error dialog.
             self._pop_error("User Input", str(se), se.details)
-        except Exception, e:
+        except Exception as e:
             # General case.
             self._logger.exception(e)
 
@@ -291,7 +308,9 @@ class SettingsDialog(QtGui.QDialog):
         :param state: int representing index of choices (Absolute, Automatic, Relative)
         """
         if state == _ABSOLUTE_MODE:
-            self.ui.timecode_to_frame_mapping_instructions_label.setText(_ABSOLUTE_INSTRUCTIONS)
+            self.ui.timecode_to_frame_mapping_instructions_label.setText(
+                _ABSOLUTE_INSTRUCTIONS
+            )
             self.ui.timecode_mapping_label.hide()
             self.ui.timecode_mapping_line_edit.hide()
             self.ui.frame_mapping_label.hide()
@@ -299,7 +318,9 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.default_head_in_line_edit.setEnabled(False)
             self.ui.default_head_in_label.setEnabled(False)
         if state == _AUTOMATIC_MODE:
-            self.ui.timecode_to_frame_mapping_instructions_label.setText(_AUTOMATIC_INSTRUCTIONS)
+            self.ui.timecode_to_frame_mapping_instructions_label.setText(
+                _AUTOMATIC_INSTRUCTIONS
+            )
             self.ui.timecode_mapping_label.hide()
             self.ui.timecode_mapping_line_edit.hide()
             self.ui.frame_mapping_label.hide()
@@ -307,7 +328,9 @@ class SettingsDialog(QtGui.QDialog):
             self.ui.default_head_in_line_edit.setEnabled(True)
             self.ui.default_head_in_label.setEnabled(True)
         if state == _RELATIVE_MODE:
-            self.ui.timecode_to_frame_mapping_instructions_label.setText(_RELATIVE_INSTRUCTIONS)
+            self.ui.timecode_to_frame_mapping_instructions_label.setText(
+                _RELATIVE_INSTRUCTIONS
+            )
             self.ui.timecode_mapping_label.show()
             self.ui.timecode_mapping_line_edit.show()
             self.ui.frame_mapping_label.show()
@@ -323,10 +346,7 @@ class SettingsDialog(QtGui.QDialog):
         :param message: Easy to read message for the user.
         :param details: Error coming back from an Exception, included in "Show Details."
         """
-        msg_box = QtGui.QMessageBox(
-            parent=self,
-            icon=QtGui.QMessageBox.Critical
-        )
+        msg_box = QtGui.QMessageBox(parent=self, icon=QtGui.QMessageBox.Critical)
         msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
         if details:
             msg_box.setDetailedText("%s" % details)
@@ -357,7 +377,7 @@ class SettingsDialog(QtGui.QDialog):
             # the given fps, our input mask can't check for hh mm ss ff validity,
             # e.g. check that ff is not bigger than the fps
             edl.Timecode(timecode_mapping, fps=fps)
-        except Exception, e:
+        except Exception as e:
             raise SettingsError(_BAD_TIMECODE_MSG % timecode_mapping, details=e)
 
     def _validate_and_save_settings(self):
@@ -398,14 +418,21 @@ class SettingsDialog(QtGui.QDialog):
         if not omit_status and update_shot_statuses:
             raise SettingsError("Please select an Omit Status.")
 
-        reinstate_status = self.ui.reinstate_status_combo_box.currentText().encode("utf-8")
+        reinstate_status = self.ui.reinstate_status_combo_box.currentText().encode(
+            "utf-8"
+        )
         if not reinstate_status and update_shot_statuses:
             raise SettingsError("Please select a Reinstate Status")
 
-        statuses = self.ui.reinstate_shot_if_status_is_line_edit.text().encode("utf-8").replace(
-            ", ", ",").split(",")
-        existing_statuses = self._shot_schema[
-            "sg_status_list"]["properties"]["valid_values"]["value"]
+        statuses = (
+            self.ui.reinstate_shot_if_status_is_line_edit.text()
+            .encode("utf-8")
+            .replace(", ", ",")
+            .split(",")
+        )
+        existing_statuses = self._shot_schema["sg_status_list"]["properties"][
+            "valid_values"
+        ]["value"]
         bad_statuses = []
         for status in statuses:
             if status not in existing_statuses and update_shot_statuses:
@@ -433,27 +460,39 @@ class SettingsDialog(QtGui.QDialog):
         default_frame_rate = self.ui.default_frame_rate_line_edit.text().encode("utf-8")
         new_values["default_frame_rate"] = default_frame_rate
 
-        timecode_to_frame_mapping = self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
+        timecode_to_frame_mapping = (
+            self.ui.timecode_to_frame_mapping_combo_box.currentIndex()
+        )
         new_values["timecode_to_frame_mapping"] = timecode_to_frame_mapping
 
         # timecode and frame mapping are only used in relative mode, and their widgets
         # are not visible otherwise, so only save them if this mode is on
         if timecode_to_frame_mapping == _RELATIVE_MODE:
             self._validate_timecode_mapping_input()
-            new_values["timecode_mapping"] = self.ui.timecode_mapping_line_edit.text().encode("utf-8")
-            new_values["frame_mapping"] = self.ui.frame_mapping_line_edit.text().encode("utf-8")
+            new_values[
+                "timecode_mapping"
+            ] = self.ui.timecode_mapping_line_edit.text().encode("utf-8")
+            new_values["frame_mapping"] = self.ui.frame_mapping_line_edit.text().encode(
+                "utf-8"
+            )
 
         if not self.ui.default_head_in_line_edit.hasAcceptableInput():
             raise SettingsError("Default Head In must be set")
-        new_values["default_head_in"] = self.ui.default_head_in_line_edit.text().encode("utf-8")
+        new_values["default_head_in"] = self.ui.default_head_in_line_edit.text().encode(
+            "utf-8"
+        )
 
         if not self.ui.default_head_duration_line_edit.hasAcceptableInput():
             raise SettingsError("Default Head Duration must be set")
-        new_values["default_head_duration"] = self.ui.default_head_duration_line_edit.text().encode("utf-8")
+        new_values[
+            "default_head_duration"
+        ] = self.ui.default_head_duration_line_edit.text().encode("utf-8")
 
         if not self.ui.default_tail_duration_line_edit.hasAcceptableInput():
             raise SettingsError("Default Tail Duration must be set")
-        new_values["default_tail_duration"] = self.ui.default_tail_duration_line_edit.text().encode("utf-8")
+        new_values[
+            "default_tail_duration"
+        ] = self.ui.default_tail_duration_line_edit.text().encode("utf-8")
 
         # Retrieve a list of wizard steps potentially affected by these changes
         affected = self._user_settings.reset_needed(new_values, self._wizard_step)
@@ -461,13 +500,12 @@ class SettingsDialog(QtGui.QDialog):
         # might fail, or the user might lose some changes he made, e.g. if he edited
         # Shot names in the summary view.
         if affected:
-            msg_box = QtGui.QMessageBox(
-                parent=self,
-                icon=QtGui.QMessageBox.Critical
-            )
+            msg_box = QtGui.QMessageBox(parent=self, icon=QtGui.QMessageBox.Critical)
             msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
             msg_box.setText(_CHANGED_SETTINGS_MSG)
-            msg_box.setStandardButtons(QtGui.QMessageBox.Apply | QtGui.QMessageBox.Cancel)
+            msg_box.setStandardButtons(
+                QtGui.QMessageBox.Apply | QtGui.QMessageBox.Cancel
+            )
             apply_button = msg_box.button(QtGui.QMessageBox.Apply)
             # The extra spaces here prevent the text from getting crowded on the
             # button. This happens because the text is styled (made bold/bigger)

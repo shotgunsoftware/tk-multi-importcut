@@ -31,7 +31,7 @@ _PER_SHOT_TYPE_COUNTS = [
     _DIFF_TYPES.NEW,
     _DIFF_TYPES.OMITTED,
     _DIFF_TYPES.REINSTATED,
-    _DIFF_TYPES.RESCAN
+    _DIFF_TYPES.RESCAN,
 ]
 
 # Template used by summary report
@@ -67,6 +67,7 @@ class ShotCutDiffList(list):
 
     List of CutDiffs is typically stored in a dictionary where keys are Shot names
     """
+
     def __init__(self, cut_diff, *args, **kwargs):
         """
         Instantiate a new list with a single value
@@ -236,17 +237,21 @@ class ShotCutDiffList(list):
             if edit and (min_cut_order is None or edit.id < min_cut_order):
                 min_cut_order = edit.id
             if cut_diff.new_head_in is not None and (
-                min_head_in is None or cut_diff.new_head_in < min_head_in):
-                    min_head_in = cut_diff.new_head_in
+                min_head_in is None or cut_diff.new_head_in < min_head_in
+            ):
+                min_head_in = cut_diff.new_head_in
             if cut_diff.new_cut_in is not None and (
-                min_cut_in is None or cut_diff.new_cut_in < min_cut_in):
-                    min_cut_in = cut_diff.new_cut_in
+                min_cut_in is None or cut_diff.new_cut_in < min_cut_in
+            ):
+                min_cut_in = cut_diff.new_cut_in
             if cut_diff.new_cut_out is not None and (
-                max_cut_out is None or cut_diff.new_cut_out > max_cut_out):
-                    max_cut_out = cut_diff.new_cut_out
+                max_cut_out is None or cut_diff.new_cut_out > max_cut_out
+            ):
+                max_cut_out = cut_diff.new_cut_out
             if cut_diff.new_tail_out is not None and (
-                max_tail_out is None or cut_diff.new_tail_out > max_tail_out):
-                    max_tail_out = cut_diff.new_tail_out
+                max_tail_out is None or cut_diff.new_tail_out > max_tail_out
+            ):
+                max_tail_out = cut_diff.new_tail_out
         # We do a second pass for the Shot difference type, as we might stop
         # iteration at some point. Given that the number of duplicated shots is
         # usually low, there shouldn't be a big performance hit in iterating twice
@@ -264,7 +269,7 @@ class ShotCutDiffList(list):
                 _DIFF_TYPES.NEW,
                 _DIFF_TYPES.REINSTATED,
                 _DIFF_TYPES.OMITTED,
-                _DIFF_TYPES.RESCAN
+                _DIFF_TYPES.RESCAN,
             ]:
                 shot_diff_type = cut_diff_type
                 # Can't be changed by another entry, no need to loop further
@@ -284,7 +289,7 @@ class ShotCutDiffList(list):
 
             elif cut_diff_type == _DIFF_TYPES.NEW_IN_CUT:
                 shot_diff_type = _DIFF_TYPES.CUT_CHANGE
-            else:    # _DIFF_TYPES.NO_CHANGE, _DIFF_TYPES.CUT_CHANGE
+            else:  # _DIFF_TYPES.NO_CHANGE, _DIFF_TYPES.CUT_CHANGE
                 if shot_diff_type is None:
                     # initial value
                     shot_diff_type = cut_diff_type
@@ -314,34 +319,43 @@ class ShotCutDiffList(list):
         """
         tc_cut_in = cut_diff.tc_cut_in
         if tc_cut_in is not None and (
-            self._min_tc_cut_in is None or tc_cut_in.to_frame() < self._min_tc_cut_in.to_frame()):
-                self._min_tc_cut_in = tc_cut_in
-                self._earliest_entry = cut_diff
+            self._min_tc_cut_in is None
+            or tc_cut_in.to_frame() < self._min_tc_cut_in.to_frame()
+        ):
+            self._min_tc_cut_in = tc_cut_in
+            self._earliest_entry = cut_diff
         tc_cut_out = cut_diff.tc_cut_out
         if tc_cut_out is not None and (
-            self._max_tc_cut_out is None or tc_cut_out.to_frame() > self._max_tc_cut_out.to_frame()):
-                self._max_tc_cut_out = tc_cut_out
-                self._last_entry = cut_diff
+            self._max_tc_cut_out is None
+            or tc_cut_out.to_frame() > self._max_tc_cut_out.to_frame()
+        ):
+            self._max_tc_cut_out = tc_cut_out
+            self._last_entry = cut_diff
 
         tc_cut_in = cut_diff.new_tc_cut_in
         if tc_cut_in is not None and (
-            self._new_min_tc_cut_in is None or tc_cut_in.to_frame() < self._new_min_tc_cut_in.to_frame()):
-                self._new_min_tc_cut_in = tc_cut_in
-                self._new_earliest_entry = cut_diff
+            self._new_min_tc_cut_in is None
+            or tc_cut_in.to_frame() < self._new_min_tc_cut_in.to_frame()
+        ):
+            self._new_min_tc_cut_in = tc_cut_in
+            self._new_earliest_entry = cut_diff
         tc_cut_out = cut_diff.new_tc_cut_out
         if tc_cut_out is not None and (
-            self._new_max_tc_cut_out is None or tc_cut_out.to_frame() > self._new_max_tc_cut_out.to_frame()):
-                self._new_max_tc_cut_out = tc_cut_out
-                self._new_last_entry = cut_diff
+            self._new_max_tc_cut_out is None
+            or tc_cut_out.to_frame() > self._new_max_tc_cut_out.to_frame()
+        ):
+            self._new_max_tc_cut_out = tc_cut_out
+            self._new_last_entry = cut_diff
 
 
 class CutSummary(QtCore.QObject):
     """
     A list of Cut differences, stored in CutDiff instances
-    
+
     CutDiffs are organised in a dictionary where keys are Shot names, allowing
     to group together entries for the same Shots
     """
+
     # Emitted when a new CutDiff was added to the summary
     new_cut_diff = QtCore.Signal(CutDiff)
     # Emitted when totals per diff type changed
@@ -350,20 +364,20 @@ class CutSummary(QtCore.QObject):
     delete_cut_diff = QtCore.Signal(CutDiff)
 
     def __init__(
-            self,
-            sg_project,
-            sg_entity,
-            sg_shot_link_field_name,
-            tc_edit_in=None,
-            tc_edit_out=None,
-            ):
+        self,
+        sg_project,
+        sg_entity,
+        sg_shot_link_field_name,
+        tc_edit_in=None,
+        tc_edit_out=None,
+    ):
         """
         Create a new empty CutSummary
 
         Two timecodes can be given to define the whole edit range. If given, an
         offset will be available so when creating CutItems all edit timecodes can
         be 00:00:00:00 based, instead of being kept absolute.
-        
+
         A Shotgun Project is needed, as it might differ from the current context
         Project, if the user picked another one.
 
@@ -401,7 +415,9 @@ class CutSummary(QtCore.QObject):
                 # and reuse the frame conversion computed for the edit offset
                 self._duration = tc_edit_out.to_frame() - self._edit_offset
 
-        self._logger.info("Edit offset %s, duration %s" % (self._edit_offset, self._duration))
+        self._logger.info(
+            "Edit offset %s, duration %s" % (self._edit_offset, self._duration)
+        )
 
     @property
     def timecode_start(self):
@@ -450,13 +466,12 @@ class CutSummary(QtCore.QObject):
         :return: A new CutDiff instance
         """
         if sg_shot is None and edit is None and sg_cut_item is None:
-            raise ValueError("At least one of the Shot, Edit or CutItem must be specified")
+            raise ValueError(
+                "At least one of the Shot, Edit or CutItem must be specified"
+            )
 
         cut_diff = CutDiff(
-            shot_name,
-            sg_shot=sg_shot,
-            edit=edit,
-            sg_cut_item=sg_cut_item
+            shot_name, sg_shot=sg_shot, edit=edit, sg_cut_item=sg_cut_item
         )
         cut_diff.name_changed.connect(self.cut_diff_name_changed)
         cut_diff.type_changed.connect(self.cut_diff_type_changed)
@@ -466,7 +481,11 @@ class CutSummary(QtCore.QObject):
         # We might not have a valid Shot name if we have an edit without any
         # Shot name or Version name. To avoid considering all these entries
         # as repeated Shots we forge a key based on the cut order.
-        shot_key = shot_name.lower() if shot_name else "_no_shot_name_%s" % cut_diff.new_cut_order
+        shot_key = (
+            shot_name.lower()
+            if shot_name
+            else "_no_shot_name_%s" % cut_diff.new_cut_order
+        )
         if shot_key in self._cut_diffs:
             self._cut_diffs[shot_key].append(cut_diff)
             if len(self._cut_diffs[shot_key]) > 1:
@@ -489,8 +508,8 @@ class CutSummary(QtCore.QObject):
         When a CutDiff name is changed, we need to link it to the right Shot. This
         can change its "repeated" property, if we are already holding an entry for
         this Shot, which in turn can change the DiffType we are dealing with.
-        
-        We need to unlink it as well from the Shot associated with the previous name, 
+
+        We need to unlink it as well from the Shot associated with the previous name,
         leading to similar changes for entries associated with this Shot, if any.
 
         Whether or not the name can be edited is controlled by CutDiff.is_name_editable.
@@ -514,8 +533,16 @@ class CutSummary(QtCore.QObject):
         old_name = u_old_name.encode("utf-8")
         # We might have empty names here. To avoid considering all entries
         # with no name as repeated Shots we forge a key based on the cut order.
-        new_shot_key = new_name.lower() if new_name else "_no_shot_name_%s" % cut_diff.new_cut_order
-        old_shot_key = old_name.lower() if old_name else "_no_shot_name_%s" % cut_diff.new_cut_order
+        new_shot_key = (
+            new_name.lower()
+            if new_name
+            else "_no_shot_name_%s" % cut_diff.new_cut_order
+        )
+        old_shot_key = (
+            old_name.lower()
+            if old_name
+            else "_no_shot_name_%s" % cut_diff.new_cut_order
+        )
         if new_shot_key == old_shot_key:
             return
 
@@ -525,14 +552,13 @@ class CutSummary(QtCore.QObject):
         self._cut_diffs[old_shot_key].remove(cut_diff)
         # If we have a SG Shot, and a CutItem, it is now an omitted one
         if cut_diff.sg_cut_item and cut_diff.sg_shot:
-            self._logger.debug("Adding omitted entry for old shot key %s" % old_shot_key)
+            self._logger.debug(
+                "Adding omitted entry for old shot key %s" % old_shot_key
+            )
             sg_shot = cut_diff.sg_shot
             sg_cut_item = cut_diff.sg_cut_item
             self.add_cut_diff(
-                sg_shot["code"],
-                sg_shot=sg_shot,
-                edit=None,
-                sg_cut_item=sg_cut_item,
+                sg_shot["code"], sg_shot=sg_shot, edit=None, sg_cut_item=sg_cut_item,
             )
         count = len(self._cut_diffs[old_shot_key])
         if count == 0:
@@ -558,7 +584,9 @@ class CutSummary(QtCore.QObject):
             for cdiff in self._cut_diffs[new_shot_key]:
                 self._logger.debug("%s %s %s %s" % cdiff.summary())
             count = len(self._cut_diffs[new_shot_key])
-            self._logger.debug("%d Entrie(s) for new shot key %s" % (count, new_shot_key))
+            self._logger.debug(
+                "%d Entrie(s) for new shot key %s" % (count, new_shot_key)
+            )
             # Check if there is some omitted entries (no edit) which we should
             # replace, and choose the best one to replace
             matching_omit_entries = [
@@ -575,9 +603,9 @@ class CutSummary(QtCore.QObject):
                         best_cdiff = cdiff
                         best_score = score
                 self._logger.debug(
-                    "Found omitted entry for new shot key %s: %s" % (
-                        new_shot_key, str(best_cdiff)
-                ))
+                    "Found omitted entry for new shot key %s: %s"
+                    % (new_shot_key, str(best_cdiff))
+                )
                 # Remove the chosen CutDiff
                 self._cut_diffs[new_shot_key].remove(best_cdiff)
                 self.delete_cut_diff.emit(best_cdiff)
@@ -594,7 +622,7 @@ class CutSummary(QtCore.QObject):
                     # If the Shot is repeated, flag the edited CutDiff as repeated
                     try:
                         cut_diff.set_repeated(True)
-                    except TypeError, e:
+                    except TypeError as e:
                         # Adding some extra debug information here, because a lot
                         # of edge cases exist when editing shot names for repeated
                         # shots
@@ -602,7 +630,9 @@ class CutSummary(QtCore.QObject):
                         self._logger.debug(str(self._cut_diffs[new_shot_key]))
                         raise
             else:
-                self._logger.debug("Adding new entry for new Shot key %s" % new_shot_key)
+                self._logger.debug(
+                    "Adding new entry for new Shot key %s" % new_shot_key
+                )
                 # SG Shot is shared by all entries in this list
                 cdiff = self._cut_diffs[new_shot_key][0]
                 cut_diff.set_sg_shot(cdiff.sg_shot)
@@ -613,12 +643,13 @@ class CutSummary(QtCore.QObject):
                     cdiff.set_repeated(True)
         else:
             existing_linked_shot = self._app.shotgun.find_one(
-                "Shot", [
+                "Shot",
+                [
                     ["project", "is", self._sg_project],
                     [self._sg_shot_link_field_name, "is", self._sg_entity],
-                    ["code", "is", new_name]
+                    ["code", "is", new_name],
                 ],
-                _SHOT_FIELDS
+                _SHOT_FIELDS,
             )
             if existing_linked_shot:
                 # Link to the first Shot found in the linked Entity whose name matches new_name
@@ -626,14 +657,15 @@ class CutSummary(QtCore.QObject):
             else:
                 # Link to the first Shot found whose name matches new_name
                 existing_unlinked_shot = self._app.shotgun.find_one(
-                    "Shot", [
-                        ["project", "is", self._sg_project], ["code", "is", new_name]
-                    ],
-                    _SHOT_FIELDS
+                    "Shot",
+                    [["project", "is", self._sg_project], ["code", "is", new_name]],
+                    _SHOT_FIELDS,
                 )
                 if existing_unlinked_shot:
                     cut_diff.set_sg_shot(existing_unlinked_shot)
-            self._logger.debug("Creating single entry for new Shot key %s" % new_shot_key)
+            self._logger.debug(
+                "Creating single entry for new Shot key %s" % new_shot_key
+            )
             self._cut_diffs[new_shot_key] = ShotCutDiffList(cut_diff)
         cut_diff.check_and_set_changes()
         self._recompute_counts()
@@ -655,9 +687,8 @@ class CutSummary(QtCore.QObject):
             # This can happen if the diff type changed when a cut_diff is added
             # with repeated shots
             self._logger.debug(
-                "Couldn't retrieve Cut diff type %s in counts (new type : %s)" % (
-                    old_type, new_type,
-                )
+                "Couldn't retrieve Cut diff type %s in counts (new type : %s)"
+                % (old_type, new_type,)
             )
         else:
             self._counts[old_type] -= 1
@@ -670,12 +701,16 @@ class CutSummary(QtCore.QObject):
         # Maintain our total count, excluding OMITTED entries.
         # If the entry was OMITTED, and is not OMITTED anymore, count it in our
         # total
-        if (old_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
-            new_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
+        if old_type in [
+            _DIFF_TYPES.OMITTED,
+            _DIFF_TYPES.OMITTED_IN_CUT,
+        ] and new_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]:
             self._total_count += 1
         # If the entry was not OMITTED, and is now OMITTED, remove it from our total
-        elif (old_type not in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT] and
-              new_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]):
+        elif old_type not in [
+            _DIFF_TYPES.OMITTED,
+            _DIFF_TYPES.OMITTED_IN_CUT,
+        ] and new_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]:
             self._total_count -= 1
         self.totals_changed.emit()
 
@@ -704,7 +739,13 @@ class CutSummary(QtCore.QObject):
 
         :returns: An integer
         """
-        return sum([len(self._cut_diffs[x]) for x in self._cut_diffs if len(self._cut_diffs[x]) > 1])
+        return sum(
+            [
+                len(self._cut_diffs[x])
+                for x in self._cut_diffs
+                if len(self._cut_diffs[x]) > 1
+            ]
+        )
 
     def count_for_type(self, diff_type):
         """
@@ -726,7 +767,9 @@ class CutSummary(QtCore.QObject):
         """
         for name, items in self._cut_diffs.iteritems():
             for item in items:
-                if item.interpreted_diff_type == diff_type and (not just_earliest or item.is_earliest()):
+                if item.interpreted_diff_type == diff_type and (
+                    not just_earliest or item.is_earliest()
+                ):
                     yield item
 
     def has_shot(self, shot_name):
@@ -772,7 +815,9 @@ class CutSummary(QtCore.QObject):
                     self._counts[diff_type] += 1
                     # We don't want to include omitted entries in our total
                     if cut_diff.diff_type not in [
-                        _DIFF_TYPES.OMITTED_IN_CUT, _DIFF_TYPES.OMITTED]:
+                        _DIFF_TYPES.OMITTED_IN_CUT,
+                        _DIFF_TYPES.OMITTED,
+                    ]:
                         self._total_count += 1
         self._logger.debug(str(self._counts))
         self.totals_changed.emit()
@@ -859,62 +904,69 @@ class CutSummary(QtCore.QObject):
 
         subject = "%s Cut Summary changes on %s" % (
             self._sg_entity["type"].title(),
-            title
+            title,
         )
 
         cut_changes_details = [
-            "%s - %s" % (
-                edit.name, ", ".join(edit.reasons)
-            ) for edit in sorted(
+            "%s - %s" % (edit.name, ", ".join(edit.reasons))
+            for edit in sorted(
                 self.edits_for_type(_DIFF_TYPES.CUT_CHANGE),
-                key=lambda x: x.new_cut_order
+                key=lambda x: x.new_cut_order,
             )
         ]
         rescan_details = [
-            "%s - %s" % (
-                edit.name, ", ".join(edit.reasons)
-            ) for edit in sorted(
-                self.edits_for_type(_DIFF_TYPES.RESCAN),
-                key=lambda x: x.new_cut_order
+            "%s - %s" % (edit.name, ", ".join(edit.reasons))
+            for edit in sorted(
+                self.edits_for_type(_DIFF_TYPES.RESCAN), key=lambda x: x.new_cut_order
             )
         ]
         no_link_details = [
-            edit.version_name or str(edit.new_cut_order) for edit in sorted(
-                self.edits_for_type(_DIFF_TYPES.NO_LINK),
-                key=lambda x: x.new_cut_order
+            edit.version_name or str(edit.new_cut_order)
+            for edit in sorted(
+                self.edits_for_type(_DIFF_TYPES.NO_LINK), key=lambda x: x.new_cut_order
             )
         ]
         body = _BODY_REPORT_FORMAT % (
             # Let the user know that something is potentially wrong
-            "WARNING, following edits couldn't be linked to any Shot :\n%s\n" % (
-                "\n".join(no_link_details)
-            ) if no_link_details else "",
+            "WARNING, following edits couldn't be linked to any Shot :\n%s\n"
+            % ("\n".join(no_link_details))
+            if no_link_details
+            else "",
             # Urls
             " , ".join(sg_links),
             # Title
             title,
             # And then counts and lists per type of changes
             self.count_for_type(_DIFF_TYPES.NEW),
-            "\n".join([
-                edit.name for edit in sorted(
-                    self.edits_for_type(_DIFF_TYPES.NEW, just_earliest=True),
-                    key=lambda x: x.new_cut_order
-                )
-            ]),
+            "\n".join(
+                [
+                    edit.name
+                    for edit in sorted(
+                        self.edits_for_type(_DIFF_TYPES.NEW, just_earliest=True),
+                        key=lambda x: x.new_cut_order,
+                    )
+                ]
+            ),
             self.count_for_type(_DIFF_TYPES.OMITTED),
-            "\n".join([
-                edit.name for edit in sorted(
-                    self.edits_for_type(_DIFF_TYPES.OMITTED, just_earliest=True),
-                    key=lambda x: x.cut_order or -1
-                )
-            ]),
+            "\n".join(
+                [
+                    edit.name
+                    for edit in sorted(
+                        self.edits_for_type(_DIFF_TYPES.OMITTED, just_earliest=True),
+                        key=lambda x: x.cut_order or -1,
+                    )
+                ]
+            ),
             self.count_for_type(_DIFF_TYPES.REINSTATED),
-            "\n".join([
-                edit.name for edit in sorted(
-                    self.edits_for_type(_DIFF_TYPES.REINSTATED, just_earliest=True),
-                    key=lambda x: x.new_cut_order
-                )
-            ]),
+            "\n".join(
+                [
+                    edit.name
+                    for edit in sorted(
+                        self.edits_for_type(_DIFF_TYPES.REINSTATED, just_earliest=True),
+                        key=lambda x: x.new_cut_order,
+                    )
+                ]
+            ),
             self.count_for_type(_DIFF_TYPES.CUT_CHANGE),
             "\n".join(cut_changes_details),
             self.count_for_type(_DIFF_TYPES.RESCAN),

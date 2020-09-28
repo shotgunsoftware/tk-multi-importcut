@@ -60,11 +60,13 @@ class BundleLogHandler(logging.StreamHandler):
     A logging Handler to log messages with the app log_xxxx methods and emit
     messages through Qt Signals
     """
+
     class _QtEmitter(QtCore.QObject):
         """
         As BundleLogHandler does not derive from a QObject, we need a small
         class to emit Qt Signals
         """
+
         # Emitted when some new message is available
         # First parameter is the logging level
         # the second is the new message
@@ -116,8 +118,7 @@ class BundleLogHandler(logging.StreamHandler):
         # listeners can log or display the message
         if record.exc_info is not None:
             self.new_error_with_exc_info.emit(
-                record.getMessage(),
-                traceback.format_tb(record.exc_info[2])
+                record.getMessage(), traceback.format_tb(record.exc_info[2])
             )
             return
         self.new_message.emit(record.levelno, record.getMessage())

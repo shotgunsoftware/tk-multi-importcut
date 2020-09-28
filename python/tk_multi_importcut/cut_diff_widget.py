@@ -20,6 +20,7 @@ from .constants import _COLORS
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
+
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
 # diff_type property values which are set on the widget
@@ -53,6 +54,7 @@ class CutDiffCard(QtGui.QFrame):
     """
     A widget showing cut differences
     """
+
     # Emitted when the CutDiff instance changed its type
     type_changed = QtCore.Signal()
     # A Signal to discard pending download
@@ -92,7 +94,7 @@ class CutDiffCard(QtGui.QFrame):
             self.ui.shot_name_line,
             self.ui.icon_label,
             self.ui.version_name_label,
-            self.ui.status_label
+            self.ui.status_label,
         ]
         for w in widgets:
             self.style().unpolish(w)
@@ -132,14 +134,16 @@ class CutDiffCard(QtGui.QFrame):
         self.ui.icon_label.set_text(
             cut_order,
             None,  # use default color from styling
-            bool(self._cut_diff.diff_type == _DIFF_TYPES.OMITTED)
+            bool(self._cut_diff.diff_type == _DIFF_TYPES.OMITTED),
         )
         # Difference and reasons
         diff_type_label = self._cut_diff.diff_type_label
         reasons = ", ".join(self._cut_diff.reasons)
         if diff_type_label:
             if reasons:
-                self.ui.status_label.setText("<b>%s:</b> %s" % (diff_type_label, reasons))
+                self.ui.status_label.setText(
+                    "<b>%s:</b> %s" % (diff_type_label, reasons)
+                )
             else:
                 self.ui.status_label.setText("<b>%s</b>" % diff_type_label)
         else:
@@ -149,15 +153,18 @@ class CutDiffCard(QtGui.QFrame):
         self.ui.version_name_label.setToolTip(None)
         if not sg_version:
             # No Version
-            self.ui.version_name_label.setText(self._cut_diff.version_name or "No Version")
+            self.ui.version_name_label.setText(
+                self._cut_diff.version_name or "No Version"
+            )
         elif sg_version.get("entity.Shot.code") != self._cut_diff.name:
             # Version linked to another shot
-            self.ui.version_name_label.setText("<font color=%s>%s</font>" % (
-                _COLORS["sg_red"],
-                self._cut_diff.version_name,
-            ))
+            self.ui.version_name_label.setText(
+                "<font color=%s>%s</font>"
+                % (_COLORS["sg_red"], self._cut_diff.version_name,)
+            )
             self.ui.version_name_label.setToolTip(
-                "Version %s is linked to Shot %s, instead of %s" % (
+                "Version %s is linked to Shot %s, instead of %s"
+                % (
                     self._cut_diff.version_name,
                     sg_version.get("entity.Shot.code"),
                     self._cut_diff.name,
@@ -298,9 +305,14 @@ class CutDiffCard(QtGui.QFrame):
         """
         if self._cut_diff.diff_type in [_DIFF_TYPES.NEW]:
             widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
-        elif self._cut_diff.diff_type in [_DIFF_TYPES.OMITTED, _DIFF_TYPES.OMITTED_IN_CUT]:
+        elif self._cut_diff.diff_type in [
+            _DIFF_TYPES.OMITTED,
+            _DIFF_TYPES.OMITTED_IN_CUT,
+        ]:
             if old_value is not None:
-                widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], old_value))
+                widget.setText(
+                    "<font color=%s>%s</font>" % (_COLORS["lgrey"], old_value)
+                )
             else:
                 # Old values are retrieved from cut items,
                 # we can have omitted shots without cut items
@@ -308,26 +320,33 @@ class CutDiffCard(QtGui.QFrame):
         else:
             if new_value != old_value:
                 if old_value is not None:
-                    widget.setText("<font color=%s>%s</font> <font color=%s>(%s)</font>" % (
-                        _COLORS["sg_red"], new_value,
-                        _COLORS["lgrey"], old_value
-                    ))
+                    widget.setText(
+                        "<font color=%s>%s</font> <font color=%s>(%s)</font>"
+                        % (_COLORS["sg_red"], new_value, _COLORS["lgrey"], old_value)
+                    )
                 else:
                     widget.setText(str(new_value))
             else:
-                widget.setText("<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value))
+                widget.setText(
+                    "<font color=%s>%s</font>" % (_COLORS["lgrey"], new_value)
+                )
 
     def set_tool_tip(self):
         """
         Build a tooltip displaying details about this cut difference and attach
         it to the icon widget
         """
-        shot_details, cut_item_details, version_details, edit_details = self._cut_diff.summary()
+        (
+            shot_details,
+            cut_item_details,
+            version_details,
+            edit_details,
+        ) = self._cut_diff.summary()
         msg = _TOOL_TIP_FORMAT % (
             shot_details,
             version_details,
             cut_item_details,
-            edit_details
+            edit_details,
         )
         self.ui.icon_label.setToolTip(msg)
 
@@ -369,10 +388,7 @@ class CutDiffCard(QtGui.QFrame):
         if thumb_url:
             f, path = tempfile.mkstemp()
             os.close(f)
-            downloader = DownloadRunner(
-                sg_attachment=thumb_url,
-                path=path,
-            )
+            downloader = DownloadRunner(sg_attachment=thumb_url, path=path,)
             downloader.file_downloaded.connect(self.new_thumbnail)
             self.discard_download.connect(downloader.abort)
             downloader.queue()
@@ -397,5 +413,7 @@ class CutDiffCard(QtGui.QFrame):
             )
         else:
             self.ui.icon_label.setPixmap(
-                pixmap.scaledToHeight(size.height(), mode=QtCore.Qt.SmoothTransformation)
+                pixmap.scaledToHeight(
+                    size.height(), mode=QtCore.Qt.SmoothTransformation
+                )
             )

@@ -8,11 +8,14 @@
 
 from tank.platform.qt import QtCore, QtGui
 
+
 class Ui_ProjectCard(object):
     def setupUi(self, ProjectCard):
         ProjectCard.setObjectName("ProjectCard")
         ProjectCard.resize(358, 70)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.MinimumExpanding)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.MinimumExpanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(ProjectCard.sizePolicy().hasHeightForWidth())
@@ -39,7 +42,9 @@ class Ui_ProjectCard(object):
         self.icon_label.setBaseSize(QtCore.QSize(105, 59))
         self.icon_label.setStyleSheet("background-color: black;")
         self.icon_label.setText("")
-        self.icon_label.setPixmap(QtGui.QPixmap(":/tk_multi_importcut/default_card_icon.png"))
+        self.icon_label.setPixmap(
+            QtGui.QPixmap(":/tk_multi_importcut/default_card_icon.png")
+        )
         self.icon_label.setScaledContents(False)
         self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.icon_label.setObjectName("icon_label")
@@ -59,16 +64,24 @@ class Ui_ProjectCard(object):
         self.verticalLayout_2.addWidget(self.details_label)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
         self.select_button = QtGui.QPushButton(ProjectCard)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Maximum)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Maximum
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.select_button.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.select_button.sizePolicy().hasHeightForWidth()
+        )
         self.select_button.setSizePolicy(sizePolicy)
         self.select_button.setMaximumSize(QtCore.QSize(30, 30))
         self.select_button.setToolTip("")
         self.select_button.setText("")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/tk_multi_importcut/right_arrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(
+            QtGui.QPixmap(":/tk_multi_importcut/right_arrow.png"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.select_button.setIcon(icon)
         self.select_button.setIconSize(QtCore.QSize(30, 30))
         self.select_button.setCheckable(False)
@@ -81,10 +94,33 @@ class Ui_ProjectCard(object):
         QtCore.QMetaObject.connectSlotsByName(ProjectCard)
 
     def retranslateUi(self, ProjectCard):
-        ProjectCard.setWindowTitle(QtGui.QApplication.translate("ProjectCard", "Frame", None, QtGui.QApplication.UnicodeUTF8))
-        self.title_label.setText(QtGui.QApplication.translate("ProjectCard", "<big><b>Name</b></big>", None, QtGui.QApplication.UnicodeUTF8))
-        self.status_label.setText(QtGui.QApplication.translate("ProjectCard", "Status", None, QtGui.QApplication.UnicodeUTF8))
-        self.details_label.setText(QtGui.QApplication.translate("ProjectCard", "<small>details</small>", None, QtGui.QApplication.UnicodeUTF8))
+        ProjectCard.setWindowTitle(
+            QtGui.QApplication.translate(
+                "ProjectCard", "Frame", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.title_label.setText(
+            QtGui.QApplication.translate(
+                "ProjectCard",
+                "<big><b>Name</b></big>",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.status_label.setText(
+            QtGui.QApplication.translate(
+                "ProjectCard", "Status", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.details_label.setText(
+            QtGui.QApplication.translate(
+                "ProjectCard",
+                "<small>details</small>",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+
 
 from ..dialog import ElidedLabel
 from . import resources_rc

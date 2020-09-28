@@ -8,6 +8,7 @@
 
 from tank.platform.qt import QtCore, QtGui
 
+
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
@@ -24,16 +25,24 @@ class Ui_Dialog(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.horizontalLayout_9 = QtGui.QHBoxLayout()
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
-        spacerItem = QtGui.QSpacerItem(100, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem = QtGui.QSpacerItem(
+            100, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_9.addItem(spacerItem)
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem1 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_9.addItem(spacerItem1)
         self.help_button = QtGui.QPushButton(self.drop_page)
         self.help_button.setMaximumSize(QtCore.QSize(22, 22))
         self.help_button.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.help_button.setText("")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/tk_multi_importcut/Help.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(
+            QtGui.QPixmap(":/tk_multi_importcut/Help.png"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.help_button.setIcon(icon)
         self.help_button.setIconSize(QtCore.QSize(22, 22))
         self.help_button.setFlat(True)
@@ -43,7 +52,11 @@ class Ui_Dialog(object):
         self.drop_page_settings_button.setMaximumSize(QtCore.QSize(22, 22))
         self.drop_page_settings_button.setText("")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/tk_multi_importcut/settings_dialog_gear_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(
+            QtGui.QPixmap(":/tk_multi_importcut/settings_dialog_gear_icon.png"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.drop_page_settings_button.setIcon(icon1)
         self.drop_page_settings_button.setIconSize(QtCore.QSize(22, 22))
         self.drop_page_settings_button.setFlat(True)
@@ -67,21 +80,29 @@ class Ui_Dialog(object):
         self.edl_added_icon.setMinimumSize(QtCore.QSize(0, 30))
         self.edl_added_icon.setMaximumSize(QtCore.QSize(30, 30))
         self.edl_added_icon.setText("")
-        self.edl_added_icon.setPixmap(QtGui.QPixmap(":/tk_multi_importcut/edl_added_icon_30px.png"))
+        self.edl_added_icon.setPixmap(
+            QtGui.QPixmap(":/tk_multi_importcut/edl_added_icon_30px.png")
+        )
         self.edl_added_icon.setScaledContents(True)
         self.edl_added_icon.setObjectName("edl_added_icon")
         self.horizontalLayout_12.addWidget(self.edl_added_icon)
         self.mov_added_icon = QtGui.QLabel(self.drop_area_frame)
         self.mov_added_icon.setEnabled(False)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.mov_added_icon.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.mov_added_icon.sizePolicy().hasHeightForWidth()
+        )
         self.mov_added_icon.setSizePolicy(sizePolicy)
         self.mov_added_icon.setMinimumSize(QtCore.QSize(0, 30))
         self.mov_added_icon.setMaximumSize(QtCore.QSize(30, 30))
         self.mov_added_icon.setText("")
-        self.mov_added_icon.setPixmap(QtGui.QPixmap(":/tk_multi_importcut/mov_added_icon_30px.png"))
+        self.mov_added_icon.setPixmap(
+            QtGui.QPixmap(":/tk_multi_importcut/mov_added_icon_30px.png")
+        )
         self.mov_added_icon.setScaledContents(True)
         self.mov_added_icon.setObjectName("mov_added_icon")
         self.horizontalLayout_12.addWidget(self.mov_added_icon)
@@ -95,20 +116,28 @@ class Ui_Dialog(object):
         self.horizontalLayout_13.setContentsMargins(-1, 40, -1, -1)
         self.horizontalLayout_13.setObjectName("horizontalLayout_13")
         self.drop_area_icon_label = QtGui.QLabel(self.drop_area_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.drop_area_icon_label.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.drop_area_icon_label.sizePolicy().hasHeightForWidth()
+        )
         self.drop_area_icon_label.setSizePolicy(sizePolicy)
         self.drop_area_icon_label.setMaximumSize(QtCore.QSize(184, 80))
         self.drop_area_icon_label.setText("")
-        self.drop_area_icon_label.setPixmap(QtGui.QPixmap(":/tk_multi_importcut/edl_mov_icon.png"))
+        self.drop_area_icon_label.setPixmap(
+            QtGui.QPixmap(":/tk_multi_importcut/edl_mov_icon.png")
+        )
         self.drop_area_icon_label.setScaledContents(True)
         self.drop_area_icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.drop_area_icon_label.setObjectName("drop_area_icon_label")
         self.horizontalLayout_13.addWidget(self.drop_area_icon_label)
         self.verticalLayout_12.addLayout(self.horizontalLayout_13)
-        spacerItem2 = QtGui.QSpacerItem(20, 25, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
+        spacerItem2 = QtGui.QSpacerItem(
+            20, 25, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed
+        )
         self.verticalLayout_12.addItem(spacerItem2)
         self.verticalLayout_11 = QtGui.QVBoxLayout()
         self.verticalLayout_11.setSpacing(0)
@@ -116,7 +145,7 @@ class Ui_Dialog(object):
         self.drop_area_label = QtGui.QLabel(self.drop_area_frame)
         self.drop_area_label.setLineWidth(1)
         self.drop_area_label.setMidLineWidth(0)
-        self.drop_area_label.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
+        self.drop_area_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
         self.drop_area_label.setIndent(0)
         self.drop_area_label.setObjectName("drop_area_label")
         self.verticalLayout_11.addWidget(self.drop_area_label)
@@ -125,7 +154,7 @@ class Ui_Dialog(object):
         self.verticalLayout_14.setSpacing(0)
         self.verticalLayout_14.setObjectName("verticalLayout_14")
         self.label_2 = QtGui.QLabel(self.drop_area_frame)
-        self.label_2.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
+        self.label_2.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
         self.label_2.setWordWrap(False)
         self.label_2.setIndent(0)
         self.label_2.setObjectName("label_2")
@@ -137,7 +166,9 @@ class Ui_Dialog(object):
         self.instructions_label.setIndent(0)
         self.instructions_label.setObjectName("instructions_label")
         self.verticalLayout_12.addWidget(self.instructions_label)
-        spacerItem3 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem3 = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.verticalLayout_12.addItem(spacerItem3)
         self.verticalLayout_2.addWidget(self.drop_area_frame)
         self.stackedWidget.addWidget(self.drop_page)
@@ -153,7 +184,9 @@ class Ui_Dialog(object):
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
         self.importing_edl_label_2 = QtGui.QLabel(self.project_list_page)
         self.importing_edl_label_2.setMinimumSize(QtCore.QSize(200, 0))
-        self.importing_edl_label_2.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.importing_edl_label_2.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        )
         self.importing_edl_label_2.setObjectName("importing_edl_label_2")
         self.horizontalLayout_10.addWidget(self.importing_edl_label_2)
         self.select_project_label = QtGui.QLabel(self.project_list_page)
@@ -161,16 +194,22 @@ class Ui_Dialog(object):
         self.select_project_label.setObjectName("select_project_label")
         self.horizontalLayout_10.addWidget(self.select_project_label)
         self.projects_search_line_edit = SearchWidget(self.project_list_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.projects_search_line_edit.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.projects_search_line_edit.sizePolicy().hasHeightForWidth()
+        )
         self.projects_search_line_edit.setSizePolicy(sizePolicy)
         self.projects_search_line_edit.setMinimumSize(QtCore.QSize(200, 30))
         self.projects_search_line_edit.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.projects_search_line_edit.setText("")
         self.projects_search_line_edit.setCursorPosition(0)
-        self.projects_search_line_edit.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.projects_search_line_edit.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        )
         self.projects_search_line_edit.setObjectName("projects_search_line_edit")
         self.horizontalLayout_10.addWidget(self.projects_search_line_edit)
         self.project_page_settings_button = QtGui.QPushButton(self.project_list_page)
@@ -193,7 +232,9 @@ class Ui_Dialog(object):
         self.project_grid.setContentsMargins(2, 2, 2, 2)
         self.project_grid.setSpacing(2)
         self.project_grid.setObjectName("project_grid")
-        spacerItem4 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem4 = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.project_grid.addItem(spacerItem4, 0, 0, 1, 2)
         self.project_scroll_area.setWidget(self.project_area)
         self.verticalLayout_10.addWidget(self.project_scroll_area)
@@ -213,10 +254,14 @@ class Ui_Dialog(object):
         self.verticalLayout_8.addLayout(self.horizontalLayout_2)
         self.stackedWidget.addWidget(self.entity_types_page)
         self.entities_list_page = QtGui.QWidget()
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.entities_list_page.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.entities_list_page.sizePolicy().hasHeightForWidth()
+        )
         self.entities_list_page.setSizePolicy(sizePolicy)
         self.entities_list_page.setMinimumSize(QtCore.QSize(0, 0))
         self.entities_list_page.setObjectName("entities_list_page")
@@ -234,21 +279,31 @@ class Ui_Dialog(object):
         self.entity_buttons_layout.setObjectName("entity_buttons_layout")
         self.horizontalLayout_7.addLayout(self.entity_buttons_layout)
         self.entities_title_label = QtGui.QLabel(self.entities_list_page)
-        self.entities_title_label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.entities_title_label.setAlignment(
+            QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter
+        )
         self.entities_title_label.setObjectName("entities_title_label")
         self.horizontalLayout_7.addWidget(self.entities_title_label)
-        spacerItem5 = QtGui.QSpacerItem(155, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem5 = QtGui.QSpacerItem(
+            155, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_7.addItem(spacerItem5)
         self.entities_search_line_edit = SearchWidget(self.entities_list_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.entities_search_line_edit.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.entities_search_line_edit.sizePolicy().hasHeightForWidth()
+        )
         self.entities_search_line_edit.setSizePolicy(sizePolicy)
         self.entities_search_line_edit.setMinimumSize(QtCore.QSize(200, 30))
         self.entities_search_line_edit.setBaseSize(QtCore.QSize(0, 0))
         self.entities_search_line_edit.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.entities_search_line_edit.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.entities_search_line_edit.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        )
         self.entities_search_line_edit.setObjectName("entities_search_line_edit")
         self.horizontalLayout_7.addWidget(self.entities_search_line_edit)
         self.entities_page_settings_button = QtGui.QPushButton(self.entities_list_page)
@@ -257,7 +312,9 @@ class Ui_Dialog(object):
         self.entities_page_settings_button.setIcon(icon1)
         self.entities_page_settings_button.setIconSize(QtCore.QSize(22, 20))
         self.entities_page_settings_button.setFlat(True)
-        self.entities_page_settings_button.setObjectName("entities_page_settings_button")
+        self.entities_page_settings_button.setObjectName(
+            "entities_page_settings_button"
+        )
         self.horizontalLayout_7.addWidget(self.entities_page_settings_button)
         self.horizontalLayout_7.setStretch(1, 1)
         self.verticalLayout_3.addLayout(self.horizontalLayout_7)
@@ -279,7 +336,9 @@ class Ui_Dialog(object):
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.gridLayout.setSpacing(2)
         self.gridLayout.setObjectName("gridLayout")
-        spacerItem6 = QtGui.QSpacerItem(20, 398, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem6 = QtGui.QSpacerItem(
+            20, 398, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.gridLayout.addItem(spacerItem6, 0, 0, 1, 1)
         self.entities_type_stacked_widget.addWidget(self.page_1)
         self.page_2 = QtGui.QWidget()
@@ -288,7 +347,9 @@ class Ui_Dialog(object):
         self.gridLayout_3.setContentsMargins(2, 2, 2, 2)
         self.gridLayout_3.setSpacing(2)
         self.gridLayout_3.setObjectName("gridLayout_3")
-        spacerItem7 = QtGui.QSpacerItem(20, 398, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem7 = QtGui.QSpacerItem(
+            20, 398, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.gridLayout_3.addItem(spacerItem7, 0, 0, 1, 1)
         self.entities_type_stacked_widget.addWidget(self.page_2)
         self.page_3 = QtGui.QWidget()
@@ -297,7 +358,9 @@ class Ui_Dialog(object):
         self.gridLayout_4.setContentsMargins(2, 2, 2, 2)
         self.gridLayout_4.setSpacing(2)
         self.gridLayout_4.setObjectName("gridLayout_4")
-        spacerItem8 = QtGui.QSpacerItem(20, 398, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem8 = QtGui.QSpacerItem(
+            20, 398, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.gridLayout_4.addItem(spacerItem8, 0, 0, 1, 1)
         self.entities_type_stacked_widget.addWidget(self.page_3)
         self.page_4 = QtGui.QWidget()
@@ -306,7 +369,9 @@ class Ui_Dialog(object):
         self.gridLayout_5.setContentsMargins(2, 2, 2, 2)
         self.gridLayout_5.setSpacing(2)
         self.gridLayout_5.setObjectName("gridLayout_5")
-        spacerItem9 = QtGui.QSpacerItem(20, 398, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem9 = QtGui.QSpacerItem(
+            20, 398, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.gridLayout_5.addItem(spacerItem9, 0, 0, 1, 1)
         self.entities_type_stacked_widget.addWidget(self.page_4)
         self.page_5 = QtGui.QWidget()
@@ -315,7 +380,9 @@ class Ui_Dialog(object):
         self.gridLayout_6.setContentsMargins(2, 2, 2, 2)
         self.gridLayout_6.setSpacing(2)
         self.gridLayout_6.setObjectName("gridLayout_6")
-        spacerItem10 = QtGui.QSpacerItem(20, 398, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem10 = QtGui.QSpacerItem(
+            20, 398, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.gridLayout_6.addItem(spacerItem10, 0, 0, 1, 1)
         self.entities_type_stacked_widget.addWidget(self.page_5)
         self.horizontalLayout_5.addWidget(self.entities_type_stacked_widget)
@@ -333,26 +400,36 @@ class Ui_Dialog(object):
         self.horizontalLayout_6.setContentsMargins(12, 4, 0, 4)
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.selected_entity_label = QtGui.QLabel(self.cut_list_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.selected_entity_label.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.selected_entity_label.sizePolicy().hasHeightForWidth()
+        )
         self.selected_entity_label.setSizePolicy(sizePolicy)
         self.selected_entity_label.setMinimumSize(QtCore.QSize(200, 0))
         self.selected_entity_label.setText("")
         self.selected_entity_label.setObjectName("selected_entity_label")
         self.horizontalLayout_6.addWidget(self.selected_entity_label)
-        spacerItem11 = QtGui.QSpacerItem(90, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum)
+        spacerItem11 = QtGui.QSpacerItem(
+            90, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_6.addItem(spacerItem11)
         self.cuts_title_label = QtGui.QLabel(self.cut_list_page)
         self.cuts_title_label.setAlignment(QtCore.Qt.AlignCenter)
         self.cuts_title_label.setObjectName("cuts_title_label")
         self.horizontalLayout_6.addWidget(self.cuts_title_label)
         self.cuts_sort_button = QtGui.QPushButton(self.cut_list_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.cuts_sort_button.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.cuts_sort_button.sizePolicy().hasHeightForWidth()
+        )
         self.cuts_sort_button.setSizePolicy(sizePolicy)
         self.cuts_sort_button.setMinimumSize(QtCore.QSize(90, 0))
         self.cuts_sort_button.setBaseSize(QtCore.QSize(0, 0))
@@ -360,14 +437,20 @@ class Ui_Dialog(object):
         self.cuts_sort_button.setObjectName("cuts_sort_button")
         self.horizontalLayout_6.addWidget(self.cuts_sort_button)
         self.search_line_edit = SearchWidget(self.cut_list_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.search_line_edit.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.search_line_edit.sizePolicy().hasHeightForWidth()
+        )
         self.search_line_edit.setSizePolicy(sizePolicy)
         self.search_line_edit.setMinimumSize(QtCore.QSize(200, 30))
         self.search_line_edit.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.search_line_edit.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.search_line_edit.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        )
         self.search_line_edit.setObjectName("search_line_edit")
         self.horizontalLayout_6.addWidget(self.search_line_edit)
         self.cut_list_page_settings_button = QtGui.QPushButton(self.cut_list_page)
@@ -376,7 +459,9 @@ class Ui_Dialog(object):
         self.cut_list_page_settings_button.setIcon(icon1)
         self.cut_list_page_settings_button.setIconSize(QtCore.QSize(22, 22))
         self.cut_list_page_settings_button.setFlat(True)
-        self.cut_list_page_settings_button.setObjectName("cut_list_page_settings_button")
+        self.cut_list_page_settings_button.setObjectName(
+            "cut_list_page_settings_button"
+        )
         self.horizontalLayout_6.addWidget(self.cut_list_page_settings_button)
         self.horizontalLayout_6.setStretch(2, 1)
         self.verticalLayout_6.addLayout(self.horizontalLayout_6)
@@ -390,7 +475,9 @@ class Ui_Dialog(object):
         self.cuts_grid.setContentsMargins(2, 2, 2, 2)
         self.cuts_grid.setSpacing(2)
         self.cuts_grid.setObjectName("cuts_grid")
-        spacerItem12 = QtGui.QSpacerItem(20, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem12 = QtGui.QSpacerItem(
+            20, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.cuts_grid.addItem(spacerItem12, 1, 0, 1, 1)
         self.scrollArea_3.setWidget(self.cuts_area)
         self.verticalLayout_6.addWidget(self.scrollArea_3)
@@ -409,7 +496,9 @@ class Ui_Dialog(object):
         self.horizontalLayout_8.setSpacing(12)
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
         self.total_button = SelectorButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.total_button.sizePolicy().hasHeightForWidth())
@@ -423,10 +512,14 @@ class Ui_Dialog(object):
         self.total_button.setObjectName("total_button")
         self.horizontalLayout_8.addWidget(self.total_button)
         self.new_select_button = SelectorButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.new_select_button.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.new_select_button.sizePolicy().hasHeightForWidth()
+        )
         self.new_select_button.setSizePolicy(sizePolicy)
         self.new_select_button.setBaseSize(QtCore.QSize(0, 70))
         self.new_select_button.setCheckable(True)
@@ -436,10 +529,14 @@ class Ui_Dialog(object):
         self.new_select_button.setObjectName("new_select_button")
         self.horizontalLayout_8.addWidget(self.new_select_button)
         self.omitted_select_button = SelectorButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.omitted_select_button.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.omitted_select_button.sizePolicy().hasHeightForWidth()
+        )
         self.omitted_select_button.setSizePolicy(sizePolicy)
         self.omitted_select_button.setBaseSize(QtCore.QSize(0, 70))
         self.omitted_select_button.setCheckable(True)
@@ -448,10 +545,14 @@ class Ui_Dialog(object):
         self.omitted_select_button.setObjectName("omitted_select_button")
         self.horizontalLayout_8.addWidget(self.omitted_select_button)
         self.reinstated_select_button = SelectorButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.reinstated_select_button.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.reinstated_select_button.sizePolicy().hasHeightForWidth()
+        )
         self.reinstated_select_button.setSizePolicy(sizePolicy)
         self.reinstated_select_button.setBaseSize(QtCore.QSize(0, 70))
         self.reinstated_select_button.setCheckable(True)
@@ -460,10 +561,14 @@ class Ui_Dialog(object):
         self.reinstated_select_button.setObjectName("reinstated_select_button")
         self.horizontalLayout_8.addWidget(self.reinstated_select_button)
         self.cut_change_select_button = SelectorButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.cut_change_select_button.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.cut_change_select_button.sizePolicy().hasHeightForWidth()
+        )
         self.cut_change_select_button.setSizePolicy(sizePolicy)
         self.cut_change_select_button.setBaseSize(QtCore.QSize(0, 70))
         self.cut_change_select_button.setCheckable(True)
@@ -472,10 +577,14 @@ class Ui_Dialog(object):
         self.cut_change_select_button.setObjectName("cut_change_select_button")
         self.horizontalLayout_8.addWidget(self.cut_change_select_button)
         self.rescan_select_button = SelectorButton(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.rescan_select_button.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.rescan_select_button.sizePolicy().hasHeightForWidth()
+        )
         self.rescan_select_button.setSizePolicy(sizePolicy)
         self.rescan_select_button.setBaseSize(QtCore.QSize(0, 70))
         self.rescan_select_button.setCheckable(True)
@@ -483,25 +592,37 @@ class Ui_Dialog(object):
         self.rescan_select_button.setFlat(True)
         self.rescan_select_button.setObjectName("rescan_select_button")
         self.horizontalLayout_8.addWidget(self.rescan_select_button)
-        spacerItem13 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem13 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_8.addItem(spacerItem13)
         self.only_vfx_check_box = QtGui.QCheckBox(self.cut_summary_selectors_frame)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.only_vfx_check_box.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.only_vfx_check_box.sizePolicy().hasHeightForWidth()
+        )
         self.only_vfx_check_box.setSizePolicy(sizePolicy)
         self.only_vfx_check_box.setObjectName("only_vfx_check_box")
         self.horizontalLayout_8.addWidget(self.only_vfx_check_box)
-        spacerItem14 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem14 = QtGui.QSpacerItem(
+            0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_8.addItem(spacerItem14)
-        self.cut_summary_page_settings_button = QtGui.QPushButton(self.cut_summary_selectors_frame)
+        self.cut_summary_page_settings_button = QtGui.QPushButton(
+            self.cut_summary_selectors_frame
+        )
         self.cut_summary_page_settings_button.setMaximumSize(QtCore.QSize(22, 20))
         self.cut_summary_page_settings_button.setText("")
         self.cut_summary_page_settings_button.setIcon(icon1)
         self.cut_summary_page_settings_button.setIconSize(QtCore.QSize(22, 20))
         self.cut_summary_page_settings_button.setFlat(True)
-        self.cut_summary_page_settings_button.setObjectName("cut_summary_page_settings_button")
+        self.cut_summary_page_settings_button.setObjectName(
+            "cut_summary_page_settings_button"
+        )
         self.horizontalLayout_8.addWidget(self.cut_summary_page_settings_button)
         self.horizontalLayout_8.setStretch(6, 1)
         self.verticalLayout_4.addWidget(self.cut_summary_selectors_frame)
@@ -529,7 +650,9 @@ class Ui_Dialog(object):
         self.cutsummary_list.setSpacing(2)
         self.cutsummary_list.setContentsMargins(2, 2, 2, 2)
         self.cutsummary_list.setObjectName("cutsummary_list")
-        spacerItem15 = QtGui.QSpacerItem(0, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
+        spacerItem15 = QtGui.QSpacerItem(
+            0, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred
+        )
         self.cutsummary_list.addItem(spacerItem15)
         self.scrollArea_2.setWidget(self.cut_summary_widgets)
         self.verticalLayout_7.addWidget(self.scrollArea_2)
@@ -539,12 +662,18 @@ class Ui_Dialog(object):
         self.progress_page.setObjectName("progress_page")
         self.gridLayout_2 = QtGui.QGridLayout(self.progress_page)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        spacerItem16 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem16 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.gridLayout_2.addItem(spacerItem16, 2, 0, 1, 1)
-        spacerItem17 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem17 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.gridLayout_2.addItem(spacerItem17, 2, 2, 1, 1)
         self.progress_bar = QtGui.QProgressBar(self.progress_page)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.progress_bar.sizePolicy().hasHeightForWidth())
@@ -554,9 +683,13 @@ class Ui_Dialog(object):
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setObjectName("progress_bar")
         self.gridLayout_2.addWidget(self.progress_bar, 2, 1, 1, 1)
-        spacerItem18 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem18 = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.gridLayout_2.addItem(spacerItem18, 4, 1, 1, 1)
-        spacerItem19 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem19 = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.gridLayout_2.addItem(spacerItem19, 0, 1, 1, 1)
         self.progress_bar_label = QtGui.QLabel(self.progress_page)
         self.progress_bar_label.setText("")
@@ -574,11 +707,15 @@ class Ui_Dialog(object):
         self.success_page.setObjectName("success_page")
         self.horizontalLayout_3 = QtGui.QHBoxLayout(self.success_page)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        spacerItem20 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem20 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_3.addItem(spacerItem20)
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
-        spacerItem21 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem21 = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.verticalLayout.addItem(spacerItem21)
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.horizontalLayout_4.setSpacing(0)
@@ -618,10 +755,14 @@ class Ui_Dialog(object):
         self.shotgun_button.setObjectName("shotgun_button")
         self.verticalLayout_15.addWidget(self.shotgun_button)
         self.verticalLayout.addLayout(self.verticalLayout_15)
-        spacerItem22 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem22 = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding
+        )
         self.verticalLayout.addItem(spacerItem22)
         self.horizontalLayout_3.addLayout(self.verticalLayout)
-        spacerItem23 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem23 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout_3.addItem(spacerItem23)
         self.stackedWidget.addWidget(self.success_page)
         self.main_layout.addWidget(self.stackedWidget)
@@ -632,7 +773,9 @@ class Ui_Dialog(object):
         self.feedback_label.setWordWrap(True)
         self.feedback_label.setMargin(0)
         self.feedback_label.setIndent(10)
-        self.feedback_label.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
+        self.feedback_label.setTextInteractionFlags(
+            QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByMouse
+        )
         self.feedback_label.setObjectName("feedback_label")
         self.main_layout.addWidget(self.feedback_label)
         self.line = QtGui.QFrame(Dialog)
@@ -646,12 +789,18 @@ class Ui_Dialog(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.back_button = QtGui.QPushButton(Dialog)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/tk_multi_importcut/left_arrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(
+            QtGui.QPixmap(":/tk_multi_importcut/left_arrow.png"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.back_button.setIcon(icon2)
         self.back_button.setFlat(True)
         self.back_button.setObjectName("back_button")
         self.horizontalLayout.addWidget(self.back_button)
-        spacerItem24 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem24 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
         self.horizontalLayout.addItem(spacerItem24)
         self.create_entity_button = QtGui.QPushButton(Dialog)
         self.create_entity_button.setIconSize(QtCore.QSize(16, 16))
@@ -688,41 +837,187 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
-        self.file_added_label.setText(QtGui.QApplication.translate("Dialog", "testing", None, QtGui.QApplication.UnicodeUTF8))
-        self.drop_area_label.setText(QtGui.QApplication.translate("Dialog", "DRAG & DROP", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("Dialog", "EDL & MOV", None, QtGui.QApplication.UnicodeUTF8))
-        self.instructions_label.setText(QtGui.QApplication.translate("Dialog", "Import Cut EDL and optional MOV.", None, QtGui.QApplication.UnicodeUTF8))
-        self.importing_edl_label_2.setText(QtGui.QApplication.translate("Dialog", "Treating blah...", None, QtGui.QApplication.UnicodeUTF8))
-        self.select_project_label.setText(QtGui.QApplication.translate("Dialog", "Select Project", None, QtGui.QApplication.UnicodeUTF8))
-        self.projects_search_line_edit.setPlaceholderText(QtGui.QApplication.translate("Dialog", "Search Projects", None, QtGui.QApplication.UnicodeUTF8))
-        self.entity_picker_title_label.setText(QtGui.QApplication.translate("Dialog", "This screen is never shown as this step is now combined with the Entities screen (next screen).\n"
-"This screen is kept so we have a direct match between internal steps and screens", None, QtGui.QApplication.UnicodeUTF8))
-        self.entities_title_label.setText(QtGui.QApplication.translate("Dialog", "Select Link for Cut", None, QtGui.QApplication.UnicodeUTF8))
-        self.entities_search_line_edit.setPlaceholderText(QtGui.QApplication.translate("Dialog", "Search Sequences", None, QtGui.QApplication.UnicodeUTF8))
-        self.cuts_title_label.setText(QtGui.QApplication.translate("Dialog", "Compare to Previous Cut", None, QtGui.QApplication.UnicodeUTF8))
-        self.cuts_sort_button.setText(QtGui.QApplication.translate("Dialog", "Sort ...", None, QtGui.QApplication.UnicodeUTF8))
-        self.search_line_edit.setPlaceholderText(QtGui.QApplication.translate("Dialog", "Search Cut", None, QtGui.QApplication.UnicodeUTF8))
-        self.total_button.setText(QtGui.QApplication.translate("Dialog", "Total", None, QtGui.QApplication.UnicodeUTF8))
-        self.new_select_button.setText(QtGui.QApplication.translate("Dialog", "New", None, QtGui.QApplication.UnicodeUTF8))
-        self.omitted_select_button.setText(QtGui.QApplication.translate("Dialog", "Omitted", None, QtGui.QApplication.UnicodeUTF8))
-        self.reinstated_select_button.setText(QtGui.QApplication.translate("Dialog", "Reinstated", None, QtGui.QApplication.UnicodeUTF8))
-        self.cut_change_select_button.setText(QtGui.QApplication.translate("Dialog", "Cut Changes", None, QtGui.QApplication.UnicodeUTF8))
-        self.rescan_select_button.setText(QtGui.QApplication.translate("Dialog", "Rescan Needed", None, QtGui.QApplication.UnicodeUTF8))
-        self.only_vfx_check_box.setText(QtGui.QApplication.translate("Dialog", "Hide Non-VFX Shots", None, QtGui.QApplication.UnicodeUTF8))
-        self.progress_screen_title_label.setText(QtGui.QApplication.translate("Dialog", "Importing ....", None, QtGui.QApplication.UnicodeUTF8))
-        self.success_label.setText(QtGui.QApplication.translate("Dialog", "CUT IMPORTED", None, QtGui.QApplication.UnicodeUTF8))
-        self.edl_imported_label.setText(QtGui.QApplication.translate("Dialog", "EDL_file_name", None, QtGui.QApplication.UnicodeUTF8))
-        self.shotgun_button.setText(QtGui.QApplication.translate("Dialog", "View in Shotgun", None, QtGui.QApplication.UnicodeUTF8))
-        self.back_button.setText(QtGui.QApplication.translate("Dialog", "Back", None, QtGui.QApplication.UnicodeUTF8))
-        self.create_entity_button.setText(QtGui.QApplication.translate("Dialog", "New Entity", None, QtGui.QApplication.UnicodeUTF8))
-        self.cancel_button.setText(QtGui.QApplication.translate("Dialog", "Close", None, QtGui.QApplication.UnicodeUTF8))
-        self.next_button.setText(QtGui.QApplication.translate("Dialog", "Next", None, QtGui.QApplication.UnicodeUTF8))
-        self.reset_button.setText(QtGui.QApplication.translate("Dialog", "Reset", None, QtGui.QApplication.UnicodeUTF8))
-        self.email_button.setText(QtGui.QApplication.translate("Dialog", "Email Summary", None, QtGui.QApplication.UnicodeUTF8))
-        self.submit_button.setText(QtGui.QApplication.translate("Dialog", "Import Cut", None, QtGui.QApplication.UnicodeUTF8))
-        self.skip_button.setText(QtGui.QApplication.translate("Dialog", "Skip", None, QtGui.QApplication.UnicodeUTF8))
-        self.select_button.setText(QtGui.QApplication.translate("Dialog", "Select", None, QtGui.QApplication.UnicodeUTF8))
+        Dialog.setWindowTitle(
+            QtGui.QApplication.translate(
+                "Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.file_added_label.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "testing", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.drop_area_label.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "DRAG & DROP", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.label_2.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "EDL & MOV", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.instructions_label.setText(
+            QtGui.QApplication.translate(
+                "Dialog",
+                "Import Cut EDL and optional MOV.",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.importing_edl_label_2.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Treating blah...", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.select_project_label.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Select Project", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.projects_search_line_edit.setPlaceholderText(
+            QtGui.QApplication.translate(
+                "Dialog", "Search Projects", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.entity_picker_title_label.setText(
+            QtGui.QApplication.translate(
+                "Dialog",
+                "This screen is never shown as this step is now combined with the Entities screen (next screen).\n"
+                "This screen is kept so we have a direct match between internal steps and screens",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.entities_title_label.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Select Link for Cut", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.entities_search_line_edit.setPlaceholderText(
+            QtGui.QApplication.translate(
+                "Dialog", "Search Sequences", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.cuts_title_label.setText(
+            QtGui.QApplication.translate(
+                "Dialog",
+                "Compare to Previous Cut",
+                None,
+                QtGui.QApplication.UnicodeUTF8,
+            )
+        )
+        self.cuts_sort_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Sort ...", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.search_line_edit.setPlaceholderText(
+            QtGui.QApplication.translate(
+                "Dialog", "Search Cut", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.total_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Total", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.new_select_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "New", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.omitted_select_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Omitted", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.reinstated_select_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Reinstated", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.cut_change_select_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Cut Changes", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.rescan_select_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Rescan Needed", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.only_vfx_check_box.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Hide Non-VFX Shots", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.progress_screen_title_label.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Importing ....", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.success_label.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "CUT IMPORTED", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.edl_imported_label.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "EDL_file_name", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.shotgun_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "View in Shotgun", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.back_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Back", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.create_entity_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "New Entity", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.cancel_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Close", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.next_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Next", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.reset_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Reset", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.email_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Email Summary", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.submit_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Import Cut", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.skip_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Skip", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+        self.select_button.setText(
+            QtGui.QApplication.translate(
+                "Dialog", "Select", None, QtGui.QApplication.UnicodeUTF8
+            )
+        )
+
 
 from ..dialog import SearchWidget, SelectorButton, DropAreaFrame, AnimatedStackedWidget
 from . import resources_rc

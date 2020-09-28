@@ -17,6 +17,7 @@ class EntitiesView(QtCore.QObject):
     """
     Entities view page handler, shows Entity cards in a grid layout
     """
+
     # Emitted when an Entity is chosen for next step
     entity_chosen = QtCore.Signal(dict)
     # Emitted when a different Entity is selected
@@ -47,7 +48,7 @@ class EntitiesView(QtCore.QObject):
 
         :returns: Number of cards, as an integer
         """
-        return self._grid_layout.count() - 1 # We have a stretcher
+        return self._grid_layout.count() - 1  # We have a stretcher
 
     @property
     def info_message(self):
@@ -101,15 +102,18 @@ class EntitiesView(QtCore.QObject):
         widget.entity_type = sg_entity["type"]
         widget.highlight_selected.connect(self.entity_selected)
         widget.chosen.connect(self.entity_chosen)
-        self._grid_layout.addWidget(widget, row, column, )
+        self._grid_layout.addWidget(
+            widget, row, column,
+        )
         self._grid_layout.setRowStretch(row, 0)
         # Put the stretcher back
         self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
         self._grid_layout.setRowStretch(row + 1, 1)
         count = i + 1
         self._info_message = (
-            "%d %ss" % (count, sg_entity["type"])) if count > 1 else (
-                "%d %s" % (count, sg_entity["type"])
+            ("%d %ss" % (count, sg_entity["type"]))
+            if count > 1
+            else ("%d %s" % (count, sg_entity["type"]))
         )
         self.new_info_message.emit(self._info_message)
 
@@ -146,13 +150,13 @@ class EntitiesView(QtCore.QObject):
             return
         match_count = 0
         if not text:  # Show everything
-            for i in range(count-1, -1, -1):
+            for i in range(count - 1, -1, -1):
                 witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
                 widget.setVisible(True)
             match_count = count
         else:
-            for i in range(count-1, -1, -1):
+            for i in range(count - 1, -1, -1):
                 witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
                 if text.lower() in widget.entity_name.lower():
@@ -163,8 +167,9 @@ class EntitiesView(QtCore.QObject):
         # Sort widgets so visible ones will be first, with rows
         # distribution re-arranged
         self.sort_changed()
-        self._info_message = ("%d Entities" % match_count) if match_count > 1 else (
-            "%d Entity" % count)
+        self._info_message = (
+            ("%d Entities" % match_count) if match_count > 1 else ("%d Entity" % count)
+        )
         self.new_info_message.emit(self._info_message)
 
     def sort_changed(self):
@@ -178,14 +183,11 @@ class EntitiesView(QtCore.QObject):
         spacer = self._grid_layout.takeAt(count)
         # Retrieve all cut cards
         widgets = []
-        for i in range(count-1, -1, -1):
+        for i in range(count - 1, -1, -1):
             witem = self._grid_layout.takeAt(i)
             widgets.append(witem.widget())
         widgets.sort(
-            key=lambda x: (
-                x.isHidden(),
-                x.entity_name.lower(),
-            ), reverse=False
+            key=lambda x: (x.isHidden(), x.entity_name.lower(),), reverse=False
         )
         row_count = len(widgets) / 2
         # Put them back into the grid layout
@@ -193,18 +195,20 @@ class EntitiesView(QtCore.QObject):
             row = i / 2
             column = i % 2
             widget = widgets[i]
-            self._grid_layout.addWidget(widget, row, column, )
+            self._grid_layout.addWidget(
+                widget, row, column,
+            )
             self._grid_layout.setRowStretch(row, 0)
 
         # Put back the stretcher
-        self._grid_layout.addItem(spacer, row+1, 0, colSpan=2)
-        self._grid_layout.setRowStretch(row+1, 1)
+        self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
+        self._grid_layout.setRowStretch(row + 1, 1)
         # Avoid flashes and jittering by resizing the grid widget to a size
         # suitable to hold all cards
         wsize = widgets[0].size()
         self._grid_layout.parentWidget().resize(
-            self._grid_layout.parentWidget().size().width(),
-            wsize.height() * row_count)
+            self._grid_layout.parentWidget().size().width(), wsize.height() * row_count
+        )
 
     def clear(self):
         """
@@ -212,7 +216,7 @@ class EntitiesView(QtCore.QObject):
         """
         self._selected_entity_card = None
         count = self.card_count
-        for i in range(count-1, -1, -1):
+        for i in range(count - 1, -1, -1):
             witem = self._grid_layout.takeAt(i)
             widget = witem.widget()
             widget.close()

@@ -18,6 +18,7 @@ class ProjectCard(CardWidget):
     """
     Widget displaying a Shotgun Project
     """
+
     def __init__(self, parent, sg_project):
         """
         Instantiate a new ProjectCard for the given Shotgun Project
@@ -29,7 +30,8 @@ class ProjectCard(CardWidget):
         self.ui.title_label.setText("%s" % self.project_name)
         if self.sg_project["_display_status"]:
             self.ui.status_label.setText(
-                "<font color=%s>%s</font>" % (
+                "<font color=%s>%s</font>"
+                % (
                     _STATUS_COLORS.get(self.project_status, _COLORS["lgrey"]),
                     self.sg_project["_display_status"]["name"].upper(),
                 )
@@ -73,6 +75,3 @@ class ProjectCard(CardWidget):
         :returns: A Project description as a string
         """
         return self.sg_project.get("sg_description")
-
-
-
