@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 ShotGrid Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by ShotGrid Software Inc.
 
 from .ui.cut_card import Ui_CutCard
 from .constants import _COLORS, _STATUS_COLORS
@@ -15,15 +15,15 @@ from .card_widget import CardWidget
 
 class CutCard(CardWidget):
     """
-    Widget displaying a Shotgun Cut
+    Widget displaying a ShotGrid Cut
     """
 
     def __init__(self, parent, sg_cut):
         """
-        Instantiate a new CutCard for the given Shotgun Cut
+        Instantiate a new CutCard for the given ShotGrid Cut
 
         :param parent: A parent QWidget
-        :param sg_cut: A Shotgun cut, as a dictionary, to display
+        :param sg_cut: A ShotGrid cut, as a dictionary, to display
         """
         super(CutCard, self).__init__(parent, sg_cut, Ui_CutCard)
 

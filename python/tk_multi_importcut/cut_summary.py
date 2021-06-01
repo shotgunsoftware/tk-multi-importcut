@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 ShotGrid Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by ShotGrid Software Inc.
 
 import sgtk
 from collections import defaultdict
@@ -379,10 +379,10 @@ class CutSummary(QtCore.QObject):
         offset will be available so when creating CutItems all edit timecodes can
         be 00:00:00:00 based, instead of being kept absolute.
 
-        A Shotgun Project is needed, as it might differ from the current context
+        A ShotGrid Project is needed, as it might differ from the current context
         Project, if the user picked another one.
 
-        The Shotgun Entity can be a Scene, a Sequence, or any other Shot container.
+        The ShotGrid Entity can be a Scene, a Sequence, or any other Shot container.
         It is the Entity the Cut is related to
 
         :param sg_project: A SG Project dictionary
@@ -461,9 +461,9 @@ class CutSummary(QtCore.QObject):
         Add a new Cut difference to this summary
 
         :param shot_name: Shot name, as a string
-        :param sg_shot: An optional Shot, as a dictionary retrieved from Shotgun
+        :param sg_shot: An optional Shot, as a dictionary retrieved from ShotGrid
         :param edit: An optional CutEdit object
-        :param sg_cut_item: An optional Cut Item, as a dictionary retrieved from Shotgun
+        :param sg_cut_item: An optional Cut Item, as a dictionary retrieved from ShotGrid
         :return: A new CutDiff instance
         """
         if sg_shot is None and edit is None and sg_cut_item is None:
@@ -874,7 +874,7 @@ class CutSummary(QtCore.QObject):
         Build a text report for this summary, highlighting changes
 
         :param title: A title for the report
-        :param sg_links: Shotgun URLs to display in the report as links
+        :param sg_links: ShotGrid URLs to display in the report as links
         :return: A (subject, body) tuple, as strings
         """
         # Body should look like this:

@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 ShotGrid Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by ShotGrid Software Inc.
 
 import sgtk
 from sgtk.platform.qt import QtCore
@@ -117,12 +117,12 @@ class Processor(QtCore.QThread):
     @property
     def sg_project(self):
         """
-        Return the current Shotgun Project we are importing the Cut into.
+        Return the current ShotGrid Project we are importing the Cut into.
 
         This can be None if this app was started outside of a Project
         context, and a Project has not been selected yet.
 
-        :returns: A Shotgun Project dictionary or None
+        :returns: A ShotGrid Project dictionary or None
         """
         if self._edl_cut and self._edl_cut._project:
             return self._edl_cut._project
@@ -131,10 +131,10 @@ class Processor(QtCore.QThread):
     @property
     def sg_entity(self):
         """
-        Return the current Shotgun Entity (e.g. Sequence) we are displaying Cut
+        Return the current ShotGrid Entity (e.g. Sequence) we are displaying Cut
         changes for
 
-        :returns: A Shotgun Entity dictionary or None
+        :returns: A ShotGrid Entity dictionary or None
         """
         if self._edl_cut and self._edl_cut._sg_entity:
             return self._edl_cut._sg_entity
@@ -165,7 +165,7 @@ class Processor(QtCore.QThread):
     @property
     def sg_cut(self):
         """
-        Return the current Shotgun Cut we are displaying Cut changes for.
+        Return the current ShotGrid Cut we are displaying Cut changes for.
 
         :returns: A Cut dictionary or None
         """
@@ -176,7 +176,7 @@ class Processor(QtCore.QThread):
     @property
     def sg_new_cut(self):
         """
-        Return the new Cut created in Shotgun
+        Return the new Cut created in ShotGrid
 
         :returns: A SG Cut dictionary or None
         """

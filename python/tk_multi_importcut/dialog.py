@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 ShotGrid Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by ShotGrid Software Inc.
 
 import os
 import sys
@@ -69,9 +69,9 @@ settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings
 
 _BAD_PERMISSIONS_MSG = "The following error was reported:\n\nIt's possible you \
 do not have permission to create new %ss. Please select another %s or ask your \
-Shotgun Admin to adjust your permissions in Shotgun."
+ShotGrid Admin to adjust your permissions in ShotGrid."
 
-_TRANSITIONS_PRESENT_MSG = "This EDL contains a transition.\n\nShotgun does \
+_TRANSITIONS_PRESENT_MSG = "This EDL contains a transition.\n\nShotGrid does \
 not support transitions when viewing the Cut, but the EDL can still be \
 imported. The transition frames will be included in the Cut Duration for the \
 Shots, and frame handles will be calculated outside of the transition."
@@ -371,7 +371,7 @@ class AppDialog(QtGui.QWidget):
         # create these buttons. A Project button is always added
         self._create_entity_type_buttons()
 
-        # A button to see the import result in Shotgun
+        # A button to see the import result in ShotGrid
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
         # A button that opens user-facing documentation in a browser.
         self.ui.help_button.clicked.connect(self.show_help)
@@ -393,7 +393,7 @@ class AppDialog(QtGui.QWidget):
         will be imported against.
 
         The list of valid Entity types that Cuts can be linked to is derived
-        from the Shotgun schema field setting for Cut.entity.
+        from the ShotGrid schema field setting for Cut.entity.
 
         The current UI can only handle displaying a limited number of entity
         types correctly. Any more than that and they would not be displayed
@@ -703,7 +703,7 @@ class AppDialog(QtGui.QWidget):
     def has_transitions(self):
         """
         Called when an EDL is dropped and contains transitions. Pop up message
-        informing the user of current Cuts feature compatibility with Shotgun.
+        informing the user of current Cuts feature compatibility with ShotGrid.
         """
         msg_box = QtGui.QMessageBox(parent=self, icon=QtGui.QMessageBox.Critical)
         msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/clapboard.png"))
@@ -1017,7 +1017,7 @@ class AppDialog(QtGui.QWidget):
                 )
             else:
                 self.ui.cut_summary_title_label.setText(
-                    "Comparing %s to Shotgun Shot Data for %s <b>%s</b>"
+                    "Comparing %s to ShotGrid Shot Data for %s <b>%s</b>"
                     % (
                         os.path.basename(self._processor.edl_file_path),
                         self._processor.entity_type_name,
@@ -1250,7 +1250,7 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot()
     def import_cut(self):
         """
-        Called when a the Cut needs to be imported in Shotgun. Show a dialog where the
+        Called when a the Cut needs to be imported in ShotGrid. Show a dialog where the
         user can review changes before importing the cut.
         """
         dialog = SubmitDialog(

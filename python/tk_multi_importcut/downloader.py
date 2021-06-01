@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 ShotGrid Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by ShotGrid Software Inc.
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
@@ -44,7 +44,7 @@ _download_thread_pool = DownloadThreadPool()
 
 class DownloadRunner(QtCore.QRunnable):
     """
-    A runner to download things from Shotgun
+    A runner to download things from ShotGrid
     """
 
     class _Notifier(QtCore.QObject):
