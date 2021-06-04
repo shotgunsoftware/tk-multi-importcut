@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 Autodesk, Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by Autodesk, Inc.
 
 import os
 import re
@@ -457,10 +457,10 @@ class EdlCut(QtCore.QObject):
 
     def _get_sg_statuses(self):
         """
-        Retrieve Statuses from Shotgun, with their display name and color
+        Retrieve Statuses from ShotGrid, with their display name and color
 
         A '_bg_hex_color' additional key with the bg color converted to hexadecimal
-        is added to the values retrieved from Shotgun
+        is added to the values retrieved from ShotGrid
 
         :returns: A dictionary where keys are Statuses code and values Statuses
                   dictionaries
@@ -479,7 +479,7 @@ class EdlCut(QtCore.QObject):
         """
         Retrieve all Entities with the given type for the current Project
 
-        :param u_entity_type: A Shotgun Entity type name, as a unicode string, e.g. u"Sequence"
+        :param u_entity_type: A ShotGrid Entity type name, as a unicode string, e.g. u"Sequence"
         """
         entity_type = six.ensure_str(u_entity_type)
         self._sg_entity_type = entity_type
@@ -576,7 +576,7 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot()
     def retrieve_projects(self):
         """
-        Retrieve all Projects for the Shotgun site
+        Retrieve all Projects for the ShotGrid site
         """
         self.got_busy.emit(None)
         try:
@@ -605,9 +605,9 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(dict)
     def retrieve_cuts(self, sg_entity):
         """
-        Retrieve all Cuts for the given Shotgun Entity
+        Retrieve all Cuts for the given ShotGrid Entity
 
-        :param sg_entity: A Shotgun Entity dictionary, typically a Sequence
+        :param sg_entity: A ShotGrid Entity dictionary, typically a Sequence
         """
         self._sg_entity = sg_entity
         # Retrieve display names and colors for statuses
@@ -656,11 +656,11 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(dict)
     def show_cut_diff(self, sg_cut):
         """
-        Build a cut summary for the current Shotgun Entity (e.g. Sequence) and the given
-        Shotgun Cut (which could be empty).
+        Build a cut summary for the current ShotGrid Entity (e.g. Sequence) and the given
+        ShotGrid Cut (which could be empty).
 
         If a Cut is given, all CutItems linked to this Cut will be retrieved from
-        Shotgun and reconciled against the edit list previously loaded.
+        ShotGrid and reconciled against the edit list previously loaded.
 
         Versions and Shots are primarily used to match CutItems against edits.
         However, the same Shot can appear more than once in a given Cut. In this
@@ -673,7 +673,7 @@ class EdlCut(QtCore.QObject):
 
         A CutSummary is used to store lists of CutDiff instances, grouped by Shots
 
-        :param sg_cut: A Shotgun Cut dictionary retrieved from Shotgun, or an empty dictionary.
+        :param sg_cut: A ShotGrid Cut dictionary retrieved from ShotGrid, or an empty dictionary.
                        Used to compare new Cut information with the last Cut.
         """
         self._logger.info("Retrieving Cut summary for %s" % self.entity_name)
@@ -729,7 +729,7 @@ class EdlCut(QtCore.QObject):
                     ],
                 )
                 # Consolidate versions retrieved from CutItems
-                # Because of a bug in the Shotgun API, we can't use two levels of
+                # Because of a bug in the ShotGrid API, we can't use two levels of
                 # redirection, with "sg_version.Version.entity.Shot.code",
                 # to retrieve the Shot linked to the Version, a CRUD
                 # error will happen if one of the CutItem does not have Version linked
@@ -947,7 +947,7 @@ class EdlCut(QtCore.QObject):
     def sg_cut_item_for_shot(self, sg_cut_items, sg_shot, sg_version=None, edit=None):
         """
         Return a CutItem for the given Shot from the given CutItems list retrieved
-        from Shotgun
+        from ShotGrid
 
         The sg_cut_items list is modified inside this method, entries being removed as
         they are chosen.
@@ -1065,7 +1065,7 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(six.text_type, dict, dict, six.text_type, bool)
     def do_cut_import(self, u_title, sender, to, u_description, update_shots):
         """
-        Import the Cut changes in Shotgun
+        Import the Cut changes in ShotGrid
         - Create a new SG Cut
         - Create new SG CutItems
         - Create new SG Shots
@@ -1115,14 +1115,14 @@ class EdlCut(QtCore.QObject):
 
     def create_note(self, title, sender, to, description, sg_links=None):
         """
-        Create a note in Shotgun, linked to the current Shotgun entity, typically
+        Create a note in ShotGrid, linked to the current ShotGrid entity, typically
         a Sequence and optionally linked to the list of sg_links
 
         :param title: A string, the Note title
-        :param sender: A Shotgun user dictionary
-        :param to: A Shotgun Group dictionary
+        :param sender: A ShotGrid user dictionary
+        :param to: A ShotGrid Group dictionary
         :param description: Some comments which will be added to the Note
-        :param sg_links: Optional list of Shotgun Entity dictionaries to link the note to
+        :param sg_links: Optional list of ShotGrid Entity dictionaries to link the note to
         """
         summary = self._summary
         url_links = [
@@ -1154,7 +1154,7 @@ class EdlCut(QtCore.QObject):
 
     def create_sg_cut(self, title, description):
         """
-        Create a new Cut in Shotgun, linked to the current SG Entity
+        Create a new Cut in ShotGrid, linked to the current SG Entity
 
         If a movie was provided, create a new Version from it, linked to the
         new SG Cut.
@@ -1239,14 +1239,14 @@ class EdlCut(QtCore.QObject):
             )
         except Exception as e:
             self._logger.warning(
-                "Couldn't upload %s into Shotgun: %s" % (self._edl_file_path, e)
+                "Couldn't upload %s into ShotGrid: %s" % (self._edl_file_path, e)
             )
         return sg_cut
 
     def _get_shot_in_out_sg_data(self, head_in, cut_in, cut_out, tail_out):
         """
         Returns a dictionary with the data to update a Shot in/out values
-        in Shotgun from the given values
+        in ShotGrid from the given values
 
         :param head_in: Shot head in value to set
         :param cut_in: Shot cut in value to set
@@ -1276,7 +1276,7 @@ class EdlCut(QtCore.QObject):
 
     def update_sg_shots(self, update_shots):
         """
-        Update Shots in Shotgun
+        Update Shots in ShotGrid
         - Create them if needed
 
         If update_shots is true:
@@ -1539,7 +1539,7 @@ class EdlCut(QtCore.QObject):
 
     def _create_missing_sg_versions(self):
         """
-        Create Versions in Shotgun for each Shot which needs one
+        Create Versions in ShotGrid for each Shot which needs one
         """
         # Helper method for easily creating Versions in SG for testing
         # This is not part of production specs, but very handy for developers
@@ -1590,7 +1590,7 @@ class EdlCut(QtCore.QObject):
 
     def create_sg_cut_items(self, sg_cut):
         """
-        Create the CutItems in Shotgun, linked to the given Cut
+        Create the CutItems in ShotGrid, linked to the given Cut
 
         :param sg_cut: A SG Cut dictionary
         """

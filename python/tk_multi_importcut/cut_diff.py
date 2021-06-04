@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 Autodesk, Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by Autodesk, Inc.
 
 import sgtk
 
@@ -59,8 +59,8 @@ class CutDiff(QtCore.QObject):
 
     A Cut difference is based on :
     - An EDL entry: a line from an EDL file
-    - A Shotgun CutItem: a previously registered cut value for an EDL entry
-    - A Shotgun Shot: Corresponding Shot in Shotgun
+    - A ShotGrid CutItem: a previously registered cut value for an EDL entry
+    - A ShotGrid Shot: Corresponding Shot in ShotGrid
 
     At least one of them needs to be set. A CutDiff is able to retrieve
     previous cut values and compute new values, from the EDL entry ( a line
@@ -121,9 +121,9 @@ class CutDiff(QtCore.QObject):
         Instantiate a new Cut difference
 
         :param name: A name for this Cut difference, usually the Shot name
-        :param sg_shot: An optional Shot dictionary, as retrieved from Shotgun
+        :param sg_shot: An optional Shot dictionary, as retrieved from ShotGrid
         :param edit: An optional EditEvent instance, retrieved from an EDL
-        :param sg_cut_item: An optional CutItem dictionary, as retrieved from Shotgun
+        :param sg_cut_item: An optional CutItem dictionary, as retrieved from ShotGrid
         """
         super(CutDiff, self).__init__()
         self._name = name
@@ -293,7 +293,7 @@ class CutDiff(QtCore.QObject):
     @property
     def sg_shot(self):
         """
-        Return the Shotgun Shot for this diff, if any
+        Return the ShotGrid Shot for this diff, if any
 
         :returns: A SG Shot dictionary or None
         """
@@ -310,7 +310,7 @@ class CutDiff(QtCore.QObject):
     @property
     def sg_cut_item(self):
         """
-        Return the Shotgun CutItem for this diff, if any
+        Return the ShotGrid CutItem for this diff, if any
 
         :returns: A SG CutItem dictionary or None
         """
@@ -393,7 +393,7 @@ class CutDiff(QtCore.QObject):
     @property
     def sg_version(self):
         """
-        Return the Shotgun Version for this diff, if any
+        Return the ShotGrid Version for this diff, if any
 
         :returns: A SG Version dictionary or None
         """
@@ -401,7 +401,7 @@ class CutDiff(QtCore.QObject):
 
     def set_sg_version(self, sg_version):
         """
-        Set the Shotgun Version associated with this diff
+        Set the ShotGrid Version associated with this diff
 
         :param sg_version: A SG Version, as a dictionary
         """
@@ -947,7 +947,7 @@ class CutDiff(QtCore.QObject):
 
         - NEW_IN_CUT is different, even if all entries for a Shot are NEW_IN_CUT,
         if a Shot exists it is not NEW. Individual entries will be set to NEW if
-        the Shot does not exist in Shotgun.
+        the Shot does not exist in ShotGrid.
 
         Other cases fall back to the actual diff type.
 

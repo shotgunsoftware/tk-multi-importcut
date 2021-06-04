@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 Autodesk, Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by Autodesk, Inc.
 
 from .ui.project_card import Ui_ProjectCard
 
@@ -16,15 +16,15 @@ from .card_widget import CardWidget
 
 class ProjectCard(CardWidget):
     """
-    Widget displaying a Shotgun Project
+    Widget displaying a ShotGrid Project
     """
 
     def __init__(self, parent, sg_project):
         """
-        Instantiate a new ProjectCard for the given Shotgun Project
+        Instantiate a new ProjectCard for the given ShotGrid Project
 
         :param parent: A parent QWidget
-        :param sg_project: A Shotgun project, as a dictionary, to display
+        :param sg_project: A ShotGrid project, as a dictionary, to display
         """
         super(ProjectCard, self).__init__(parent, sg_project, Ui_ProjectCard)
         self.ui.title_label.setText("%s" % self.project_name)
@@ -45,7 +45,7 @@ class ProjectCard(CardWidget):
         """
         Returns the SG Project for this card
 
-        :returns: A Shotgun Project dictionary
+        :returns: A ShotGrid Project dictionary
         """
         return self._sg_entity
 
@@ -63,7 +63,7 @@ class ProjectCard(CardWidget):
         """
         Return the status of the attached SG Project
 
-        :returns: A Shotgun Status as a string
+        :returns: A ShotGrid Status as a string
         """
         return self.sg_project.get("sg_status")
 

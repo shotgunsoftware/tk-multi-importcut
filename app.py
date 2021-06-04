@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 Autodesk, Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by Autodesk, Inc.
 
 from sgtk.platform import Application
 
@@ -27,7 +27,7 @@ class ImportCutApp(Application):
         # Toolkit's code reload mechanism will work properly.
         app_payload = self.import_module("tk_multi_importcut")
 
-        # now register a *command*, which is normally a menu entry of some kind on a Shotgun
+        # now register a *command*, which is normally a menu entry of some kind on a ShotGrid
         # menu (but it depends on the engine). The engine will manage this command and
         # whenever the user requests the command, it will call out to the callback.
 

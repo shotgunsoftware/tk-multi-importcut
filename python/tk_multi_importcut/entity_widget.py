@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 Autodesk, Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by Autodesk, Inc.
 
 from .ui.entity_card import Ui_EntityCard
 from .constants import _COLORS, _STATUS_COLORS
@@ -15,15 +15,15 @@ from .card_widget import CardWidget
 
 class EntityCard(CardWidget):
     """
-    A Card Widget displaying a general Shotgun Entity
+    A Card Widget displaying a general ShotGrid Entity
     """
 
     def __init__(self, parent, sg_entity):
         """
-        Instantiate a new EntityCard for the given Shotgun Entity
+        Instantiate a new EntityCard for the given ShotGrid Entity
 
         :param parent: A parent QWidget
-        :param sg_entity: A Shotgun entity, as a dictionary, to display
+        :param sg_entity: A ShotGrid entity, as a dictionary, to display
         """
         super(EntityCard, self).__init__(parent, sg_entity, Ui_EntityCard)
 
@@ -45,7 +45,7 @@ class EntityCard(CardWidget):
         """
         Return the status of the attached entity
 
-        :returns: A Shotgun status
+        :returns: A ShotGrid status
         """
         # Some entity types (like Project) have a non-standard status
         # field name

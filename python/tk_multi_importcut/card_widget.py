@@ -1,12 +1,12 @@
-# Copyright (c) 2016 Shotgun Software Inc.
+# Copyright (c) 2021 Autodesk, Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the ShotGrid Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
-# not expressly granted therein are reserved by Shotgun Software Inc.
+# agreement to the ShotGrid Pipeline Toolkit Source Code License. All rights
+# not expressly granted therein are reserved by Autodesk, Inc.
 
 import tempfile
 import os
@@ -40,7 +40,7 @@ class CardWidget(QtGui.QFrame):
         Instantiates a new Card Widget.
 
         :param parent: A parent widget
-        :param sg_entity: A Shotgun Entity dictionary
+        :param sg_entity: A ShotGrid Entity dictionary
         :param ui_builder: A callable typically retrieved from Designer generated
                            Python files
         :param args: An arbitrary list of parameters
