@@ -50,7 +50,7 @@ _EDL_EXT = ".edl"
 
 # Url that links to Import Cut documentation.
 _DOCUMENTATION_URL = (
-    "https://support.shotgunsoftware.com/hc/en-us/articles/219041758-Import-Cut"
+    "https://help.autodesk.com/view/SGSUB/ENU/?guid=SG_Editorial_ed_import_cut_depth_html"
 )
 
 # Some colors used in various places

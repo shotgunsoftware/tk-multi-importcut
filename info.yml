@@ -33,7 +33,7 @@ requires_shotgun_version: v7.0.0
 requires_core_version: "v0.16.18"
 requires_engine_version:
 
-documentation_url: "https://support.shotgunsoftware.com/hc/en-us/articles/219041758-Import-Cut"
+documentation_url: "https://help.autodesk.com/view/SGSUB/ENU/?guid=SG_Editorial_ed_import_cut_depth_html"
 
 # the frameworks required to run this app
 frameworks:
