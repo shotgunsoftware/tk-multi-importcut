@@ -49,9 +49,7 @@ _VERSION_EXTS = _VIDEO_EXTS + [
 _EDL_EXT = ".edl"
 
 # Url that links to Import Cut documentation.
-_DOCUMENTATION_URL = (
-    "https://help.autodesk.com/view/SGSUB/ENU/?guid=SG_Editorial_ed_import_cut_depth_html"
-)
+_DOCUMENTATION_URL = "https://help.autodesk.com/view/SGSUB/ENU/?guid=SG_Editorial_ed_import_cut_depth_html"
 
 # Some colors used in various places
 _COLORS = {
