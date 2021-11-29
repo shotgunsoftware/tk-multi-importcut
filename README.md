@@ -16,4 +16,4 @@ working on. For an overview of all the Apps and Engines in the Toolkit App Store
 click here: https://tank.shotgunsoftware.com/entries/23874562.
 
 ## Have a Question?
-Don't hesitate to contact us! You can find us on toolkitsupport@shotgunsoftware.com
+Don't hesitate to contact us! You can find us on toolkitknowledge.autodesk.com/contact-support
