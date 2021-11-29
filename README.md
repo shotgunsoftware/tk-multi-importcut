@@ -7,7 +7,7 @@ This repository is a part of the ShotGrid Pipeline Toolkit.
 
 - For more information about this app and for release notes, *see the wiki section*.
 - For general information and documentation, click here: https://tank.shotgunsoftware.com/entries/23888727
-- For information about ShotGrid in general, click here: http://www.shotgunsoftware.com/toolkit
+- For information about ShotGrid in general, click here: https://www.shotgridsoftware.com/integrations
 
 ## Using this app in your Setup
 All the apps that are part of our standard app suite are pushed to our App Store.
