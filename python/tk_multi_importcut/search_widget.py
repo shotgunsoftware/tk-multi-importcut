@@ -96,7 +96,6 @@ class SearchWidget(QtGui.QLineEdit):
         self.search_changed.emit(self._safe_get_text())
 
     def _safe_get_text(self):
-        """
-        """
+        """ """
         text = six.ensure_str(self.text())
         return text

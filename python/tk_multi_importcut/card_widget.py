@@ -194,7 +194,10 @@ class CardWidget(QtGui.QFrame):
             )
             f, path = tempfile.mkstemp()
             os.close(f)
-            downloader = DownloadRunner(sg_attachment=self.thumbnail_url, path=path,)
+            downloader = DownloadRunner(
+                sg_attachment=self.thumbnail_url,
+                path=path,
+            )
             downloader.file_downloaded.connect(self.new_thumbnail)
             self.discard_download.connect(downloader.abort)
             downloader.queue()

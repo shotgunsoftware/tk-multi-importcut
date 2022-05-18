@@ -178,7 +178,8 @@ class EdlCut(QtCore.QObject):
         if not self._sg_entity:
             return None
         return sgtk.util.get_entity_type_display_name(
-            sgtk.platform.current_bundle().sgtk, self._sg_entity["type"],
+            sgtk.platform.current_bundle().sgtk,
+            self._sg_entity["type"],
         )
 
     @property
@@ -357,7 +358,9 @@ class EdlCut(QtCore.QObject):
                 frame_rate = float(self._user_settings.retrieve("default_frame_rate"))
                 self._logger.info("Using default frame rate %f ..." % frame_rate)
                 self._edl = edl.EditList(
-                    file_path=edl_file_path, visitor=self.process_edit, fps=frame_rate,
+                    file_path=edl_file_path,
+                    visitor=self.process_edit,
+                    fps=frame_rate,
                 )
             self._logger.info(
                 "%s loaded, %s edits" % (self._edl.title, len(self._edl.edits))
@@ -495,7 +498,8 @@ class EdlCut(QtCore.QObject):
             shot_schema = self._sg.schema_field_read("Shot")
             # Prefer a sg_<entity type> field if available
             entity_type_name = sgtk.util.get_entity_type_display_name(
-                sgtk.platform.current_bundle().sgtk, entity_type,
+                sgtk.platform.current_bundle().sgtk,
+                entity_type,
             )
             field_name = "sg_%s" % entity_type_name.lower()
             field = shot_schema.get(field_name)
@@ -855,7 +859,11 @@ class EdlCut(QtCore.QObject):
                 else:
                     lower_shot_name = shot_name.lower()
                     self._logger.debug(
-                        "Matching %s for %s" % (lower_shot_name, str(edit),)
+                        "Matching %s for %s"
+                        % (
+                            lower_shot_name,
+                            str(edit),
+                        )
                     )
                     existing = self._summary.diffs_for_shot(shot_name)
                     # Is it a duplicate ?
@@ -1014,7 +1022,13 @@ class EdlCut(QtCore.QObject):
         if potential_matches:
             potential_matches.sort(key=lambda x: x[1], reverse=True)
             for pm in potential_matches:
-                self._logger.debug("Potential matches %s score %s" % (pm[0], pm[1],))
+                self._logger.debug(
+                    "Potential matches %s score %s"
+                    % (
+                        pm[0],
+                        pm[1],
+                    )
+                )
             # Return just the CutItem, not including the score
             best = potential_matches[0][0]
             # Prevent this one to be matched multiple times
@@ -1046,7 +1060,8 @@ class EdlCut(QtCore.QObject):
         diff = (
             edit.source_in.to_frame()
             - edl.Timecode(
-                sg_cut_item["timecode_cut_item_in_text"], sg_cut_item["cut.Cut.fps"],
+                sg_cut_item["timecode_cut_item_in_text"],
+                sg_cut_item["cut.Cut.fps"],
             ).to_frame()
         )
         if diff == 0:
@@ -1137,7 +1152,11 @@ class EdlCut(QtCore.QObject):
             for sg_link in sg_links:
                 url_links.append(
                     "%s/detail/%s/%s"
-                    % (self._app.shotgun.base_url, sg_link["type"], sg_link["id"],)
+                    % (
+                        self._app.shotgun.base_url,
+                        sg_link["type"],
+                        sg_link["id"],
+                    )
                 )
         subject, body = summary.get_report(title, url_links)
         contents = "%s\n%s" % (description, body)
@@ -1347,7 +1366,10 @@ class EdlCut(QtCore.QObject):
                     data[self._sg_shot_link_field_name] = self._sg_entity
                 data.update(
                     self._get_shot_in_out_sg_data(
-                        min_head_in, min_cut_in, max_cut_out, max_tail_out,
+                        min_head_in,
+                        min_cut_in,
+                        max_cut_out,
+                        max_tail_out,
                     )
                 )
                 # Smart fields do not behave as expected, so in preparation for
@@ -1411,7 +1433,10 @@ class EdlCut(QtCore.QObject):
                     }
                     data.update(
                         self._get_shot_in_out_sg_data(
-                            min_head_in, min_cut_in, max_cut_out, max_tail_out,
+                            min_head_in,
+                            min_cut_in,
+                            max_cut_out,
+                            max_tail_out,
                         )
                     )
                     # Smart fields do not behave as expected, this value must be
@@ -1446,7 +1471,10 @@ class EdlCut(QtCore.QObject):
                     }
                     data.update(
                         self._get_shot_in_out_sg_data(
-                            min_head_in, min_cut_in, max_cut_out, max_tail_out,
+                            min_head_in,
+                            min_cut_in,
+                            max_cut_out,
+                            max_tail_out,
                         )
                     )
                     # Smart fields do not behave as expected, this value must be
@@ -1563,7 +1591,9 @@ class EdlCut(QtCore.QObject):
                                     "updated_by": self._ctx.user,
                                     "created_by": self._ctx.user,
                                 },
-                                "return_fields": ["entity.Shot.code",],
+                                "return_fields": [
+                                    "entity.Shot.code",
+                                ],
                             }
                         )
                         requested_names.append(version_name)

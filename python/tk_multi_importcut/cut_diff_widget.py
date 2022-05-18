@@ -161,7 +161,10 @@ class CutDiffCard(QtGui.QFrame):
             # Version linked to another shot
             self.ui.version_name_label.setText(
                 "<font color=%s>%s</font>"
-                % (_COLORS["sg_red"], self._cut_diff.version_name,)
+                % (
+                    _COLORS["sg_red"],
+                    self._cut_diff.version_name,
+                )
             )
             self.ui.version_name_label.setToolTip(
                 "Version %s is linked to Shot %s, instead of %s"
@@ -389,7 +392,10 @@ class CutDiffCard(QtGui.QFrame):
         if thumb_url:
             f, path = tempfile.mkstemp()
             os.close(f)
-            downloader = DownloadRunner(sg_attachment=thumb_url, path=path,)
+            downloader = DownloadRunner(
+                sg_attachment=thumb_url,
+                path=path,
+            )
             downloader.file_downloaded.connect(self.new_thumbnail)
             self.discard_download.connect(downloader.abort)
             downloader.queue()

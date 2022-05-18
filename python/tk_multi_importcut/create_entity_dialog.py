@@ -46,7 +46,8 @@ class CreateEntityDialog(QtGui.QDialog):
         self._project = sg_project
 
         entity_type_name = sgtk.util.get_entity_type_display_name(
-            self._app.sgtk, entity_type,
+            self._app.sgtk,
+            entity_type,
         )
         self.setWindowTitle("Create %s" % entity_type_name)
 
