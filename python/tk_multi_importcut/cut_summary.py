@@ -559,7 +559,10 @@ class CutSummary(QtCore.QObject):
             sg_shot = cut_diff.sg_shot
             sg_cut_item = cut_diff.sg_cut_item
             self.add_cut_diff(
-                sg_shot["code"], sg_shot=sg_shot, edit=None, sg_cut_item=sg_cut_item,
+                sg_shot["code"],
+                sg_shot=sg_shot,
+                edit=None,
+                sg_cut_item=sg_cut_item,
             )
         count = len(self._cut_diffs[old_shot_key])
         if count == 0:
@@ -689,7 +692,10 @@ class CutSummary(QtCore.QObject):
             # with repeated shots
             self._logger.debug(
                 "Couldn't retrieve Cut diff type %s in counts (new type : %s)"
-                % (old_type, new_type,)
+                % (
+                    old_type,
+                    new_type,
+                )
             )
         else:
             self._counts[old_type] -= 1

@@ -447,7 +447,12 @@ class AppDialog(QtGui.QWidget):
         # We always want to be able to import against the Project. We want Project
         # to always be the last button, so we append it after sorting is done, and
         # after trimming is done.
-        entity_types.append(("Project", "Project",))
+        entity_types.append(
+            (
+                "Project",
+                "Project",
+            )
+        )
         # Preselect 1st entry, we will always have at the very least one Project entry
         if self._preload_entity_type is None:
             self._preload_entity_type = entity_types[0][0]
@@ -591,7 +596,9 @@ class AppDialog(QtGui.QWidget):
         :param which: One of our wizard style steps
         """
         if which == _PROGRESS_STEP:
-            self.ui.progress_screen_title_label.setText("Import failed",)
+            self.ui.progress_screen_title_label.setText(
+                "Import failed",
+            )
             self.ui.back_button.show()
 
     @QtCore.Slot(int)
@@ -968,7 +975,8 @@ class AppDialog(QtGui.QWidget):
                 # Shouldn't happen, but...
                 raise RuntimeError("Don't have a selected Entity type...")
             sg_entity_type_name = sgtk.util.get_entity_type_display_name(
-                self._app.sgtk, sg_entity_type,
+                self._app.sgtk,
+                sg_entity_type,
             )
             if sg_entity_type == "Project":
                 self.ui.create_entity_button.hide()
@@ -1166,11 +1174,16 @@ class AppDialog(QtGui.QWidget):
             "code", sg_entity.get("name", sg_entity.get("title", "????"))
         )
         type_name = sgtk.util.get_entity_type_display_name(
-            sgtk.platform.current_bundle().sgtk, sg_entity["type"],
+            sgtk.platform.current_bundle().sgtk,
+            sg_entity["type"],
         )
         self._logger.info("Retrieving Cuts for %s %s" % (type_name, name))
         self.ui.selected_entity_label.setText(
-            "%s: <big><b>%s</big></b>" % (type_name, name,)
+            "%s: <big><b>%s</big></b>"
+            % (
+                type_name,
+                name,
+            )
         )
         self.get_cuts_for_entity.emit(sg_entity)
 

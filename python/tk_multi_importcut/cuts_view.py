@@ -82,7 +82,9 @@ class CutsView(QtCore.QObject):
         widget.highlight_selected.connect(self.cut_selected)
         widget.chosen.connect(self.show_cut)
         self._grid_layout.addWidget(
-            widget, row, column,
+            widget,
+            row,
+            column,
         )
         self._grid_layout.setRowStretch(row, 0)
         self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
@@ -196,7 +198,9 @@ class CutsView(QtCore.QObject):
             column = i % 2
             widget = widgets[i]
             self._grid_layout.addWidget(
-                widget, row, column,
+                widget,
+                row,
+                column,
             )
             self._grid_layout.setRowStretch(row, 0)
 
@@ -216,7 +220,10 @@ class CutsView(QtCore.QObject):
         self._action_group = QtGui.QActionGroup(self)
         self._action_group.triggered.connect(self.sort_changed)
         for smeth in _SORT_METHODS:
-            sort_action = QtGui.QAction(smeth, self._action_group,)
+            sort_action = QtGui.QAction(
+                smeth,
+                self._action_group,
+            )
             sort_action.setCheckable(True)
             sort_action.setData(_SORT_METHODS.index(smeth))
             self._cuts_sort_menu.addAction(sort_action)

@@ -76,7 +76,9 @@ class ProjectsView(QtCore.QObject):
         widget.highlight_selected.connect(self.project_selected)
         widget.chosen.connect(self.project_chosen)
         self._grid_layout.addWidget(
-            widget, row, column,
+            widget,
+            row,
+            column,
         )
         self._grid_layout.setRowStretch(row, 0)
         # Put the stretcher back
@@ -160,7 +162,11 @@ class ProjectsView(QtCore.QObject):
             witem = self._grid_layout.takeAt(i)
             widgets.append(witem.widget())
         widgets.sort(
-            key=lambda x: (x.isHidden(), x.project_name.lower(),), reverse=False
+            key=lambda x: (
+                x.isHidden(),
+                x.project_name.lower(),
+            ),
+            reverse=False,
         )
         row_count = len(widgets) / 2
         # Put them back into the grid layout
@@ -169,7 +175,9 @@ class ProjectsView(QtCore.QObject):
             column = i % 2
             widget = widgets[i]
             self._grid_layout.addWidget(
-                widget, row, column,
+                widget,
+                row,
+                column,
             )
             self._grid_layout.setRowStretch(row, 0)
 
