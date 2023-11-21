@@ -87,7 +87,7 @@ class CutsView(QtCore.QObject):
             column,
         )
         self._grid_layout.setRowStretch(row, 0)
-        self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
+        self._grid_layout.addItem(spacer, row + 1, 0, columnSpan=2)
         self._grid_layout.setRowStretch(row + 1, 1)
         self._info_message = (
             ("%d Cuts" % (i + 1)) if (i + 1) > 1 else ("%d Cut" % (i + 1))
@@ -205,7 +205,7 @@ class CutsView(QtCore.QObject):
             self._grid_layout.setRowStretch(row, 0)
 
         # Put back the stretcher
-        self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
+        self._grid_layout.addItem(spacer, row + 1, 0, columnSpan=2)
         self._grid_layout.setRowStretch(row + 1, 1)
         # And update the menu label
         self._sort_menu_button.setText(action.text())

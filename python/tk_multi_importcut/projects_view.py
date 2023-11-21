@@ -82,7 +82,7 @@ class ProjectsView(QtCore.QObject):
         )
         self._grid_layout.setRowStretch(row, 0)
         # Put the stretcher back
-        self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
+        self._grid_layout.addItem(spacer, row + 1, 0, columnSpan=2)
         self._grid_layout.setRowStretch(row + 1, 1)
         count = i + 1
         self._info_message = (
@@ -182,7 +182,7 @@ class ProjectsView(QtCore.QObject):
             self._grid_layout.setRowStretch(row, 0)
 
         # Put back the stretcher
-        self._grid_layout.addItem(spacer, row + 1, 0, colSpan=2)
+        self._grid_layout.addItem(spacer, row + 1, 0, columnSpan=2)
         self._grid_layout.setRowStretch(row + 1, 1)
         # Avoid flashes and jittering by resizing the grid widget to a size
         # suitable to hold all cards
