@@ -62,7 +62,7 @@ _COLORS = {
     "dgrey": "#666666",
     "dgreen": "#377500",
 }
-# Colors associated with some SG statuses
+# Colors associated with some PTR statuses
 _STATUS_COLORS = {
     "omt": _COLORS["sg_red"],
     "hld": _COLORS["sg_red"],

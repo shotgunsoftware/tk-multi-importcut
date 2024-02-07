@@ -15,15 +15,15 @@ from .card_widget import CardWidget
 
 class EntityCard(CardWidget):
     """
-    A Card Widget displaying a general ShotGrid Entity
+    A Card Widget displaying a general Flow Production Tracking Entity
     """
 
     def __init__(self, parent, sg_entity):
         """
-        Instantiate a new EntityCard for the given ShotGrid Entity
+        Instantiate a new EntityCard for the given Flow Production Tracking Entity
 
         :param parent: A parent QWidget
-        :param sg_entity: A ShotGrid entity, as a dictionary, to display
+        :param sg_entity: A Flow Production Tracking entity, as a dictionary, to display
         """
         super(EntityCard, self).__init__(parent, sg_entity, Ui_EntityCard)
 
@@ -45,7 +45,7 @@ class EntityCard(CardWidget):
         """
         Return the status of the attached entity
 
-        :returns: A ShotGrid status
+        :returns: A Flow Production Tracking status
         """
         # Some entity types (like Project) have a non-standard status
         # field name

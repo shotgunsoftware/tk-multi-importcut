@@ -33,23 +33,23 @@ values from the EDL directly as frames based on the frame rate. For example, \
 at 24fps 00:00:01:00 = frame 24."
 
 _AUTOMATIC_INSTRUCTIONS = "In Automatic mode, the app will map the timecode \
-values from the EDL to the Head In value from the Shot in ShotGrid. If that \
+values from the EDL to the Head In value from the Shot in Flow Production Tracking. If that \
 field is empty, the Default Head In value set below for New Shots will be used."
 
 _RELATIVE_INSTRUCTIONS = "In Relative mode, the app will map the timecode \
 values from the EDL to frames based on a specific timecode/frame relationship."
 
-_BAD_GROUP_MSG = '"%s" does not match a valid Group in ShotGrid. Please enter \
-another Group or create "%s" in ShotGrid to proceed.'
+_BAD_GROUP_MSG = '"%s" does not match a valid Group in Flow Production Tracking. Please enter \
+another Group or create "%s" in Flow Production Tracking to proceed.'
 
 _BAD_STATUS_MSG = "The following statuses for reinstating Shots do not match \
-valid statuses in ShotGrid:\n\n%s\n\nPlease enter another status to proceed."
+valid statuses in Flow Production Tracking:\n\n%s\n\nPlease enter another status to proceed."
 
 _BAD_TIMECODE_MSG = '"%s" is not a valid timecode value. The Timecode Mapping \
 must match the pattern hh:mm:ss:ff and contain valid timecode.'
 
 _BAD_SMART_FIELDS_MSG = "The Smart Cut fields do not appear to be enabled. \
-Please check your ShotGrid site."
+Please check your Flow Production Tracking site."
 
 _CHANGED_SETTINGS_MSG = "Applying these Settings will require the EDL to be \
 reprocessed. Some Import Cut information may need to be re-entered."
@@ -149,7 +149,7 @@ class SettingsDialog(QtGui.QDialog):
             # and we throw an error to warn the user. This should probably happen
             # when the app launches, not only when the settings dialog is opened.
             # The reason we warn the user is: if someone deletes a status from
-            # SG that this app references, it obviously can't be used anymore, so
+            # PTR that this app references, it obviously can't be used anymore, so
             # we arbitrarily choose whatever status is at 0.
             self._shot_schema = self._app.shotgun.schema_field_read("Shot")
             shot_statuses = self._shot_schema["sg_status_list"]["properties"][
@@ -396,7 +396,7 @@ class SettingsDialog(QtGui.QDialog):
         if use_smart_fields and not self._shot_schema.get("smart_cut_duration"):
             raise SettingsError(_BAD_SMART_FIELDS_MSG)
 
-        # Break the to_text unicode string into a list of ShotGrid Group names
+        # Break the to_text unicode string into a list of Flow Production Tracking Group names
         # Remove spaces after a ","
         to_text_list = re.sub(
             ",\s+", ",", self.ui.email_groups_line_edit.text(), flags=re.UNICODE

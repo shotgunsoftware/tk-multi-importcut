@@ -117,12 +117,13 @@ class Processor(QtCore.QThread):
     @property
     def sg_project(self):
         """
-        Return the current ShotGrid Project we are importing the Cut into.
+        Return the current Flow Production Tracking Project we are importing
+        the Cut into.
 
         This can be None if this app was started outside of a Project
         context, and a Project has not been selected yet.
 
-        :returns: A ShotGrid Project dictionary or None
+        :returns: A Flow Production Tracking Project dictionary or None
         """
         if self._edl_cut and self._edl_cut._project:
             return self._edl_cut._project
@@ -131,10 +132,10 @@ class Processor(QtCore.QThread):
     @property
     def sg_entity(self):
         """
-        Return the current ShotGrid Entity (e.g. Sequence) we are displaying Cut
+        Return the current Flow Production Tracking Entity (e.g. Sequence) we are displaying Cut
         changes for
 
-        :returns: A ShotGrid Entity dictionary or None
+        :returns: A Flow Production Tracking Entity dictionary or None
         """
         if self._edl_cut and self._edl_cut._sg_entity:
             return self._edl_cut._sg_entity
@@ -165,7 +166,8 @@ class Processor(QtCore.QThread):
     @property
     def sg_cut(self):
         """
-        Return the current ShotGrid Cut we are displaying Cut changes for.
+        Return the current Flow Production Tracking Cut we are displaying
+        Cut changes for.
 
         :returns: A Cut dictionary or None
         """
@@ -176,9 +178,9 @@ class Processor(QtCore.QThread):
     @property
     def sg_new_cut(self):
         """
-        Return the new Cut created in ShotGrid
+        Return the new Cut created in Flow Production Tracking
 
-        :returns: A SG Cut dictionary or None
+        :returns: A PTR Cut dictionary or None
         """
         if self._edl_cut:
             return self._edl_cut._sg_new_cut
@@ -187,7 +189,7 @@ class Processor(QtCore.QThread):
     @property
     def sg_new_cut_url(self):
         """
-        Return the SG url for the new Cut, if any
+        Return the PTR url for the new Cut, if any
 
         :returns: A string or None
         """
@@ -216,7 +218,7 @@ class Processor(QtCore.QThread):
     @property
     def no_cut_for_entity(self):
         """
-        Return True if there is no existing SG Cut for the current SG Entity,
+        Return True if there is no existing PTR Cut for the current PTR Entity,
         False otherwise
 
         :returns: A boolean

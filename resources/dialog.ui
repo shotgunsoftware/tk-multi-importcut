@@ -1582,7 +1582,7 @@ This screen is kept so we have a direct match between internal steps and screens
               </size>
              </property>
              <property name="text">
-              <string>View in ShotGrid</string>
+              <string>View in Flow Production Tracking</string>
              </property>
              <property name="flat">
               <bool>false</bool>

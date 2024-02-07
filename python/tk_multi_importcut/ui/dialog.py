@@ -713,7 +713,7 @@ class Ui_Dialog(object):
         self.progress_screen_title_label.setText(QtGui.QApplication.translate("Dialog", "Importing ....", None, QtGui.QApplication.UnicodeUTF8))
         self.success_label.setText(QtGui.QApplication.translate("Dialog", "CUT IMPORTED", None, QtGui.QApplication.UnicodeUTF8))
         self.edl_imported_label.setText(QtGui.QApplication.translate("Dialog", "EDL_file_name", None, QtGui.QApplication.UnicodeUTF8))
-        self.shotgun_button.setText(QtGui.QApplication.translate("Dialog", "View in ShotGrid", None, QtGui.QApplication.UnicodeUTF8))
+        self.shotgun_button.setText(QtGui.QApplication.translate("Dialog", "View in Flow Production Tracking", None, QtGui.QApplication.UnicodeUTF8))
         self.back_button.setText(QtGui.QApplication.translate("Dialog", "Back", None, QtGui.QApplication.UnicodeUTF8))
         self.create_entity_button.setText(QtGui.QApplication.translate("Dialog", "New Entity", None, QtGui.QApplication.UnicodeUTF8))
         self.cancel_button.setText(QtGui.QApplication.translate("Dialog", "Close", None, QtGui.QApplication.UnicodeUTF8))

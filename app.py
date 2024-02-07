@@ -27,9 +27,10 @@ class ImportCutApp(Application):
         # Toolkit's code reload mechanism will work properly.
         app_payload = self.import_module("tk_multi_importcut")
 
-        # now register a *command*, which is normally a menu entry of some kind on a ShotGrid
-        # menu (but it depends on the engine). The engine will manage this command and
-        # whenever the user requests the command, it will call out to the callback.
+        # now register a *command*, which is normally a menu entry of some kind on a
+        # Flow Production Tracking menu (but it depends on the engine). The engine will
+        # manage this command and whenever the user requests the command, it will call
+        # out to the callback.
 
         # first, set up our callback, calling out to a method inside the app module contained
         # in the python folder of the app
@@ -54,11 +55,11 @@ class ImportCutApp(Application):
 
     def load_edl_for_entity(self, edl_file_path, sg_entity, frame_rate):
         """
-        Allow import cut to run with pre-selected EDL file path and SG
+        Allow import cut to run with pre-selected EDL file path and PTR
         entity, and to change the frame rate for the EDL file
 
         :param edl_file_path: Full path to an EDL file
-        :param sg_entity: An SG entity dictionary as a string, e.g.
+        :param sg_entity: An PTR entity dictionary as a string, e.g.
                           '{"code" : "001", "id" : 19, "type" : "Sequence"}'
         :param frame_rate: The frame rate for the EDL file
         """

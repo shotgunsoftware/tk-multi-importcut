@@ -64,7 +64,7 @@ class ProjectsView(QtCore.QObject):
         Called when a new Project card widget needs to be added to the list
         of retrieved Projects
 
-        :param sg_project: A SG Project dictionary
+        :param sg_project: A PTR Project dictionary
         """
         i = self.card_count
         # Remove it

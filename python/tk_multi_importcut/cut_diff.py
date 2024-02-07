@@ -59,12 +59,12 @@ class CutDiff(QtCore.QObject):
 
     A Cut difference is based on :
     - An EDL entry: a line from an EDL file
-    - A ShotGrid CutItem: a previously registered cut value for an EDL entry
-    - A ShotGrid Shot: Corresponding Shot in ShotGrid
+    - A Flow Production Tracking CutItem: a previously registered cut value for an EDL entry
+    - A Flow Production Tracking Shot: Corresponding Shot in Flow Production Tracking
 
     At least one of them needs to be set. A CutDiff is able to retrieve
     previous cut values and compute new values, from the EDL entry ( a line
-    in the EDL file ) and the CutItem ( previous value registered in SG ).
+    in the EDL file ) and the CutItem ( previous value registered in PTR ).
 
     The schema below shows values which are retrieved, mapping time code values
     to frame values.
@@ -121,9 +121,9 @@ class CutDiff(QtCore.QObject):
         Instantiate a new Cut difference
 
         :param name: A name for this Cut difference, usually the Shot name
-        :param sg_shot: An optional Shot dictionary, as retrieved from ShotGrid
+        :param sg_shot: An optional Shot dictionary, as retrieved from Flow Production Tracking
         :param edit: An optional EditEvent instance, retrieved from an EDL
-        :param sg_cut_item: An optional CutItem dictionary, as retrieved from ShotGrid
+        :param sg_cut_item: An optional CutItem dictionary, as retrieved from Flow Production Tracking
         """
         super(CutDiff, self).__init__()
         self._name = name
@@ -131,7 +131,7 @@ class CutDiff(QtCore.QObject):
         self._edit = edit
         self._sg_cut_item = sg_cut_item
         self._sg_version = None
-        # Make a copy of SG Version so we can change it if needed, e.g. when
+        # Make a copy of PTR Version so we can change it if needed, e.g. when
         # editing Shot name
         if self._sg_cut_item and self._sg_cut_item["version"]:
             self._sg_version = self._sg_cut_item["version"]
@@ -293,34 +293,34 @@ class CutDiff(QtCore.QObject):
     @property
     def sg_shot(self):
         """
-        Return the ShotGrid Shot for this diff, if any
+        Return the Flow Production Tracking Shot for this diff, if any
 
-        :returns: A SG Shot dictionary or None
+        :returns: A PTR Shot dictionary or None
         """
         return self._sg_shot
 
     def set_sg_shot(self, sg_shot):
         """
-        Set the SG Shot associated with this CutDiff
+        Set the PTR Shot associated with this CutDiff
 
-        :param sg_shot: A SG Shot dictionary, or None
+        :param sg_shot: A PTR Shot dictionary, or None
         """
         self._sg_shot = sg_shot
 
     @property
     def sg_cut_item(self):
         """
-        Return the ShotGrid CutItem for this diff, if any
+        Return the Flow Production Tracking CutItem for this diff, if any
 
-        :returns: A SG CutItem dictionary or None
+        :returns: A PTR CutItem dictionary or None
         """
         return self._sg_cut_item
 
     def set_sg_cut_item(self, sg_cut_item):
         """
-        Set the SG CutItem for this CutDiff
+        Set the PTR CutItem for this CutDiff
 
-        :param sg_cut_item: A SG CutItem dictionary or None
+        :param sg_cut_item: A PTR CutItem dictionary or None
         """
         self._sg_cut_item = sg_cut_item
 
@@ -393,17 +393,17 @@ class CutDiff(QtCore.QObject):
     @property
     def sg_version(self):
         """
-        Return the ShotGrid Version for this diff, if any
+        Return the Flow Production Tracking Version for this diff, if any
 
-        :returns: A SG Version dictionary or None
+        :returns: A PTR Version dictionary or None
         """
         return self._sg_version
 
     def set_sg_version(self, sg_version):
         """
-        Set the ShotGrid Version associated with this diff
+        Set the Flow Production Tracking Version associated with this diff
 
-        :param sg_version: A SG Version, as a dictionary
+        :param sg_version: A PTR Version, as a dictionary
         """
         self._sg_version = sg_version
 
@@ -902,7 +902,7 @@ class CutDiff(QtCore.QObject):
 
         :returns: True if a Vfx Shot, False otherwise
         """
-        # Non vfx Shots are not handled in SG by our current clients so, for the
+        # Non vfx Shots are not handled in PTR by our current clients so, for the
         # time being, just check if the item is linked to a Shot.
         # If not, then this is not a VFX Shot entry.
         if self._sg_shot:
@@ -947,7 +947,7 @@ class CutDiff(QtCore.QObject):
 
         - NEW_IN_CUT is different, even if all entries for a Shot are NEW_IN_CUT,
         if a Shot exists it is not NEW. Individual entries will be set to NEW if
-        the Shot does not exist in ShotGrid.
+        the Shot does not exist in Flow Production Tracking.
 
         Other cases fall back to the actual diff type.
 

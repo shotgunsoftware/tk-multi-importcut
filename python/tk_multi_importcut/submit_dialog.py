@@ -85,7 +85,7 @@ class SubmitDialog(QtGui.QDialog):
         self._save_settings()
         update_shot_fields = self.ui.update_shot_fields_checkbox.isChecked()
         title = six.ensure_str(self.ui.title_text.text())
-        # Break the to_text unicode string into a list of ShotGrid Group names
+        # Break the to_text unicode string into a list of Flow Production Tracking Group names
         to_text_list = re.sub(",\s+", ",", self.ui.to_text.text(), flags=re.UNICODE)
         email_groups = six.ensure_str(to_text_list).split(",")
         # If there are no groups specified, remove the empty string from email_groups.
@@ -110,9 +110,10 @@ class SubmitDialog(QtGui.QDialog):
                 msg_box.setIconPixmap(
                     QtGui.QPixmap(":/tk_multi_importcut/error_64px.png")
                 )
-                msg_box.setText("Unknown ShotGrid Group")
+                msg_box.setText("Unknown Flow Production Tracking Group")
                 msg_box.setInformativeText(
-                    'Couldn\'t retrieve a group named "%s" in ShotGrid.' % email_group
+                    'Couldn\'t retrieve a group named "%s" in Flow Production Tracking.'
+                    % email_group
                 )
                 msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
                 msg_box.show()

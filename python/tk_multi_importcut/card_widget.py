@@ -23,7 +23,7 @@ class CardWidget(QtGui.QFrame):
     """
     Base class for Card widgets, handles downloading and selection of thumbnails.
 
-    Card widgets display a thumbnail and are used to select SG Entities.
+    Card widgets display a thumbnail and are used to select PTR Entities.
     """
 
     # Emitted when this card is selected and something should be done
@@ -40,7 +40,7 @@ class CardWidget(QtGui.QFrame):
         Instantiates a new Card Widget.
 
         :param parent: A parent widget
-        :param sg_entity: A ShotGrid Entity dictionary
+        :param sg_entity: A Flow Production Tracking Entity dictionary
         :param ui_builder: A callable typically retrieved from Designer generated
                            Python files
         :param args: An arbitrary list of parameters
@@ -62,11 +62,11 @@ class CardWidget(QtGui.QFrame):
     @property
     def entity_name(self):
         """
-        Returns the name of the SG Entity attached to this card
+        Returns the name of the PTR Entity attached to this card
 
         :returns: A string
         """
-        # Deal with name field not being consistent in SG
+        # Deal with name field not being consistent in PTR
         return self._sg_entity.get(
             "code", self._sg_entity.get("name", self._sg_entity.get("title", ""))
         )
@@ -74,16 +74,16 @@ class CardWidget(QtGui.QFrame):
     @property
     def sg_entity(self):
         """
-        Returns the SG Entity attached to this card
+        Returns the PTR Entity attached to this card
 
-        :returns: A SG Entity dictionary
+        :returns: A PTR Entity dictionary
         """
         return self._sg_entity
 
     @property
     def thumbnail_url(self):
         """
-        Returns the thumbnail url for the SG Entity attached to this card
+        Returns the thumbnail url for the PTR Entity attached to this card
 
         :returns: A url string or None
         """
@@ -180,7 +180,7 @@ class CardWidget(QtGui.QFrame):
     def showEvent(self, event):
         """
         Request an async thumbnail download on first expose, if a thumbnail is
-        available in SG.
+        available in PTR.
 
         :param event: A QEvent
         """
