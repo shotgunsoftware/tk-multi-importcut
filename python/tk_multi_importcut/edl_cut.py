@@ -55,16 +55,16 @@ _ERROR_DROP_FRAME = (
 
 def get_sg_entity_name(sg_entity):
     """
-    Return the name of the given SG Entity
+    Return the name of the given PTR Entity
 
-    Tries the SG standard display name field 'code', but falls back
+    Tries the PTR standard display name field 'code', but falls back
     on 'name' (which is often used by Projects) and then 'title' which
     can be used by some threaded Entity types.
 
-    :param sg_entity: A SG Entity dictionary
+    :param sg_entity: A PTR Entity dictionary
     :returns: A string or None
     """
-    # Deal with name field not being consistent in SG
+    # Deal with name field not being consistent in PTR
     entity_name = sg_entity.get(
         "code", sg_entity.get("name", sg_entity.get("title", ""))
     )
@@ -76,8 +76,8 @@ class EdlCut(QtCore.QObject):
     Worker which handles all data, our main data manager.
 
     After reading and validating an EDL file, the data manager will typically
-    retrieve all SG Entities of a certain type linked to a chosen Project.
-    Then, it will build a summary of cut differences against a SG Cut linked to one
+    retrieve all PTR Entities of a certain type linked to a chosen Project.
+    Then, it will build a summary of cut differences against a PTR Cut linked to one
     of these Entities.
 
     Signals are used to drive UI components running on other threads
@@ -92,11 +92,11 @@ class EdlCut(QtCore.QObject):
     # These signals allow the data manager to tell listeners that new data is available.
     # For example, views will create cards for the emitted data when the signals
     # are emitted
-    # Emitted when a new Project is retrieved from SG
+    # Emitted when a new Project is retrieved from PTR
     new_sg_project = QtCore.Signal(dict)
-    # Emitted when a new Entity is retrieved from SG
+    # Emitted when a new Entity is retrieved from PTR
     new_sg_entity = QtCore.Signal(dict)
-    # Emitted when a new Cut is retrieved from SG
+    # Emitted when a new Cut is retrieved from PTR
     new_sg_cut = QtCore.Signal(dict)
     # Emitted when a new CutDiff is available
     new_cut_diff = QtCore.Signal(CutDiff)
@@ -156,9 +156,9 @@ class EdlCut(QtCore.QObject):
     @property
     def entity_name(self):
         """
-        Return the name of the attached SG Entity
+        Return the name of the attached PTR Entity
 
-        Tries the SG standard display name field 'code', but falls back
+        Tries the PTR standard display name field 'code', but falls back
         on 'name' (which is often used by Projects) and then 'title' which
         can be used by some threaded Entity types.
 
@@ -171,7 +171,7 @@ class EdlCut(QtCore.QObject):
     @property
     def entity_type_name(self):
         """
-        Return a nice name for the attached SG Entity's type
+        Return a nice name for the attached PTR Entity's type
 
         :returns: A string or None
         """
@@ -402,7 +402,7 @@ class EdlCut(QtCore.QObject):
 
     def _bind_versions(self):
         """
-        Bind SG Versions to loaded EDL edits
+        Bind PTR Versions to loaded EDL edits
         """
         # Shouldn't happen, but raise an error if it does
         if not self._edl:
@@ -419,12 +419,12 @@ class EdlCut(QtCore.QObject):
         for edit in self._edl.edits:
             v_name = edit.get_version_name()
             if v_name:
-                # SG find method is case insensitive, don't have to worry
+                # PTR find method is case insensitive, don't have to worry
                 # about upper / lower case names match
                 # but we use lowercase keys
                 v_name = v_name.lower()
                 versions_names[v_name].append(edit)
-        # Retrieve actual versions from SG
+        # Retrieve actual versions from PTR
         if versions_names:
             sg_versions = self._sg.find(
                 "Version",
@@ -434,7 +434,7 @@ class EdlCut(QtCore.QObject):
                 ],
                 ["code", "entity", "entity.Shot.code", "image"],
             )
-            # And update edits with the SG versions retrieved
+            # And update edits with the PTR versions retrieved
             for sg_version in sg_versions:
                 edits = versions_names[sg_version["code"].lower()]
                 for edit in edits:
@@ -451,7 +451,7 @@ class EdlCut(QtCore.QObject):
 
         Retrieve Versions from the Project and bind them to the edit entries
 
-        :param sg_project: A SG Project dictionary
+        :param sg_project: A PTR Project dictionary
         """
         self._project = sg_project
         self._bind_versions()
@@ -460,10 +460,10 @@ class EdlCut(QtCore.QObject):
 
     def _get_sg_statuses(self):
         """
-        Retrieve Statuses from ShotGrid, with their display name and color
+        Retrieve Statuses from Flow Production Tracking, with their display name and color
 
         A '_bg_hex_color' additional key with the bg color converted to hexadecimal
-        is added to the values retrieved from ShotGrid
+        is added to the values retrieved from Flow Production Tracking
 
         :returns: A dictionary where keys are Statuses code and values Statuses
                   dictionaries
@@ -482,7 +482,7 @@ class EdlCut(QtCore.QObject):
         """
         Retrieve all Entities with the given type for the current Project
 
-        :param u_entity_type: A ShotGrid Entity type name, as a unicode string, e.g. u"Sequence"
+        :param u_entity_type: A Flow Production Tracking Entity type name, as a unicode string, e.g. u"Sequence"
         """
         entity_type = six.ensure_str(u_entity_type)
         self._sg_entity_type = entity_type
@@ -542,7 +542,7 @@ class EdlCut(QtCore.QObject):
                 sg_entities = self._sg.find(
                     entity_type,
                     [["project", "is", self._project]],
-                    # We ask for various 'name' fields used by SG Entities, only
+                    # We ask for various 'name' fields used by PTR Entities, only
                     # the existing one will be returned, others will be ignored.
                     [
                         "code",
@@ -561,7 +561,7 @@ class EdlCut(QtCore.QObject):
                     sg_entity.get("sg_status_list", sg_entity.get("sg_status", ""))
                     or ""
                 )
-                # Register a display status if one available, with the color from SG
+                # Register a display status if one available, with the color from PTR
                 if status in status_dict:
                     sg_entity["_display_status"] = status_dict[status]
                 else:
@@ -580,7 +580,7 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot()
     def retrieve_projects(self):
         """
-        Retrieve all Projects for the ShotGrid site
+        Retrieve all Projects for the Flow Production Tracking site
         """
         self.got_busy.emit(None)
         try:
@@ -609,9 +609,9 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(dict)
     def retrieve_cuts(self, sg_entity):
         """
-        Retrieve all Cuts for the given ShotGrid Entity
+        Retrieve all Cuts for the given Flow Production Tracking Entity
 
-        :param sg_entity: A ShotGrid Entity dictionary, typically a Sequence
+        :param sg_entity: A Flow Production Tracking Entity dictionary, typically a Sequence
         """
         self._sg_entity = sg_entity
         # Retrieve display names and colors for statuses
@@ -660,11 +660,11 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(dict)
     def show_cut_diff(self, sg_cut):
         """
-        Build a cut summary for the current ShotGrid Entity (e.g. Sequence) and the given
-        ShotGrid Cut (which could be empty).
+        Build a cut summary for the current Flow Production Tracking Entity (e.g. Sequence)
+        and the given Flow Production Tracking Cut (which could be empty).
 
         If a Cut is given, all CutItems linked to this Cut will be retrieved from
-        ShotGrid and reconciled against the edit list previously loaded.
+        Flow Production Tracking and reconciled against the edit list previously loaded.
 
         Versions and Shots are primarily used to match CutItems against edits.
         However, the same Shot can appear more than once in a given Cut. In this
@@ -677,8 +677,9 @@ class EdlCut(QtCore.QObject):
 
         A CutSummary is used to store lists of CutDiff instances, grouped by Shots
 
-        :param sg_cut: A ShotGrid Cut dictionary retrieved from ShotGrid, or an empty dictionary.
-                       Used to compare new Cut information with the last Cut.
+        :param sg_cut: A Flow Production Tracking Cut dictionary retrieved from
+                       Flow Production Tracking, or an empty dictionary. Used to
+                       compare new Cut information with the last Cut.
         """
         self._logger.info("Retrieving Cut summary for %s" % self.entity_name)
         self.got_busy.emit(None)
@@ -733,8 +734,8 @@ class EdlCut(QtCore.QObject):
                     ],
                 )
                 # Consolidate versions retrieved from CutItems
-                # Because of a bug in the ShotGrid API, we can't use two levels of
-                # redirection, with "sg_version.Version.entity.Shot.code",
+                # Because of a bug in the Flow Production Tracking API, we can't use
+                # two levels of redirection, with "sg_version.Version.entity.Shot.code",
                 # to retrieve the Shot linked to the Version, a CRUD
                 # error will happen if one of the CutItem does not have Version linked
                 sg_cut_item_version_ids = [
@@ -747,7 +748,7 @@ class EdlCut(QtCore.QObject):
                         [["id", "in", sg_cut_item_version_ids]],
                         ["entity", "entity.Shot.code"],
                     )
-                    # Index results with their SG id
+                    # Index results with their PTR id
                     for item_version in sg_cut_item_versions_list:
                         sg_cut_item_versions[item_version["id"]] = item_version
                 # We match fields that we would have retrieved with an sg.find("Version", ...)
@@ -886,7 +887,7 @@ class EdlCut(QtCore.QObject):
                         )
                     else:
                         matching_cut_item = None
-                        # Do we have a matching Shot in SG ?
+                        # Do we have a matching Shot in PTR ?
                         matching_shot = sg_shots_dict.get(lower_shot_name)
                         if matching_shot:
                             # yes we do
@@ -955,7 +956,7 @@ class EdlCut(QtCore.QObject):
     def sg_cut_item_for_shot(self, sg_cut_items, sg_shot, sg_version=None, edit=None):
         """
         Return a CutItem for the given Shot from the given CutItems list retrieved
-        from ShotGrid
+        from Flow Production Tracking
 
         The sg_cut_items list is modified inside this method, entries being removed as
         they are chosen.
@@ -969,10 +970,10 @@ class EdlCut(QtCore.QObject):
         - Is the tc out the same?
 
         :param sg_cut_items: A list of CutItem instances to consider
-        :param sg_shot: A SG Shot dictionary
-        :param sg_version: A SG Version dictionary
+        :param sg_shot: A PTR Shot dictionary
+        :param sg_version: A PTR Version dictionary
         :param edit: An EditEvent instance or None
-        :returns: A SG CutItem dictionary, or None
+        :returns: A PTR CutItem dictionary, or None
         """
 
         potential_matches = []
@@ -1080,17 +1081,17 @@ class EdlCut(QtCore.QObject):
     @QtCore.Slot(six.text_type, dict, dict, six.text_type, bool)
     def do_cut_import(self, u_title, sender, to, u_description, update_shots):
         """
-        Import the Cut changes in ShotGrid
-        - Create a new SG Cut
-        - Create new SG CutItems
-        - Create new SG Shots
-        - Update existing SG Shots if update_shots is True
-        - Create a Note in SG with a summary of changes
+        Import the Cut changes in Flow Production Tracking
+        - Create a new PTR Cut
+        - Create new PTR CutItems
+        - Create new PTR Shots
+        - Update existing PTR Shots if update_shots is True
+        - Create a Note in PTR with a summary of changes
 
-        :param u_title: A unicode string, the new SG Cut name and a title for the Note
+        :param u_title: A unicode string, the new PTR Cut name and a title for the Note
                       that will be created
-        :param sender: A SG user dictionary, the Note sender
-        :param to: A SG Group dictionary, the recipient for the Note
+        :param sender: A PTR user dictionary, the Note sender
+        :param to: A PTR Group dictionary, the recipient for the Note
         :param u_description: Comments as a unicode string, used in the Note's body
         :param update_shots: A boolean, whether or not existing Shots data will
                              be updated
@@ -1105,7 +1106,7 @@ class EdlCut(QtCore.QObject):
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
             # When testing this app it is time consuming to create
-            # all required Versions in SG. Uncomment the following line to
+            # all required Versions in PTR. Uncomment the following line to
             # create missing Versions automatically for you, which can be
             # handy for testing.
             # self._create_missing_sg_versions()
@@ -1130,14 +1131,14 @@ class EdlCut(QtCore.QObject):
 
     def create_note(self, title, sender, to, description, sg_links=None):
         """
-        Create a note in ShotGrid, linked to the current ShotGrid entity, typically
+        Create a note in Flow Production Tracking, linked to the current Flow Production Tracking entity, typically
         a Sequence and optionally linked to the list of sg_links
 
         :param title: A string, the Note title
-        :param sender: A ShotGrid user dictionary
-        :param to: A ShotGrid Group dictionary
+        :param sender: A Flow Production Tracking user dictionary
+        :param to: A Flow Production Tracking Group dictionary
         :param description: Some comments which will be added to the Note
-        :param sg_links: Optional list of ShotGrid Entity dictionaries to link the note to
+        :param sg_links: Optional list of Flow Production Tracking Entity dictionaries to link the note to
         """
         summary = self._summary
         url_links = [
@@ -1173,14 +1174,14 @@ class EdlCut(QtCore.QObject):
 
     def create_sg_cut(self, title, description):
         """
-        Create a new Cut in ShotGrid, linked to the current SG Entity
+        Create a new Cut in Flow Production Tracking, linked to the current PTR Entity
 
         If a movie was provided, create a new Version from it, linked to the
-        new SG Cut.
+        new PTR Cut.
 
-        Upload the EDL file onto the new SG Cut
+        Upload the EDL file onto the new PTR Cut
 
-        :param title: A string, the new SG Cut name
+        :param title: A string, the new PTR Cut name
         :param description: A string, a description for the Cut
         """
         # Create a new Cut
@@ -1258,20 +1259,21 @@ class EdlCut(QtCore.QObject):
             )
         except Exception as e:
             self._logger.warning(
-                "Couldn't upload %s into ShotGrid: %s" % (self._edl_file_path, e)
+                "Couldn't upload %s into Flow Production Tracking: %s"
+                % (self._edl_file_path, e)
             )
         return sg_cut
 
     def _get_shot_in_out_sg_data(self, head_in, cut_in, cut_out, tail_out):
         """
         Returns a dictionary with the data to update a Shot in/out values
-        in ShotGrid from the given values
+        in Flow Production Tracking from the given values
 
         :param head_in: Shot head in value to set
         :param cut_in: Shot cut in value to set
         :param cut_out: Shot cut out value to set
         :param tail_out: Shot tail out value to set
-        :returns: A SG data dictionary suitable for an update
+        :returns: A PTR data dictionary suitable for an update
         """
         # Note: smart fields require a two pre-update pass to get the right value
         # because of the way they propagate changes from one field to others. This
@@ -1295,7 +1297,7 @@ class EdlCut(QtCore.QObject):
 
     def update_sg_shots(self, update_shots):
         """
-        Update Shots in ShotGrid
+        Update Shots in Flow Production Tracking
         - Create them if needed
 
         If update_shots is true:
@@ -1567,9 +1569,9 @@ class EdlCut(QtCore.QObject):
 
     def _create_missing_sg_versions(self):
         """
-        Create Versions in ShotGrid for each Shot which needs one
+        Create Versions in Flow Production Tracking for each Shot which needs one
         """
-        # Helper method for easily creating Versions in SG for testing
+        # Helper method for easily creating Versions in PTR for testing
         # This is not part of production specs, but very handy for developers
         self._logger.info("Updating versions ...")
         sg_batch_data = []
@@ -1620,9 +1622,9 @@ class EdlCut(QtCore.QObject):
 
     def create_sg_cut_items(self, sg_cut):
         """
-        Create the CutItems in ShotGrid, linked to the given Cut
+        Create the CutItems in Flow Production Tracking, linked to the given Cut
 
-        :param sg_cut: A SG Cut dictionary
+        :param sg_cut: A PTR Cut dictionary
         """
         # Loop through all edits and create CutItems for them
         self._logger.info("Creating Cut Items...")

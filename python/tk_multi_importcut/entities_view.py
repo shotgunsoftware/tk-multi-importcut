@@ -31,7 +31,7 @@ class EntitiesView(QtCore.QObject):
         """
         Instantiate a new view for the given Entity type
 
-        :param sg_entity_type: The SG Entities we will show
+        :param sg_entity_type: The PTR Entities we will show
         :param grid_layout: A grid layout
         """
         super(EntitiesView, self).__init__()
@@ -63,7 +63,7 @@ class EntitiesView(QtCore.QObject):
     @property
     def sg_entity_type(self):
         """
-        Return the SG Entity type this view is for, as a string
+        Return the PTR Entity type this view is for, as a string
 
         :returns: A string
         """
@@ -74,7 +74,7 @@ class EntitiesView(QtCore.QObject):
         """
         Return the selected Entity, if any
 
-        :returns: A SG Entity dictionary or None
+        :returns: A PTR Entity dictionary or None
         """
         if self._selected_entity_card:
             return self._selected_entity_card.sg_entity
@@ -86,7 +86,7 @@ class EntitiesView(QtCore.QObject):
         Called when a new Entity card widget needs to be added to the list
         of retrieved Entities
 
-        :param sg_entity: A SG Entity dictionary
+        :param sg_entity: A PTR Entity dictionary
         """
         if sg_entity["type"] != self._sg_entity_type:
             # Not for this view which only display another type of Entities

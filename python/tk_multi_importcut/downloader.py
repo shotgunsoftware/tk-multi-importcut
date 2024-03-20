@@ -44,7 +44,7 @@ _download_thread_pool = DownloadThreadPool()
 
 class DownloadRunner(QtCore.QRunnable):
     """
-    A runner to download things from ShotGrid
+    A runner to download things from Flow Production Tracking
     """
 
     class _Notifier(QtCore.QObject):

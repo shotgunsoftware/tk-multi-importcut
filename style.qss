@@ -99,7 +99,7 @@ EntityLineWidget:focus:!read-only {
 
 /*
 When not in edit and the value is empty or not valid
-Make it SG red
+Make it PTR red
 */
 EntityLineWidget:!focus[valid="false"] {
     color: #FC6246;
@@ -284,7 +284,7 @@ enabled */
     font-size: 20px;
 }
 
-/* Highlight some buttons in SG blue */
+/* Highlight some buttons in PTR blue */
 #success_page #shotgun_button,
 #create_entity_dialog #create_entity_button,
 #settings_dialog #apply_button:enabled,
@@ -442,7 +442,7 @@ CutDiffCard[omitted="true"] #icon_label {
     border-radius: 2px;
 }
 
-/* Titles in SG blue for cut summary cards */
+/* Titles in PTR blue for cut summary cards */
 CutDiffCard #head_title_label,
 CutDiffCard #cut_title_label,
 CutDiffCard #tail_title_label {

@@ -213,7 +213,7 @@ class ShotCutDiffList(list):
         new.
 
         Return a tuple with :
-        - A SG Shot dictionary or None
+        - A PTR Shot dictionary or None
         - The smallest cut order
         - The earliest head in
         - The earliest cut in
@@ -379,16 +379,16 @@ class CutSummary(QtCore.QObject):
         offset will be available so when creating CutItems all edit timecodes can
         be 00:00:00:00 based, instead of being kept absolute.
 
-        A ShotGrid Project is needed, as it might differ from the current context
-        Project, if the user picked another one.
+        A Flow Production Tracking Project is needed, as it might differ from the
+        current context Project, if the user picked another one.
 
-        The ShotGrid Entity can be a Scene, a Sequence, or any other Shot container.
-        It is the Entity the Cut is related to
+        The Flow Production Tracking Entity can be a Scene, a Sequence, or any other
+        Shot container. It is the Entity the Cut is related to
 
-        :param sg_project: A SG Project dictionary
-        :param sg_entity: A SG Entity dictionary
+        :param sg_project: A PTR Project dictionary
+        :param sg_entity: A PTR Entity dictionary
         :param sg_shot_link_field_name: The name of the field used to link Shots
-                                        to the SG Entity
+                                        to the PTR Entity
         :param tc_edit_in: A Timecode instance, the very first edit timecode in
         :param tc_edit_out: A Timecode instance, the very last edit timecode out
         """
@@ -461,9 +461,9 @@ class CutSummary(QtCore.QObject):
         Add a new Cut difference to this summary
 
         :param shot_name: Shot name, as a string
-        :param sg_shot: An optional Shot, as a dictionary retrieved from ShotGrid
+        :param sg_shot: An optional Shot, as a dictionary retrieved from Flow Production Tracking
         :param edit: An optional CutEdit object
-        :param sg_cut_item: An optional Cut Item, as a dictionary retrieved from ShotGrid
+        :param sg_cut_item: An optional Cut Item, as a dictionary retrieved from Flow Production Tracking
         :return: A new CutDiff instance
         """
         if sg_shot is None and edit is None and sg_cut_item is None:
@@ -477,7 +477,7 @@ class CutSummary(QtCore.QObject):
         cut_diff.name_changed.connect(self.cut_diff_name_changed)
         cut_diff.type_changed.connect(self.cut_diff_type_changed)
         # Force a lowercase key to make Shot names case-insensitive. Shot names
-        # we retrieve from EDLs may be uppercase, but actual SG Shots may be
+        # we retrieve from EDLs may be uppercase, but actual PTR Shots may be
         # lowercase.
         # We might not have a valid Shot name if we have an edit without any
         # Shot name or Version name. To avoid considering all these entries
@@ -551,7 +551,7 @@ class CutSummary(QtCore.QObject):
         if old_shot_key not in self._cut_diffs:
             raise RuntimeError("Can't retrieve Shot %s in internal list" % old_shot_key)
         self._cut_diffs[old_shot_key].remove(cut_diff)
-        # If we have a SG Shot, and a CutItem, it is now an omitted one
+        # If we have a PTR Shot, and a CutItem, it is now an omitted one
         if cut_diff.sg_cut_item and cut_diff.sg_shot:
             self._logger.debug(
                 "Adding omitted entry for old shot key %s" % old_shot_key
@@ -637,7 +637,7 @@ class CutSummary(QtCore.QObject):
                 self._logger.debug(
                     "Adding new entry for new Shot key %s" % new_shot_key
                 )
-                # SG Shot is shared by all entries in this list
+                # PTR Shot is shared by all entries in this list
                 cdiff = self._cut_diffs[new_shot_key][0]
                 cut_diff.set_sg_shot(cdiff.sg_shot)
                 cut_diff.set_sg_version(cdiff.sg_version)
@@ -880,7 +880,7 @@ class CutSummary(QtCore.QObject):
         Build a text report for this summary, highlighting changes
 
         :param title: A title for the report
-        :param sg_links: ShotGrid URLs to display in the report as links
+        :param sg_links: Flow Production Tracking URLs to display in the report as links
         :return: A (subject, body) tuple, as strings
         """
         # Body should look like this:

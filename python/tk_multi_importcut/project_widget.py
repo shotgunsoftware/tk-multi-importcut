@@ -16,15 +16,16 @@ from .card_widget import CardWidget
 
 class ProjectCard(CardWidget):
     """
-    Widget displaying a ShotGrid Project
+    Widget displaying a Flow Production Tracking Project
     """
 
     def __init__(self, parent, sg_project):
         """
-        Instantiate a new ProjectCard for the given ShotGrid Project
+        Instantiate a new ProjectCard for the given Flow Production Tracking
+        Project
 
         :param parent: A parent QWidget
-        :param sg_project: A ShotGrid project, as a dictionary, to display
+        :param sg_project: A Flow Production Tracking project, as a dictionary, to display
         """
         super(ProjectCard, self).__init__(parent, sg_project, Ui_ProjectCard)
         self.ui.title_label.setText("%s" % self.project_name)
@@ -43,9 +44,9 @@ class ProjectCard(CardWidget):
     @property
     def sg_project(self):
         """
-        Returns the SG Project for this card
+        Returns the PTR Project for this card
 
-        :returns: A ShotGrid Project dictionary
+        :returns: A Flow Production Tracking Project dictionary
         """
         return self._sg_entity
 
@@ -61,9 +62,9 @@ class ProjectCard(CardWidget):
     @property
     def project_status(self):
         """
-        Return the status of the attached SG Project
+        Return the status of the attached PTR Project
 
-        :returns: A ShotGrid Status as a string
+        :returns: A Flow Production Tracking Status as a string
         """
         return self.sg_project.get("sg_status")
 

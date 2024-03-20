@@ -69,12 +69,14 @@ settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings
 
 _BAD_PERMISSIONS_MSG = "The following error was reported:\n\nIt's possible you \
 do not have permission to create new %ss. Please select another %s or ask your \
-ShotGrid Admin to adjust your permissions in ShotGrid."
+Flow Production Tracking Admin to adjust your permissions in Flow Production Tracking."
 
-_TRANSITIONS_PRESENT_MSG = "This EDL contains a transition.\n\nShotGrid does \
-not support transitions when viewing the Cut, but the EDL can still be \
+_TRANSITIONS_PRESENT_MSG = (
+    "This EDL contains a transition.\n\nFlow Production Tracking "
+    "does not support transitions when viewing the Cut, but the EDL can still be \
 imported. The transition frames will be included in the Cut Duration for the \
 Shots, and frame handles will be calculated outside of the transition."
+)
 
 
 def show_dialog(app_instance):
@@ -97,12 +99,12 @@ def show_dialog(app_instance):
 
 def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
     """
-    Run the app with a pre-selected edl file and SG entity, typically from
+    Run the app with a pre-selected edl file and PTR entity, typically from
     command line arguments.
 
     :param app_instance: An Import Cut TK app instance
     :param edl_file_path: Full path to an EDL file
-    :param sg_entity: A SG Entity dictionary as a string, e.g.
+    :param sg_entity: A PTR Entity dictionary as a string, e.g.
                       '{"code" : "001", "id" : 19, "type" : "Sequence"}'
     :param frame_rate: The frame rate for the EDL file, as a float.
                        For example 24.0, 29.997 or 60.0
@@ -112,7 +114,7 @@ def load_edl_for_entity(app_instance, edl_file_path, sg_entity, frame_rate):
     if sg_entity:
         sg_entity_dict = ast.literal_eval(sg_entity)
         if not isinstance(sg_entity_dict, dict):
-            raise ValueError("Invalid SG Entity %s" % sg_entity)
+            raise ValueError("Invalid PTR Entity %s" % sg_entity)
 
     app_instance.engine.show_dialog(
         "Import Cut",
@@ -143,7 +145,7 @@ class AppDialog(QtGui.QWidget):
     which are combined in a single screen. Therefore, the Entity Type step is a
     'virtual' step which, when done, does not move the UI to the next screen.
 
-    Intermediate screens are views displaying cards for various SG Entities. The
+    Intermediate screens are views displaying cards for various PTR Entities. The
     user selects one of them, we ask the data manager to retrieve data linked to
     this Entity, and move forward to next step when the data is retrieved.
     """
@@ -152,15 +154,15 @@ class AppDialog(QtGui.QWidget):
     new_edl = QtCore.Signal(str)
     # Emitted when a new movie file should be considered
     new_movie = QtCore.Signal(str)
-    # Emitted to ask the data manager to retrieve SG projects
+    # Emitted to ask the data manager to retrieve PTR projects
     get_projects = QtCore.Signal()
-    # Emitted to ask the data manager to retrieve SG entities
+    # Emitted to ask the data manager to retrieve PTR entities
     get_entities = QtCore.Signal(str)
-    # Emitted when the current SG Project should be set
+    # Emitted when the current PTR Project should be set
     set_active_project = QtCore.Signal(dict)
-    # Emitted to ask the data manager to retrieve SG Cuts for a given SG Entity
+    # Emitted to ask the data manager to retrieve PTR Cuts for a given PTR Entity
     get_cuts_for_entity = QtCore.Signal(dict)
-    # Emitted to ask the data manager to retrieve SG CutItems for a given SG Cut
+    # Emitted to ask the data manager to retrieve PTR CutItems for a given PTR Cut
     # and CutDiffs with edit entries / Cut items
     get_cut_diff = QtCore.Signal(dict)
     # Emitted when data for a particular step should be reloaded/rebuilt by the
@@ -173,7 +175,7 @@ class AppDialog(QtGui.QWidget):
         the first screens.
 
         :param edl_file_path: Full path to an EDL file
-        :param sg_entity: An SG Entity dictionary
+        :param sg_entity: An PTR Entity dictionary
         :param frame_rate: Optional float, use a specific frame rate for the import,
                            e.g. 24.0, 29.997 or 60.0, potentially different from
                            the frame rate stored in user settings
@@ -200,7 +202,7 @@ class AppDialog(QtGui.QWidget):
         # Current import step being displayed
         self._step = 0
 
-        # SG Entity that is selected at each step. Selection only happen in the first steps
+        # PTR Entity that is selected at each step. Selection only happen in the first steps
         # but we create entries for all the steps which allows us to index the list
         # with the current step and blindly disable the select button on the
         # value for each step
@@ -231,7 +233,7 @@ class AppDialog(QtGui.QWidget):
         self._processor.has_transitions.connect(self.has_transitions)
         self._processor.valid_movie.connect(self.valid_movie)
 
-        # Let the data manager know that we need it to retrieve data from SG
+        # Let the data manager know that we need it to retrieve data from PTR
         self.get_projects.connect(self._processor.retrieve_projects)
         self.set_active_project.connect(self._processor.set_sg_project)
         self.get_entities.connect(self._processor.retrieve_entities)
@@ -265,7 +267,7 @@ class AppDialog(QtGui.QWidget):
         self._projects_view.selection_changed.connect(self.selection_changed)
         # Display messages from the view
         self._projects_view.new_info_message.connect(self.display_info_message)
-        # When SG Projects are retrieved by the data manager, let the view know
+        # When PTR Projects are retrieved by the data manager, let the view know
         # that new cards should be build for them
         self._processor.new_sg_project.connect(self._projects_view.new_sg_project)
         self.ui.projects_search_line_edit.search_edited.connect(
@@ -281,13 +283,13 @@ class AppDialog(QtGui.QWidget):
 
         # Instantiate a Cuts view handler
         self._cuts_view = CutsView(self.ui.cuts_grid, self.ui.cuts_sort_button)
-        # Show Cut differences when a SG Cut is picked up
+        # Show Cut differences when a PTR Cut is picked up
         self._cuts_view.cut_chosen.connect(self.show_cut_diff)
         # We need to know the current selection for the "Select" button
         self._cuts_view.selection_changed.connect(self.selection_changed)
         # Display messages from the view
         self._cuts_view.new_info_message.connect(self.display_info_message)
-        # When SG Cuts are retrieved by the data manager, let the view know
+        # When PTR Cuts are retrieved by the data manager, let the view know
         # that new cards should be build for them
         self._processor.new_sg_cut.connect(self._cuts_view.new_sg_cut)
         self.ui.search_line_edit.search_edited.connect(self._cuts_view.search)
@@ -371,7 +373,7 @@ class AppDialog(QtGui.QWidget):
         # create these buttons. A Project button is always added
         self._create_entity_type_buttons()
 
-        # A button to see the import result in ShotGrid
+        # A button to see the import result in Flow Production Tracking
         self.ui.shotgun_button.clicked.connect(self.show_in_shotgun)
         # A button that opens user-facing documentation in a browser.
         self.ui.help_button.clicked.connect(self.show_help)
@@ -393,7 +395,7 @@ class AppDialog(QtGui.QWidget):
         will be imported against.
 
         The list of valid Entity types that Cuts can be linked to is derived
-        from the ShotGrid schema field setting for Cut.entity.
+        from the Flow Production Tracking schema field setting for Cut.entity.
 
         The current UI can only handle displaying a limited number of entity
         types correctly. Any more than that and they would not be displayed
@@ -468,9 +470,9 @@ class AppDialog(QtGui.QWidget):
 
     def _create_entity_type_view(self, sg_entity_type, grid_layout):
         """
-        Create a view for the given SG Entity type
+        Create a view for the given PTR Entity type
 
-        :param sg_entity_type: A SG Entity type as a string, e.g. 'Shot'
+        :param sg_entity_type: A PTR Entity type as a string, e.g. 'Shot'
         :param grid_layout: A QGridLayout used to layout Entity Cards
         """
         self._entities_views.append(EntitiesView(sg_entity_type, grid_layout))
@@ -480,7 +482,7 @@ class AppDialog(QtGui.QWidget):
         self._entities_views[-1].selection_changed.connect(self.selection_changed)
         # Display messages from the view
         self._entities_views[-1].new_info_message.connect(self.display_info_message)
-        # When SG Entities are retrieved by the data manager, let the view know
+        # When PTR Entities are retrieved by the data manager, let the view know
         # that new cards should be build for them
         self._processor.new_sg_entity.connect(self._entities_views[-1].new_sg_entity)
         self.ui.entities_search_line_edit.search_edited.connect(
@@ -494,7 +496,7 @@ class AppDialog(QtGui.QWidget):
         """
         Create a button allowing to select an Entity Type
 
-        :param entity_type: A SG Entity type
+        :param entity_type: A PTR Entity type
         :param entity_type_name: A nice name for this Entity type
         :returns: A QPushButton
         """
@@ -519,7 +521,7 @@ class AppDialog(QtGui.QWidget):
         Called when an Entity Type button is clicked, activate the Entity type
         in the Entities view
 
-        :param u_entity_type: A SG Entity type, as a unicode string
+        :param u_entity_type: A PTR Entity type, as a unicode string
         """
         entity_type = six.ensure_str(u_entity_type)
         # Show the view for the Entity type
@@ -534,10 +536,10 @@ class AppDialog(QtGui.QWidget):
         """
         Special mode when the app is launched with command line parameters,
         e.g. for Premiere integration: load the given EDL and select the given
-        SG Entity
+        PTR Entity
 
         :param edl_file_path: Full path to EDL file
-        :param sg_entity: A SG Entity dictionary
+        :param sg_entity: A PTR Entity dictionary
         """
 
         # There is no command line support yet for passing in a base layer
@@ -554,7 +556,7 @@ class AppDialog(QtGui.QWidget):
     @property
     def no_cut_for_entity(self):
         """
-        Returns True if there is no Cut associated with the current SG Entity
+        Returns True if there is no Cut associated with the current PTR Entity
 
         :returns: False if there is a least one Cut available, True otherwise
         """
@@ -710,7 +712,7 @@ class AppDialog(QtGui.QWidget):
     def has_transitions(self):
         """
         Called when an EDL is dropped and contains transitions. Pop up message
-        informing the user of current Cuts feature compatibility with ShotGrid.
+        informing the user of current Cuts feature compatibility with Flow Production Tracking.
         """
         msg_box = QtGui.QMessageBox(parent=self, icon=QtGui.QMessageBox.Critical)
         msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/clapboard.png"))
@@ -1025,7 +1027,7 @@ class AppDialog(QtGui.QWidget):
                 )
             else:
                 self.ui.cut_summary_title_label.setText(
-                    "Comparing %s to ShotGrid Shot Data for %s <b>%s</b>"
+                    "Comparing %s to Flow Production Tracking Shot Data for %s <b>%s</b>"
                     % (
                         os.path.basename(self._processor.edl_file_path),
                         self._processor.entity_type_name,
@@ -1069,7 +1071,7 @@ class AppDialog(QtGui.QWidget):
         """
         Called when selection changes in intermediate screens
 
-        :param sg_entity: The SG Entity which was selected for the current step
+        :param sg_entity: The PTR Entity which was selected for the current step
         """
         # Keep track of what is selected in different views
         # so the select button at the bottom of the window can
@@ -1113,7 +1115,7 @@ class AppDialog(QtGui.QWidget):
         If needed, ask the data manager to retrieve a list of entities for this
         Entity type.
 
-        :param u_sg_entity_type: A SG Entity type, as a unicode string, e.g. u'Sequence'
+        :param u_sg_entity_type: A PTR Entity type, as a unicode string, e.g. u'Sequence'
         """
         sg_entity_type = six.ensure_str(u_sg_entity_type)
         self._preload_entity_type = sg_entity_type
@@ -1124,7 +1126,7 @@ class AppDialog(QtGui.QWidget):
         # Retrieve the Entity type view we should activate
         for i, view in enumerate(self._entities_views):
             if view.sg_entity_type == sg_entity_type:
-                # Here we don't need the worker to retrieve additional data from SG
+                # Here we don't need the worker to retrieve additional data from PTR
                 # so we don't emit any signal like in other show_xxxx slots
                 # if we already have a view for the given Entity type, we are already
                 # on the right screen, so, basically, we don't have anything to do
@@ -1156,7 +1158,7 @@ class AppDialog(QtGui.QWidget):
 
         Just tell the data manager that the current Project changed
 
-        :param sg_project: A SG Project dictionary
+        :param sg_project: A PTR Project dictionary
         """
         self._logger.info("Using Project %s" % sg_project["name"])
         self.set_active_project.emit(sg_project)
@@ -1164,11 +1166,11 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(dict)
     def show_cuts(self, sg_entity):
         """
-        Called when a SG Entity was chosen and Cuts need to be shown for it
+        Called when a PTR Entity was chosen and Cuts need to be shown for it
 
         Asks the data manager to retrieve Cuts linked to this Entity
 
-        :param sg_entity: A SG Entity dictionary
+        :param sg_entity: A PTR Entity dictionary
         """
         name = sg_entity.get(
             "code", sg_entity.get("name", sg_entity.get("title", "????"))
@@ -1190,12 +1192,12 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot(dict)
     def show_cut_diff(self, sg_cut):
         """
-        Called when a SG Cut was chosen and Cut differences need to be shown for
+        Called when a PTR Cut was chosen and Cut differences need to be shown for
         it.
 
         By passing an empty Cut dictionary, the comparison to a previous Cut is skipped
 
-        :param sg_cut: A SG Cut or an empty dictionary
+        :param sg_cut: A PTR Cut or an empty dictionary
         """
         if sg_cut != {}:
             self._logger.info("Retrieving Cut information for %s" % sg_cut["code"])
@@ -1263,7 +1265,7 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot()
     def import_cut(self):
         """
-        Called when a the Cut needs to be imported in ShotGrid. Show a dialog where the
+        Called when a the Cut needs to be imported in Flow Production Tracking. Show a dialog where the
         user can review changes before importing the cut.
         """
         dialog = SubmitDialog(
@@ -1373,7 +1375,7 @@ class AppDialog(QtGui.QWidget):
     @QtCore.Slot()
     def show_in_shotgun(self):
         """
-        Called at the end of the import if the user clicks on the 'Show in SG'
+        Called at the end of the import if the user clicks on the 'Show in PTR'
         button: shows the new Cut in default web browser and closes the app
         """
         sg_url = QtCore.QUrl(self._processor.sg_new_cut_url)

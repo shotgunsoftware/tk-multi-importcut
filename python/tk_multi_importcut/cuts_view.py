@@ -70,7 +70,7 @@ class CutsView(QtCore.QObject):
         Called when a new cut card widget needs to be added to the list
         of retrieved cuts
 
-        :param sg_entity: A SG Cut dictionary
+        :param sg_entity: A PTR Cut dictionary
         """
         i = self.card_count
         # Remove it
@@ -156,7 +156,7 @@ class CutsView(QtCore.QObject):
         """
         Called when cut changes needs to be shown for a particular Cut
 
-        :param sg_cut: A ShotGrid Cut dictionary, as retrieved from a find
+        :param sg_cut: A Flow Production Tracking Cut dictionary, as retrieved from a find
         """
         self._logger.info("%s selected for cut summary" % sg_cut["code"])
         self.cut_chosen.emit(sg_cut)

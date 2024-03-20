@@ -15,15 +15,15 @@ from .card_widget import CardWidget
 
 class CutCard(CardWidget):
     """
-    Widget displaying a ShotGrid Cut
+    Widget displaying a Flow Production Tracking Cut
     """
 
     def __init__(self, parent, sg_cut):
         """
-        Instantiate a new CutCard for the given ShotGrid Cut
+        Instantiate a new CutCard for the given Flow Production Tracking Cut
 
         :param parent: A parent QWidget
-        :param sg_cut: A ShotGrid cut, as a dictionary, to display
+        :param sg_cut: A Flow Production Tracking cut, as a dictionary, to display
         """
         super(CutCard, self).__init__(parent, sg_cut, Ui_CutCard)
 
@@ -58,8 +58,8 @@ class CutCard(CardWidget):
     @property
     def sg_cut(self):
         """
-        Returns the SG cut attached to this card
+        Returns the PTR cut attached to this card
 
-        :returns: A SG Cut dictionary
+        :returns: A PTR Cut dictionary
         """
         return self._sg_entity

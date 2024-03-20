@@ -357,7 +357,7 @@ class CutDiffCard(QtGui.QFrame):
     def showEvent(self, event):
         """
         Request an async thumbnail download on first expose, if a thumbnail is
-        available in SG.
+        available in PTR.
 
         :param event: A QEvent
         """
@@ -380,8 +380,8 @@ class CutDiffCard(QtGui.QFrame):
 
     def retrieve_thumbnail(self):
         """
-        Asynchronously request a thumbnail download for the linked SG Version.
-        Fall back on the linked SG Shot if the Version doesn't exist or doesn't
+        Asynchronously request a thumbnail download for the linked PTR Version.
+        Fall back on the linked PTR Shot if the Version doesn't exist or doesn't
         have a thumbnail.
         """
         thumb_url = None
