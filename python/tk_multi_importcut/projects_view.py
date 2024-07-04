@@ -9,7 +9,7 @@
 # not expressly granted therein are reserved by Autodesk, Inc.
 
 from sgtk.platform.qt import QtCore, QtGui
-from tank_vendor import six
+from tank_vendor import sgutils
 from .logger import get_logger
 
 from .project_widget import ProjectCard
@@ -108,7 +108,7 @@ class ProjectsView(QtCore.QObject):
         self.selection_changed.emit(card.sg_project)
         self._logger.debug("Selected %s" % self._selected_project_card)
 
-    @QtCore.Slot(six.text_type)
+    @QtCore.Slot(str)
     def search(self, u_text):
         """
         Display only projects whose name matches the given text,
@@ -116,7 +116,7 @@ class ProjectsView(QtCore.QObject):
 
         :param u_text: A unicode string to match
         """
-        text = six.ensure_str(u_text)
+        text = sgutils.ensure_str(u_text)
         self._logger.debug("Searching for %s" % text)
         count = self.card_count
         if not count:

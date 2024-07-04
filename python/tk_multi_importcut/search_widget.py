@@ -9,7 +9,7 @@
 # not expressly granted therein are reserved by Autodesk, Inc.
 
 from sgtk.platform.qt import QtCore, QtGui
-from tank_vendor import six
+from tank_vendor import sgutils
 
 # TODO : This is based on TK search widget code, before it was available in Qt widgets
 # framework. So, at some point, this code should be replaced with the TK
@@ -80,7 +80,7 @@ class SearchWidget(QtGui.QLineEdit):
         self.search_changed.emit("")
         self._clear_btn.hide()
 
-    @QtCore.Slot(six.text_type)
+    @QtCore.Slot(str)
     def _on_text_edited(self, text):
         """
         Called when the text is manually edited
@@ -97,5 +97,5 @@ class SearchWidget(QtGui.QLineEdit):
 
     def _safe_get_text(self):
         """ """
-        text = six.ensure_str(self.text())
+        text = sgutils.ensure_str(self.text())
         return text

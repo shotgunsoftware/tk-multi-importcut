@@ -22,7 +22,7 @@ from .constants import _DROP_STEP
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-from tank_vendor import six
+from tank_vendor import sgutils
 from .logger import get_logger
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
@@ -371,8 +371,8 @@ class SettingsDialog(QtGui.QDialog):
         if not self.ui.default_frame_rate_line_edit.hasAcceptableInput():
             raise SettingsError("Default Frame Rate must be set")
 
-        timecode_mapping = six.ensure_str(self.ui.timecode_mapping_line_edit.text())
-        fps = float(six.ensure_str(self.ui.default_frame_rate_line_edit.text()))
+        timecode_mapping = sgutils.ensure_str(self.ui.timecode_mapping_line_edit.text())
+        fps = float(sgutils.ensure_str(self.ui.default_frame_rate_line_edit.text()))
         try:
             # Using the timecode module to validate the timecode_mapping value with
             # the given fps, our input mask can't check for hh mm ss ff validity,
@@ -402,7 +402,7 @@ class SettingsDialog(QtGui.QDialog):
             ",\s+", ",", self.ui.email_groups_line_edit.text(), flags=re.UNICODE
         )
         # And then split with ","
-        email_groups = six.ensure_str(to_text_list).split(",")
+        email_groups = sgutils.ensure_str(to_text_list).split(",")
 
         # If there is no text, reset email_group to be an empty list
         if email_groups == [""]:
@@ -415,18 +415,18 @@ class SettingsDialog(QtGui.QDialog):
             if email_group not in existing_email_groups_list:
                 raise SettingsError(_BAD_GROUP_MSG % (email_group, email_group))
 
-        omit_status = six.ensure_str(self.ui.omit_status_combo_box.currentText())
+        omit_status = sgutils.ensure_str(self.ui.omit_status_combo_box.currentText())
         if not omit_status and update_shot_statuses:
             raise SettingsError("Please select an Omit Status.")
 
-        reinstate_status = six.ensure_str(
+        reinstate_status = sgutils.ensure_str(
             self.ui.reinstate_status_combo_box.currentText()
         )
         if not reinstate_status and update_shot_statuses:
             raise SettingsError("Please select a Reinstate Status")
 
         statuses = (
-            six.ensure_str(self.ui.reinstate_shot_if_status_is_line_edit.text())
+            sgutils.ensure_str(self.ui.reinstate_shot_if_status_is_line_edit.text())
             .replace(", ", ",")
             .split(",")
         )
@@ -457,7 +457,7 @@ class SettingsDialog(QtGui.QDialog):
         if not self.ui.default_frame_rate_line_edit.hasAcceptableInput():
             raise SettingsError("Default Frame Rate must be set")
 
-        default_frame_rate = six.ensure_str(self.ui.default_frame_rate_line_edit.text())
+        default_frame_rate = sgutils.ensure_str(self.ui.default_frame_rate_line_edit.text())
         new_values["default_frame_rate"] = default_frame_rate
 
         timecode_to_frame_mapping = (
@@ -469,27 +469,27 @@ class SettingsDialog(QtGui.QDialog):
         # are not visible otherwise, so only save them if this mode is on
         if timecode_to_frame_mapping == _RELATIVE_MODE:
             self._validate_timecode_mapping_input()
-            new_values["timecode_mapping"] = six.ensure_str(
+            new_values["timecode_mapping"] = sgutils.ensure_str(
                 self.ui.timecode_mapping_line_edit.text()
             )
-            new_values["frame_mapping"] = six.ensure_str(
+            new_values["frame_mapping"] = sgutils.ensure_str(
                 self.ui.frame_mapping_line_edit.text()
             )
 
         if not self.ui.default_head_in_line_edit.hasAcceptableInput():
             raise SettingsError("Default Head In must be set")
-        new_values["default_head_in"] = six.ensure_str(
+        new_values["default_head_in"] = sgutils.ensure_str(
             self.ui.default_head_in_line_edit.text()
         )
 
         if not self.ui.default_head_duration_line_edit.hasAcceptableInput():
             raise SettingsError("Default Head Duration must be set")
-        new_values["default_head_duration"] = six.ensure_str(
+        new_values["default_head_duration"] = sgutils.ensure_str(
             self.ui.default_head_duration_line_edit.text()
         )
         if not self.ui.default_tail_duration_line_edit.hasAcceptableInput():
             raise SettingsError("Default Tail Duration must be set")
-        new_values["default_tail_duration"] = six.ensure_str(
+        new_values["default_tail_duration"] = sgutils.ensure_str(
             self.ui.default_tail_duration_line_edit.text()
         )
 

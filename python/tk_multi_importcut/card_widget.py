@@ -14,7 +14,7 @@ import os
 # by importing QT from sgtk we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-from tank_vendor import six
+from tank_vendor import sgutils
 from .downloader import DownloadRunner
 from .logger import get_logger
 
@@ -133,7 +133,7 @@ class CardWidget(QtGui.QFrame):
         self.chosen.emit(self._sg_entity)
         self.select_button.setVisible(False)
 
-    @QtCore.Slot(six.text_type)
+    @QtCore.Slot(str)
     def new_thumbnail(self, u_path):
         """
         Called when a new thumbnail is available for this card, replace the
@@ -141,7 +141,7 @@ class CardWidget(QtGui.QFrame):
 
         :param u_path: Full path to a thumbnail file, as a unicode string
         """
-        path = six.ensure_str(u_path)
+        path = sgutils.ensure_str(u_path)
         self._logger.debug("Loading thumbnail %s for %s." % (path, self.entity_name))
         self.set_thumbnail(path)
 
