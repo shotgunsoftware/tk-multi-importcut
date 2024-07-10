@@ -461,7 +461,9 @@ class SettingsDialog(QtGui.QDialog):
         if not self.ui.default_frame_rate_line_edit.hasAcceptableInput():
             raise SettingsError("Default Frame Rate must be set")
 
-        default_frame_rate = sgutils.ensure_str(self.ui.default_frame_rate_line_edit.text())
+        default_frame_rate = sgutils.ensure_str(
+            self.ui.default_frame_rate_line_edit.text()
+        )
         new_values["default_frame_rate"] = default_frame_rate
 
         timecode_to_frame_mapping = (
