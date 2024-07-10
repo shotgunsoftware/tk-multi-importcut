@@ -14,7 +14,6 @@ from collections import defaultdict
 
 import sgtk
 from sgtk.platform.qt import QtCore
-from tank_vendor import sgutils
 from .logger import get_logger
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
@@ -25,6 +24,11 @@ from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP
 from .constants import _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP
 from .constants import _SHOT_FIELDS
 from .constants import _VERSION_EXTS
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as sgutils
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
@@ -1394,9 +1398,11 @@ class EdlCut(QtCore.QObject):
                             "entity_id": sg_shot["id"],
                             "data": {
                                 "code": sg_shot["code"],
-                                "sg_status_list": omit_status
-                                if update_shot_statuses
-                                else sg_shot["sg_status_list"],
+                                "sg_status_list": (
+                                    omit_status
+                                    if update_shot_statuses
+                                    else sg_shot["sg_status_list"]
+                                ),
                             },
                         }
                     )
@@ -1429,9 +1435,11 @@ class EdlCut(QtCore.QObject):
                     data = {
                         "code": sg_shot["code"],
                         "sg_cut_order": min_cut_order,
-                        "sg_status_list": reinstate_status
-                        if update_shot_statuses
-                        else sg_shot["sg_status_list"],
+                        "sg_status_list": (
+                            reinstate_status
+                            if update_shot_statuses
+                            else sg_shot["sg_status_list"]
+                        ),
                     }
                     data.update(
                         self._get_shot_in_out_sg_data(

@@ -14,10 +14,14 @@ from collections import defaultdict
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore
-from tank_vendor import sgutils
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .logger import get_logger
 from .constants import _SHOT_FIELDS
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as sgutils
 
 # Some counts are per Shot, some others per edits
 # As a rule of thumb, everything which directly affects the Shot is per
@@ -935,10 +939,12 @@ class CutSummary(QtCore.QObject):
         ]
         body = _BODY_REPORT_FORMAT % (
             # Let the user know that something is potentially wrong
-            "WARNING, following edits couldn't be linked to any Shot :\n%s\n"
-            % ("\n".join(no_link_details))
-            if no_link_details
-            else "",
+            (
+                "WARNING, following edits couldn't be linked to any Shot :\n%s\n"
+                % ("\n".join(no_link_details))
+                if no_link_details
+                else ""
+            ),
             # Urls
             " , ".join(sg_links),
             # Title

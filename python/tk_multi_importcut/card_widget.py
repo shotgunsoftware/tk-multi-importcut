@@ -14,9 +14,13 @@ import os
 # by importing QT from sgtk we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-from tank_vendor import sgutils
 from .downloader import DownloadRunner
 from .logger import get_logger
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as sgutils
 
 
 class CardWidget(QtGui.QFrame):

@@ -9,7 +9,6 @@
 # not expressly granted therein are reserved by Autodesk, Inc.
 
 import sgtk
-from tank_vendor import sgutils
 import tempfile
 import os
 
@@ -21,6 +20,11 @@ from .constants import _COLORS
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as 
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 

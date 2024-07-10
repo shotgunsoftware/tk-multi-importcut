@@ -9,10 +9,14 @@
 # not expressly granted therein are reserved by Autodesk, Inc.
 
 from sgtk.platform.qt import QtCore, QtGui
-from tank_vendor import sgutils
 from .logger import get_logger
 
 from .project_widget import ProjectCard
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as sgutils
 
 
 class ProjectsView(QtCore.QObject):

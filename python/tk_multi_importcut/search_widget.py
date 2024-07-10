@@ -9,7 +9,11 @@
 # not expressly granted therein are reserved by Autodesk, Inc.
 
 from sgtk.platform.qt import QtCore, QtGui
-from tank_vendor import sgutils
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as sgutils
 
 # TODO : This is based on TK search widget code, before it was available in Qt widgets
 # framework. So, at some point, this code should be replaced with the TK

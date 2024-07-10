@@ -10,7 +10,6 @@
 
 import re
 import sgtk
-from tank_vendor import sgutils
 
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
@@ -19,6 +18,11 @@ from sgtk.platform.qt import QtCore, QtGui
 from .ui.submit_dialog import Ui_submit_dialog
 from .cut_diff import _DIFF_TYPES
 from .logger import get_logger
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as sgutils
 
 
 class SubmitDialog(QtGui.QDialog):

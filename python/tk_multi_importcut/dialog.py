@@ -21,14 +21,17 @@ ElidedLabel = elided_label.ElidedLabel
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
-from tank_vendor import sgutils
-
 
 from .user_settings import UserSettings
 from .widgets import DropAreaFrame, AnimatedStackedWidget
 from .search_widget import SearchWidget
 from .entity_line_widget import EntityLineWidget
 from .extended_thumbnail import ExtendedThumbnail
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as sgutils
 
 
 class SelectorButton(QtGui.QPushButton):
