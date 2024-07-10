@@ -24,7 +24,7 @@ from sgtk.platform.qt import QtCore, QtGui
 try:
     from tank_vendor import sgutils
 except ImportError:
-    from tank_vendor import six as 
+    from tank_vendor import six as sgutils
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
