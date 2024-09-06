@@ -14,7 +14,6 @@ from collections import defaultdict
 
 import sgtk
 from sgtk.platform.qt import QtCore
-from tank_vendor import six
 from .logger import get_logger
 from .cut_diff import CutDiff, _DIFF_TYPES
 from .cut_summary import CutSummary
@@ -25,6 +24,11 @@ from .constants import _DROP_STEP, _PROJECT_STEP, _ENTITY_TYPE_STEP
 from .constants import _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP
 from .constants import _SHOT_FIELDS
 from .constants import _VERSION_EXTS
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as sgutils
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
@@ -310,7 +314,7 @@ class EdlCut(QtCore.QObject):
             # implementing reload for other steps for the time being
             self._logger.error("Unsupported step %d for reload" % step)
 
-    @QtCore.Slot(six.text_type, six.text_type)
+    @QtCore.Slot(str, str)
     def process_edl_and_mov(self, edl_file_path, mov_file_path):
         """
         Process the given EDL and movie files
@@ -318,31 +322,31 @@ class EdlCut(QtCore.QObject):
         :param edl_file_path: Unicode string, full path to EDL file.
         :param mov_file_path: Unicode string, full path to MOV file.
         """
-        self.register_movie_path(six.ensure_str(mov_file_path))
-        self.load_edl(six.ensure_str(edl_file_path))
+        self.register_movie_path(sgutils.ensure_str(mov_file_path))
+        self.load_edl(sgutils.ensure_str(edl_file_path))
 
-    @QtCore.Slot(six.text_type)
+    @QtCore.Slot(str)
     def register_movie_path(self, movie_file_path):
         """
         Register the given movie path
 
         :param movie_file_path: Unicode string, full path to MOV file.
         """
-        self._mov_file_path = six.ensure_str(movie_file_path)
+        self._mov_file_path = sgutils.ensure_str(movie_file_path)
         self._logger.info("Registered %s" % self._mov_file_path)
         self.valid_movie.emit(os.path.basename(self._mov_file_path))
         # If we have a valid EDL, we can move to next step
         if self.has_valid_edl:
             self.step_done.emit(_DROP_STEP)
 
-    @QtCore.Slot(six.text_type)
+    @QtCore.Slot(str)
     def load_edl(self, u_edl_file_path):
         """
         Load an EDL file.
 
         :param u_edl_file_path: A unicode string, full path to the EDL file.
         """
-        edl_file_path = six.ensure_str(u_edl_file_path)
+        edl_file_path = sgutils.ensure_str(u_edl_file_path)
         self._logger.info("Loading %s..." % (edl_file_path))
         try:
             self._edl_file_path = edl_file_path
@@ -477,14 +481,14 @@ class EdlCut(QtCore.QObject):
             status_dict[sg_status["code"]] = sg_status
         return status_dict
 
-    @QtCore.Slot(six.text_type)
+    @QtCore.Slot(str)
     def retrieve_entities(self, u_entity_type):
         """
         Retrieve all Entities with the given type for the current Project
 
         :param u_entity_type: A Flow Production Tracking Entity type name, as a unicode string, e.g. u"Sequence"
         """
-        entity_type = six.ensure_str(u_entity_type)
+        entity_type = sgutils.ensure_str(u_entity_type)
         self._sg_entity_type = entity_type
         self._sg_shot_link_field_name = None
         # Retrieve display names and colors for statuses
@@ -1078,7 +1082,7 @@ class EdlCut(QtCore.QObject):
 
         return score
 
-    @QtCore.Slot(six.text_type, dict, dict, six.text_type, bool)
+    @QtCore.Slot(str, dict, dict, str, bool)
     def do_cut_import(self, u_title, sender, to, u_description, update_shots):
         """
         Import the Cut changes in Flow Production Tracking
@@ -1096,8 +1100,8 @@ class EdlCut(QtCore.QObject):
         :param update_shots: A boolean, whether or not existing Shots data will
                              be updated
         """
-        title = six.ensure_str(u_title)
-        description = six.ensure_str(u_description)
+        title = sgutils.ensure_str(u_title)
+        description = sgutils.ensure_str(u_description)
         self._logger.info("Importing Cut %s" % title)
         self.got_busy.emit(4)
         self.step_done.emit(_SUMMARY_STEP)
@@ -1394,9 +1398,11 @@ class EdlCut(QtCore.QObject):
                             "entity_id": sg_shot["id"],
                             "data": {
                                 "code": sg_shot["code"],
-                                "sg_status_list": omit_status
-                                if update_shot_statuses
-                                else sg_shot["sg_status_list"],
+                                "sg_status_list": (
+                                    omit_status
+                                    if update_shot_statuses
+                                    else sg_shot["sg_status_list"]
+                                ),
                             },
                         }
                     )
@@ -1429,9 +1435,11 @@ class EdlCut(QtCore.QObject):
                     data = {
                         "code": sg_shot["code"],
                         "sg_cut_order": min_cut_order,
-                        "sg_status_list": reinstate_status
-                        if update_shot_statuses
-                        else sg_shot["sg_status_list"],
+                        "sg_status_list": (
+                            reinstate_status
+                            if update_shot_statuses
+                            else sg_shot["sg_status_list"]
+                        ),
                     }
                     data.update(
                         self._get_shot_in_out_sg_data(

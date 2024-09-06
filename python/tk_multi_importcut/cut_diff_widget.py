@@ -9,7 +9,6 @@
 # not expressly granted therein are reserved by Autodesk, Inc.
 
 import sgtk
-from tank_vendor import six
 import tempfile
 import os
 
@@ -21,6 +20,11 @@ from .constants import _COLORS
 # by importing QT from sgtk rather than directly, we ensure that
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as sgutils
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
@@ -209,14 +213,14 @@ class CutDiffCard(QtGui.QFrame):
 
         self.set_thumbnail(":/tk_multi_importcut/sg_shot_thumbnail.png")
 
-    @QtCore.Slot(six.text_type)
+    @QtCore.Slot(str)
     def new_thumbnail(self, path):
         """
         Called when a new thumbnail is available for this card
 
         :param path: Full path to an image to use as thumbnail, as a unicode string
         """
-        self.set_thumbnail(six.ensure_str(path))
+        self.set_thumbnail(sgutils.ensure_str(path))
 
     @QtCore.Slot(CutDiff, int, int)
     def diff_type_changed(self, cut_diff, old_type, new_type):
@@ -253,14 +257,14 @@ class CutDiffCard(QtGui.QFrame):
         """
         self._set_ui_values()
 
-    @QtCore.Slot(six.text_type)
+    @QtCore.Slot(str)
     def shot_name_edited(self, u_value):
         """
         Called when the shot name was edited
 
         :param u_value: The value from the widget, as a unicode string
         """
-        value = six.ensure_str(u_value)
+        value = sgutils.ensure_str(u_value)
         if value != self._cut_diff.name:
             self._cut_diff.set_name(value)
         if not self._cut_diff.name:

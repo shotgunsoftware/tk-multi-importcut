@@ -10,7 +10,6 @@
 
 import re
 import sgtk
-from tank_vendor import six
 
 from .ui.create_entity_dialog import Ui_create_entity_dialog
 
@@ -18,6 +17,11 @@ from .ui.create_entity_dialog import Ui_create_entity_dialog
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
+
+try:
+    from tank_vendor import sgutils
+except ImportError:
+    from tank_vendor import six as sgutils
 
 
 class CreateEntityDialog(QtGui.QDialog):
@@ -71,8 +75,8 @@ class CreateEntityDialog(QtGui.QDialog):
         """
         Send out request to create entity, then close the dialog.
         """
-        entity_name = six.ensure_str(self.ui.entity_name_line_edit.text())
-        entity_description = six.ensure_str(self.ui.description_line_edit.text())
+        entity_name = sgutils.ensure_str(self.ui.entity_name_line_edit.text())
+        entity_description = sgutils.ensure_str(self.ui.description_line_edit.text())
         status_index = self.ui.status_combo_box.currentIndex()
         field_data = {
             "project": self._project,

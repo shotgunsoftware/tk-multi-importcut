@@ -1150,9 +1150,11 @@ class CutDiff(QtCore.QObject):
             version_details = "%s, link %s %s" % (
                 sg_version["code"],
                 sg_version["entity"]["type"] if sg_version["entity"] else "None",
-                sg_version["entity.Shot.code"]
-                if sg_version["entity.Shot.code"]
-                else "",
+                (
+                    sg_version["entity.Shot.code"]
+                    if sg_version["entity.Shot.code"]
+                    else ""
+                ),
             )
         edit_details = str(self._edit) if self._edit else ""
         return shot_details, cut_item_details, version_details, edit_details
