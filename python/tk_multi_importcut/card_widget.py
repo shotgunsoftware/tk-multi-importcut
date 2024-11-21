@@ -17,11 +17,6 @@ from sgtk.platform.qt import QtCore, QtGui
 from .downloader import DownloadRunner
 from .logger import get_logger
 
-try:
-    from tank_vendor import sgutils
-except ImportError:
-    from tank_vendor import six as sgutils
-
 
 class CardWidget(QtGui.QFrame):
     """
@@ -145,7 +140,7 @@ class CardWidget(QtGui.QFrame):
 
         :param u_path: Full path to a thumbnail file, as a unicode string
         """
-        path = sgutils.ensure_str(u_path)
+        path = sgutils.ensure_str(u_path)  ## TODO 
         self._logger.debug("Loading thumbnail %s for %s." % (path, self.entity_name))
         self.set_thumbnail(path)
 
