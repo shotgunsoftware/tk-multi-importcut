@@ -75,7 +75,7 @@ class Processor(QtCore.QThread):
 
         :param frame_rate: A frame rate, as a float
         """
-        super(Processor, self).__init__()
+        super().__init__()
         self._logger = get_logger()
         self._edl_cut = None
         self._frame_rate = frame_rate

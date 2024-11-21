@@ -38,7 +38,7 @@ class ShortNameFilter(logging.Filter):
     """
 
     def __init__(self, name=""):
-        super(ShortNameFilter, self).__init__(name)
+        super().__init__(name)
 
     def filter(self, record):
         """
@@ -85,7 +85,7 @@ class BundleLogHandler(logging.StreamHandler):
         :param args: Arbitrary list of parameters used in base class init
         :param kwargs: Arbitrary dictionary of parameters used in base class init
         """
-        super(BundleLogHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._bundle = bundle
         self._qt_emitter = self._QtEmitter()
 

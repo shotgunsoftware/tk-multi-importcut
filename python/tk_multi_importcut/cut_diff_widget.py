@@ -72,7 +72,7 @@ class CutDiffCard(QtGui.QFrame):
         :param parent: A parent QWidget for this widget
         :param cut_diff: A CutDiff instance
         """
-        super(CutDiffCard, self).__init__(parent)
+        super().__init__(parent)
         self._cut_diff = cut_diff
         self.ui = Ui_CutDiffCard()
         self.ui.setupUi(self)

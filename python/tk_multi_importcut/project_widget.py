@@ -27,7 +27,7 @@ class ProjectCard(CardWidget):
         :param parent: A parent QWidget
         :param sg_project: A Flow Production Tracking project, as a dictionary, to display
         """
-        super(ProjectCard, self).__init__(parent, sg_project, Ui_ProjectCard)
+        super().__init__(parent, sg_project, Ui_ProjectCard)
         self.ui.title_label.setText("%s" % self.project_name)
         if self.sg_project["_display_status"]:
             self.ui.status_label.setText(

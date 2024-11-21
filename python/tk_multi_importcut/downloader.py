@@ -78,7 +78,7 @@ class DownloadRunner(QtCore.QRunnable):
         :param sg_attachment: Either a URL or an attachment dictionary
         :param path: Full file path to save the downloaded data
         """
-        super(DownloadRunner, self).__init__()
+        super().__init__()
         self._sg_attachment = sg_attachment
         self._path = path
         self._thread = None

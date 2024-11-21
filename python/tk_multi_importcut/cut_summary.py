@@ -81,7 +81,7 @@ class ShotCutDiffList(list):
         :param args: An arbitrary list of parameters
         :param kwargs: An arbitrary dictionary of parameters
         """
-        super(ShotCutDiffList, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._logger = get_logger()
         # Defines default attributes
         self._reset_min_and_max()
@@ -109,7 +109,7 @@ class ShotCutDiffList(list):
 
         :param cut_diff: A CutDiff instance
         """
-        super(ShotCutDiffList, self).append(cut_diff)
+        super().append(cut_diff)
         self._update_min_and_max(cut_diff)
         cut_diff.set_siblings(self)
         if cut_diff == self._earliest_entry or cut_diff == self._last_entry:
@@ -124,7 +124,7 @@ class ShotCutDiffList(list):
         :param cut_diff: A CutDiff instance
         """
         cut_diff.set_siblings(None)
-        super(ShotCutDiffList, self).remove(cut_diff)
+        super().remove(cut_diff)
         # Reset our internal values
         self._reset_min_and_max()
         # And recompute them from what is left
@@ -396,7 +396,7 @@ class CutSummary(QtCore.QObject):
         :param tc_edit_in: A Timecode instance, the very first edit timecode in
         :param tc_edit_out: A Timecode instance, the very last edit timecode out
         """
-        super(CutSummary, self).__init__()
+        super().__init__()
         self._cut_diffs = {}
         self._total_count = 0
         # Use a defaultdict so we don't have to worry about key existence
