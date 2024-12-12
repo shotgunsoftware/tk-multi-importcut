@@ -29,7 +29,7 @@ class UserSetting(object):
         :param default: Arbitrary default value for this setting
         :param affects: (optional) list of wizard steps being affected by changes
         """
-        super(UserSetting, self).__init__()
+        super().__init__()
         self._default = default
         self._affects = affects or []
 
@@ -60,7 +60,7 @@ class UserSettings(object):
 
     def __init__(self):
         # Base class init
-        super(UserSettings, self).__init__()
+        super().__init__()
         # Provide access to the user settings fw module.
         self._disk = sgtk.platform.current_bundle().user_settings
         # Retrieve our settings from disk.

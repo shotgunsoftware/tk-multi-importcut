@@ -44,7 +44,7 @@ class EntityLineWidget(QtGui.QLineEdit):
         :param args: Arbitrary list of parameters used in base class init
         :param kwargs: Arbitrary dictionary of parameters used in base class init
         """
-        super(EntityLineWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.setPlaceholderText("No Link")
         # Add our known list as a completer
@@ -89,7 +89,7 @@ class EntityLineWidget(QtGui.QLineEdit):
         :param event: A standard Qt event
         """
         self.set_property("valid", True)
-        super(EntityLineWidget, self).focusInEvent(event)
+        super().focusInEvent(event)
 
     @QtCore.Slot()
     def edited(self):

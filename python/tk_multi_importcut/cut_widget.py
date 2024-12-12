@@ -25,7 +25,7 @@ class CutCard(CardWidget):
         :param parent: A parent QWidget
         :param sg_cut: A Flow Production Tracking cut, as a dictionary, to display
         """
-        super(CutCard, self).__init__(parent, sg_cut, Ui_CutCard)
+        super().__init__(parent, sg_cut, Ui_CutCard)
 
         revision_number = self.sg_cut["revision_number"]
         if revision_number:

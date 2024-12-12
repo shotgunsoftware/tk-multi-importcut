@@ -50,7 +50,7 @@ class CardWidget(QtGui.QFrame):
         :param args: An arbitrary list of parameters
         :param kwargs: An arbitrary dictionary of parameters
         """
-        super(CardWidget, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
         self._thumbnail_requested = False
         self._sg_entity = sg_entity
         self._logger = get_logger()

@@ -37,7 +37,7 @@ class ProjectsView(QtCore.QObject):
 
         :param grid_layout: A QGridLayout
         """
-        super(ProjectsView, self).__init__()
+        super().__init__()
         self._grid_layout = grid_layout
         self._selected_project_card = None
         self._logger = get_logger()
