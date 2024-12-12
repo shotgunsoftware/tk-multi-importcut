@@ -38,7 +38,7 @@ class EntitiesView(QtCore.QObject):
         :param sg_entity_type: The PTR Entities we will show
         :param grid_layout: A grid layout
         """
-        super(EntitiesView, self).__init__()
+        super().__init__()
         self._grid_layout = grid_layout
         self._selected_entity_card = None
         self._logger = get_logger()

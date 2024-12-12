@@ -125,7 +125,7 @@ class CutDiff(QtCore.QObject):
         :param edit: An optional EditEvent instance, retrieved from an EDL
         :param sg_cut_item: An optional CutItem dictionary, as retrieved from Flow Production Tracking
         """
-        super(CutDiff, self).__init__()
+        super().__init__()
         self._name = name
         self._sg_shot = sg_shot
         self._edit = edit

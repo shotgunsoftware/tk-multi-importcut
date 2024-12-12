@@ -25,7 +25,7 @@ class EntityCard(CardWidget):
         :param parent: A parent QWidget
         :param sg_entity: A Flow Production Tracking entity, as a dictionary, to display
         """
-        super(EntityCard, self).__init__(parent, sg_entity, Ui_EntityCard)
+        super().__init__(parent, sg_entity, Ui_EntityCard)
 
         self.ui.title_label.setText("%s" % self.entity_name)
         if self._sg_entity["_display_status"]:

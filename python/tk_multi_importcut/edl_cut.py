@@ -131,7 +131,7 @@ class EdlCut(QtCore.QObject):
 
         :param frame_rate: A float or None
         """
-        super(EdlCut, self).__init__()
+        super().__init__()
 
         self._edl_file_path = None
         self._mov_file_path = None

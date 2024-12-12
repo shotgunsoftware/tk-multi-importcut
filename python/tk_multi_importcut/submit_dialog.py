@@ -39,7 +39,7 @@ class SubmitDialog(QtGui.QDialog):
         :param title: (optional) string, used as imported Cut name
         :param summary: (optional) CutSummary instance
         """
-        super(SubmitDialog, self).__init__(parent)
+        super().__init__(parent)
         self.ui = Ui_submit_dialog()
         self.ui.setupUi(self)
         self._app = sgtk.platform.current_bundle()

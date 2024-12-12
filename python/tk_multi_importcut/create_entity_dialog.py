@@ -38,7 +38,7 @@ class CreateEntityDialog(QtGui.QDialog):
         Instantiate a new dialog
         :param parent: a QWidget
         """
-        super(CreateEntityDialog, self).__init__(parent)
+        super().__init__(parent)
         self._logger = get_logger()
         self.ui = Ui_create_entity_dialog()
         self.ui.setupUi(self)
