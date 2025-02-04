@@ -38,7 +38,7 @@ class ShortNameFilter(logging.Filter):
     """
 
     def __init__(self, name=""):
-        super(ShortNameFilter, self).__init__(name)
+        super().__init__(name)
 
     def filter(self, record):
         """

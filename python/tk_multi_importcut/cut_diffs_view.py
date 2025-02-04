@@ -32,7 +32,7 @@ class CutDiffsView(QtCore.QObject):
 
         :param list_layout: A QVBoxLayout
         """
-        super(CutDiffsView, self).__init__()
+        super().__init__()
         self._list_layout = list_layout
         self._logger = get_logger()
         self._cuts_display_repeated = False

@@ -82,7 +82,7 @@ class SettingsError(ValueError):
             # If we have some details, remove them from parameters sent to the
             # base class
             self._details = kwargs.pop("details")
-        super(SettingsError, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def details(self):
@@ -112,7 +112,7 @@ class SettingsDialog(QtGui.QDialog):
         :param parent: A parent QWidget
         :param wizard_step: Current wizard step we are at
         """
-        super(SettingsDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setModal(True)
         # This is not used yet, but later we will be able to check if changes
         # made require a restart, based on the wizard step we are at

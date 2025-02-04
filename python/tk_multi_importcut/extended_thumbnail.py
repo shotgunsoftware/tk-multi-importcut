@@ -26,7 +26,7 @@ class ExtendedThumbnail(QtGui.QLabel):
         :param args: Arbitrary list of parameters used in base class init
         :param kwargs: Arbitrary dictionary of parameters used in base class init
         """
-        super(ExtendedThumbnail, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._text = text or ""
         self._color = None
         self._strike_through = False

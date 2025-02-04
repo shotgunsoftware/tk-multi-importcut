@@ -39,7 +39,7 @@ class SearchWidget(QtGui.QLineEdit):
 
         :param parent: Parent QWidget for this widget
         """
-        super(SearchWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         # dynamically create the clear button so that we can place it over the
         # edit widget.

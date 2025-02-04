@@ -42,7 +42,7 @@ class CutsView(QtCore.QObject):
         :param grid_layout: A QGridLayout used to arrange all CutCards
         :param sort_menu_button: A QPushButton, QActions are added to it
         """
-        super(CutsView, self).__init__()
+        super().__init__()
         self._grid_layout = grid_layout
         self._sort_menu_button = sort_menu_button
         self._selected_card_cut = None
