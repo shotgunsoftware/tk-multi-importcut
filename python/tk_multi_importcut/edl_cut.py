@@ -25,11 +25,6 @@ from .constants import _ENTITY_STEP, _CUT_STEP, _SUMMARY_STEP, _PROGRESS_STEP
 from .constants import _SHOT_FIELDS
 from .constants import _VERSION_EXTS
 
-try:
-    from tank_vendor import sgutils
-except ImportError:
-    from tank_vendor import six as sgutils
-
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
 _ERROR_BAD_CUT = (
@@ -322,8 +317,8 @@ class EdlCut(QtCore.QObject):
         :param edl_file_path: Unicode string, full path to EDL file.
         :param mov_file_path: Unicode string, full path to MOV file.
         """
-        self.register_movie_path(sgutils.ensure_str(mov_file_path))
-        self.load_edl(sgutils.ensure_str(edl_file_path))
+        self.register_movie_path(mov_file_path)
+        self.load_edl(edl_file_path)
 
     @QtCore.Slot(str)
     def register_movie_path(self, movie_file_path):
@@ -332,7 +327,7 @@ class EdlCut(QtCore.QObject):
 
         :param movie_file_path: Unicode string, full path to MOV file.
         """
-        self._mov_file_path = sgutils.ensure_str(movie_file_path)
+        self._mov_file_path = movie_file_path
         self._logger.info("Registered %s" % self._mov_file_path)
         self.valid_movie.emit(os.path.basename(self._mov_file_path))
         # If we have a valid EDL, we can move to next step
@@ -346,14 +341,13 @@ class EdlCut(QtCore.QObject):
 
         :param u_edl_file_path: A unicode string, full path to the EDL file.
         """
-        edl_file_path = sgutils.ensure_str(u_edl_file_path)
-        self._logger.info("Loading %s..." % (edl_file_path))
+        self._logger.info("Loading %s..." % (u_edl_file_path))
         try:
-            self._edl_file_path = edl_file_path
+            self._edl_file_path = u_edl_file_path
             if self._frame_rate is not None:
                 self._logger.info("Using explicit frame rate %f ..." % self._frame_rate)
                 self._edl = edl.EditList(
-                    file_path=edl_file_path,
+                    file_path=u_edl_file_path,
                     visitor=self.process_edit,
                     fps=self._frame_rate,
                 )
@@ -362,7 +356,7 @@ class EdlCut(QtCore.QObject):
                 frame_rate = float(self._user_settings.retrieve("default_frame_rate"))
                 self._logger.info("Using default frame rate %f ..." % frame_rate)
                 self._edl = edl.EditList(
-                    file_path=edl_file_path,
+                    file_path=u_edl_file_path,
                     visitor=self.process_edit,
                     fps=frame_rate,
                 )
@@ -372,7 +366,7 @@ class EdlCut(QtCore.QObject):
             if self._edl.has_transitions:
                 self.has_transitions.emit()
             if not self._edl.edits:
-                self._logger.warning("Couldn't find any entry in %s" % edl_file_path)
+                self._logger.warning("Couldn't find any entry in %s" % u_edl_file_path)
                 self.valid_edl.emit(os.path.basename(self._edl_file_path), False)
                 return
             # Can go to next step
@@ -488,13 +482,12 @@ class EdlCut(QtCore.QObject):
 
         :param u_entity_type: A Flow Production Tracking Entity type name, as a unicode string, e.g. u"Sequence"
         """
-        entity_type = sgutils.ensure_str(u_entity_type)
-        self._sg_entity_type = entity_type
+        self._sg_entity_type = u_entity_type
         self._sg_shot_link_field_name = None
         # Retrieve display names and colors for statuses
         status_dict = self._get_sg_statuses()
         self._logger.info(
-            "Retrieving %ss for project %s..." % (entity_type, self._project["name"])
+            "Retrieving %ss for project %s..." % (u_entity_type, self._project["name"])
         )
         self.got_busy.emit(None)
         try:
@@ -503,7 +496,7 @@ class EdlCut(QtCore.QObject):
             # Prefer a sg_<entity type> field if available
             entity_type_name = sgtk.util.get_entity_type_display_name(
                 sgtk.platform.current_bundle().sgtk,
-                entity_type,
+                u_entity_type,
             )
             field_name = "sg_%s" % entity_type_name.lower()
             field = shot_schema.get(field_name)
@@ -535,7 +528,7 @@ class EdlCut(QtCore.QObject):
                     "Will use field %s to link %s to shots"
                     % (self._sg_shot_link_field_name, self._sg_entity_type)
                 )
-            if entity_type == "Project":
+            if u_entity_type == "Project":
                 sg_entities = self._sg.find(
                     "Project",
                     [["id", "is", self._project["id"]]],
@@ -544,7 +537,7 @@ class EdlCut(QtCore.QObject):
                 )
             else:
                 sg_entities = self._sg.find(
-                    entity_type,
+                    u_entity_type,
                     [["project", "is", self._project]],
                     # We ask for various 'name' fields used by PTR Entities, only
                     # the existing one will be returned, others will be ignored.
@@ -574,7 +567,7 @@ class EdlCut(QtCore.QObject):
                         "name": status.title(),
                     }
                 self.new_sg_entity.emit(sg_entity)
-            self._logger.info("Retrieved %d %s." % (len(sg_entities), entity_type))
+            self._logger.info("Retrieved %d %s." % (len(sg_entities), u_entity_type))
             self.step_done.emit(_ENTITY_TYPE_STEP)
         except Exception as e:
             self._logger.exception(str(e))
@@ -1100,13 +1093,11 @@ class EdlCut(QtCore.QObject):
         :param update_shots: A boolean, whether or not existing Shots data will
                              be updated
         """
-        title = sgutils.ensure_str(u_title)
-        description = sgutils.ensure_str(u_description)
-        self._logger.info("Importing Cut %s" % title)
+        self._logger.info("Importing Cut %s" % u_title)
         self.got_busy.emit(4)
         self.step_done.emit(_SUMMARY_STEP)
         try:
-            self._sg_new_cut = self.create_sg_cut(title, description)
+            self._sg_new_cut = self.create_sg_cut(u_title, u_description)
             self.update_sg_shots(update_shots)
             self.progress_changed.emit(1)
             # When testing this app it is time consuming to create
@@ -1119,7 +1110,7 @@ class EdlCut(QtCore.QObject):
             self.progress_changed.emit(3)
             self._logger.info("Creating note ...")
             self.create_note(
-                title, sender, to, description, sg_links=[self._sg_new_cut]
+                u_title, sender, to, u_description, sg_links=[self._sg_new_cut]
             )
             self.progress_changed.emit(4)
         except Exception as e:
@@ -1127,7 +1118,7 @@ class EdlCut(QtCore.QObject):
             # Go back to summary screen
             self.step_failed.emit(_PROGRESS_STEP)
         else:
-            self._logger.info("Cut %s imported" % title)
+            self._logger.info("Cut %s imported" % u_title)
             # Can go to next step
             self.step_done.emit(_PROGRESS_STEP)
         finally:

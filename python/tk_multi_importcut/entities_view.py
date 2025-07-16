@@ -12,11 +12,6 @@ from sgtk.platform.qt import QtCore, QtGui
 from .logger import get_logger
 from .entity_widget import EntityCard
 
-try:
-    from tank_vendor import sgutils
-except ImportError:
-    from tank_vendor import six as sgutils
-
 
 class EntitiesView(QtCore.QObject):
     """
@@ -148,15 +143,14 @@ class EntitiesView(QtCore.QObject):
 
         :param u_text: A unicode string to match
         """
-        text = sgutils.ensure_str(u_text)
-        self._logger.debug("Searching for %s" % text)
+        self._logger.debug("Searching for %s" % u_text)
         count = self.card_count
         if not count:
             # Avoid 0 Entities message to be emitted if we don't have
             # anything ... yet
             return
         match_count = 0
-        if not text:  # Show everything
+        if not u_text:  # Show everything
             for i in range(count - 1, -1, -1):
                 witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
@@ -166,7 +160,7 @@ class EntitiesView(QtCore.QObject):
             for i in range(count - 1, -1, -1):
                 witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
-                if text.lower() in widget.entity_name.lower():
+                if u_text.lower() in widget.entity_name.lower():
                     match_count += 1
                     widget.setVisible(True)
                 else:

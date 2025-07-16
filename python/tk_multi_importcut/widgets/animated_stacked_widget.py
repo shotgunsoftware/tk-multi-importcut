@@ -10,11 +10,6 @@
 
 from tank.platform.qt import QtCore, QtGui
 
-try:
-    from tank_vendor import sgutils
-except ImportError:
-    from tank_vendor import six as sgutils
-
 
 class AnimatedStackedWidget(QtGui.QStackedWidget):
     """
@@ -119,7 +114,7 @@ class AnimatedStackedWidget(QtGui.QStackedWidget):
         # Keep them around for garbage collection purposes
         # Might not be needed, but who knows ...
         self.__anims[0] = QtCore.QPropertyAnimation(
-            this_page, sgutils.ensure_binary("pos")
+            this_page, "pos".encode("utf-8")
         )
         self.__anims[0].setDuration(self._animation_duration)
         self.__anims[0].setStartValue(QtCore.QPoint(this_page.x(), this_page.y()))
@@ -129,7 +124,7 @@ class AnimatedStackedWidget(QtGui.QStackedWidget):
         self.__anims[0].setEasingCurve(QtCore.QEasingCurve.OutCubic)
 
         self.__anims[1] = QtCore.QPropertyAnimation(
-            next_page, sgutils.ensure_binary("pos")
+            next_page, "pos".encode("utf-8")
         )
         self.__anims[1].setDuration(self._animation_duration)
         self.__anims[1].setStartValue(

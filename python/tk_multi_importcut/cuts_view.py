@@ -13,11 +13,6 @@ from .logger import get_logger
 
 from .cut_widget import CutCard
 
-try:
-    from tank_vendor import sgutils
-except ImportError:
-    from tank_vendor import six as sgutils
-
 _SORT_METHODS = ["Sort by Date", "Sort by Name", "Sort by Status"]
 
 
@@ -107,13 +102,12 @@ class CutsView(QtCore.QObject):
 
         :param u_text: A unicode string to match
         """
-        text = sgutils.ensure_str(u_text)
-        self._logger.debug("Searching for %s" % text)
+        self._logger.debug("Searching for %s" % u_text)
         count = self.card_count
         match_count = 0
         if not count:
             return
-        if not text:
+        if not u_text:
             # Show everything
             for i in range(count - 1, -1, -1):
                 witem = self._grid_layout.itemAt(i)
@@ -125,7 +119,7 @@ class CutsView(QtCore.QObject):
                 witem = self._grid_layout.itemAt(i)
                 widget = witem.widget()
                 # Case insensitive match
-                if text.lower() in widget.sg_cut["code"].lower():
+                if u_text.lower() in widget.sg_cut["code"].lower():
                     widget.setVisible(True)
                     match_count += 1
                 else:

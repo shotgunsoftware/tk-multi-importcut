@@ -21,10 +21,6 @@ from .constants import _COLORS
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
 
-try:
-    from tank_vendor import sgutils
-except ImportError:
-    from tank_vendor import six as sgutils
 
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
@@ -220,7 +216,7 @@ class CutDiffCard(QtGui.QFrame):
 
         :param path: Full path to an image to use as thumbnail, as a unicode string
         """
-        self.set_thumbnail(sgutils.ensure_str(path))
+        self.set_thumbnail(path)
 
     @QtCore.Slot(CutDiff, int, int)
     def diff_type_changed(self, cut_diff, old_type, new_type):
@@ -264,9 +260,8 @@ class CutDiffCard(QtGui.QFrame):
 
         :param u_value: The value from the widget, as a unicode string
         """
-        value = sgutils.ensure_str(u_value)
-        if value != self._cut_diff.name:
-            self._cut_diff.set_name(value)
+        if u_value != self._cut_diff.name:
+            self._cut_diff.set_name(u_value)
         if not self._cut_diff.name:
             self.ui.shot_name_line.set_property("valid", False)
 
