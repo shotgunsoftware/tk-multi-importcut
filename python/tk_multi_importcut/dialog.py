@@ -28,11 +28,6 @@ from .search_widget import SearchWidget
 from .entity_line_widget import EntityLineWidget
 from .extended_thumbnail import ExtendedThumbnail
 
-try:
-    from tank_vendor import sgutils
-except ImportError:
-    from tank_vendor import six as sgutils
-
 
 class SelectorButton(QtGui.QPushButton):
     """
@@ -526,9 +521,8 @@ class AppDialog(QtGui.QWidget):
 
         :param u_entity_type: A PTR Entity type, as a unicode string
         """
-        entity_type = sgutils.ensure_str(u_entity_type)
         # Show the view for the Entity type
-        self.show_entities(entity_type)
+        self.show_entities(u_entity_type)
         # The UI can change based on the entity_type, so call a refresh.
         # In some cases, this is not actually needed (for example when
         # the Entity type view is created). So we might refresh the UI twice
@@ -667,13 +661,13 @@ class AppDialog(QtGui.QWidget):
             )
             return
 
-        path = sgutils.ensure_str(paths[0])
+        path = str(paths[0])
         _, ext = os.path.splitext(path)
         if not self._process_dropped_file(path, ext):
             return
 
         if num_paths == 2:
-            path = sgutils.ensure_str(paths[1])
+            path = str(paths[1])
             _, ext_2 = os.path.splitext(path)
             if ext_2.lower() == ext.lower():
                 self._logger.error(
@@ -737,12 +731,11 @@ class AppDialog(QtGui.QWidget):
         :param u_file_name: Unicode short EDL file name
         :param is_valid: A boolean, True if the EDL file can be used
         """
-        file_name = sgutils.ensure_str(u_file_name)
         if is_valid:
             self.ui.edl_added_icon.show()
-            self.ui.file_added_label.setText(file_name)
+            self.ui.file_added_label.setText(u_file_name)
             # Update a small information label in various screens we will later see
-            import_message = "Importing %s" % file_name
+            import_message = "Importing %s" % u_file_name
             self.ui.importing_edl_label_2.setText(import_message)
             # Allow the user to go ahead without a movie
             self.ui.next_button.setEnabled(True)
@@ -754,7 +747,7 @@ class AppDialog(QtGui.QWidget):
             self.goto_step(_DROP_STEP)
 
         self._logger.debug(
-            "%s EDL is now %s" % (file_name, ["invalid", "valid"][is_valid])
+            "%s EDL is now %s" % (u_file_name, ["invalid", "valid"][is_valid])
         )
 
     @QtCore.Slot(str)
@@ -764,9 +757,8 @@ class AppDialog(QtGui.QWidget):
 
         :param u_file_name: Unicode short movie file name
         """
-        file_name = sgutils.ensure_str(u_file_name)
         self.ui.mov_added_icon.show()
-        self.ui.file_added_label.setText(file_name)
+        self.ui.file_added_label.setText(u_file_name)
 
     @QtCore.Slot(int, str)
     def new_message(self, levelno, u_message):
@@ -776,7 +768,6 @@ class AppDialog(QtGui.QWidget):
         :param levelno: A standard logging level
         :param u_message: A unicode string
         """
-        message = sgutils.ensure_str(u_message)
         if levelno == logging.ERROR or levelno == logging.CRITICAL:
             self.ui.feedback_label.setProperty("level", "error")
             self.ui.progress_bar_label.setProperty("level", "error")
@@ -788,8 +779,8 @@ class AppDialog(QtGui.QWidget):
         self.style().polish(self.ui.feedback_label)
         self.style().unpolish(self.ui.progress_bar_label)
         self.style().polish(self.ui.progress_bar_label)
-        self.ui.feedback_label.setText(message)
-        self.ui.progress_bar_label.setText(message)
+        self.ui.feedback_label.setText(u_message)
+        self.ui.progress_bar_label.setText(u_message)
 
     @QtCore.Slot(str)
     def display_info_message(self, u_message):
@@ -798,11 +789,10 @@ class AppDialog(QtGui.QWidget):
 
         :param u_message: A unicode string
         """
-        message = sgutils.ensure_str(u_message)
         self.ui.feedback_label.setProperty("level", "info")
         self.style().unpolish(self.ui.feedback_label)
         self.style().polish(self.ui.feedback_label)
-        self.ui.feedback_label.setText(message)
+        self.ui.feedback_label.setText(u_message)
 
     @QtCore.Slot()
     def close_dialog(self):
@@ -1120,30 +1110,29 @@ class AppDialog(QtGui.QWidget):
 
         :param u_sg_entity_type: A PTR Entity type, as a unicode string, e.g. u'Sequence'
         """
-        sg_entity_type = sgutils.ensure_str(u_sg_entity_type)
-        self._preload_entity_type = sg_entity_type
+        self._preload_entity_type = u_sg_entity_type
         # Save the value in user settings so it will persist across
         # sessions
-        self._user_settings.save({"preload_entity_type": sg_entity_type})
+        self._user_settings.save({"preload_entity_type": u_sg_entity_type})
         entity_type_stacked_widget = self.ui.entities_type_stacked_widget
         # Retrieve the Entity type view we should activate
         for i, view in enumerate(self._entities_views):
-            if view.sg_entity_type == sg_entity_type:
+            if view.sg_entity_type == u_sg_entity_type:
                 # Here we don't need the worker to retrieve additional data from PTR
                 # so we don't emit any signal like in other show_xxxx slots
                 # if we already have a view for the given Entity type, we are already
                 # on the right screen, so, basically, we don't have anything to do
                 break
         else:
-            self._logger.debug("Creating entities view for %s" % sg_entity_type)
+            self._logger.debug("Creating entities view for %s" % u_sg_entity_type)
             # Create the needed page
             page_i = len(self._entities_views)
             page = entity_type_stacked_widget.widget(page_i)
-            self._create_entity_type_view(sg_entity_type, page.layout())
+            self._create_entity_type_view(u_sg_entity_type, page.layout())
             # Ask our data manager to retrieve entries for the given Entity type
             # we will receive a _ENTITY_TYPE_STEP step done signal from the data
             # manager when the data is available
-            self.get_entities.emit(sg_entity_type)
+            self.get_entities.emit(u_sg_entity_type)
 
     @QtCore.Slot()
     def show_projects(self):
@@ -1403,10 +1392,9 @@ class AppDialog(QtGui.QWidget):
         :param u_msg: A unicode string
         :param exec_info: A list of strings
         """
-        msg = sgutils.ensure_str(u_msg)
         msg_box = QtGui.QMessageBox(parent=self, icon=QtGui.QMessageBox.Critical)
         msg_box.setIconPixmap(QtGui.QPixmap(":/tk_multi_importcut/error_64px.png"))
-        msg_box.setText(msg)
+        msg_box.setText(u_msg)
         msg_box.setDetailedText("\n".join(exec_info))
         msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
         msg_box.show()
@@ -1556,12 +1544,11 @@ class AppDialog(QtGui.QWidget):
 
         :param u_path: Full path a to a css file, as a unicode string
         """
-        path = sgutils.ensure_str(u_path)
-        self._logger.info("Reloading %s" % path)
-        self._load_css(path)
+        self._logger.info("Reloading %s" % u_path)
+        self._load_css(u_path)
         # Some code editors rename files on save, so the watcher will
         # stop watching it. Check if the file is watched, re-attach it if not
-        if self._css_watcher and path not in self._css_watcher.files():
-            self._css_watcher.addPath(path)
-        self._logger.info("%s loaded" % path)
+        if self._css_watcher and u_path not in self._css_watcher.files():
+            self._css_watcher.addPath(u_path)
+        self._logger.info("%s loaded" % u_path)
         self.update()

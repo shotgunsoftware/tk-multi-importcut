@@ -19,11 +19,6 @@ from .ui.submit_dialog import Ui_submit_dialog
 from .cut_diff import _DIFF_TYPES
 from .logger import get_logger
 
-try:
-    from tank_vendor import sgutils
-except ImportError:
-    from tank_vendor import six as sgutils
-
 
 class SubmitDialog(QtGui.QDialog):
     """
@@ -88,10 +83,10 @@ class SubmitDialog(QtGui.QDialog):
         """
         self._save_settings()
         update_shot_fields = self.ui.update_shot_fields_checkbox.isChecked()
-        title = sgutils.ensure_str(self.ui.title_text.text())
+        title = self.ui.title_text.text()
         # Break the to_text unicode string into a list of Flow Production Tracking Group names
         to_text_list = re.sub(",\s+", ",", self.ui.to_text.text(), flags=re.UNICODE)
-        email_groups = sgutils.ensure_str(to_text_list).split(",")
+        email_groups = to_text_list.split(",")
         # If there are no groups specified, remove the empty string from email_groups.
         if email_groups == [""]:
             email_groups = []
@@ -126,7 +121,7 @@ class SubmitDialog(QtGui.QDialog):
                 return
         # store user settings back into email_groups preference.
         self._user_settings.store("email_groups", email_groups)
-        description = sgutils.ensure_str(self.ui.description_text.toPlainText())
+        description = self.ui.description_text.toPlainText()
         user = self._app.context.user or {}
         self.submit.emit(
             title, user, email_group_entities, description, update_shot_fields

@@ -10,11 +10,6 @@
 
 from sgtk.platform.qt import QtCore, QtGui
 
-try:
-    from tank_vendor import sgutils
-except ImportError:
-    from tank_vendor import six as sgutils
-
 # TODO : This is based on TK search widget code, before it was available in Qt widgets
 # framework. So, at some point, this code should be replaced with the TK
 # implementation, when it is available.
@@ -101,5 +96,4 @@ class SearchWidget(QtGui.QLineEdit):
 
     def _safe_get_text(self):
         """ """
-        text = sgutils.ensure_str(self.text())
-        return text
+        return self.text()
