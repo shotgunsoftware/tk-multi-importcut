@@ -18,11 +18,6 @@ from .cut_diff import CutDiff, _DIFF_TYPES
 from .logger import get_logger
 from .constants import _SHOT_FIELDS
 
-try:
-    from tank_vendor import sgutils
-except ImportError:
-    from tank_vendor import six as sgutils
-
 # Some counts are per Shot, some others per edits
 # As a rule of thumb, everything which directly affects the Shot is per
 # Shot:
@@ -534,18 +529,16 @@ class CutSummary(QtCore.QObject):
                 "%s does not have a a valid edit and can't be renamed" % cut_diff.name
             )
 
-        new_name = sgutils.ensure_str(u_new_name)
-        old_name = sgutils.ensure_str(u_old_name)
         # We might have empty names here. To avoid considering all entries
         # with no name as repeated Shots we forge a key based on the cut order.
         new_shot_key = (
-            new_name.lower()
-            if new_name
+            u_new_name.lower()
+            if u_new_name
             else "_no_shot_name_%s" % cut_diff.new_cut_order
         )
         old_shot_key = (
-            old_name.lower()
-            if old_name
+            u_old_name.lower()
+            if u_old_name
             else "_no_shot_name_%s" % cut_diff.new_cut_order
         )
         if new_shot_key == old_shot_key:
@@ -655,7 +648,7 @@ class CutSummary(QtCore.QObject):
                 [
                     ["project", "is", self._sg_project],
                     [self._sg_shot_link_field_name, "is", self._sg_entity],
-                    ["code", "is", new_name],
+                    ["code", "is", u_new_name],
                 ],
                 _SHOT_FIELDS,
             )
@@ -666,7 +659,7 @@ class CutSummary(QtCore.QObject):
                 # Link to the first Shot found whose name matches new_name
                 existing_unlinked_shot = self._app.shotgun.find_one(
                     "Shot",
-                    [["project", "is", self._sg_project], ["code", "is", new_name]],
+                    [["project", "is", self._sg_project], ["code", "is", u_new_name]],
                     _SHOT_FIELDS,
                 )
                 if existing_unlinked_shot:
