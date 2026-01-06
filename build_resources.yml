@@ -1,0 +1,18 @@
+# YAML Configuration File for Qt Resource Building
+#
+# For more information:
+# https://github.com/shotgunsoftware/tk-toolchain?tab=readme-ov-file#tk-build-qt-resources
+
+- ui_src: resources
+  ui_files:
+    - dialog
+    - project_card
+    - entity_card
+    - cut_card
+    - cut_diff_card
+    - submit_dialog
+    - settings_dialog
+    - create_entity_dialog
+  res_files:
+    - resources
+  py_dest: python/tk_multi_importcut/ui
