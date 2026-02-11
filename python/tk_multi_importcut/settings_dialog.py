@@ -475,14 +475,14 @@ class SettingsDialog(QtGui.QDialog):
 
         if not self.ui.default_head_duration_line_edit.hasAcceptableInput():
             raise SettingsError("Default Head Duration must be set")
-        new_values["default_head_duration"] = (
-            self.ui.default_head_duration_line_edit.text()
-        )
+        new_values[
+            "default_head_duration"
+        ] = self.ui.default_head_duration_line_edit.text()
         if not self.ui.default_tail_duration_line_edit.hasAcceptableInput():
             raise SettingsError("Default Tail Duration must be set")
-        new_values["default_tail_duration"] = (
-            self.ui.default_tail_duration_line_edit.text()
-        )
+        new_values[
+            "default_tail_duration"
+        ] = self.ui.default_tail_duration_line_edit.text()
 
         # Retrieve a list of wizard steps potentially affected by these changes
         affected = self._user_settings.reset_needed(new_values, self._wizard_step)
