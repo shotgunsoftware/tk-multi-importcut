@@ -21,7 +21,6 @@ from .constants import _COLORS
 # the code will be compatible with both PySide and PyQt.
 from sgtk.platform.qt import QtCore, QtGui
 
-
 edl = sgtk.platform.import_framework("tk-framework-editorial", "edl")
 
 # diff_type property values which are set on the widget

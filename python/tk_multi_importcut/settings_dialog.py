@@ -38,8 +38,10 @@ field is empty, the Default Head In value set below for New Shots will be used."
 _RELATIVE_INSTRUCTIONS = "In Relative mode, the app will map the timecode \
 values from the EDL to frames based on a specific timecode/frame relationship."
 
-_BAD_GROUP_MSG = '"%s" does not match a valid Group in Flow Production Tracking. Please enter \
+_BAD_GROUP_MSG = (
+    '"%s" does not match a valid Group in Flow Production Tracking. Please enter \
 another Group or create "%s" in Flow Production Tracking to proceed.'
+)
 
 _BAD_STATUS_MSG = "The following statuses for reinstating Shots do not match \
 valid statuses in Flow Production Tracking:\n\n%s\n\nPlease enter another status to proceed."
@@ -475,14 +477,14 @@ class SettingsDialog(QtGui.QDialog):
 
         if not self.ui.default_head_duration_line_edit.hasAcceptableInput():
             raise SettingsError("Default Head Duration must be set")
-        new_values[
-            "default_head_duration"
-        ] = self.ui.default_head_duration_line_edit.text()
+        new_values["default_head_duration"] = (
+            self.ui.default_head_duration_line_edit.text()
+        )
         if not self.ui.default_tail_duration_line_edit.hasAcceptableInput():
             raise SettingsError("Default Tail Duration must be set")
-        new_values[
-            "default_tail_duration"
-        ] = self.ui.default_tail_duration_line_edit.text()
+        new_values["default_tail_duration"] = (
+            self.ui.default_tail_duration_line_edit.text()
+        )
 
         # Retrieve a list of wizard steps potentially affected by these changes
         affected = self._user_settings.reset_needed(new_values, self._wizard_step)
