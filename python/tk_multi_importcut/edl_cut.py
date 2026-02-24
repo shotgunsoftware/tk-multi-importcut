@@ -1075,7 +1075,7 @@ class EdlCut(QtCore.QObject):
 
         return score
 
-    @QtCore.Slot(str, dict, dict, str, bool)
+    @QtCore.Slot(str, dict, list, str, bool)
     def do_cut_import(self, u_title, sender, to, u_description, update_shots):
         """
         Import the Cut changes in Flow Production Tracking
@@ -1088,7 +1088,7 @@ class EdlCut(QtCore.QObject):
         :param u_title: A unicode string, the new PTR Cut name and a title for the Note
                       that will be created
         :param sender: A PTR user dictionary, the Note sender
-        :param to: A PTR Group dictionary, the recipient for the Note
+        :param to: A list of PTR Group dictionaries, the recipients for the Note
         :param u_description: Comments as a unicode string, used in the Note's body
         :param update_shots: A boolean, whether or not existing Shots data will
                              be updated
@@ -1131,7 +1131,7 @@ class EdlCut(QtCore.QObject):
 
         :param title: A string, the Note title
         :param sender: A Flow Production Tracking user dictionary
-        :param to: A Flow Production Tracking Group dictionary
+        :param to: A list of Flow Production Tracking Group dictionaries, the recipients for the Note
         :param description: Some comments which will be added to the Note
         :param sg_links: Optional list of Flow Production Tracking Entity dictionaries to link the note to
         """
