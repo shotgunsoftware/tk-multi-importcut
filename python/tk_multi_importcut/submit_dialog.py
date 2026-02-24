@@ -25,7 +25,7 @@ class SubmitDialog(QtGui.QDialog):
     Submit dialog, offering a summary and a couple of options to the user
     """
 
-    submit = QtCore.Signal(str, dict, dict, str, bool)
+    submit = QtCore.Signal(str, dict, list, str, bool)
 
     def __init__(self, parent=None, title=None, summary=None):
         """
