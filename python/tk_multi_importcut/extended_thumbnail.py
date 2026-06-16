@@ -51,7 +51,7 @@ class ExtendedThumbnail(QtGui.QLabel):
 
         :param event: A QEvent
         """
-        super(ExtendedThumbnail, self).paintEvent(event)
+        super().paintEvent(event)
         painter = QtGui.QPainter()
         try:
             painter.begin(self)
