@@ -33,6 +33,7 @@ description: "An app to import Cut changes."
 requires_shotgun_version: v7.0.0
 requires_core_version: "v0.16.18"
 requires_engine_version:
+minimum_python_version: "3.9"
 
 documentation_url: "https://help.autodesk.com/view/SGSUB/ENU/?guid=SG_Editorial_ed_import_cut_depth_html"
 
