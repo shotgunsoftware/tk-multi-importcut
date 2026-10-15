@@ -31,7 +31,7 @@ description: "An app to import Cut changes."
 
 # Required minimum versions for this item to run
 requires_shotgun_version: v7.0.0
-requires_core_version: "v0.16.18"
+requires_core_version: "v0.18.34"
 requires_engine_version:
 minimum_python_version: "3.9"
 

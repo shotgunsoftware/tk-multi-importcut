@@ -1506,25 +1506,8 @@ class AppDialog(QtGui.QWidget):
         self.setStyleSheet("")
         if os.path.exists(css_file):
             try:
-                # todo: changing the default font to OpenSans should really
-                # happen in Toolkit, so app Studio apps inherit the font, instead
-                # of having to manually change it like this for each app
-                # getting the path to fonts relative to this file
-                font_path = self._app.disk_location
-                font_path = os.path.join(font_path, "resources", "fonts")
-                # load custom font
-                QtGui.QFontDatabase.addApplicationFont(
-                    os.path.join(font_path, "OpenSans-Bold.ttf")
-                )
-                QtGui.QFontDatabase.addApplicationFont(
-                    os.path.join(font_path, "OpenSans-Regular.ttf")
-                )
-                QtGui.QFontDatabase.addApplicationFont(
-                    os.path.join(font_path, "OpenSans-CondLight.ttf")
-                )
-                QtGui.QFontDatabase.addApplicationFont(
-                    os.path.join(font_path, "OpenSans-Light.ttf")
-                )
+                # Open Sans is loaded by tk-core's _ensure_core_fonts_loaded()
+                # before any app initializes, so no local font loading is needed.
                 # Read css file
                 f = open(css_file)
                 css_data = f.read()
